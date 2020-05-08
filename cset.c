@@ -1,5 +1,4 @@
 #include "config.h"
-#include <wchar.h>
 
 
 wchar_t CSET_US[MAXMAP]; /* "USASCII" */

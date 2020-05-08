@@ -10,11 +10,12 @@ LIBS      ?= -l$(CURSESLIB) -lutil
 
 all: mtm
 
-mtm: vtparser.c mtm.c config.h cset.c
-	$(CC) $(CFLAGS) $(FEATURES) -o $@ $(HEADERS) vtparser.c mtm.c cset.c $(LIBPATH) $(LIBS)
+FILES = vtparser.c mtm.c cset.c handler.c
+mtm: config.h $(FILES)
+	$(CC) $(CFLAGS) $(FEATURES) -o $@ $(HEADERS) $(FILES) $(LIBPATH) $(LIBS)
 
 config.h: config.def.h
-	cp -i config.def.h config.h
+	cp config.def.h config.h
 
 install: mtm
 	cp mtm $(DESTDIR)/bin

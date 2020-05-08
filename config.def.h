@@ -1,3 +1,20 @@
+#include <errno.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <locale.h>
+#include <pwd.h>
+#include <signal.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/select.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <wchar.h>
+#include <wctype.h>
+
+#include "vtparser.h"
 /* Old versions of ncurses don't support A_ITALIC.
  * Define this to disable it if the situation isn't automatically detected.
 #define NO_ITALICS
@@ -79,7 +96,41 @@
         #define FORKPTY_INCLUDE_H <pty.h>
     #endif
 #endif
+
+#define MIN(x, y) ((x) < (y)? (x) : (y))
+#define MAX(x, y) ((x) > (y)? (x) : (y))
+#define CTL(x) ((x) & 0x1f)
+#define USAGE "usage: mtm [-T NAME] [-t NAME] [-c KEY]\n"
+
 #include FORKPTY_INCLUDE_H
+
+typedef struct SCRN SCRN;
+struct SCRN{
+    int sy, sx, vis, tos, off;
+    short fg, bg, sfg, sbg, sp;
+    bool insert, oxenl, xenl, saved;
+    attr_t sattr;
+    WINDOW *win;
+};
+
+/*** DATA TYPES */
+typedef enum{
+    HORIZONTAL,
+    VERTICAL,
+    VIEW
+} Node;
+
+typedef struct NODE NODE;
+struct NODE{
+    Node t;
+    int y, x, h, w, pt, ntabs;
+    bool *tabs, pnm, decom, am, lnm;
+    wchar_t repc;
+    NODE *p, *c1, *c2;
+    SCRN pri, alt, *s;
+    wchar_t *g0, *g1, *g2, *g3, *gc, *gs, *sgc, *sgs;
+    VTPARSER vp;
+};
 
 /* You probably don't need to alter these much, but if you do,
  * here is where you can define alternate character sets.
@@ -94,3 +145,11 @@
 extern wchar_t CSET_US[]; /* "USASCII" */
 extern wchar_t CSET_UK[]; /* "United Kingdom" */
 extern wchar_t CSET_GRAPH[]; /* Graphics Set One */
+
+void setupevents(NODE *n);
+#define SENDN(n, s, c) safewrite(n->pt, s, c)
+#define SEND(n, s) SENDN(n, s, strlen(s))
+void safewrite(int fd, const char *b, size_t n);
+typedef void (handler)(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
+          int argc, int *argv, const wchar_t *osc);
+handler ris;
