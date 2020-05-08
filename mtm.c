@@ -495,25 +495,24 @@ handlechar(int r, int k) /* Handle a single input character. */
 }
 
 static void
-run(void) /* Run MTM. */
+run(void)
 {
-    while (root){
-        wint_t w = 0;
-        fd_set sfds = fds;
-        if (select(nfds + 1, &sfds, NULL, NULL, NULL) < 0)
-            FD_ZERO(&sfds);
-
-        int r = wget_wch(focused->s->win, &w);
-        while (handlechar(r, w))
-            r = wget_wch(focused->s->win, &w);
-        getinput(root, &sfds);
-
-        draw(root);
-        doupdate();
-        fixcursor();
-        draw(focused);
-        doupdate();
-    }
+	while( root != NULL ) {
+		int r;
+		wint_t w = 0;
+		fd_set sfds = fds;
+		if( select(nfds + 1, &sfds, NULL, NULL, NULL) < 0 ) {
+			FD_ZERO(&sfds);
+		}
+		do r = wget_wch(focused->s->win, &w);
+		while( handlechar(r, w) );
+		getinput(root, &sfds);
+		draw(root);
+		doupdate();
+		fixcursor();
+		draw(focused);
+		doupdate();
+	}
 }
 
 static void
