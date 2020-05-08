@@ -16,9 +16,9 @@
 
 #include "config.h"
 
-/*** GLOBALS AND PROTOTYPES */
 static NODE *root, *focused, *lastfocused = NULL;
-static int commandkey = CTL(COMMAND_KEY), nfds = 1; /* stdin */
+static int commandkey = CTL(COMMAND_KEY);
+static int nfds = 1; /* stdin */
 static fd_set fds;
 static char iobuf[BUFSIZ];
 
@@ -28,7 +28,6 @@ static void reshapechildren(NODE *n);
 static const char *term = NULL;
 static void freenode(NODE *n, bool recursive);
 
-/*** UTILITY FUNCTIONS */
 static void
 quit(int rc, const char *m) /* Shut down MTM. */
 {
