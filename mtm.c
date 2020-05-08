@@ -14,6 +14,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+   BUGS:
+     If you build 3 windows, then close one, ctrl-G o does
+     not change windows.
+ */
+
 #include "config.h"
 
 static NODE *root, *focused, *lastfocused = NULL;
