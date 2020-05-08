@@ -131,15 +131,6 @@ struct NODE{
     VTPARSER vp;
 };
 
-/* You probably don't need to alter these much, but if you do,
- * here is where you can define alternate character sets.
- *
- * Note that if your system's wide-character implementation
- * maps directly to Unicode, the preferred Unicode characters
- * will be used automatically if your system declares such
- * support. If it doesn't declare it, define WCHAR_IS_UNICODE to
- * force Unicode to be used.
- */
 #define MAXMAP 0x7f
 extern wchar_t CSET_US[]; /* "USASCII" */
 extern wchar_t CSET_UK[]; /* "United Kingdom" */
