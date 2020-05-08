@@ -100,7 +100,6 @@
 #define MIN(x, y) ((x) < (y)? (x) : (y))
 #define MAX(x, y) ((x) > (y)? (x) : (y))
 #define CTL(x) ((x) & 0x1f)
-#define USAGE "usage: mtm [-T NAME] [-t NAME] [-c KEY]\n"
 
 #include FORKPTY_INCLUDE_H
 
