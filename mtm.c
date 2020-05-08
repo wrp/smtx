@@ -510,8 +510,9 @@ run(void)
 		if( select(nfds + 1, &sfds, NULL, NULL, NULL) < 0 ) {
 			FD_ZERO(&sfds);
 		}
-		do r = wget_wch(focused->s->win, &w);
-		while( handlechar(r, w) );
+		do {
+			r = wget_wch(focused->s->win, &w);
+		} while( handlechar(r, w) );
 		getinput(root, &sfds);
 		draw(root);
 		doupdate();
