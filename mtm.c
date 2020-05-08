@@ -33,9 +33,6 @@ quit(int rc, const char *m) /* Shut down MTM. */
 {
     if (m)
         fprintf(stderr, "%s\n", m);
-    if (root)
-        freenode(root, true);
-    endwin();
     exit(rc);
 }
 
@@ -547,6 +544,15 @@ parse_args(int argc, char **argv)
 }
 
 
+void
+cleanup(void)
+{
+	if (root) {
+		freenode(root, true);
+	}
+	endwin();
+}
+
 int
 main(int argc, char **argv)
 {
@@ -558,20 +564,20 @@ main(int argc, char **argv)
 	if( initscr() == NULL ) {
 		exit(EXIT_FAILURE);
 	}
-    raw();
-    noecho();
-    nonl();
-    intrflush(stdscr, FALSE);
-    start_color();
-    use_default_colors();
+	atexit(cleanup);
+	raw();
+	noecho();
+	nonl();
+	intrflush(stdscr, FALSE);
+	start_color();
+	use_default_colors();
 
-    root = newview(NULL, 0, 0, LINES, COLS);
-    if (!root)
-        quit(EXIT_FAILURE, "could not open root window");
-    focus(root);
-    draw(root);
-    run();
-
-    quit(EXIT_SUCCESS, NULL);
-    return EXIT_SUCCESS; /* not reached */
+	root = newview(NULL, 0, 0, LINES, COLS);
+	if( root == NULL ) {
+		quit(EXIT_FAILURE, "Unable to create root window");
+	}
+	focus(root);
+	draw(root);
+	run();
+	return EXIT_SUCCESS;
 }
