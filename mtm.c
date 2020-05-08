@@ -20,7 +20,7 @@
      not change windows.
  */
 
-#include "config.h"
+#include "main.h"
 
 static NODE *root, *focused, *lastfocused = NULL;
 static int commandkey = CTL(COMMAND_KEY);

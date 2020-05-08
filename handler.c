@@ -1,4 +1,4 @@
-#include "config.h"
+#include "main.h"
 
 /*** TERMINAL EMULATION HANDLERS
  * These functions implement the various terminal commands activated by

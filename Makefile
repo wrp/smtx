@@ -11,11 +11,8 @@ LIBS      ?= -l$(CURSESLIB) -lutil
 all: mtm
 
 FILES = vtparser.c mtm.c cset.c handler.c
-mtm: config.h $(FILES)
+mtm: main.h $(FILES)
 	$(CC) $(CFLAGS) $(FEATURES) -o $@ $(HEADERS) $(FILES) $(LIBPATH) $(LIBS)
-
-config.h: config.def.h
-	cp config.def.h config.h
 
 install: mtm
 	cp mtm $(DESTDIR)/bin
