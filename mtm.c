@@ -357,11 +357,19 @@ drawchildren(const NODE *n) /* Draw all children of n. */
 static void
 draw(NODE *n) /* Draw a node. */
 {
-    if (n->t == VIEW)
-        pnoutrefresh(n->s->win, n->s->off, 0, n->y, n->x,
-                     n->y + n->h - 1, n->x + n->w - 1);
-    else
-        drawchildren(n);
+	if( n->t == VIEW ) {
+		pnoutrefresh(
+			n->s->win,  /* pad */
+			n->s->off,  /* pminrow */
+			0,          /* pmincol */
+			n->y,       /* sminrow */
+			n->x,       /* smincol */
+			n->y + n->h - 1,  /* smaxrow */
+			n->x + n->w - 1   /* smaxcol */
+		);
+	} else {
+		drawchildren(n);
+	}
 }
 
 static void
