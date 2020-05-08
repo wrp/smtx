@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# Find a version.
+cd $( dirname $0 )/.. || exit 1
+
+GIT_CEILING_DIRECTORIES=$(cd ..; pwd -P)
+export GIT_CEILING_DIRECTORIES
+
+# Take version from git if we can...
+v=$(git describe --tags --always --dirty 2>/dev/null)
+if test -n "$v"; then
+	printf "%s" "$v"
+# else from the version file (eg in a dist tarball)
+elif v=$(cat version); test -n "$v"; then
+	printf "%s" "$v"
+else
+	printf unknown
+fi
