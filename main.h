@@ -65,23 +65,17 @@
 #elif HAVE_NCURSESW_CURSES_H 1
 # include <ncursesw/curses.h>
 #endif
-
-/* Includes needed to make forkpty(3) work. */
-#ifndef FORKPTY_INCLUDE_H
-    #if defined(__APPLE__)
-        #define FORKPTY_INCLUDE_H <util.h>
-    #elif defined(__FreeBSD__)
-        #define FORKPTY_INCLUDE_H <libutil.h>
-    #else
-        #define FORKPTY_INCLUDE_H <pty.h>
-    #endif
+#if HAVE_PTY_H
+# include <pty.h>
+#elif HAVE_LIBUTIL_H
+# include <libutil.h>
+#elif HAVE_UTIL_H
+# include <util.h>
 #endif
 
 #define MIN(x, y) ((x) < (y)? (x) : (y))
 #define MAX(x, y) ((x) > (y)? (x) : (y))
 #define CTL(x) ((x) & 0x1f)
-
-#include FORKPTY_INCLUDE_H
 
 typedef struct SCRN SCRN;
 struct SCRN{
