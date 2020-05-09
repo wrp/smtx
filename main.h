@@ -1,3 +1,4 @@
+#include "config.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
@@ -15,11 +16,6 @@
 #include <wctype.h>
 
 #include "vtparser.h"
-/* Old versions of ncurses don't support A_ITALIC.
- * Define this to disable it if the situation isn't automatically detected.
-#define NO_ITALICS
- */
-
 /* mtm by default will advertise itself as a "screen-bce" terminal.
  * This is the terminal type advertised by such programs as
  * screen(1) and tmux(1) and is a widely-supported terminal type.

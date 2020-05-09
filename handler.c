@@ -381,7 +381,7 @@ HANDLER(sgr) /* SGR - Select Graphic Rendition */
         case 105: bg = COLOR_MAGENTA;                         doc = do16;  break;
         case 106: bg = COLOR_CYAN;                            doc = do16;  break;
         case 107: bg = COLOR_WHITE;                           doc = do16;  break;
-        #if defined(A_ITALIC) && !defined(NO_ITALICS )
+        #if HAVE_A_ITALIC
         case  3:  wattron(win,  A_ITALIC);                    break;
         case 23:  wattroff(win, A_ITALIC);                    break;
         #endif
