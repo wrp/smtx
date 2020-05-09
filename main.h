@@ -62,7 +62,7 @@
 
 #if HAVE_CURSES_H
 # include <curses.h>
-#elif HAVE_NCURSESW_CURSES_H 1
+#elif HAVE_NCURSESW_CURSES_H
 # include <ncursesw/curses.h>
 #endif
 #if HAVE_PTY_H
