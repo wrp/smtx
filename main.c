@@ -63,21 +63,14 @@ getshell(void) /* Get the user's preferred shell. */
 	return shell ? shell : pwd ? pwd->pw_shell : "/bin/sh";
 }
 
-
-
-/*** MTM FUNCTIONS
- * These functions do the user-visible work of MTM: creating nodes in the
- * tree, updating the display, and so on.
- */
 static bool *
 newtabs(int w, int ow, bool *oldtabs) /* Initialize default tabstops. */
 {
-    bool *tabs = calloc(w, sizeof(bool));
-    if (!tabs)
-        return NULL;
-    for (int i = 0; i < w; i++) /* keep old overlapping tabs */
-        tabs[i] = i < ow? oldtabs[i] : (i % 8 == 0);
-    return tabs;
+	bool *tabs = calloc(w, sizeof *tabs);
+	for( int i = 0; tabs != NULL && i < w; i++ ) {
+		tabs[i] = i < ow ? oldtabs[i] : i % 8 == 0;
+	}
+	return tabs;
 }
 
 static NODE *
