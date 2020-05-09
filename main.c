@@ -15,6 +15,8 @@
  */
 
 /*
+   TODO: (feature requests)
+     Enable cmdline flag to set tabstops
    BUGS:
      If you build 3 windows, then close one, ctrl-G o does
        not change windows.  (lastfocus gets lost)
