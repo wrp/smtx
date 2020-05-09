@@ -44,17 +44,15 @@ quit(int rc, const char *m) /* Shut down MTM. */
 }
 
 void
-safewrite(int fd, const char *b, size_t n) /* Write, checking for errors. */
+safewrite(int fd, const char *b, size_t n) /* Write, retry on interrupt */
 {
-    size_t w = 0;
-    while (w < n){
-        ssize_t s = write(fd, b + w, n - w);
-        if (s < 0 && errno != EINTR)
-            return;
-        else if (s < 0)
-            s = 0;
-        w += (size_t)s;
-    }
+	ssize_t s;
+	while( n > 0 && ((s = write(fd, b, n)) >= 0 || errno == EINTR)) {
+		if( s > 0 ) {
+			b += s;
+			n -= s;
+		}
+	}
 }
 
 static const char *
