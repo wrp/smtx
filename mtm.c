@@ -17,7 +17,8 @@
 /*
    BUGS:
      If you build 3 windows, then close one, ctrl-G o does
-     not change windows.
+       not change windows.  (lastfocus gets lost)
+     SIGWINCH is not handled at all
  */
 
 #include "main.h"
