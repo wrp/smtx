@@ -14,3 +14,6 @@ version:
 	&& mv config.h.new config.h; }
 
 sttm_SOURCES = vtparser.c main.c cset.c handler.c
+
+install-terminfo: $(top_srcdir)/sttm.ti
+	tic -s -x $(top_srcdir)/sttm.ti
