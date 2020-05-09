@@ -57,9 +57,9 @@
 #define REDRAW KEY(L'l')
 
 /* The scrollback keys. */
-#define SCROLLUP CODE(KEY_PPAGE)
-#define SCROLLDOWN CODE(KEY_NPAGE)
-#define RECENTER CODE(KEY_END)
+#define SCROLLUP KEY(L'i')
+#define SCROLLDOWN KEY(L'u')
+#define RECENTER KEY(L'y')
 
 #if HAVE_CURSES_H
 # include <curses.h>
