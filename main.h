@@ -79,30 +79,29 @@
 
 typedef struct SCRN SCRN;
 struct SCRN{
-    int sy, sx, vis, tos, off;
-    short fg, bg, sfg, sbg, sp;
-    bool insert, oxenl, xenl, saved;
-    attr_t sattr;
-    WINDOW *win;
+	int sy, sx, vis, tos, off;
+	short fg, bg, sfg, sbg, sp;
+	bool insert, oxenl, xenl, saved;
+	attr_t sattr;
+	WINDOW *win;
 };
 
-/*** DATA TYPES */
 typedef enum{
-    HORIZONTAL,
-    VERTICAL,
-    VIEW
+	HORIZONTAL,
+	VERTICAL,
+	VIEW
 } Node;
 
 typedef struct NODE NODE;
 struct NODE{
-    Node t;
-    int y, x, h, w, pt, ntabs;
-    bool *tabs, pnm, decom, am, lnm;
-    wchar_t repc;
-    NODE *p, *c1, *c2;
-    SCRN pri, alt, *s;
-    wchar_t *g0, *g1, *g2, *g3, *gc, *gs, *sgc, *sgs;
-    VTPARSER vp;
+	Node t;
+	int y, x, h, w, pt, ntabs;
+	bool *tabs, pnm, decom, am, lnm;
+	wchar_t repc;
+	NODE *p, *c1, *c2;
+	SCRN pri, alt, *s;
+	wchar_t *g0, *g1, *g2, *g3, *gc, *gs, *sgc, *sgs;
+	VTPARSER vp;
 };
 
 #define MAXMAP 0x7f
