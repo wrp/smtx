@@ -1,88 +1,52 @@
 Introduction
 ============
 
-mtm is the Micro Terminal Multiplexer, a terminal multiplexer.
+sttm is the Simple Terminal Manager
 
-It has four major features/princples:
+Quickstart
+==========
 
-Simplicity
-    There are only a few commands, two of which are hardly ever used.
-    There are no modes, no dozens of commands, no crazy feature list.
+sttm is a window manager.  When first started, sttm creates a single
+window with a pty running the program specified in SHELL.  Entering
+the `MOD` keysequence (default is `CTRL+g`) will put sttm in `command`
+mode, in which key sequences are interpreted to manipulate the
+windows.  To transition back to `keypress` mode, you may press
+`RETURN`, `MOD`, or `ESC`.  Pressing `ESC` or `RETURN` transitions
+mode without sending a key to the underlying pty, while pressing
+`MOD` transitions and sends the keystroke.  To quit, use `qq` from
+command mode.
 
-Compatibility
-    mtm emulates a classic ANSI text terminal.  That means it should
-    work out of the box on essentially all terminfo/termcap-based systems
-    (even pretty old ones), without needing to install a new termcap entry.
+Windows
+=======
 
-Size
-    mtm is small.
-    The entire project is around 1000 lines of code.
-
-Stability
-    mtm is "finished" as it is now.  You don't need to worry about it
-    changing on you unexpectedly.  The only changes that can happen at
-    this point are:
-
-    - Bug fixes.
-    - Translation improvements.
-    - Accessibility improvements.
-    - Fixes to keep it working on modern OSes.
-
-Community
-=========
-
-Rob posts updates about mtm on Twitter at http://twitter.com/TheKingAdRob.
-
-Installation
-============
-Installation and configuration is fairly simple:
-
-- You need ncursesw.
-  If you want to support terminal resizing, ncursesw needs to be
-  compiled with its internal SIGWINCH handler; this is true for most
-  precompiled distributions.  Other curses implementations might work,
-  but have not been tested.
-- Edit the variables at the top of the Makefile if you need to
-  (you probably don't).
-- If you want to change the default keybindings or other compile-time flags,
-  copy `config.def.h` to `config.h` and edit the copy. Otherwise the build
-  process will use the defaults.
-- Run::
-
-    make
-
-  or::
-
-    make CURSESLIB=curses
-
-  whichever works for you.
-- Run `make install` if desired.
+New windows are created in `command` mode with `c` and closed with `xx`.
+To switch among the windows use `j`, `k`, and `1`, `2`, etc.
 
 Usage
 =====
 
 Usage is simple::
 
-    mtm [-T NAME] [-t NAME] [-c KEY]
+    sttm [-T NAME] [-t NAME] [-c KEY]
 
-The `-T` flag tells mtm to assume a different kind of host terminal.
+The `-T` flag tells sttm to assume a different kind of host terminal.
 
-The `-t` flag tells mtm what terminal type to advertise itself as.
-Note that this doesn't change how mtm interprets control sequences; it
+The `-t` flag tells sttm what terminal type to advertise itself as.
+Note that this doesn't change how sttm interprets control sequences; it
 simply controls what the `TERM` environment variable is set to.
 
 The `-c` flag lets you specify a keyboard character to use as the "command
-prefix" for mtm when modified with *control* (see below).  By default,
+prefix" for sttm when modified with *control* (see below).  By default,
 this is `g`.
 
-Once inside mtm, things pretty much work like any other terminal.  However,
-mtm lets you split up the terminal into multiple virtual terminals.
+Once inside sttm, things pretty much work like any other terminal.  However,
+sttm lets you split up the terminal into multiple virtual terminals.
 
 At any given moment, exactly one virtual terminal is *focused*.  It is
 to this terminal that keyboad input is sent.  The focused terminal is
 indicated by the location of the cursor.
 
-The following commands are recognized in mtm, when preceded by the command
+The following commands are recognized in sttm, when preceded by the command
 prefix (by default *ctrl-g*):
 
 Up/Down/Left/Right Arrow
@@ -99,7 +63,7 @@ h / v
 
 w
     Delete the focused virtual terminal.  Some other nearby virtual
-    terminal will become focused if there are any left.  mtm will exit
+    terminal will become focused if there are any left.  sttm will exit
     once all virtual terminals are closed.  Virtual terminals will also
     close if the program started inside them exits.
 
@@ -115,45 +79,18 @@ nothing else to learn.
 
 (Note that these keybindings can be changed at compile time.)
 
-Screenshots
------------
-mtm running three instances of `tine <https://github.com/deadpixi/tine>`_
-
-.. image:: screenshot2.png
-
-mtm running various other programs
-
-.. image:: screenshot.png
-
-mtm showing its compatibility
-
-.. image:: vttest1.png
-.. image:: vttest2.png
-
 Compatibility
 =============
-(Note that you only need to read this section if you're curious.  mtm should
-just work out-of-the-box for you, thanks to the efforts of the various
-hackers over the years to make terminal-independence a reality.)
 
-By default, mtm advertises itself as a `screen-bce` terminal.  This is what `GNU
-screen` and `tmux` advertise themselves as, and is a well-known terminal
-type that has been in the default terminfo database for decades.
-
-(Note that this should not be taken to imply that anyone involved in the
-`GNU screen` or `tmux` projects endorses or otherwise has anything to do
-with mtm, and vice-versa. Their work is excellent, though, and you should
-definitely check it out.)
-
-The `mtm` Terminal Types
+The `sttm` Terminal Types
 ------------------------
-mtm comes with a terminfo description file called mtm.ti.  This file
-describes all of the features supported by mtm.
+sttm comes with a terminfo description file called sttm.ti.  This file
+describes all of the features supported by sttm.
 
 If you want to install this terminal type, use the `tic` compiler that
 comes with ncurses::
 
-    tic -s -x mtm.ti
+    tic -s -x sttm.ti
 
 or simply::
 
@@ -161,37 +98,38 @@ or simply::
 
 This will install the following terminal types:
 
-mtm
-    This terminal type supports all of the features of mtm, but with
+sttm
+    This terminal type supports all of the features of sttm, but with
     the default 8 "ANSI" colors only.
 
-mtm-256color
-    Note that mtm is not magic and cannot actually display more colors
+sttm-256color
+    Note that sttm is not magic and cannot actually display more colors
     than the host terminal supports.
 
-mtm-noutf
-    This terminal type supports everything the mtm terminal type does,
+sttm-noutf
+    This terminal type supports everything the sttm terminal type does,
     but does not advertise UTF8 capability.
 
 That command will compile and install the terminfo entry.  After doing so,
-calling mtm with `-t mtm`::
+calling sttm with `-t sttm`::
 
-    mtm -t mtm
+    sttm -t sttm
 
 will instruct programs to use that terminfo entry.
-You can, of course, replace `mtm` with any of the other above terminal
+You can, of course, replace `sttm` with any of the other above terminal
 types.
 
-Using these terminfo entries allows programs to use the full power of mtm's
+Using these terminfo entries allows programs to use the full power of sttm's
 terminal emulation, but it is entirely optional. A primary design goal
-of mtm was for it to be completely usable on systems that didn't have the
-mtm terminfo entry installed. By default, mtm advertises itself as the
+of sttm was for it to be completely usable on systems that didn't have the
+sttm terminfo entry installed. By default, sttm advertises itself as the
 widely-available `screen-bce` terminal type.
 
 Copyright and License
 =====================
 
 Copyright 2016-2019 Rob King <jking@deadpixi.com>
+Copyright 2020 William Pursell <william.r.pursell@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -205,4 +143,3 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
