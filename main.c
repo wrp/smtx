@@ -21,6 +21,8 @@
      If you build 3 windows, then close one, ctrl-G o does
        not change windows.  (lastfocus gets lost)
      SIGWINCH is not handled at all
+     scrollback seems to be bounded by 100 lines rather than 1000, and
+       only works after you've split at least one new window.
  */
 
 #include "main.h"
