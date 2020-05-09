@@ -33,18 +33,6 @@
 #define DEFAULT_TERMINAL "screen-bce"
 #define DEFAULT_256_COLOR_TERMINAL "screen-256color-bce"
 
-/* mtm supports a scrollback buffer, allowing users to scroll back
- * through the output history of a virtual terminal. The SCROLLBACK
- * knob controls how many lines are saved (minus however many are
- * currently displayed). 1000 seems like a good number.
- *
- * Note that every virtual terminal is sized to be at least this big,
- * so setting a huge number here might waste memory. It is recommended
- * that this number be at least as large as the largest terminal you
- * expect to use is tall.
- */
-#define SCROLLBACK 1000
-
 /* The default command prefix key, when modified by cntrl.
  * This can be changed at runtime using the '-c' flag.
  */
