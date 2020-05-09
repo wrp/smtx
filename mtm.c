@@ -172,7 +172,6 @@ newview(NODE *p, int y, int x, int h, int w) /* Open a new view. */
     keypad(pri->win, TRUE); keypad(alt->win, TRUE);
 
     setupevents(n);
-    ris(&n->vp, n, L'c', 0, 0, NULL, NULL);
 
     pid_t pid = forkpty(&n->pt, NULL, NULL, &ws);
     if (pid < 0){

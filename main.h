@@ -113,6 +113,3 @@ void setupevents(NODE *n);
 #define SENDN(n, s, c) safewrite(n->pt, s, c)
 #define SEND(n, s) SENDN(n, s, strlen(s))
 void safewrite(int fd, const char *b, size_t n);
-typedef void (handler)(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
-          int argc, int *argv, const wchar_t *osc);
-handler ris;

@@ -42,7 +42,7 @@
     top = top <= tos? 0 : top - tos;                                    \
 
 #define HANDLER(name)                                   \
-    void                                                \
+    static void                                         \
     name (VTPARSER *v, void *p, wchar_t w, wchar_t iw,  \
           int argc, int *argv, const wchar_t *osc)      \
     { COMMONVARS
@@ -555,4 +555,5 @@ setupevents(NODE *n)
     vtonevent(&n->vp, VTPARSER_ESCAPE,  L'=', numkp);
     vtonevent(&n->vp, VTPARSER_ESCAPE,  L'>', numkp);
     vtonevent(&n->vp, VTPARSER_PRINT,   0,    print);
+    ris(&n->vp, n, L'c', 0, 0, NULL, NULL);
 }
