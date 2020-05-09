@@ -60,15 +60,11 @@
 #define SCROLLDOWN CODE(KEY_NPAGE)
 #define RECENTER CODE(KEY_END)
 
-/* The path for the wide-character curses library. */
-#ifndef NCURSESW_INCLUDE_H
-    #if defined(__APPLE__) || !defined(__linux__) || defined(__FreeBSD__)
-        #define NCURSESW_INCLUDE_H <curses.h>
-    #else
-        #define NCURSESW_INCLUDE_H <ncursesw/curses.h>
-    #endif
+#if HAVE_CURSES_H
+# include <curses.h>
+#elif HAVE_NCURSESW_CURSES_H 1
+# include <ncursesw/curses.h>
 #endif
-#include NCURSESW_INCLUDE_H
 
 /* Includes needed to make forkpty(3) work. */
 #ifndef FORKPTY_INCLUDE_H
