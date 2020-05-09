@@ -1,4 +1,5 @@
 /* Copyright (c) 2017-2019 Rob King
+ * Copyright (c) 2020 William Pursell
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,19 +31,18 @@
 #include <stddef.h>
 #include <wchar.h>
 
-/**** CONFIGURATION
+/*
  * VTPARSER_BAD_CHAR is the character that will be displayed when
  * an application sends an invalid multibyte sequence to the terminal.
  */
 #ifndef VTPARSER_BAD_CHAR
-    #ifdef __STDC_ISO_10646__
-        #define VTPARSER_BAD_CHAR ((wchar_t)0xfffd)
-    #else
-        #define VTPARSER_BAD_CHAR L'?'
-    #endif
+	#ifdef __STDC_ISO_10646__
+		#define VTPARSER_BAD_CHAR ((wchar_t)0xfffd)
+	#else
+		#define VTPARSER_BAD_CHAR L'?'
+	#endif
 #endif
 
-/**** DATA TYPES */
 #define MAXPARAM    16
 #define MAXCALLBACK 128
 #define MAXOSC      100
@@ -50,31 +50,40 @@
 
 typedef struct VTPARSER VTPARSER;
 typedef struct STATE STATE;
-typedef void (*VTCALLBACK)(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
-                           int argc, int *argv, const wchar_t *osc);
+typedef void (*VTCALLBACK)(
+	VTPARSER *v,
+	void *p,
+	wchar_t w,
+	wchar_t iw,
+	int argc,
+	int *argv,
+	const wchar_t *osc
+);
 
-struct VTPARSER{
-    STATE *s;
-    int narg, nosc, args[MAXPARAM], inter, oscbuf[MAXOSC + 1];
-    mbstate_t ms;
-    void *p;
-    VTCALLBACK print, osc, cons[MAXCALLBACK], escs[MAXCALLBACK],
-               csis[MAXCALLBACK];
+struct VTPARSER {
+	STATE *s;
+	int narg;
+	int nosc;
+	int args[MAXPARAM];
+	int inter;
+	int oscbuf[MAXOSC + 1];
+	mbstate_t ms;
+	void *p;
+	VTCALLBACK print;
+	VTCALLBACK osc;
+	VTCALLBACK cons[MAXCALLBACK];
+	VTCALLBACK escs[MAXCALLBACK];
+	VTCALLBACK csis[MAXCALLBACK];
 };
 
-typedef enum{
-    VTPARSER_CONTROL,
-    VTPARSER_ESCAPE,
-    VTPARSER_CSI,
-    VTPARSER_OSC,
-    VTPARSER_PRINT
+typedef enum {
+	VTPARSER_CONTROL,
+	VTPARSER_ESCAPE,
+	VTPARSER_CSI,
+	VTPARSER_OSC,
+	VTPARSER_PRINT
 } VtEvent;
 
-/**** FUNCTIONS */
-VTCALLBACK
-vtonevent(VTPARSER *vp, VtEvent t, wchar_t w, VTCALLBACK cb);
-
-void
-vtwrite(VTPARSER *vp, const char *s, size_t n);
-
+VTCALLBACK vtonevent(VTPARSER *vp, VtEvent t, wchar_t w, VTCALLBACK cb);
+void vtwrite(VTPARSER *vp, const char *s, size_t n);
 #endif
