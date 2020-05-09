@@ -91,24 +91,24 @@ newnode(Node t, NODE *p, int y, int x, int h, int w) /* Create a new node. */
 static void
 freenode(NODE *n, bool recurse) /* Free a node. */
 {
-    if (n){
-        if (lastfocused == n)
-            lastfocused = NULL;
-        if (n->pri.win)
-            delwin(n->pri.win);
-        if (n->alt.win)
-            delwin(n->alt.win);
-        if (recurse)
-            freenode(n->c1, true);
-        if (recurse)
-            freenode(n->c2, true);
-        if (n->pt >= 0){
-            close(n->pt);
-            FD_CLR(n->pt, &fds);
-        }
-        free(n->tabs);
-        free(n);
-    }
+	if( n ) {
+		if( lastfocused == n )
+			lastfocused = NULL;
+		if( n->pri.win )
+			delwin(n->pri.win);
+		if( n->alt.win )
+			delwin(n->alt.win);
+		if( recurse ) {
+			freenode(n->c1, true);
+			freenode(n->c2, true);
+		}
+		if( n->pt >= 0 ) {
+			close(n->pt);
+			FD_CLR(n->pt, &fds);
+		}
+		free(n->tabs);
+		free(n);
+	}
 }
 
 static void
