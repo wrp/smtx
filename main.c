@@ -58,12 +58,9 @@ safewrite(int fd, const char *b, size_t n) /* Write, retry on interrupt */
 static const char *
 getshell(void) /* Get the user's preferred shell. */
 {
-    if (getenv("SHELL"))
-        return getenv("SHELL");
-    struct passwd *pwd = getpwuid(getuid());
-    if (pwd)
-        return pwd->pw_shell;
-    return "/bin/sh";
+	const char *shell = getenv("SHELL");
+	struct passwd *pwd = shell ? NULL : getpwuid(getuid());
+	return shell ? shell : pwd ? pwd->pw_shell : "/bin/sh";
 }
 
 
