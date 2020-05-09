@@ -70,22 +70,22 @@ newtabs(int w, int ow, bool *oldtabs) /* Initialize default tabstops. */
 static NODE *
 newnode(Node t, NODE *p, int y, int x, int h, int w) /* Create a new node. */
 {
-    NODE *n = calloc(1, sizeof(NODE));
-    bool *tabs = newtabs(w, 0, NULL);
-    if (!n || h < 2 || w < 2 || !tabs)
-        return free(n), free(tabs), NULL;
-
-    n->t = t;
-    n->pt = -1;
-    n->p = p;
-    n->y = y;
-    n->x = x;
-    n->h = h;
-    n->w = w;
-    n->tabs = tabs;
-    n->ntabs = w;
-
-    return n;
+	NODE *n = NULL;
+	if( h > 1 && w > 1 && (n = calloc(1, sizeof *n)) != NULL ) {
+		if( (n->tabs = newtabs(w, 0, NULL)) == NULL ) {
+			free(n);
+			n = NULL;
+		} else {
+			n->t = t;
+			n->p = p;
+			n->y = y;
+			n->x = x;
+			n->h = h;
+			n->ntabs = n->w = w;
+			n->pt = -1;
+		}
+	}
+	return n;
 }
 
 static void
