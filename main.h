@@ -1,4 +1,5 @@
 #include "config.h"
+#include <err.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>

@@ -37,14 +37,6 @@ static void reshapechildren(NODE *n);
 static const char *term = NULL;
 static void freenode(NODE *n, bool recursive);
 
-static void
-quit(int rc, const char *m) /* Shut down MTM. */
-{
-    if (m)
-        fprintf(stderr, "%s\n", m);
-    exit(rc);
-}
-
 void
 safewrite(int fd, const char *b, size_t n) /* Write, retry on interrupt */
 {
@@ -262,7 +254,7 @@ static void
 deletenode(NODE *n) /* Delete a node. */
 {
     if (!n || !n->p)
-        quit(EXIT_SUCCESS, NULL);
+        exit(EXIT_SUCCESS);
     if (n == focused)
         focus(n->p->c1 == n? n->p->c2 : n->p->c1);
     removechild(n->p, n);
@@ -578,7 +570,7 @@ main(int argc, char **argv)
 
 	root = newview(NULL, 0, 0, LINES, COLS);
 	if( root == NULL ) {
-		quit(EXIT_FAILURE, "Unable to create root window");
+		err(EXIT_FAILURE, "Unable to create root window");
 	}
 	focus(root);
 	draw(root);
