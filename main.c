@@ -27,6 +27,10 @@
 
 #include "main.h"
 
+static struct handler keys[128];
+static struct handler cmd_keys[128];
+static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
+static struct handler (*binding)[128] = &keys;
 static NODE *root, *focused, *lastfocused = NULL;
 static int commandkey = CTL(COMMAND_KEY);
 static int nfds = 1; /* stdin */
@@ -332,13 +336,19 @@ reshape(NODE *n, int y, int x, int h, int w) /* Reshape a node. */
 static void
 drawchildren(const NODE *n) /* Draw all children of n. */
 {
-    draw(n->c1);
-    if (n->t == HORIZONTAL)
-        mvvline(n->y, n->x + n->w / 2, ACS_VLINE, n->h);
-    else
-        mvhline(n->y + n->h / 2, n->x, ACS_HLINE, n->w);
-    wnoutrefresh(stdscr);
-    draw(n->c2);
+	draw(n->c1);
+	if( binding == &cmd_keys ) {
+		attron(A_REVERSE);
+	}
+	if (n->t == HORIZONTAL)
+		mvvline(n->y, n->x + n->w / 2, ACS_VLINE, n->h);
+	else
+		mvhline(n->y + n->h / 2, n->x, ACS_HLINE, n->w);
+	if( binding == &cmd_keys ) {
+		attroff(A_REVERSE);
+	}
+	wnoutrefresh(stdscr);
+	draw(n->c2);
 }
 
 static void
@@ -429,11 +439,6 @@ sendarrow(NODE *n, const char **args)
     safewrite(n->pt, buf, strlen(buf));
     return 0;
 }
-
-static struct handler keys[128];
-static struct handler cmd_keys[128];
-static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
-static struct handler (*binding)[128] = &keys;
 
 int
 reshape_root(NODE *n, const char **args)
