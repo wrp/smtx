@@ -586,7 +586,6 @@ build_bindings()
 static bool
 handlechar(int r, int k) /* Handle a single input character. */
 {
-
 	struct handler *b = NULL;
 	int rv = 0;
 	NODE *n = focused;
