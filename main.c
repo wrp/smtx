@@ -470,6 +470,31 @@ sendnewline(NODE *n, const char **args)
 	return 0;
 }
 
+int
+mov(struct NODE *n, const char **args)
+{
+	switch(args[0][0]) {
+	case 'u':
+		focus(findnode(root, ABOVE(n)));
+		break;
+	case 'd':
+		focus(findnode(root, BELOW(n)));
+		break;
+	case 'l':
+		focus(findnode(root, LEFT(n)));
+		break;
+	case 'r':
+		focus(findnode(root, RIGHT(n)));
+		break;
+	case 'p':
+		focus(lastfocused);
+		break;
+	default:
+		assert(0);
+	}
+	return 0;
+}
+
 static int
 redrawroot(struct NODE *n, const char **args)
 {
@@ -523,10 +548,15 @@ build_bindings()
 	add_key(cmd_keys, L'c', split, NULL);
 	add_key(cmd_keys, L'|', split, "v", NULL);
 	add_key(cmd_keys, L'w', deletenode, NULL);
-	add_key(cmd_keys, L'l', redrawroot, NULL);
+	add_key(cmd_keys, L'r', redrawroot, NULL);
+	add_key(cmd_keys, L'j', mov, "down", NULL);
+	add_key(cmd_keys, L'k', mov, "up", NULL);
+	add_key(cmd_keys, L'h', mov, "left", NULL);
+	add_key(cmd_keys, L'l', mov, "right", NULL);
+	add_key(cmd_keys, L'o', mov, "previous", NULL);
 
-	add_key(code_keys, KEY_F(1), send, "\033OP", NULL);
 	add_key(code_keys, KEY_RESIZE, reshape_root, NULL);
+	add_key(code_keys, KEY_F(1), send, "\033OP", NULL);
 	add_key(code_keys, KEY_F(2), send, "\033OQ", NULL);
 	add_key(code_keys, KEY_F(3), send, "\033OR", NULL);
 	add_key(code_keys, KEY_F(4), send, "\033OS", NULL);
@@ -557,7 +587,6 @@ static bool
 handlechar(int r, int k) /* Handle a single input character. */
 {
 
-	bool cmd = binding == &cmd_keys;
 	struct handler *b = NULL;
 	int rv = 0;
 	NODE *n = focused;
@@ -591,11 +620,6 @@ handlechar(int r, int k) /* Handle a single input character. */
     #define DO(s, t, a) \
         if (s == cmd && (t)) { a ; return true; }
 
-    DO(true,  MOVE_UP,             focus(findnode(root, ABOVE(n))))
-    DO(true,  MOVE_DOWN,           focus(findnode(root, BELOW(n))))
-    DO(true,  MOVE_LEFT,           focus(findnode(root, LEFT(n))))
-    DO(true,  MOVE_RIGHT,          focus(findnode(root, RIGHT(n))))
-    DO(true,  MOVE_OTHER,          focus(lastfocused))
     char c[MB_LEN_MAX + 1] = {0};
     if (wctomb(c, k) > 0){
         scrollbottom(n);
