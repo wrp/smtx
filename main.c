@@ -606,12 +606,13 @@ build_bindings()
 	add_key(code_keys, KEY_LEFT, sendarrow, "D", NULL);
 }
 
-static bool
+static void
 handlechar(int r, int k) /* Handle a single input character. */
 {
 	struct handler *b = NULL;
 	NODE *n = focused;
 
+	assert( r != ERR );
 	if( r == OK && k > 0 && k < (int)sizeof *binding ) {
 		b = &(*binding)[k];
 	} else if( r == KEY_CODE_YES ) {
@@ -623,15 +624,18 @@ handlechar(int r, int k) /* Handle a single input character. */
 		b->act(n, b->args);
 	} else {
 		char c[MB_LEN_MAX + 1] = {0};
-		if( r != ERR && wctomb(c, k) > 0 ) {
+		if( wctomb(c, k) > 0 ) {
 			scrollbottom(n);
 			safewrite(n->pt, c, strlen(c));
+		}
+		if( binding != &keys ) {
+			const char *a[] = { NULL };
+			transition(n, a);
 		}
 	}
 	if( !b || !(b->act == digit) ) {
 		cmd_count = 0;
 	}
-	return r != ERR;
 }
 
 static void
@@ -644,9 +648,9 @@ run(void)
 		if( select(nfds + 1, &sfds, NULL, NULL, NULL) < 0 ) {
 			FD_ZERO(&sfds);
 		}
-		do {
-			r = wget_wch(focused->s->win, &w);
-		} while( handlechar(r, w) );
+		while( (r = wget_wch(focused->s->win, &w)) != ERR ) {
+			handlechar(r, w);
+		}
 		getinput(root, &sfds);
 		draw(root);
 		doupdate();
