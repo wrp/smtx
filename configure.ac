@@ -16,7 +16,6 @@ AC_CHECK_HEADERS([curses.h ncursesw/curses.h])
 AC_CHECK_DECL([A_ITALIC],AC_DEFINE([HAVE_A_ITALIC],[1],[ ]),[],[[#include <curses.h>]])
 AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
-AC_DEFINE_UNQUOTED([SCROLLBACK],[${scrollback-1024}],[Lines of history])
 
 AC_FUNC_REALLOC
 AC_SEARCH_LIBS([endwin],[ncursesw])

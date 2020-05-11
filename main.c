@@ -32,6 +32,7 @@ static int commandkey = CTL(COMMAND_KEY);
 static int nfds = 1; /* stdin */
 static fd_set fds;
 static char iobuf[BUFSIZ];
+int scrollback_history = 1024;
 
 static void reshape(NODE *n, int y, int x, int h, int w);
 static void draw(NODE *n);
@@ -145,11 +146,11 @@ newview(NODE *p, int y, int x, int h, int w) /* Open a new view. */
         return NULL;
 
     SCRN *pri = &n->pri, *alt = &n->alt;
-    pri->win = newpad(MAX(h, SCROLLBACK), w);
+    pri->win = newpad(MAX(h, scrollback_history), w);
     alt->win = newpad(h, w);
     if (!pri->win || !alt->win)
         return freenode(n, false), NULL;
-    pri->tos = pri->off = MAX(0, SCROLLBACK - h);
+    pri->tos = pri->off = MAX(0, scrollback_history - h);
     n->s = pri;
 
     nodelay(pri->win, TRUE); nodelay(alt->win, TRUE);
@@ -277,11 +278,11 @@ reshapeview(NODE *n, int d, int ow) /* Reshape a view. */
     }
 
     getyx(n->s->win, oy, ox);
-    wresize(n->pri.win, MAX(n->h, SCROLLBACK), MAX(n->w, 2));
+    wresize(n->pri.win, MAX(n->h, scrollback_history), MAX(n->w, 2));
     wresize(n->alt.win, MAX(n->h, 2), MAX(n->w, 2));
-    n->pri.tos = n->pri.off = MAX(0, SCROLLBACK - n->h);
+    n->pri.tos = n->pri.off = MAX(0, scrollback_history - n->h);
     n->alt.tos = n->alt.off = 0;
-    wsetscrreg(n->pri.win, 0, MAX(SCROLLBACK, n->h) - 1);
+    wsetscrreg(n->pri.win, 0, MAX(scrollback_history, n->h) - 1);
     wsetscrreg(n->alt.win, 0, n->h - 1);
     if (d > 0){ /* make sure the new top line syncs up after reshape */
         wmove(n->s->win, oy + d, ox);
@@ -617,7 +618,7 @@ parse_args(int argc, char **argv)
 {
 	int c;
 	char *name = strrchr(argv[0], '/');
-	while( (c = getopt(argc, argv, ":hc:T:t:")) != -1 ) {
+	while( (c = getopt(argc, argv, ":hc:s:T:t:")) != -1 ) {
 		switch (c) {
 		case 'h':
 			printf("usage: %s [-T NAME] [-t NAME] [-c KEY]\n",
@@ -625,6 +626,9 @@ parse_args(int argc, char **argv)
 			exit(0);
 		case 'c':
 			commandkey = CTL(optarg[0]);
+			break;
+		case 's':
+			scrollback_history = strtol(optarg, NULL, 10);
 			break;
 		case 'T':
 			setenv("TERM", optarg, 1);

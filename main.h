@@ -112,6 +112,7 @@ struct handler {
 extern wchar_t CSET_US[]; /* "USASCII" */
 extern wchar_t CSET_UK[]; /* "United Kingdom" */
 extern wchar_t CSET_GRAPH[]; /* Graphics Set One */
+extern int scrollback_history;
 
 void setupevents(NODE *n);
 #define SENDN(n, s, c) safewrite(n->pt, s, c)

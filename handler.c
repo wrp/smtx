@@ -298,7 +298,7 @@ HANDLER(ris) /* RIS - Reset to Initial State */
     n->am = n->pnm = true;
     n->pri.vis = n->alt.vis = 1;
     n->s = &n->pri;
-    wsetscrreg(n->pri.win, 0, MAX(SCROLLBACK, n->h) - 1);
+    wsetscrreg(n->pri.win, 0, MAX(scrollback_history, n->h) - 1);
     wsetscrreg(n->alt.win, 0, n->h - 1);
     for (int i = 0; i < n->ntabs; i++)
         n->tabs[i] = (i % 8 == 0);
