@@ -48,12 +48,6 @@
 #define MOVE_LEFT       CODE(KEY_LEFT)
 #define MOVE_OTHER      KEY(L'o')
 
-/* The delete terminal key. */
-#define DELETE_NODE KEY(L'w')
-
-/* The force redraw key. */
-#define REDRAW KEY(L'l')
-
 #if HAVE_CURSES_H
 # include <curses.h>
 #elif HAVE_NCURSESW_CURSES_H

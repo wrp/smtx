@@ -253,15 +253,17 @@ removechild(NODE *p, const NODE *c) /* Replace p with other child. */
     freenode(p, false);
 }
 
-static void
-deletenode(NODE *n) /* Delete a node. */
+static int
+deletenode(NODE *n, const char **args) /* Delete a node. */
 {
+	(void) args;
     if (!n || !n->p)
         exit(EXIT_SUCCESS);
     if (n == focused)
         focus(n->p->c1 == n? n->p->c2 : n->p->c1);
     removechild(n->p, n);
     freenode(n, true);
+	return 0;
 }
 
 static void
@@ -395,7 +397,7 @@ getinput(NODE *n, fd_set *f) /* Recursively check all ptty's for input. */
         if (r > 0)
             vtwrite(&n->vp, iobuf, r);
         if (r <= 0 && errno != EINTR && errno != EWOULDBLOCK)
-            return deletenode(n), false;
+            return deletenode(n, NULL), false;
     }
 
     return true;
@@ -468,6 +470,17 @@ sendnewline(NODE *n, const char **args)
 	return 0;
 }
 
+static int
+redrawroot(struct NODE *n, const char **args)
+{
+	(void) n;
+	(void) args;
+	touchwin(stdscr);
+	draw(root);
+	redrawwin(stdscr);
+	return 0;
+}
+
 int
 send(NODE *n, const char **args)
 {
@@ -509,6 +522,8 @@ build_bindings()
 	add_key(cmd_keys, L'm', scrolln, "+1", NULL);
 	add_key(cmd_keys, L'c', split, NULL);
 	add_key(cmd_keys, L'|', split, "v", NULL);
+	add_key(cmd_keys, L'w', deletenode, NULL);
+	add_key(cmd_keys, L'l', redrawroot, NULL);
 
 	add_key(code_keys, KEY_F(1), send, "\033OP", NULL);
 	add_key(code_keys, KEY_RESIZE, reshape_root, NULL);
@@ -581,8 +596,6 @@ handlechar(int r, int k) /* Handle a single input character. */
     DO(true,  MOVE_LEFT,           focus(findnode(root, LEFT(n))))
     DO(true,  MOVE_RIGHT,          focus(findnode(root, RIGHT(n))))
     DO(true,  MOVE_OTHER,          focus(lastfocused))
-    DO(true,  DELETE_NODE,         deletenode(n))
-    DO(true,  REDRAW,              touchwin(stdscr); draw(root); redrawwin(stdscr))
     char c[MB_LEN_MAX + 1] = {0};
     if (wctomb(c, k) > 0){
         scrollbottom(n);
