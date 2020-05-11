@@ -611,7 +611,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 		char c[MB_LEN_MAX + 1] = {0};
 		if( wctomb(c, k) > 0 ) {
 			scrollbottom(n);
-			    safewrite(n->pt, c, strlen(c));
+			safewrite(n->pt, c, strlen(c));
 		}
 	}
 	return true;
