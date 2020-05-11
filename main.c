@@ -599,21 +599,18 @@ handlechar(int r, int k) /* Handle a single input character. */
 	} else if( r == KEY_CODE_YES ) {
 		assert( k >= KEY_MIN && k <= KEY_MAX );
 		b = &code_keys[k - KEY_MIN];
-	} else if( r == ERR ) {
-		return false;
 	}
 
 	if( b && b->act ) {
 		rv = b->act(n, b->args);
-		return rv == 0;
 	} else {
 		char c[MB_LEN_MAX + 1] = {0};
-		if( wctomb(c, k) > 0 ) {
+		if( r != ERR && wctomb(c, k) > 0 ) {
 			scrollbottom(n);
 			safewrite(n->pt, c, strlen(c));
 		}
 	}
-	return true;
+	return r != ERR;
 }
 
 static void
