@@ -458,35 +458,50 @@ send(NODE *n, const char **args)
 }
 
 static void
+add_key(struct handler *b, int k, action act, ...)
+{
+	if( b == code_keys ) {
+		assert( k >= KEY_MIN && k <= KEY_MAX );
+		k -= KEY_MIN;
+	}
+	int i = 0;
+	b[k].act = act;
+	va_list ap;
+	va_start(ap, act);
+	do b[k].args[i] = va_arg(ap, const char *);
+	while( b[k].args[i++] != NULL );
+	va_end(ap);
+}
+
+static void
 build_bindings()
 {
 	assert( KEY_MAX - KEY_MIN < 2048 ); /* Avoid overly large luts */
-	struct handler *cod = code_keys - KEY_MIN; /* syntatic sugar, or UB? */
 
-	cod[KEY_RESIZE] = (struct handler){ reshape_root, {0} };
 	keys[commandkey] = (struct handler){ transition, {0} };
 	cmd_keys[commandkey] = (struct handler){ transition, {""} };
 
-	cod[KEY_F(1)] = (struct handler){ send, { "\033OP" } };
-	cod[KEY_F(2)] = (struct handler){ send, { "\033OQ" } };
-	cod[KEY_F(3)] = (struct handler){ send, { "\033OR" } };
-	cod[KEY_F(4)] = (struct handler){ send, { "\033OS" } };
-	cod[KEY_F(5)] = (struct handler){ send, { "\033[15~" } };
-	cod[KEY_F(6)] = (struct handler){ send, { "\033[17~" } };
-	cod[KEY_F(7)] = (struct handler){ send, { "\033[18~" } };
-	cod[KEY_F(8)] = (struct handler){ send, { "\033[19~" } };
-	cod[KEY_F(9)] = (struct handler){ send, { "\033[20~" } };
-	cod[KEY_F(10)] = (struct handler){ send, { "\033[21~" } };
-	cod[KEY_F(11)] = (struct handler){ send, { "\033[23~" } };
-	cod[KEY_F(12)] = (struct handler){ send, { "\033[24~" } };
-	cod[KEY_HOME] =      (struct handler){ send, { "\033[1~" } };
-	cod[KEY_END] =       (struct handler){ send, { "\033[4~" } };
-	cod[KEY_PPAGE] =     (struct handler){ send, { "\033[5~" } };
-	cod[KEY_NPAGE] =     (struct handler){ send, { "\033[6~" } };
-	cod[KEY_BACKSPACE] = (struct handler){ send, { "\177" } };
-	cod[KEY_DC] =        (struct handler){ send, { "\033[3~" } };
-	cod[KEY_IC] =        (struct handler){ send, { "\033[2~" } };
-	cod[KEY_BTAB] =      (struct handler){ send, { "\033[Z" } };
+	add_key(code_keys, KEY_F(1), send, "\033OP", NULL);
+	add_key(code_keys, KEY_RESIZE, reshape_root, NULL);
+	add_key(code_keys, KEY_F(2), send, "\033OQ", NULL);
+	add_key(code_keys, KEY_F(3), send, "\033OR", NULL);
+	add_key(code_keys, KEY_F(4), send, "\033OS", NULL);
+	add_key(code_keys, KEY_F(5), send, "\033[15~", NULL);
+	add_key(code_keys, KEY_F(6), send, "\033[17~", NULL);
+	add_key(code_keys, KEY_F(7), send, "\033[18~", NULL);
+	add_key(code_keys, KEY_F(8), send, "\033[19~", NULL);
+	add_key(code_keys, KEY_F(9), send, "\033[20~", NULL);
+	add_key(code_keys, KEY_F(10), send, "\033[21~", NULL);
+	add_key(code_keys, KEY_F(11), send, "\033[23~", NULL);
+	add_key(code_keys, KEY_F(12), send, "\033[24~", NULL);
+	add_key(code_keys, KEY_HOME, send, "\033[1~", NULL);
+	add_key(code_keys, KEY_END, send, "\033[4~", NULL);
+	add_key(code_keys, KEY_PPAGE, send, "\033[5~", NULL);
+	add_key(code_keys, KEY_NPAGE, send, "\033[6~", NULL);
+	add_key(code_keys, KEY_BACKSPACE, send, "\177", NULL);
+	add_key(code_keys, KEY_DC, send, "\033[3~", NULL);
+	add_key(code_keys, KEY_IC, send, "\033[2~", NULL);
+	add_key(code_keys, KEY_BTAB, send, "\033[Z", NULL);
 }
 
 static bool

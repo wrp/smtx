@@ -7,6 +7,7 @@
 #include <locale.h>
 #include <pwd.h>
 #include <signal.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
