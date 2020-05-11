@@ -459,6 +459,9 @@ transition(NODE *n, const char **args)
 	if( args[0] ) {
 		safewrite(n->pt, &k, 1);
 	}
+	if( binding == &keys ) {
+		scrollbottom(n);
+	}
 	return 0;
 }
 
