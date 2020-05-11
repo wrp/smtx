@@ -465,7 +465,8 @@ sendnewline(NODE *n, const char **args)
 int
 send(NODE *n, const char **args)
 {
-	safewrite(n->pt, args[0], strlen(args[0]));
+	size_t len = args[1] ? strtoul(args[1], NULL, 10 ) : strlen(args[0]);
+	safewrite(n->pt, args[0], len);
 	scrollbottom(n);
 	return 0;
 }
@@ -493,6 +494,8 @@ build_bindings()
 
 	add_key(keys, commandkey, transition, NULL);
 	add_key(keys, L'\r', sendnewline, NULL);
+	add_key(keys, L'\n', send, "\n", NULL);
+	add_key(keys, 0, send, "\000", "1", NULL);
 
 	add_key(cmd_keys, commandkey, transition, "", NULL);
 	add_key(cmd_keys, L'\r', transition, NULL);
@@ -564,8 +567,6 @@ handlechar(int r, int k) /* Handle a single input character. */
     #define DO(s, t, a) \
         if (s == cmd && (t)) { a ; return true; }
 
-    DO(false, KEY(0),              SENDN(n, "\000", 1); SB)
-    DO(false, KEY(L'\n'),          SEND(n, "\n"); SB)
     DO(false, SCROLLUP && INSCR,   scrollback(n))
     DO(false, SCROLLDOWN && INSCR, scrollforward(n))
     DO(false, RECENTER && INSCR,   scrollbottom(n))
