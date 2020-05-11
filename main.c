@@ -462,17 +462,6 @@ reshape_root(NODE *n, const char **args)
 }
 
 int
-sendnewline(NODE *n, const char **args)
-{
-	(void)args;
-	char *nl = n->lnm ? "\r\n" : "\r";
-	int len = n->lnm ? 2 : 1;
-	safewrite(n->pt, nl, len);
-	scrollbottom(n);
-	return 0;
-}
-
-int
 mov(struct NODE *n, const char **args)
 {
 	struct NODE *t = n;
@@ -514,6 +503,11 @@ redrawroot(struct NODE *n, const char **args)
 int
 send(NODE *n, const char **args)
 {
+	if( n->lnm && args[0][0] == '\r' ) {
+		assert( args[0][1] == '\0' );
+		assert( args[1] == NULL );
+		args[0] = "\r\n";
+	}
 	size_t len = args[1] ? strtoul(args[1], NULL, 10 ) : strlen(args[0]);
 	safewrite(n->pt, args[0], len);
 	scrollbottom(n);
@@ -556,7 +550,7 @@ build_bindings()
 	assert( KEY_MAX - KEY_MIN < 2048 ); /* Avoid overly large luts */
 
 	add_key(keys, commandkey, transition, NULL);
-	add_key(keys, L'\r', sendnewline, NULL);
+	add_key(keys, L'\r', send, "\r",  NULL);
 	add_key(keys, L'\n', send, "\n", NULL);
 	add_key(keys, 0, send, "\000", "1", NULL);
 
@@ -602,7 +596,7 @@ build_bindings()
 	add_key(code_keys, KEY_DC, send, "\033[3~", NULL);
 	add_key(code_keys, KEY_IC, send, "\033[2~", NULL);
 	add_key(code_keys, KEY_BTAB, send, "\033[Z", NULL);
-	add_key(code_keys, KEY_ENTER, sendnewline, NULL);
+	add_key(code_keys, KEY_ENTER, send, "\r", NULL);
 	add_key(code_keys, KEY_UP, sendarrow, "A", NULL);
 	add_key(code_keys, KEY_DOWN, sendarrow, "B", NULL);
 	add_key(code_keys, KEY_RIGHT, sendarrow, "C", NULL);
