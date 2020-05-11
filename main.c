@@ -454,6 +454,18 @@ transition(NODE *n, const char **args)
 int
 send(NODE *n, const char **args)
 {
+	char buf[128];
+	if( n->lnm && strchr(args[0], '\r')) {
+		assert(strlen(args[0]) < (sizeof buf) / 2 );
+		char *d = buf;
+		const char *s = args[0];
+		while( ( *d++ = *s++ ) != '\0' ) {
+			if( s[-1] == '\r' ) {
+				*d++ = '\n';
+			}
+		}
+		args[0] = buf;
+	}
 	safewrite(n->pt, args[0], strlen(args[0]));
 	scrollbottom(n);
 	return 0;
