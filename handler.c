@@ -27,7 +27,7 @@
 #define CALL(x) (x)(v, n, 0, 0, 0, NULL, NULL)
 #define COMMONVARS                                                      \
     NODE *n = (NODE *)p;                                                \
-    SCRN *s = n->s;                                                     \
+    struct screen *s = n->s;                                            \
     WINDOW *win = s->win;                                               \
     int py, px, y, x, my, mx, top = 0, bot = 0, tos = s->tos;           \
     (void)v; (void)p; (void)w; (void)iw; (void)argc; (void)argv;        \

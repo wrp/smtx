@@ -59,8 +59,7 @@
 #define MAX(x, y) ((x) > (y)? (x) : (y))
 #define CTL(x) ((x) & 0x1f)
 
-typedef struct SCRN SCRN;
-struct SCRN{
+struct screen {
 	int sy, sx, vis, tos, off;
 	short fg, bg, sfg, sbg, sp;
 	bool insert, oxenl, xenl, saved;
@@ -82,7 +81,7 @@ struct NODE{
 	wchar_t repc;
 	NODE *parent;
 	NODE *c1, *c2;
-	SCRN pri, alt, *s;
+	struct screen pri, alt, *s;
 	wchar_t *g0, *g1, *g2, *g3, *gc, *gs, *sgc, *sgs;
 	VTPARSER vp;
 };

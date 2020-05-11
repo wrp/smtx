@@ -150,7 +150,7 @@ newview(NODE *p, int y, int x, int h, int w) /* Open a new view. */
     if (!n)
         return NULL;
 
-    SCRN *pri = &n->pri, *alt = &n->alt;
+    struct screen *pri = &n->pri, *alt = &n->alt;
     pri->win = newpad(MAX(h, scrollback_history), w);
     alt->win = newpad(h, w);
     if (!pri->win || !alt->win)
