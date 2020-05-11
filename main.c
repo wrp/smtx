@@ -475,25 +475,28 @@ sendnewline(NODE *n, const char **args)
 int
 mov(struct NODE *n, const char **args)
 {
-	switch(args[0][0]) {
+	struct NODE *t = n;
+	int count = cmd_count == 0 ? 1 : cmd_count;
+	while( t && count-- ) switch(args[0][0]) {
 	case 'u':
-		focus(findnode(root, ABOVE(n)));
+		t = findnode(root, ABOVE(t));
 		break;
 	case 'd':
-		focus(findnode(root, BELOW(n)));
+		t = findnode(root, BELOW(t));
 		break;
 	case 'l':
-		focus(findnode(root, LEFT(n)));
+		t = findnode(root, LEFT(t));
 		break;
 	case 'r':
-		focus(findnode(root, RIGHT(n)));
+		t = findnode(root, RIGHT(t));
 		break;
 	case 'p':
-		focus(lastfocused);
+		t = lastfocused;
 		break;
 	default:
 		assert(0);
 	}
+	focus(t);
 	return 0;
 }
 
