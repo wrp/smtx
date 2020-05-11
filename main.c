@@ -423,10 +423,10 @@ sendarrow(const NODE *n, const char *k)
     SEND(n, buf);
 }
 
-static struct handler key_lut[128];
-static struct handler cmd_lut[128];
-static struct handler code_lut[KEY_MAX - KEY_MIN + 1];
-static struct handler (*binding)[128] = &key_lut;
+static struct handler keys[128];
+static struct handler cmd_keys[128];
+static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
+static struct handler (*binding)[128] = &keys;
 
 int
 reshape_root(NODE *n, const char **args)
@@ -442,7 +442,7 @@ transition(NODE *n, const char **args)
 {
 	const char cmdstr[] = {commandkey, 0};
 	assert(args);
-	binding = binding == &key_lut ? &cmd_lut : &key_lut;
+	binding = binding == &keys ? &cmd_keys : &keys;
 	if( args[0] ) {
 		SENDN(n, cmdstr, 1);
 	}
@@ -461,11 +461,11 @@ static void
 build_bindings()
 {
 	assert( KEY_MAX - KEY_MIN < 2048 ); /* Avoid overly large luts */
-	struct handler *cod = code_lut - KEY_MIN; /* syntatic sugar, or UB? */
+	struct handler *cod = code_keys - KEY_MIN; /* syntatic sugar, or UB? */
 
 	cod[KEY_RESIZE] = (struct handler){ reshape_root, {0} };
-	key_lut[commandkey] = (struct handler){ transition, {0} };
-	cmd_lut[commandkey] = (struct handler){ transition, {""} };
+	keys[commandkey] = (struct handler){ transition, {0} };
+	cmd_keys[commandkey] = (struct handler){ transition, {""} };
 
 	cod[KEY_F(1)] = (struct handler){ send, { "\033OP" } };
 	cod[KEY_F(2)] = (struct handler){ send, { "\033OQ" } };
@@ -493,7 +493,7 @@ static bool
 handlechar(int r, int k) /* Handle a single input character. */
 {
 
-	bool cmd = binding == &cmd_lut;
+	bool cmd = binding == &cmd_keys;
 	struct handler *b = NULL;
 	int rv = 0;
 	NODE *n = focused;
@@ -502,7 +502,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 		b = &(*binding)[k];
 	} else if( r == KEY_CODE_YES ) {
 		assert( k >= KEY_MIN && k <= KEY_MAX );
-		b = &code_lut[k - KEY_MIN];
+		b = &code_keys[k - KEY_MIN];
 	} else if( r == ERR ) {
 		return false;
 	}
