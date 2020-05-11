@@ -468,7 +468,6 @@ handlechar(int r, int k) /* Handle a single input character. */
 	#endif
 
 
-    #define KERR(i) (r == ERR && (i) == k)
     #define KEY(i)  (r == OK  && (i) == k)
     #define CODE(i) (r == KEY_CODE_YES && (i) == k)
     #define INSCR (n->s->tos != n->s->off)
@@ -476,7 +475,6 @@ handlechar(int r, int k) /* Handle a single input character. */
     #define DO(s, t, a) \
         if (s == cmd && (t)) { a ; cmd = false; return true; }
 
-    DO(cmd,   KERR(k),             return false)
     DO(cmd,   CODE(KEY_RESIZE),    reshape(root, 0, 0, LINES, COLS); SB)
     DO(false, KEY(commandkey),     return cmd = true)
     DO(false, KEY(0),              SENDN(n, "\000", 1); SB)
