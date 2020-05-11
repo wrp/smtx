@@ -604,30 +604,13 @@ handlechar(int r, int k) /* Handle a single input character. */
 		rv = b->act(n, b->args);
 		return rv == 0;
 	} else {
-	#if 0
 		char c[MB_LEN_MAX + 1] = {0};
 		if( wctomb(c, k) > 0 ) {
 			scrollbottom(n);
 			SEND(n, c);
 		}
-	#endif
-
-
-    #define KEY(i)  (r == OK  && (i) == k)
-    #define CODE(i) (r == KEY_CODE_YES && (i) == k)
-    #define INSCR (n->s->tos != n->s->off)
-    #define SB scrollbottom(n)
-    #define DO(s, t, a) \
-        if (s == cmd && (t)) { a ; return true; }
-
-    char c[MB_LEN_MAX + 1] = {0};
-    if (wctomb(c, k) > 0){
-        scrollbottom(n);
-        SEND(n, c);
-    }
-    return true;
-    }
-    return true;
+	}
+	return true;
 }
 
 static void
