@@ -480,6 +480,7 @@ build_bindings()
 
 	add_key(keys, commandkey, transition, NULL);
 	add_key(cmd_keys, commandkey, transition, "", NULL);
+	add_key(cmd_keys, L'\r', transition, NULL);
 
 	add_key(code_keys, KEY_F(1), send, "\033OP", NULL);
 	add_key(code_keys, KEY_RESIZE, reshape_root, NULL);
