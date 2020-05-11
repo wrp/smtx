@@ -106,7 +106,7 @@ struct NODE{
 	VTPARSER vp;
 };
 
-typedef int(action)(NODE *n, const char *args);
+typedef int(action)(NODE *n, const char **args);
 struct handler {
 	action *act;
 	const char *args[7];

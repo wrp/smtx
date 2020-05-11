@@ -423,16 +423,27 @@ sendarrow(const NODE *n, const char *k)
     SEND(n, buf);
 }
 
-static struct handler *key_lut[128];
-static struct handler *cmd_lut[128];
-static struct handler *code_lut[KEY_MAX - KEY_MIN + 1];
-static struct handler *(*binding)[128] = &key_lut;
+static struct handler key_lut[128];
+static struct handler cmd_lut[128];
+static struct handler code_lut[KEY_MAX - KEY_MIN + 1];
+static struct handler (*binding)[128] = &key_lut;
+
+int
+reshape_root(NODE *n, const char **args)
+{
+	(void)args;
+	reshape(root, 0, 0, LINES, COLS);
+	scrollbottom(n);
+	return 0;
+}
 
 static void
 build_bindings()
 {
 	assert( KEY_MAX - KEY_MIN < 2048 ); /* Avoid overly large luts */
-    /*DO(cmd,   CODE(KEY_RESIZE),    reshape(root, 0, 0, LINES, COLS); SB)*/
+	struct handler *b = code_lut - KEY_MIN; /* syntatic sugar, or UB? */
+
+	b[KEY_RESIZE] = (struct handler){ reshape_root, {0} };
 }
 
 static bool
@@ -444,18 +455,17 @@ handlechar(int r, int k) /* Handle a single input character. */
 	int rv = 0;
 	NODE *n = focused;
 
-	if( r == OK && k < sizeof *binding ) {
-		b = (*binding)[k];
+	if( r == OK && k > 0 && k < (int)sizeof *binding ) {
+		b = &(*binding)[k];
 	} else if( r == KEY_CODE_YES ) {
 		assert( k >= KEY_MIN && k <= KEY_MAX );
-		b = code_lut[k - KEY_MIN];
+		b = &code_lut[k - KEY_MIN];
 	} else if( r == ERR ) {
 		return false;
 	}
 
 	if( b && b->act ) {
 		rv = b->act(n, b->args);
-		cmd = false; /* Temporary hack until all actions are built */
 		return rv == 0;
 	} else {
 	#if 0
@@ -464,7 +474,6 @@ handlechar(int r, int k) /* Handle a single input character. */
 			scrollbottom(n);
 			SEND(n, c);
 		}
-	}
 	#endif
 
 
@@ -475,7 +484,6 @@ handlechar(int r, int k) /* Handle a single input character. */
     #define DO(s, t, a) \
         if (s == cmd && (t)) { a ; cmd = false; return true; }
 
-    DO(cmd,   CODE(KEY_RESIZE),    reshape(root, 0, 0, LINES, COLS); SB)
     DO(false, KEY(commandkey),     return cmd = true)
     DO(false, KEY(0),              SENDN(n, "\000", 1); SB)
     DO(false, KEY(L'\n'),          SEND(n, "\n"); SB)
@@ -596,6 +604,7 @@ main(int argc, char **argv)
 	setlocale(LC_ALL, "");
 	signal(SIGCHLD, SIG_IGN); /* automatically reap children */
 	parse_args(argc, argv);
+	build_bindings();
 
 	if( initscr() == NULL ) {
 		exit(EXIT_FAILURE);
