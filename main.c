@@ -479,6 +479,14 @@ build_bindings()
 	cod[KEY_F(10)] = (struct handler){ send, { "\033[21~" } };
 	cod[KEY_F(11)] = (struct handler){ send, { "\033[23~" } };
 	cod[KEY_F(12)] = (struct handler){ send, { "\033[24~" } };
+	cod[KEY_HOME] =      (struct handler){ send, { "\033[1~" } };
+	cod[KEY_END] =       (struct handler){ send, { "\033[4~" } };
+	cod[KEY_PPAGE] =     (struct handler){ send, { "\033[5~" } };
+	cod[KEY_NPAGE] =     (struct handler){ send, { "\033[6~" } };
+	cod[KEY_BACKSPACE] = (struct handler){ send, { "\177" } };
+	cod[KEY_DC] =        (struct handler){ send, { "\033[3~" } };
+	cod[KEY_IC] =        (struct handler){ send, { "\033[2~" } };
+	cod[KEY_BTAB] =      (struct handler){ send, { "\033[Z" } };
 }
 
 static bool
@@ -530,14 +538,6 @@ handlechar(int r, int k) /* Handle a single input character. */
     DO(false, CODE(KEY_DOWN),      sendarrow(n, "B"); SB);
     DO(false, CODE(KEY_RIGHT),     sendarrow(n, "C"); SB);
     DO(false, CODE(KEY_LEFT),      sendarrow(n, "D"); SB);
-    DO(false, CODE(KEY_HOME),      SEND(n, "\033[1~"); SB)
-    DO(false, CODE(KEY_END),       SEND(n, "\033[4~"); SB)
-    DO(false, CODE(KEY_PPAGE),     SEND(n, "\033[5~"); SB)
-    DO(false, CODE(KEY_NPAGE),     SEND(n, "\033[6~"); SB)
-    DO(false, CODE(KEY_BACKSPACE), SEND(n, "\177"); SB)
-    DO(false, CODE(KEY_DC),        SEND(n, "\033[3~"); SB)
-    DO(false, CODE(KEY_IC),        SEND(n, "\033[2~"); SB)
-    DO(false, CODE(KEY_BTAB),      SEND(n, "\033[Z"); SB)
     DO(true,  MOVE_UP,             focus(findnode(root, ABOVE(n))))
     DO(true,  MOVE_DOWN,           focus(findnode(root, BELOW(n))))
     DO(true,  MOVE_LEFT,           focus(findnode(root, LEFT(n))))
