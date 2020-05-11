@@ -32,7 +32,7 @@ static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 static struct handler (*binding)[128] = &keys;
 static NODE *root, *focused, *lastfocused = NULL;
-static int commandkey = CTL(COMMAND_KEY);
+static char commandkey = CTL(COMMAND_KEY);
 static int nfds = 1; /* stdin */
 static fd_set fds;
 static char iobuf[BUFSIZ];
@@ -450,21 +450,6 @@ reshape_root(NODE *n, const char **args)
 }
 
 int
-transition(NODE *n, const char **args)
-{
-	char k = commandkey;
-	assert(args);
-	binding = binding == &keys ? &cmd_keys : &keys;
-	if( args[0] ) {
-		safewrite(n->pt, &k, 1);
-	}
-	if( binding == &keys ) {
-		scrollbottom(n);
-	}
-	return 0;
-}
-
-int
 sendnewline(NODE *n, const char **args)
 {
 	(void)args;
@@ -520,6 +505,20 @@ send(NODE *n, const char **args)
 	return 0;
 }
 
+int
+transition(NODE *n, const char **args)
+{
+	assert(args);
+	binding = binding == &keys ? &cmd_keys : &keys;
+	if( args[0] ) {
+		send(n, args);
+	}
+	if( binding == &keys ) {
+		scrollbottom(n);
+	}
+	return 0;
+}
+
 static void
 add_key(struct handler *b, wchar_t k, action act, ...)
 {
@@ -546,7 +545,7 @@ build_bindings()
 	add_key(keys, L'\n', send, "\n", NULL);
 	add_key(keys, 0, send, "\000", "1", NULL);
 
-	add_key(cmd_keys, commandkey, transition, "", NULL);
+	add_key(cmd_keys, commandkey, transition, &commandkey, "1", NULL);
 	add_key(cmd_keys, L'\r', transition, NULL);
 	add_key(cmd_keys, L',', scrolln, "-1", NULL);
 	add_key(cmd_keys, L'm', scrolln, "+1", NULL);
