@@ -415,12 +415,14 @@ scrollbottom(NODE *n)
     n->s->off = n->s->tos;
 }
 
-static void
-sendarrow(const NODE *n, const char *k)
+static int
+sendarrow(NODE *n, const char **args)
 {
+	const char *k = args[0];
     char buf[100] = {0};
     snprintf(buf, sizeof(buf) - 1, "\033%s%s", n->pnm? "O" : "[", k);
     SEND(n, buf);
+    return 0;
 }
 
 static struct handler keys[128];
@@ -503,6 +505,11 @@ build_bindings()
 	add_key(code_keys, KEY_DC, send, "\033[3~", NULL);
 	add_key(code_keys, KEY_IC, send, "\033[2~", NULL);
 	add_key(code_keys, KEY_BTAB, send, "\033[Z", NULL);
+
+	add_key(code_keys, KEY_UP, sendarrow, "A", NULL);
+	add_key(code_keys, KEY_DOWN, sendarrow, "B", NULL);
+	add_key(code_keys, KEY_RIGHT, sendarrow, "C", NULL);
+	add_key(code_keys, KEY_LEFT, sendarrow, "D", NULL);
 }
 
 static bool
@@ -550,10 +557,6 @@ handlechar(int r, int k) /* Handle a single input character. */
     DO(false, SCROLLDOWN && INSCR, scrollforward(n))
     DO(false, RECENTER && INSCR,   scrollbottom(n))
     DO(false, CODE(KEY_ENTER),     SEND(n, n->lnm? "\r\n" : "\r"); SB)
-    DO(false, CODE(KEY_UP),        sendarrow(n, "A"); SB);
-    DO(false, CODE(KEY_DOWN),      sendarrow(n, "B"); SB);
-    DO(false, CODE(KEY_RIGHT),     sendarrow(n, "C"); SB);
-    DO(false, CODE(KEY_LEFT),      sendarrow(n, "D"); SB);
     DO(true,  MOVE_UP,             focus(findnode(root, ABOVE(n))))
     DO(true,  MOVE_DOWN,           focus(findnode(root, BELOW(n))))
     DO(true,  MOVE_LEFT,           focus(findnode(root, LEFT(n))))
