@@ -449,6 +449,14 @@ transition(NODE *n, const char **args)
 	return 0;
 }
 
+int
+send(NODE *n, const char **args)
+{
+	SEND(n, args[0]);
+	scrollbottom(n);
+	return 0;
+}
+
 static void
 build_bindings()
 {
@@ -458,6 +466,19 @@ build_bindings()
 	cod[KEY_RESIZE] = (struct handler){ reshape_root, {0} };
 	key_lut[commandkey] = (struct handler){ transition, {0} };
 	cmd_lut[commandkey] = (struct handler){ transition, {""} };
+
+	cod[KEY_F(1)] = (struct handler){ send, { "\033OP" } };
+	cod[KEY_F(2)] = (struct handler){ send, { "\033OQ" } };
+	cod[KEY_F(3)] = (struct handler){ send, { "\033OR" } };
+	cod[KEY_F(4)] = (struct handler){ send, { "\033OS" } };
+	cod[KEY_F(5)] = (struct handler){ send, { "\033[15~" } };
+	cod[KEY_F(6)] = (struct handler){ send, { "\033[17~" } };
+	cod[KEY_F(7)] = (struct handler){ send, { "\033[18~" } };
+	cod[KEY_F(8)] = (struct handler){ send, { "\033[19~" } };
+	cod[KEY_F(9)] = (struct handler){ send, { "\033[20~" } };
+	cod[KEY_F(10)] = (struct handler){ send, { "\033[21~" } };
+	cod[KEY_F(11)] = (struct handler){ send, { "\033[23~" } };
+	cod[KEY_F(12)] = (struct handler){ send, { "\033[24~" } };
 }
 
 static bool
@@ -517,18 +538,6 @@ handlechar(int r, int k) /* Handle a single input character. */
     DO(false, CODE(KEY_DC),        SEND(n, "\033[3~"); SB)
     DO(false, CODE(KEY_IC),        SEND(n, "\033[2~"); SB)
     DO(false, CODE(KEY_BTAB),      SEND(n, "\033[Z"); SB)
-    DO(false, CODE(KEY_F(1)),      SEND(n, "\033OP"); SB)
-    DO(false, CODE(KEY_F(2)),      SEND(n, "\033OQ"); SB)
-    DO(false, CODE(KEY_F(3)),      SEND(n, "\033OR"); SB)
-    DO(false, CODE(KEY_F(4)),      SEND(n, "\033OS"); SB)
-    DO(false, CODE(KEY_F(5)),      SEND(n, "\033[15~"); SB)
-    DO(false, CODE(KEY_F(6)),      SEND(n, "\033[17~"); SB)
-    DO(false, CODE(KEY_F(7)),      SEND(n, "\033[18~"); SB)
-    DO(false, CODE(KEY_F(8)),      SEND(n, "\033[19~"); SB)
-    DO(false, CODE(KEY_F(9)),      SEND(n, "\033[20~"); SB)
-    DO(false, CODE(KEY_F(10)),     SEND(n, "\033[21~"); SB)
-    DO(false, CODE(KEY_F(11)),     SEND(n, "\033[23~"); SB)
-    DO(false, CODE(KEY_F(12)),     SEND(n, "\033[24~"); SB)
     DO(true,  MOVE_UP,             focus(findnode(root, ABOVE(n))))
     DO(true,  MOVE_DOWN,           focus(findnode(root, BELOW(n))))
     DO(true,  MOVE_LEFT,           focus(findnode(root, LEFT(n))))
