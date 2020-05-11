@@ -80,7 +80,7 @@ newnode(Node t, NODE *p, int y, int x, int h, int w) /* Create a new node. */
 			n = NULL;
 		} else {
 			n->t = t;
-			n->p = p;
+			n->parent = p;
 			n->y = y;
 			n->x = x;
 			n->h = h;
@@ -191,7 +191,7 @@ newcontainer(Node t, NODE *p, int y, int x, int h, int w,
 
     n->c1 = c1;
     n->c2 = c2;
-    c1->p = c2->p = n;
+    c1->parent = c2->parent = n;
 
     reshapechildren(n);
     return n;
@@ -232,7 +232,7 @@ findnode(NODE *n, int y, int x) /* Find the node enclosing y,x. */
 static void
 replacechild(NODE *n, NODE *c1, NODE *c2) /* Replace c1 of n with c2. */
 {
-    c2->p = n;
+    c2->parent = n;
     if (!n){
         root = c2;
         reshape(c2, 0, 0, LINES, COLS);
@@ -249,7 +249,7 @@ replacechild(NODE *n, NODE *c1, NODE *c2) /* Replace c1 of n with c2. */
 static void
 removechild(NODE *p, const NODE *c) /* Replace p with other child. */
 {
-    replacechild(p->p, p, c == p->c1? p->c2 : p->c1);
+    replacechild(p->parent, p, c == p->c1? p->c2 : p->c1);
     freenode(p, false);
 }
 
@@ -257,11 +257,11 @@ static int
 deletenode(NODE *n, const char **args) /* Delete a node. */
 {
 	(void) args;
-    if (!n || !n->p)
+    if (!n || !n->parent)
         exit(EXIT_SUCCESS);
     if (n == focused)
-        focus(n->p->c1 == n? n->p->c2 : n->p->c1);
-    removechild(n->p, n);
+        focus(n->parent->c1 == n? n->parent->c2 : n->parent->c1);
+    removechild(n->parent, n);
     freenode(n, true);
 	return 0;
 }
@@ -366,12 +366,12 @@ split(NODE *n, const char *args[])
 
     int nh = t == VERTICAL? (n->h - 1) / 2 : n->h;
     int nw = t == HORIZONTAL? (n->w) / 2 : n->w;
-    NODE *p = n->p;
+    NODE *p = n->parent;
     NODE *v = newview(NULL, 0, 0, MAX(0, nh), MAX(0, nw));
     if (!v)
         return -1;
 
-    NODE *c = newcontainer(t, n->p, n->y, n->x, n->h, n->w, n, v);
+    NODE *c = newcontainer(t, n->parent, n->y, n->x, n->h, n->w, n, v);
     if (!c){
         freenode(v, false);
         return -1;

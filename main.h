@@ -80,7 +80,8 @@ struct NODE{
 	int y, x, h, w, pt, ntabs;
 	bool *tabs, pnm, decom, am, lnm;
 	wchar_t repc;
-	NODE *p, *c1, *c2;
+	NODE *parent;
+	NODE *c1, *c2;
 	SCRN pri, alt, *s;
 	wchar_t *g0, *g1, *g2, *g3, *gc, *gs, *sgc, *sgs;
 	VTPARSER vp;
