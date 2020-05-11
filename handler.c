@@ -250,12 +250,13 @@ HANDLER(ech) /* ECH - Erase Character */
 ENDHANDLER
 
 HANDLER(dsr) /* DSR - Device Status Report */
-    char buf[100] = {0};
-    if (P0(0) == 6)
-        snprintf(buf, sizeof(buf) - 1, "\033[%d;%dR",
+	char buf[100] = {0};
+	if( P0(0) == 6 ) {
+		snprintf(buf, sizeof(buf) - 1, "\033[%d;%dR",
                  (n->decom? y - top : y) + 1, x + 1);
-    else
-        snprintf(buf, sizeof(buf) - 1, "\033[0n");
+	} else {
+		snprintf(buf, sizeof(buf) - 1, "\033[0n");
+	}
 	safewrite(n->pt, buf, strlen(buf));
 ENDHANDLER
 
