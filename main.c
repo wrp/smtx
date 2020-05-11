@@ -478,8 +478,8 @@ build_bindings()
 {
 	assert( KEY_MAX - KEY_MIN < 2048 ); /* Avoid overly large luts */
 
-	keys[commandkey] = (struct handler){ transition, {0} };
-	cmd_keys[commandkey] = (struct handler){ transition, {""} };
+	add_key(keys, commandkey, transition, NULL);
+	add_key(cmd_keys, commandkey, transition, "", NULL);
 
 	add_key(code_keys, KEY_F(1), send, "\033OP", NULL);
 	add_key(code_keys, KEY_RESIZE, reshape_root, NULL);
