@@ -36,6 +36,7 @@ static char commandkey = CTL(COMMAND_KEY);
 static int nfds = 1; /* stdin */
 static fd_set fds;
 static char iobuf[BUFSIZ];
+static unsigned cmd_count = 0;
 int scrollback_history = 1024;
 
 static void reshape(NODE *n, int y, int x, int h, int w);
@@ -420,6 +421,17 @@ scrollbottom(NODE *n)
 }
 
 static int
+digit(NODE *n, const char **args)
+{
+	(void)n;
+	(void)args;
+	assert( args && args[0]);
+
+	cmd_count = 10 * cmd_count + args[0][0] - '0';
+	return 0;
+}
+
+static int
 scrolln(NODE *n, const char **args)
 {
 	if(args[0][0] == '-') {
@@ -558,7 +570,14 @@ build_bindings()
 	add_key(cmd_keys, L'h', mov, "left", NULL);
 	add_key(cmd_keys, L'l', mov, "right", NULL);
 	add_key(cmd_keys, L'o', mov, "previous", NULL);
-
+	for( int i=0; i < 10; i++ ) {
+		char *buf = calloc(2, 1);
+		if( buf == NULL ) {
+			err(EXIT_FAILURE, "out of memory");
+		}
+		buf[0] = '0' + i;
+		add_key(cmd_keys, '0' + i, digit, buf, NULL);
+	}
 	add_key(code_keys, KEY_RESIZE, reshape_root, NULL);
 	add_key(code_keys, KEY_F(1), send, "\033OP", NULL);
 	add_key(code_keys, KEY_F(2), send, "\033OQ", NULL);
@@ -591,7 +610,6 @@ static bool
 handlechar(int r, int k) /* Handle a single input character. */
 {
 	struct handler *b = NULL;
-	int rv = 0;
 	NODE *n = focused;
 
 	if( r == OK && k > 0 && k < (int)sizeof *binding ) {
@@ -602,13 +620,16 @@ handlechar(int r, int k) /* Handle a single input character. */
 	}
 
 	if( b && b->act ) {
-		rv = b->act(n, b->args);
+		b->act(n, b->args);
 	} else {
 		char c[MB_LEN_MAX + 1] = {0};
 		if( r != ERR && wctomb(c, k) > 0 ) {
 			scrollbottom(n);
 			safewrite(n->pt, c, strlen(c));
 		}
+	}
+	if( !b || !(b->act == digit) ) {
+		cmd_count = 0;
 	}
 	return r != ERR;
 }
