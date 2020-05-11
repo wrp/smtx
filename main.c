@@ -357,25 +357,28 @@ draw(NODE *n) /* Draw a node. */
 	}
 }
 
-static void
-split(NODE *n, Node t) /* Split a node. */
+static int
+split(NODE *n, const char *args[])
 {
+	Node t = args[0] && args[0][0] == 'v' ? HORIZONTAL : VERTICAL;
+
     int nh = t == VERTICAL? (n->h - 1) / 2 : n->h;
     int nw = t == HORIZONTAL? (n->w) / 2 : n->w;
     NODE *p = n->p;
     NODE *v = newview(NULL, 0, 0, MAX(0, nh), MAX(0, nw));
     if (!v)
-        return;
+        return -1;
 
     NODE *c = newcontainer(t, n->p, n->y, n->x, n->h, n->w, n, v);
     if (!c){
         freenode(v, false);
-        return;
+        return -1;
     }
 
     replacechild(p, n, c);
     focus(v);
     draw(p? p : root);
+	return 0;
 }
 
 static bool
@@ -504,6 +507,8 @@ build_bindings()
 	add_key(cmd_keys, L'\r', transition, NULL);
 	add_key(cmd_keys, L',', scrolln, "-1", NULL);
 	add_key(cmd_keys, L'm', scrolln, "+1", NULL);
+	add_key(cmd_keys, L'c', split, NULL);
+	add_key(cmd_keys, L'|', split, "v", NULL);
 
 	add_key(code_keys, KEY_F(1), send, "\033OP", NULL);
 	add_key(code_keys, KEY_RESIZE, reshape_root, NULL);
@@ -527,7 +532,6 @@ build_bindings()
 	add_key(code_keys, KEY_IC, send, "\033[2~", NULL);
 	add_key(code_keys, KEY_BTAB, send, "\033[Z", NULL);
 	add_key(code_keys, KEY_ENTER, sendnewline, NULL);
-
 	add_key(code_keys, KEY_UP, sendarrow, "A", NULL);
 	add_key(code_keys, KEY_DOWN, sendarrow, "B", NULL);
 	add_key(code_keys, KEY_RIGHT, sendarrow, "C", NULL);
@@ -577,8 +581,6 @@ handlechar(int r, int k) /* Handle a single input character. */
     DO(true,  MOVE_LEFT,           focus(findnode(root, LEFT(n))))
     DO(true,  MOVE_RIGHT,          focus(findnode(root, RIGHT(n))))
     DO(true,  MOVE_OTHER,          focus(lastfocused))
-    DO(true,  HSPLIT,              split(n, HORIZONTAL))
-    DO(true,  VSPLIT,              split(n, VERTICAL))
     DO(true,  DELETE_NODE,         deletenode(n))
     DO(true,  REDRAW,              touchwin(stdscr); draw(root); redrawwin(stdscr))
     char c[MB_LEN_MAX + 1] = {0};

@@ -48,10 +48,6 @@
 #define MOVE_LEFT       CODE(KEY_LEFT)
 #define MOVE_OTHER      KEY(L'o')
 
-/* The split terminal keys. */
-#define HSPLIT KEY(L'h')
-#define VSPLIT KEY(L'v')
-
 /* The delete terminal key. */
 #define DELETE_NODE KEY(L'w')
 
