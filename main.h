@@ -1,4 +1,5 @@
 #include "config.h"
+#include <assert.h>
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -103,6 +104,12 @@ struct NODE{
 	SCRN pri, alt, *s;
 	wchar_t *g0, *g1, *g2, *g3, *gc, *gs, *sgc, *sgs;
 	VTPARSER vp;
+};
+
+typedef int(action)(NODE *n, const char *args);
+struct handler {
+	action *act;
+	const char *args[7];
 };
 
 #define MAXMAP 0x7f

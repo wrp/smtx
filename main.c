@@ -423,12 +423,51 @@ sendarrow(const NODE *n, const char *k)
     SEND(n, buf);
 }
 
+static struct handler *key_lut[128];
+static struct handler *cmd_lut[128];
+static struct handler *code_lut[KEY_MAX - KEY_MIN + 1];
+static struct handler *(*binding)[128] = &key_lut;
+
+static void
+build_bindings()
+{
+	assert( KEY_MAX - KEY_MIN < 2048 ); /* Avoid overly large luts */
+    /*DO(cmd,   CODE(KEY_RESIZE),    reshape(root, 0, 0, LINES, COLS); SB)*/
+}
+
 static bool
 handlechar(int r, int k) /* Handle a single input character. */
 {
     const char cmdstr[] = {commandkey, 0};
     static bool cmd = false;
-    NODE *n = focused;
+	struct handler *b = NULL;
+	int rv = 0;
+	NODE *n = focused;
+
+	if( r == OK && k < sizeof *binding ) {
+		b = (*binding)[k];
+	} else if( r == KEY_CODE_YES ) {
+		assert( k >= KEY_MIN && k <= KEY_MAX );
+		b = code_lut[k - KEY_MIN];
+	} else if( r == ERR ) {
+		return false;
+	}
+
+	if( b && b->act ) {
+		rv = b->act(n, b->args);
+		cmd = false; /* Temporary hack until all actions are built */
+		return rv == 0;
+	} else {
+	#if 0
+		char c[MB_LEN_MAX + 1] = {0};
+		if( wctomb(c, k) > 0 ) {
+			scrollbottom(n);
+			SEND(n, c);
+		}
+	}
+	#endif
+
+
     #define KERR(i) (r == ERR && (i) == k)
     #define KEY(i)  (r == OK  && (i) == k)
     #define CODE(i) (r == KEY_CODE_YES && (i) == k)
@@ -488,6 +527,7 @@ handlechar(int r, int k) /* Handle a single input character. */
     if (wctomb(c, k) > 0){
         scrollbottom(n);
         SEND(n, c);
+    }
     }
     return cmd = false, true;
 }
