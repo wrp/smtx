@@ -442,11 +442,11 @@ reshape_root(NODE *n, const char **args)
 int
 transition(NODE *n, const char **args)
 {
-	const char cmdstr[] = {commandkey, 0};
+	char k = commandkey;
 	assert(args);
 	binding = binding == &keys ? &cmd_keys : &keys;
 	if( args[0] ) {
-		SENDN(n, cmdstr, 1);
+		safewrite(n->pt, &k, 1);
 	}
 	return 0;
 }
@@ -454,7 +454,7 @@ transition(NODE *n, const char **args)
 int
 send(NODE *n, const char **args)
 {
-	SEND(n, args[0]);
+	safewrite(n->pt, args[0], strlen(args[0]));
 	scrollbottom(n);
 	return 0;
 }
