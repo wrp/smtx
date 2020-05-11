@@ -452,20 +452,19 @@ transition(NODE *n, const char **args)
 }
 
 int
+sendnewline(NODE *n, const char **args)
+{
+	(void)args;
+	char *nl = n->lnm ? "\r\n" : "\r";
+	int len = n->lnm ? 2 : 1;
+	safewrite(n->pt, nl, len);
+	scrollbottom(n);
+	return 0;
+}
+
+int
 send(NODE *n, const char **args)
 {
-	char buf[128];
-	if( n->lnm && strchr(args[0], '\r')) {
-		assert(strlen(args[0]) < (sizeof buf) / 2 );
-		char *d = buf;
-		const char *s = args[0];
-		while( ( *d++ = *s++ ) != '\0' ) {
-			if( s[-1] == '\r' ) {
-				*d++ = '\n';
-			}
-		}
-		args[0] = buf;
-	}
 	safewrite(n->pt, args[0], strlen(args[0]));
 	scrollbottom(n);
 	return 0;
@@ -493,6 +492,8 @@ build_bindings()
 	assert( KEY_MAX - KEY_MIN < 2048 ); /* Avoid overly large luts */
 
 	add_key(keys, commandkey, transition, NULL);
+	add_key(keys, L'\r', sendnewline, NULL);
+
 	add_key(cmd_keys, commandkey, transition, "", NULL);
 	add_key(cmd_keys, L'\r', transition, NULL);
 
@@ -517,6 +518,7 @@ build_bindings()
 	add_key(code_keys, KEY_DC, send, "\033[3~", NULL);
 	add_key(code_keys, KEY_IC, send, "\033[2~", NULL);
 	add_key(code_keys, KEY_BTAB, send, "\033[Z", NULL);
+	add_key(code_keys, KEY_ENTER, sendnewline, NULL);
 
 	add_key(code_keys, KEY_UP, sendarrow, "A", NULL);
 	add_key(code_keys, KEY_DOWN, sendarrow, "B", NULL);
@@ -564,11 +566,9 @@ handlechar(int r, int k) /* Handle a single input character. */
 
     DO(false, KEY(0),              SENDN(n, "\000", 1); SB)
     DO(false, KEY(L'\n'),          SEND(n, "\n"); SB)
-    DO(false, KEY(L'\r'),          SEND(n, n->lnm? "\r\n" : "\r"); SB)
     DO(false, SCROLLUP && INSCR,   scrollback(n))
     DO(false, SCROLLDOWN && INSCR, scrollforward(n))
     DO(false, RECENTER && INSCR,   scrollbottom(n))
-    DO(false, CODE(KEY_ENTER),     SEND(n, n->lnm? "\r\n" : "\r"); SB)
     DO(true,  MOVE_UP,             focus(findnode(root, ABOVE(n))))
     DO(true,  MOVE_DOWN,           focus(findnode(root, BELOW(n))))
     DO(true,  MOVE_LEFT,           focus(findnode(root, LEFT(n))))
