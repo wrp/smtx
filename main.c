@@ -437,20 +437,34 @@ reshape_root(NODE *n, const char **args)
 	return 0;
 }
 
+int
+transition(NODE *n, const char **args)
+{
+	const char cmdstr[] = {commandkey, 0};
+	assert(args);
+	binding = binding == &key_lut ? &cmd_lut : &key_lut;
+	if( args[0] ) {
+		SENDN(n, cmdstr, 1);
+	}
+	return 0;
+}
+
 static void
 build_bindings()
 {
 	assert( KEY_MAX - KEY_MIN < 2048 ); /* Avoid overly large luts */
-	struct handler *b = code_lut - KEY_MIN; /* syntatic sugar, or UB? */
+	struct handler *cod = code_lut - KEY_MIN; /* syntatic sugar, or UB? */
 
-	b[KEY_RESIZE] = (struct handler){ reshape_root, {0} };
+	cod[KEY_RESIZE] = (struct handler){ reshape_root, {0} };
+	key_lut[commandkey] = (struct handler){ transition, {0} };
+	cmd_lut[commandkey] = (struct handler){ transition, {""} };
 }
 
 static bool
 handlechar(int r, int k) /* Handle a single input character. */
 {
-    const char cmdstr[] = {commandkey, 0};
-    static bool cmd = false;
+
+	bool cmd = binding == &cmd_lut;
 	struct handler *b = NULL;
 	int rv = 0;
 	NODE *n = focused;
@@ -482,9 +496,8 @@ handlechar(int r, int k) /* Handle a single input character. */
     #define INSCR (n->s->tos != n->s->off)
     #define SB scrollbottom(n)
     #define DO(s, t, a) \
-        if (s == cmd && (t)) { a ; cmd = false; return true; }
+        if (s == cmd && (t)) { a ; return true; }
 
-    DO(false, KEY(commandkey),     return cmd = true)
     DO(false, KEY(0),              SENDN(n, "\000", 1); SB)
     DO(false, KEY(L'\n'),          SEND(n, "\n"); SB)
     DO(false, KEY(L'\r'),          SEND(n, n->lnm? "\r\n" : "\r"); SB)
@@ -528,14 +541,14 @@ handlechar(int r, int k) /* Handle a single input character. */
     DO(true,  SCROLLUP,            scrollback(n))
     DO(true,  SCROLLDOWN,          scrollforward(n))
     DO(true,  RECENTER,            scrollbottom(n))
-    DO(true,  KEY(commandkey),     SENDN(n, cmdstr, 1));
     char c[MB_LEN_MAX + 1] = {0};
     if (wctomb(c, k) > 0){
         scrollbottom(n);
         SEND(n, c);
     }
+    return true;
     }
-    return cmd = false, true;
+    return true;
 }
 
 static void
