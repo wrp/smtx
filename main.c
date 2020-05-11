@@ -460,7 +460,7 @@ send(NODE *n, const char **args)
 }
 
 static void
-add_key(struct handler *b, int k, action act, ...)
+add_key(struct handler *b, wchar_t k, action act, ...)
 {
 	if( b == code_keys ) {
 		assert( k >= KEY_MIN && k <= KEY_MAX );
