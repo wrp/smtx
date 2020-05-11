@@ -99,6 +99,4 @@ extern wchar_t CSET_GRAPH[]; /* Graphics Set One */
 extern int scrollback_history;
 
 void setupevents(NODE *n);
-#define SENDN(n, s, c) safewrite(n->pt, s, c)
-#define SEND(n, s) SENDN(n, s, strlen(s))
 void safewrite(int fd, const char *b, size_t n);

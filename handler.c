@@ -9,8 +9,6 @@
  *      P0(n)          - Parameter n, default 0.
  *      P1(n)          - Parameter n, default 1.
  *      CALL(h)        - Call handler h with no arguments.
- *      SENDN(n, s, c) - Write string c bytes of s to n.
- *      SEND(n, s)     - Write string s to node n's host.
  *      (END)HANDLER   - Declare/end a handler function
  *      COMMONVARS     - All of the common variables for a handler.
  *                       x, y     - cursor position
@@ -88,7 +86,7 @@ HANDLER(cuf) /* CUF - Cursor Forward */
 ENDHANDLER
 
 HANDLER(ack) /* ACK - Acknowledge Enquiry */
-    SEND(n, "\006");
+	safewrite(n->pt, "\006", 1);
 ENDHANDLER
 
 HANDLER(hts) /* HTS - Horizontal Tab Set */
@@ -105,10 +103,15 @@ HANDLER(ri) /* RI - Reverse Index */
 ENDHANDLER
 
 HANDLER(decid) /* DECID - Send Terminal Identification */
-    if (w == L'c')
-        SEND(n, iw == L'>'? "\033[>1;10;0c" : "\033[?1;2c");
-    else if (w == L'Z')
-        SEND(n, "\033[?6c");
+	if( w == L'c' ) {
+		if( iw == L'>' ) {
+			safewrite(n->pt, "\033[>1;10;0c", 10);
+		} else {
+			safewrite(n->pt, "\033[?1;2c", 7);
+		}
+	} else if( w == L'Z' ) {
+		safewrite(n->pt, "\033[?6c", 5);
+	}
 ENDHANDLER
 
 HANDLER(hpa) /* HPA - Cursor Horizontal Absolute */
@@ -253,7 +256,7 @@ HANDLER(dsr) /* DSR - Device Status Report */
                  (n->decom? y - top : y) + 1, x + 1);
     else
         snprintf(buf, sizeof(buf) - 1, "\033[0n");
-    SEND(n, buf);
+	safewrite(n->pt, buf, strlen(buf));
 ENDHANDLER
 
 HANDLER(idl) /* IL or DL - Insert/Delete Line */
@@ -273,7 +276,11 @@ HANDLER(csr) /* CSR - Change Scrolling Region */
 ENDHANDLER
 
 HANDLER(decreqtparm) /* DECREQTPARM - Request Device Parameters */
-    SEND(n, P0(0)? "\033[3;1;2;120;1;0x" : "\033[2;1;2;120;128;1;0x");
+	if( P0(0) ) {
+		safewrite(n->pt, "\033[3;1;2;120;1;0x", 16);
+	} else {
+		safewrite(n->pt, "\033[2;1;2;120;128;1;0x", 20);
+	}
 ENDHANDLER
 
 HANDLER(sgr0) /* Reset SGR to default */

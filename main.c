@@ -426,7 +426,7 @@ sendarrow(NODE *n, const char **args)
 	const char *k = args[0];
     char buf[100] = {0};
     snprintf(buf, sizeof(buf) - 1, "\033%s%s", n->pnm? "O" : "[", k);
-    SEND(n, buf);
+    safewrite(n->pt, buf, strlen(buf));
     return 0;
 }
 
@@ -607,7 +607,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 		char c[MB_LEN_MAX + 1] = {0};
 		if( wctomb(c, k) > 0 ) {
 			scrollbottom(n);
-			SEND(n, c);
+			    safewrite(n->pt, c, strlen(c));
 		}
 	}
 	return true;
