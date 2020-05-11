@@ -416,6 +416,17 @@ scrollbottom(NODE *n)
 }
 
 static int
+scrolln(NODE *n, const char **args)
+{
+	if(args[0][0] == '-') {
+		scrollback(n);
+	} else {
+		scrollforward(n);
+	}
+	return 0;
+}
+
+static int
 sendarrow(NODE *n, const char **args)
 {
 	const char *k = args[0];
@@ -499,6 +510,8 @@ build_bindings()
 
 	add_key(cmd_keys, commandkey, transition, "", NULL);
 	add_key(cmd_keys, L'\r', transition, NULL);
+	add_key(cmd_keys, L',', scrolln, "-1", NULL);
+	add_key(cmd_keys, L'm', scrolln, "+1", NULL);
 
 	add_key(code_keys, KEY_F(1), send, "\033OP", NULL);
 	add_key(code_keys, KEY_RESIZE, reshape_root, NULL);
@@ -567,9 +580,6 @@ handlechar(int r, int k) /* Handle a single input character. */
     #define DO(s, t, a) \
         if (s == cmd && (t)) { a ; return true; }
 
-    DO(false, SCROLLUP && INSCR,   scrollback(n))
-    DO(false, SCROLLDOWN && INSCR, scrollforward(n))
-    DO(false, RECENTER && INSCR,   scrollbottom(n))
     DO(true,  MOVE_UP,             focus(findnode(root, ABOVE(n))))
     DO(true,  MOVE_DOWN,           focus(findnode(root, BELOW(n))))
     DO(true,  MOVE_LEFT,           focus(findnode(root, LEFT(n))))
@@ -579,9 +589,6 @@ handlechar(int r, int k) /* Handle a single input character. */
     DO(true,  VSPLIT,              split(n, VERTICAL))
     DO(true,  DELETE_NODE,         deletenode(n))
     DO(true,  REDRAW,              touchwin(stdscr); draw(root); redrawwin(stdscr))
-    DO(true,  SCROLLUP,            scrollback(n))
-    DO(true,  SCROLLDOWN,          scrollforward(n))
-    DO(true,  RECENTER,            scrollbottom(n))
     char c[MB_LEN_MAX + 1] = {0};
     if (wctomb(c, k) > 0){
         scrollbottom(n);

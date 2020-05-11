@@ -58,11 +58,6 @@
 /* The force redraw key. */
 #define REDRAW KEY(L'l')
 
-/* The scrollback keys. */
-#define SCROLLUP KEY(L'i')
-#define SCROLLDOWN KEY(L'u')
-#define RECENTER KEY(L'y')
-
 #if HAVE_CURSES_H
 # include <curses.h>
 #elif HAVE_NCURSESW_CURSES_H
