@@ -398,18 +398,6 @@ getinput(NODE *n, fd_set *f) /* Recursively check all ptty's for input. */
 }
 
 static void
-scrollback(NODE *n)
-{
-    n->s->off = MAX(0, n->s->off - n->h / 2);
-}
-
-static void
-scrollforward(NODE *n)
-{
-    n->s->off = MIN(n->s->tos, n->s->off + n->h / 2);
-}
-
-static void
 scrollbottom(NODE *n)
 {
     n->s->off = n->s->tos;
@@ -419,9 +407,9 @@ static int
 scrolln(NODE *n, const char **args)
 {
 	if(args[0][0] == '-') {
-		scrollback(n);
+		n->s->off = MAX(0, n->s->off - n->h / 2);
 	} else {
-		scrollforward(n);
+		n->s->off = MIN(n->s->tos, n->s->off + n->h / 2);
 	}
 	return 0;
 }
