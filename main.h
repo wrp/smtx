@@ -73,8 +73,8 @@ typedef enum{
 	VIEW
 } Node;
 
-typedef struct NODE NODE;
-struct NODE{
+typedef struct node NODE;
+struct node {
 	Node t;
 	int y, x, h, w, pt, ntabs;
 	bool *tabs, pnm, decom, am, lnm;

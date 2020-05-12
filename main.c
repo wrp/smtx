@@ -462,9 +462,9 @@ reshape_root(NODE *n, const char **args)
 }
 
 int
-mov(struct NODE *n, const char **args)
+mov(struct node *n, const char **args)
 {
-	struct NODE *t = n;
+	struct node *t = n;
 	int count = cmd_count == 0 ? 1 : cmd_count;
 	while( t && count-- ) switch(args[0][0]) {
 	case 'u':
@@ -490,7 +490,7 @@ mov(struct NODE *n, const char **args)
 }
 
 static int
-redrawroot(struct NODE *n, const char **args)
+redrawroot(struct node *n, const char **args)
 {
 	(void) n;
 	(void) args;
