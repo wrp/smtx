@@ -192,7 +192,7 @@ newview(struct node *p, int y, int x, int h, int w)
 		signal(SIGCHLD, SIG_DFL);
 		execl(shell, shell, NULL);
 		perror("execl");
-		return NULL;
+		exit(EXIT_FAILURE);
 	}
 	FD_SET(n->pt, &fds);
 	fcntl(n->pt, F_SETFL, O_NONBLOCK);
