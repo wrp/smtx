@@ -255,17 +255,6 @@ removechild(NODE *p, const NODE *c) /* Replace p with other child. */
     freenode(p, false);
 }
 
-static int
-deletenode(NODE *n)
-{
-    if (!n || !n->parent)
-        exit(EXIT_SUCCESS);
-    if (n == focused)
-        focus(n->parent->c1 == n? n->parent->c2 : n->parent->c1);
-    removechild(n->parent, n);
-    freenode(n, true);
-	return 0;
-}
 
 static void
 reshapeview(NODE *n, int d, int ow) /* Reshape a view. */
@@ -420,7 +409,16 @@ getinput(NODE *n, fd_set *f) /* Recursively check all ptty's for input. */
         if (r <= 0 && errno != EINTR && errno != EWOULDBLOCK) {
 		assert(n->c1 == NULL);
 		assert(n->c2 == NULL);
-            return deletenode(n), false;
+
+		if( !n->parent ) {
+			exit(EXIT_SUCCESS);
+		}
+		if( n == focused ) {
+			focus(n->parent->c1 == n? n->parent->c2 : n->parent->c1);
+		}
+		removechild(n->parent, n);
+		freenode(n, false);
+	    return false;
 	    }
     }
 
