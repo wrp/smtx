@@ -79,7 +79,7 @@ newtabs(int w, int ow, bool *oldtabs) /* Initialize default tabstops. */
 }
 
 static NODE *
-newnode(Node t, NODE *p, int y, int x, int h, int w) /* Create a new node. */
+newnode(int t, NODE *p, int y, int x, int h, int w) /* Create a new node. */
 {
 	NODE *n = NULL;
 	if( h > 1 && w > 1 && (n = calloc(1, sizeof *n)) != NULL ) {
@@ -149,7 +149,7 @@ static struct node *
 newview(struct node *p, int y, int x, int h, int w)
 {
 	struct winsize ws = {.ws_row = h, .ws_col = w}; /* tty(4) */
-	struct node *n = newnode(VIEW, p, y, x, h, w);
+	struct node *n = newnode(0, p, y, x, h, w);
 	if( n == NULL ) {
 		goto fail;
 	}
@@ -203,7 +203,7 @@ focus(NODE *n) /* Focus a node. */
 {
     if (!n)
         return;
-    else if (n->t == VIEW){
+    else if (n->t == '\0'){
         lastfocused = focused;
         focused = n;
     } else
@@ -299,11 +299,11 @@ reshapeview(NODE *n, int d, int ow) /* Reshape a view. */
 static void
 reshapechildren(NODE *n) /* Reshape all children of a view. */
 {
-    if (n->t == HORIZONTAL){
+    if (n->t == '|'){
         int i = n->w % 2? 0 : 1;
         reshape(n->c1, n->y, n->x, n->h, n->w / 2);
         reshape(n->c2, n->y, n->x + n->w / 2 + 1, n->h, n->w / 2 - i);
-    } else if (n->t == VERTICAL){
+    } else if (n->t == '-'){
         int i = n->h % 2? 0 : 1;
         reshape(n->c1, n->y, n->x, n->h / 2, n->w);
         reshape(n->c2, n->y + n->h / 2 + 1, n->x, n->h / 2 - i, n->w);
@@ -313,7 +313,7 @@ reshapechildren(NODE *n) /* Reshape all children of a view. */
 static void
 reshape(NODE *n, int y, int x, int h, int w) /* Reshape a node. */
 {
-    if (n->y == y && n->x == x && n->h == h && n->w == w && n->t == VIEW)
+    if (n->y == y && n->x == x && n->h == h && n->w == w && n->t == '\0')
         return;
 
     int d = n->h - h;
@@ -323,7 +323,7 @@ reshape(NODE *n, int y, int x, int h, int w) /* Reshape a node. */
     n->h = MAX(h, 1);
     n->w = MAX(w, 1);
 
-    if (n->t == VIEW)
+    if (n->t == '\0')
         reshapeview(n, d, ow);
     else
         reshapechildren(n);
@@ -337,7 +337,7 @@ drawchildren(const NODE *n) /* Draw all children of n. */
 	if( binding == &cmd_keys ) {
 		attron(A_REVERSE);
 	}
-	if (n->t == HORIZONTAL)
+	if (n->t == '|')
 		mvvline(n->y, n->x + n->w / 2, ACS_VLINE, n->h);
 	else
 		mvhline(n->y + n->h / 2, n->x, ACS_HLINE, n->w);
@@ -351,7 +351,8 @@ drawchildren(const NODE *n) /* Draw all children of n. */
 static void
 draw(NODE *n) /* Draw a node. */
 {
-	if( n->t == VIEW ) {
+	assert( strchr("|-", n->t) );
+	if( n->t == '\0' ) {
 		pnoutrefresh(
 			n->s->win,  /* pad */
 			n->s->off,  /* pminrow */
@@ -369,10 +370,10 @@ draw(NODE *n) /* Draw a node. */
 static int
 split(NODE *n, const char *args[])
 {
-	Node t = args[0] && args[0][0] == 'v' ? HORIZONTAL : VERTICAL;
+	int t = args[0] && args[0][0] == 'v' ? '|' : '-';
 
-	int nh = t == VERTICAL? (n->h - 1) / 2 : n->h;
-	int nw = t == HORIZONTAL? (n->w) / 2 : n->w;
+	int nh = t == '-'? (n->h - 1) / 2 : n->h;
+	int nw = t == '|' ? (n->w) / 2 : n->w;
 	NODE *p = n->parent;
 	NODE *v = newview(NULL, 0, 0, MAX(0, nh), MAX(0, nw));
 	if (!v)
@@ -404,7 +405,7 @@ getinput(NODE *n, fd_set *f) /* Recursively check all ptty's for input. */
     if (n && n->c2 && !getinput(n->c2, f))
         return false;
 
-    if (n && n->t == VIEW && n->pt > 0 && FD_ISSET(n->pt, f)){
+    if (n && n->t == '\0' && n->pt > 0 && FD_ISSET(n->pt, f)){
         ssize_t r = read(n->pt, iobuf, sizeof(iobuf));
         if (r > 0)
             vtwrite(&n->vp, iobuf, r);
