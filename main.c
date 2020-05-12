@@ -400,33 +400,32 @@ split(NODE *n, const char *args[])
 static bool
 getinput(NODE *n, fd_set *f) /* Recursively check all ptty's for input. */
 {
-    if (n && n->c1 && !getinput(n->c1, f))
-        return false;
+	bool status = true;;
+	if( n && n->c1 && !getinput(n->c1, f) ) {
+		status = false;
+	} else if( n && n->c2 && !getinput(n->c2, f) ) {
+		status = false;
+	} else if( n && ! n->split  && n->pt > 0 && FD_ISSET(n->pt, f) ) {
+		ssize_t r = read(n->pt, iobuf, sizeof(iobuf));
+		if (r > 0)
+			vtwrite(&n->vp, iobuf, r);
+		if (r <= 0 && errno != EINTR && errno != EWOULDBLOCK) {
+			assert(n->c1 == NULL);
+			assert(n->c2 == NULL);
 
-    if (n && n->c2 && !getinput(n->c2, f))
-        return false;
-
-    if (n && ! n->split  && n->pt > 0 && FD_ISSET(n->pt, f)){
-        ssize_t r = read(n->pt, iobuf, sizeof(iobuf));
-        if (r > 0)
-            vtwrite(&n->vp, iobuf, r);
-        if (r <= 0 && errno != EINTR && errno != EWOULDBLOCK) {
-		assert(n->c1 == NULL);
-		assert(n->c2 == NULL);
-
-		if( n->parent && n == focused ) {
-			focus(n->parent->c1 == n? n->parent->c2 : n->parent->c1);
+			if( n->parent && n == focused ) {
+				focus(n->parent->c1 == n ? n->parent->c2 : n->parent->c1);
+			}
+			removechild(n->parent, n);
+			freenode(n);
+			if( n == root ) {
+				root = focused = NULL;
+			}
+			status = false;
 		}
-		removechild(n->parent, n);
-		freenode(n);
-		if( n == root ) {
-			root = focused = NULL;
-		}
-	    return false;
-	    }
-    }
+	}
 
-    return true;
+	return status;
 }
 
 static void
