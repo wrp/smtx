@@ -477,11 +477,18 @@ reshape_root(NODE *n, const char **args)
 int
 mov(struct node *n, const char **args)
 {
-	struct node *t = n;
+	struct node *t = n, *p = n;
 	int count = cmd_count == 0 ? 1 : cmd_count;
+	assert( n->split == '\0');
+	assert( !n->parent || n->parent->split != '\0' );
 	while( t && count-- ) switch(args[0][0]) {
 	case 'u':
-		t = findnode(root, ABOVE(t));
+		while( t->parent && ( t->parent->split != '-'
+				|| t == t->parent->c1) ) {
+			p = t;
+			t = t->parent;
+		}
+		t = t->parent->c1;
 		break;
 	case 'd':
 		t = findnode(root, BELOW(t));
