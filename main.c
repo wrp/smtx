@@ -168,11 +168,13 @@ newview(struct node *p, int y, int x, int h, int w)
 
 	setupevents(n);
 
-    pid_t pid = forkpty(&n->pt, NULL, NULL, &ws);
-    if (pid < 0){
-        if (!p)
-            perror("forkpty");
-        return freenode(n, false), NULL;
+	pid_t pid = forkpty(&n->pt, NULL, NULL, &ws);
+	if( pid < 0 ) {
+		assert( p == NULL);
+		if( p == NULL ) {
+			perror("forkpty");
+		}
+		return freenode(n, false), NULL;
     } else if (pid == 0){
         char buf[100] = {0};
         snprintf(buf, sizeof(buf) - 1, "%lu", (unsigned long)getppid());
