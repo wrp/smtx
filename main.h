@@ -70,6 +70,7 @@ struct screen {
 typedef struct node NODE;
 struct node {
 	int split;  /* '|', '-', or '\0' (lateral, transverse, or no split) */
+	double split_point; /* percent of window dedicated to c1 */
 	int y, x, h, w, pt, ntabs;
 	bool *tabs, pnm, decom, am, lnm;
 	wchar_t repc;

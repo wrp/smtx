@@ -93,6 +93,7 @@ newnode(int t, NODE *p, int y, int x, int h, int w)
 			n = NULL;
 		} else {
 			n->split = t;
+			n->split_point = .5;
 			n->parent = p;
 			n->y = y;
 			n->x = x;
@@ -286,15 +287,19 @@ reshapeview(NODE *n, int d, int ow) /* Reshape a view. */
 static void
 reshapechildren(NODE *n) /* Reshape all children of a view. */
 {
-    if (n->split == '|'){
-        int i = n->w % 2? 0 : 1;
-        reshape(n->c1, n->y, n->x, n->h, n->w / 2);
-        reshape(n->c2, n->y, n->x + n->w / 2 + 1, n->h, n->w / 2 - i);
-    } else if (n->split == '-'){
-        int i = n->h % 2? 0 : 1;
-        reshape(n->c1, n->y, n->x, n->h / 2, n->w);
-        reshape(n->c2, n->y + n->h / 2 + 1, n->x, n->h / 2 - i, n->w);
-    }
+	if( n->split == '|' ) {
+		int w[2];
+		w[0] = n->w * n->split_point;
+		w[1] = n->w - w[0] - 1;
+		reshape(n->c1, n->y, n->x, n->h, w[0]);
+		reshape(n->c2, n->y, n->x + w[0] + 1, n->h, w[1]);
+	} else if( n->split == '-' ) {
+		int h[2];
+		h[0] = n->h * n->split_point;
+		h[1] = n->h - h[0] - 1;
+		reshape(n->c1, n->y, n->x, h[0], n->w);
+		reshape(n->c2, n->y + h[0] + 1, n->x, h[1], n->w);
+	}
 }
 
 static void
