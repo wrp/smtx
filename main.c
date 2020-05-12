@@ -370,7 +370,8 @@ draw(NODE *n) /* Draw a node. */
 static int
 reorient(NODE *n, const char *args[])
 {
-	if( n && n->parent ) {
+	assert(n);
+	if( n->parent && n->parent->split != args[0][0]) {
 		n->parent->split = args[0][0];
 		reshapechildren(n->parent);
 		drawchildren(n->parent);
