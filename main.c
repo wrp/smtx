@@ -383,15 +383,13 @@ static int
 split(NODE *n, const char *args[])
 {
 	assert( !n->split );
-	(void)args;
-	int nh = (n->h - 1) / 2;
-	int nw = n->w;
+	int typ = args[0] ? args[0][0] : '-';
 	struct node *p = n->parent;
-	struct node *v = newview(NULL, 0, 0, MAX(0, nh), MAX(0, nw));
+	struct node *v = newview(NULL, 0, 0, n->h, n->w);
 	if( v == NULL ) {
 		return -1;
 	}
-	struct node *c = newnode('-', n->parent, n->y, n->x, n->h, n->w);
+	struct node *c = newnode( typ, n->parent, n->y, n->x, n->h, n->w);
 	if( c != NULL ) {
 		c->c1 = n;
 		c->c2 = v;
@@ -402,9 +400,9 @@ split(NODE *n, const char *args[])
 		return -1;
 	}
 
-    replacechild(p, n, c);
-    focus(v);
-    draw(p? p : root);
+	replacechild(p, n, c);
+	focus(v);
+	draw(p ? p : root);
 	return 0;
 }
 
