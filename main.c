@@ -389,7 +389,7 @@ split(NODE *n, const char *args[])
 	if( v == NULL ) {
 		return -1;
 	}
-	struct node *c = newnode( typ, n->parent, n->y, n->x, n->h, n->w);
+	struct node *c = newnode(typ, n->parent, n->y, n->x, n->h, n->w);
 	if( c != NULL ) {
 		c->c1 = n;
 		c->c2 = v;
