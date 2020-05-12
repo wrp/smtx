@@ -231,18 +231,17 @@ findnode(NODE *n, int y, int x) /* Find the node enclosing y,x. */
 static void
 replacechild(NODE *n, NODE *c1, NODE *c2) /* Replace c1 of n with c2. */
 {
-    c2->parent = n;
-    if (!n){
-        root = c2;
-        reshape(c2, 0, 0, LINES, COLS);
-    } else if (n->c1 == c1)
-        n->c1 = c2;
-    else if (n->c2 == c1)
-        n->c2 = c2;
-
-    n = n? n : root;
-    reshape(n, n->y, n->x, n->h, n->w);
-    draw(n);
+	c2->parent = n;
+	if( n == NULL ){
+		root = c2;
+		reshape(c2, 0, 0, LINES, COLS);
+	} else if( n->c1 == c1 ) {
+		n->c1 = c2;
+		reshape(n, n->y, n->x, n->h, n->w);
+	} else if( n->c2 == c1 ) {
+		n->c2 = c2;
+		reshape(n, n->y, n->x, n->h, n->w);
+	}
 }
 
 static void
