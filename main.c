@@ -488,10 +488,19 @@ mov(struct node *n, const char **args)
 			p = t;
 			t = t->parent;
 		}
-		t = t->parent->c1;
+		if( t->parent ) {
+			t = t->parent->c1;
+		}
 		break;
 	case 'd':
-		t = findnode(root, BELOW(t));
+		while( t->parent && ( t->parent->split != '-'
+				|| t == t->parent->c2) ) {
+			p = t;
+			t = t->parent;
+		}
+		if( t->parent ) {
+			t = t->parent->c2;
+		}
 		break;
 	case 'l':
 		t = findnode(root, LEFT(t));
