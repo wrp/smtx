@@ -150,21 +150,23 @@ newview(struct node *p, int y, int x, int h, int w)
 	if( n == NULL ) {
 		return NULL;
 	}
-	struct screen *pri = &n->pri, *alt = &n->alt;
 	n->pri.win = newpad(MAX(h, scrollback_history), w);
 	n->alt.win = newpad(h, w);
 	if( n->pri.win == NULL || n->alt.win == NULL ) {
 		freenode(n, false);
 		return NULL;
 	}
-    pri->tos = pri->off = MAX(0, scrollback_history - h);
-    n->s = pri;
+	n->pri.tos = n->pri.off = MAX(0, scrollback_history - h);
+	n->s = &n->pri;
 
-    nodelay(pri->win, TRUE); nodelay(alt->win, TRUE);
-    scrollok(pri->win, TRUE); scrollok(alt->win, TRUE);
-    keypad(pri->win, TRUE); keypad(alt->win, TRUE);
+	nodelay(n->pri.win, TRUE);
+	nodelay(n->alt.win, TRUE);
+	scrollok(n->pri.win, TRUE);
+	scrollok(n->alt.win, TRUE);
+	keypad(n->pri.win, TRUE);
+	keypad(n->alt.win, TRUE);
 
-    setupevents(n);
+	setupevents(n);
 
     pid_t pid = forkpty(&n->pt, NULL, NULL, &ws);
     if (pid < 0){
