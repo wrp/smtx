@@ -27,6 +27,7 @@
 
 #include "main.h"
 
+int tabstop = 8;
 static char shell[PATH_MAX];
 static struct handler keys[128];
 static struct handler cmd_keys[128];
@@ -77,7 +78,7 @@ newtabs(int w, int ow, bool *oldtabs) /* Initialize default tabstops. */
 {
 	bool *tabs = calloc(w, sizeof *tabs);
 	for( int i = 0; tabs != NULL && i < w; i++ ) {
-		tabs[i] = i < ow ? oldtabs[i] : i % 8 == 0;
+		tabs[i] = i < ow ? oldtabs[i] : i % tabstop == 0;
 	}
 	return tabs;
 }
@@ -549,6 +550,15 @@ add_key(struct handler *b, wchar_t k, action act, ...)
 	va_end(ap);
 }
 
+static int
+new_tabstop(struct node *n, const char **args)
+{
+	(void)n;
+	(void) args;
+	tabstop = cmd_count ? cmd_count : 8;
+	return 0;
+}
+
 static void
 build_bindings()
 {
@@ -572,6 +582,7 @@ build_bindings()
 	add_key(cmd_keys, L'h', mov, "left", NULL);
 	add_key(cmd_keys, L'l', mov, "right", NULL);
 	add_key(cmd_keys, L'o', mov, "previous", NULL);
+	add_key(cmd_keys, L't', new_tabstop, NULL);
 	for( int i=0; i < 10; i++ ) {
 		char *buf = calloc(2, 1);
 		if( buf == NULL ) {

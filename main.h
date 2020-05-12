@@ -97,6 +97,7 @@ extern wchar_t CSET_US[]; /* "USASCII" */
 extern wchar_t CSET_UK[]; /* "United Kingdom" */
 extern wchar_t CSET_GRAPH[]; /* Graphics Set One */
 extern int scrollback_history;
+extern int tabstop;
 
 void setupevents(NODE *n);
 void safewrite(int fd, const char *b, size_t n);
