@@ -381,15 +381,15 @@ reorient(NODE *n, const char *args[])
 static int
 split(NODE *n, const char *args[])
 {
+	assert( !n->split );
 	(void)args;
 	int nh = (n->h - 1) / 2;
 	int nw = n->w;
-	NODE *p = n->parent;
-	NODE *v = newview(NULL, 0, 0, MAX(0, nh), MAX(0, nw));
-	if (!v)
+	struct node *p = n->parent;
+	struct node *v = newview(NULL, 0, 0, MAX(0, nh), MAX(0, nw));
+	if( v == NULL ) {
 		return -1;
-
-	assert( !n->split );
+	}
 	struct node *c = newnode('-', n->parent, n->y, n->x, n->h, n->w);
 	if( c != NULL ) {
 		c->c1 = n;
