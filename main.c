@@ -27,6 +27,7 @@
 
 #include "main.h"
 
+static char shell[PATH_MAX];
 static struct handler keys[128];
 static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
@@ -57,12 +58,18 @@ safewrite(int fd, const char *b, size_t n) /* Write, retry on interrupt */
 	}
 }
 
-static const char *
+static void
 getshell(void) /* Get the user's preferred shell. */
 {
-	const char *shell = getenv("SHELL");
-	struct passwd *pwd = shell ? NULL : getpwuid(getuid());
-	return shell ? shell : pwd ? pwd->pw_shell : "/bin/sh";
+	const char *sh = getenv("SHELL");
+	struct passwd *pwd = NULL;
+	if( sh ) {
+		snprintf(shell, sizeof shell, "%s", sh);
+	} else if( (pwd = getpwuid(getuid())) != NULL ) {
+		snprintf(shell, sizeof shell, "%s", pwd->pw_shell);
+	} else {
+		snprintf(shell, sizeof shell, "%s", "/bin/sh" );
+	}
 }
 
 static bool *
@@ -183,7 +190,8 @@ newview(struct node *p, int y, int x, int h, int w)
 		setenv("STTM_VERSION", VERSION, 1);
 		setenv("TERM", getterm(), 1);
 		signal(SIGCHLD, SIG_DFL);
-		execl(getshell(), getshell(), NULL);
+		execl(shell, shell, NULL);
+		perror("execl");
 		return NULL;
 	}
 
@@ -711,6 +719,7 @@ main(int argc, char **argv)
 	setlocale(LC_ALL, "");
 	signal(SIGCHLD, SIG_IGN); /* automatically reap children */
 	parse_args(argc, argv);
+	getshell();
 	build_bindings();
 
 	if( initscr() == NULL ) {
