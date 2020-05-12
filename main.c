@@ -87,7 +87,7 @@ newnode(int t, NODE *p, int y, int x, int h, int w) /* Create a new node. */
 			free(n);
 			n = NULL;
 		} else {
-			n->t = t;
+			n->split = t;
 			n->parent = p;
 			n->y = y;
 			n->x = x;
@@ -203,7 +203,7 @@ focus(NODE *n) /* Focus a node. */
 {
     if (!n)
         return;
-    else if (n->t == '\0'){
+    else if( ! n->split ) {
         lastfocused = focused;
         focused = n;
     } else
@@ -299,11 +299,11 @@ reshapeview(NODE *n, int d, int ow) /* Reshape a view. */
 static void
 reshapechildren(NODE *n) /* Reshape all children of a view. */
 {
-    if (n->t == '|'){
+    if (n->split == '|'){
         int i = n->w % 2? 0 : 1;
         reshape(n->c1, n->y, n->x, n->h, n->w / 2);
         reshape(n->c2, n->y, n->x + n->w / 2 + 1, n->h, n->w / 2 - i);
-    } else if (n->t == '-'){
+    } else if (n->split == '-'){
         int i = n->h % 2? 0 : 1;
         reshape(n->c1, n->y, n->x, n->h / 2, n->w);
         reshape(n->c2, n->y + n->h / 2 + 1, n->x, n->h / 2 - i, n->w);
@@ -313,7 +313,7 @@ reshapechildren(NODE *n) /* Reshape all children of a view. */
 static void
 reshape(NODE *n, int y, int x, int h, int w) /* Reshape a node. */
 {
-    if (n->y == y && n->x == x && n->h == h && n->w == w && n->t == '\0')
+    if (n->y == y && n->x == x && n->h == h && n->w == w && ! n->split)
         return;
 
     int d = n->h - h;
@@ -323,7 +323,7 @@ reshape(NODE *n, int y, int x, int h, int w) /* Reshape a node. */
     n->h = MAX(h, 1);
     n->w = MAX(w, 1);
 
-    if (n->t == '\0')
+    if (! n->split)
         reshapeview(n, d, ow);
     else
         reshapechildren(n);
@@ -337,7 +337,7 @@ drawchildren(const NODE *n) /* Draw all children of n. */
 	if( binding == &cmd_keys ) {
 		attron(A_REVERSE);
 	}
-	if (n->t == '|')
+	if (n->split == '|')
 		mvvline(n->y, n->x + n->w / 2, ACS_VLINE, n->h);
 	else
 		mvhline(n->y + n->h / 2, n->x, ACS_HLINE, n->w);
@@ -351,8 +351,8 @@ drawchildren(const NODE *n) /* Draw all children of n. */
 static void
 draw(NODE *n) /* Draw a node. */
 {
-	assert( strchr("|-", n->t) );
-	if( n->t == '\0' ) {
+	assert( strchr("|-", n->split) );
+	if( ! n->split ) {
 		pnoutrefresh(
 			n->s->win,  /* pad */
 			n->s->off,  /* pminrow */
@@ -405,7 +405,7 @@ getinput(NODE *n, fd_set *f) /* Recursively check all ptty's for input. */
     if (n && n->c2 && !getinput(n->c2, f))
         return false;
 
-    if (n && n->t == '\0' && n->pt > 0 && FD_ISSET(n->pt, f)){
+    if (n && ! n->split  && n->pt > 0 && FD_ISSET(n->pt, f)){
         ssize_t r = read(n->pt, iobuf, sizeof(iobuf));
         if (r > 0)
             vtwrite(&n->vp, iobuf, r);

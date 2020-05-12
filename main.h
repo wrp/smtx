@@ -69,7 +69,7 @@ struct screen {
 
 typedef struct node NODE;
 struct node {
-	int t;  /* '|', '-', or '\0' (lateral, transverse, or no split) */
+	int split;  /* '|', '-', or '\0' (lateral, transverse, or no split) */
 	int y, x, h, w, pt, ntabs;
 	bool *tabs, pnm, decom, am, lnm;
 	wchar_t repc;
