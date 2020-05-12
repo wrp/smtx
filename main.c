@@ -48,7 +48,7 @@ static void reshape(NODE *n, int y, int x, int h, int w);
 static void draw(NODE *n);
 static void reshapechildren(NODE *n);
 static const char *term = NULL;
-static void freenode(NODE *n, bool recursive);
+static void freenode(NODE *n);
 static action split;
 
 void
@@ -105,7 +105,7 @@ newnode(int t, NODE *p, int y, int x, int h, int w)
 }
 
 static void
-freenode(NODE *n, bool recurse) /* Free a node. */
+freenode(NODE *n)
 {
 	if( n ) {
 		if( lastfocused == n )
@@ -114,10 +114,6 @@ freenode(NODE *n, bool recurse) /* Free a node. */
 			delwin(n->pri.win);
 		if( n->alt.win )
 			delwin(n->alt.win);
-		if( recurse ) {
-			freenode(n->c1, true);
-			freenode(n->c2, true);
-		}
 		if( n->pt >= 0 ) {
 			close(n->pt);
 			FD_CLR(n->pt, &fds);
@@ -199,7 +195,7 @@ newview(struct node *p, int y, int x, int h, int w)
 	nfds = n->pt > nfds? n->pt : nfds;
 	return n;
 fail:
-	freenode(n, false);
+	freenode(n);
 	return NULL;
 }
 
@@ -257,7 +253,7 @@ removechild(NODE *p, const NODE *c) /* Replace p with other child. */
 {
 	if( p != NULL ) {
 		replacechild(p->parent, p, c == p->c1? p->c2 : p->c1);
-		freenode(p, false);
+		freenode(p);
 	}
 }
 
@@ -395,8 +391,8 @@ split(NODE *n, const char *args[])
 		focus(v);
 		draw(p ? p : root);
 	} else {
-		freenode(v, false);
-		freenode(c, false);
+		freenode(v);
+		freenode(c);
 	}
 	return 0;
 }
@@ -422,7 +418,7 @@ getinput(NODE *n, fd_set *f) /* Recursively check all ptty's for input. */
 			focus(n->parent->c1 == n? n->parent->c2 : n->parent->c1);
 		}
 		removechild(n->parent, n);
-		freenode(n, false);
+		freenode(n);
 		if( n == root ) {
 			root = focused = NULL;
 		}
