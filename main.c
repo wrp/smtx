@@ -361,12 +361,11 @@ static int
 reorient(NODE *n, const char *args[])
 {
 	assert(n);
-	if( n->parent && n->parent->split != args[0][0]) {
-		n->parent->split = args[0][0];
+	(void) args;
+	if( n->parent && n->parent->split != '\0') {
+		n->parent->split = n->parent->split == '|' ? '-' : '|';
 		reshapechildren(n->parent);
 		drawchildren(n->parent);
-	} else {
-		split(n, args);
 	}
 	return 0;
 }
@@ -579,8 +578,7 @@ build_bindings()
 	add_key(cmd_keys, L',', scrolln, "-1", NULL);
 	add_key(cmd_keys, L'm', scrolln, "+1", NULL);
 	add_key(cmd_keys, L'c', split, NULL);
-	add_key(cmd_keys, L'|', reorient, "|", NULL);
-	add_key(cmd_keys, L'-', reorient, "-", NULL);
+	add_key(cmd_keys, L'|', reorient, NULL);
 	add_key(cmd_keys, L'r', redrawroot, NULL);
 	add_key(cmd_keys, L'j', mov, "down", NULL);
 	add_key(cmd_keys, L'k', mov, "up", NULL);
