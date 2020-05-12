@@ -418,16 +418,14 @@ getinput(NODE *n, fd_set *f) /* Recursively check all ptty's for input. */
 		assert(n->c1 == NULL);
 		assert(n->c2 == NULL);
 
-		if( n->parent == NULL ) {
-			assert( n == root );
-			freenode(n, false);
-			exit(EXIT_SUCCESS);
-		}
-		if( n == focused ) {
+		if( n->parent && n == focused ) {
 			focus(n->parent->c1 == n? n->parent->c2 : n->parent->c1);
 		}
 		removechild(n->parent, n);
 		freenode(n, false);
+		if( n == root ) {
+			root = focused = NULL;
+		}
 	    return false;
 	    }
     }
