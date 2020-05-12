@@ -407,9 +407,9 @@ getinput(NODE *n, fd_set *f) /* Recursively check all ptty's for input. */
 		status = false;
 	} else if( n && ! n->split  && n->pt > 0 && FD_ISSET(n->pt, f) ) {
 		ssize_t r = read(n->pt, iobuf, sizeof(iobuf));
-		if (r > 0)
+		if( r > 0 ) {
 			vtwrite(&n->vp, iobuf, r);
-		if (r <= 0 && errno != EINTR && errno != EWOULDBLOCK) {
+		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
 			assert(n->c1 == NULL);
 			assert(n->c2 == NULL);
 
@@ -424,7 +424,6 @@ getinput(NODE *n, fd_set *f) /* Recursively check all ptty's for input. */
 			status = false;
 		}
 	}
-
 	return status;
 }
 
