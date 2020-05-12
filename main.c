@@ -477,7 +477,7 @@ reshape_root(NODE *n, const char **args)
 int
 mov(struct node *n, const char **args)
 {
-	struct node *t = n, *p = n;
+	struct node *t = n;
 	int count = cmd_count == 0 ? 1 : cmd_count;
 	assert( n->split == '\0');
 	assert( !n->parent || n->parent->split != '\0' );
@@ -485,7 +485,6 @@ mov(struct node *n, const char **args)
 	case 'u':
 		while( t->parent && ( t->parent->split != '-'
 				|| t == t->parent->c1) ) {
-			p = t;
 			t = t->parent;
 		}
 		if( t->parent ) {
@@ -495,7 +494,6 @@ mov(struct node *n, const char **args)
 	case 'd':
 		while( t->parent && ( t->parent->split != '-'
 				|| t == t->parent->c2) ) {
-			p = t;
 			t = t->parent;
 		}
 		if( t->parent ) {
@@ -503,10 +501,22 @@ mov(struct node *n, const char **args)
 		}
 		break;
 	case 'l':
-		t = findnode(root, LEFT(t));
+		while( t->parent && ( t->parent->split != '|'
+				|| t == t->parent->c1) ) {
+			t = t->parent;
+		}
+		if( t->parent ) {
+			t = t->parent->c1;
+		}
 		break;
 	case 'r':
-		t = findnode(root, RIGHT(t));
+		while( t->parent && ( t->parent->split != '|'
+				|| t == t->parent->c2) ) {
+			t = t->parent;
+		}
+		if( t->parent ) {
+			t = t->parent->c2;
+		}
 		break;
 	case 'p':
 		t = lastfocused;
