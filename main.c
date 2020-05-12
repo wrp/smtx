@@ -142,11 +142,11 @@ getterm(void)
     return DEFAULT_TERMINAL;
 }
 
-static NODE *
-newview(NODE *p, int y, int x, int h, int w) /* Open a new view. */
+static struct node *
+newview(struct node *p, int y, int x, int h, int w)
 {
-    struct winsize ws = {.ws_row = h, .ws_col = w};
-    NODE *n = newnode(VIEW, p, y, x, h, w);
+    struct winsize ws = {.ws_row = h, .ws_col = w}; /* tty(4) */
+    struct node *n = newnode(VIEW, p, y, x, h, w);
     if (!n)
         return NULL;
 
@@ -276,7 +276,7 @@ reshapeview(NODE *n, int d, int ow) /* Reshape a view. */
 {
     int oy, ox;
     bool *tabs = newtabs(n->w, ow, n->tabs);
-    struct winsize ws = {.ws_row = n->h, .ws_col = n->w};
+    struct winsize ws = {.ws_row = n->h, .ws_col = n->w}; /* tty(4) */
 
     if (tabs){
         free(n->tabs);
