@@ -128,7 +128,8 @@ fixcursor(void) /* Move the terminal cursor to the active view. */
 {
     if (focused){
         int y, x;
-        curs_set(focused->s->off != focused->s->tos? 0 : focused->s->vis);
+        int show = binding != &cmd_keys && focused->s->vis;
+        curs_set(focused->s->off != focused->s->tos? 0 : show);
         getyx(focused->s->win, y, x);
         y = MIN(MAX(y, focused->s->tos), focused->s->tos + focused->h - 1);
         wmove(focused->s->win, y, x);
