@@ -417,8 +417,11 @@ getinput(NODE *n, fd_set *f) /* Recursively check all ptty's for input. */
         ssize_t r = read(n->pt, iobuf, sizeof(iobuf));
         if (r > 0)
             vtwrite(&n->vp, iobuf, r);
-        if (r <= 0 && errno != EINTR && errno != EWOULDBLOCK)
+        if (r <= 0 && errno != EINTR && errno != EWOULDBLOCK) {
+		assert(n->c1 == NULL);
+		assert(n->c2 == NULL);
             return deletenode(n), false;
+	    }
     }
 
     return true;
