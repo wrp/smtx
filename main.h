@@ -67,7 +67,7 @@ struct screen {
 	WINDOW *win;
 };
 
-typedef enum{
+typedef enum {
 	HORIZONTAL,
 	VERTICAL,
 	VIEW

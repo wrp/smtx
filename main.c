@@ -145,16 +145,18 @@ getterm(void)
 static struct node *
 newview(struct node *p, int y, int x, int h, int w)
 {
-    struct winsize ws = {.ws_row = h, .ws_col = w}; /* tty(4) */
-    struct node *n = newnode(VIEW, p, y, x, h, w);
-    if (!n)
-        return NULL;
-
-    struct screen *pri = &n->pri, *alt = &n->alt;
-    pri->win = newpad(MAX(h, scrollback_history), w);
-    alt->win = newpad(h, w);
-    if (!pri->win || !alt->win)
-        return freenode(n, false), NULL;
+	struct winsize ws = {.ws_row = h, .ws_col = w}; /* tty(4) */
+	struct node *n = newnode(VIEW, p, y, x, h, w);
+	if( n == NULL ) {
+		return NULL;
+	}
+	struct screen *pri = &n->pri, *alt = &n->alt;
+	n->pri.win = newpad(MAX(h, scrollback_history), w);
+	n->alt.win = newpad(h, w);
+	if( n->pri.win == NULL || n->alt.win == NULL ) {
+		freenode(n, false);
+		return NULL;
+	}
     pri->tos = pri->off = MAX(0, scrollback_history - h);
     n->s = pri;
 
