@@ -84,7 +84,7 @@ newtabs(int w, int ow, bool *oldtabs)
 }
 
 static NODE *
-newnode(int t, NODE *p, int y, int x, int h, int w)
+newnode(int t, NODE *p, double sp, int y, int x, int h, int w)
 {
 	NODE *n = NULL;
 	if( h > 1 && w > 1 && (n = calloc(1, sizeof *n)) != NULL ) {
@@ -93,7 +93,7 @@ newnode(int t, NODE *p, int y, int x, int h, int w)
 			n = NULL;
 		} else {
 			n->split = t;
-			n->split_point = .5;
+			n->split_point = sp;
 			n->parent = p;
 			n->y = y;
 			n->x = x;
@@ -152,7 +152,7 @@ static struct node *
 newview(int y, int x, int h, int w)
 {
 	struct winsize ws = {.ws_row = h, .ws_col = w}; /* tty(4) */
-	struct node *n = newnode(0, NULL, y, x, h, w);
+	struct node *n = newnode(0, NULL, 0, y, x, h, w);
 	if( n == NULL ) {
 		goto fail;
 	}
@@ -353,14 +353,25 @@ reorient(NODE *n, const char *args[])
 	return 0;
 }
 
+static double
+compute_split_point(struct node *n, int typ)
+{
+	assert(typ == '|' || typ == '-');
+	unsigned total = typ == '|' ? n->w : n->h;
+	unsigned c = cmd_count ? cmd_count : total / 2;
+	c = c < 2 ? 2 : c > total - 2 ? total - 2 : c;
+	return 1.0 - (double) c / total;
+}
+
 static int
 split(NODE *n, const char *args[])
 {
 	assert( !n->split );
 	int default_type = n->parent ? n->parent->split : '-';
 	int typ = *args ? **args : default_type ? default_type :'-';
+	double sp = compute_split_point(n, typ);
 	struct node *v = newview(0, 0, n->h, n->w);
-	struct node *c = newnode(typ, n->parent, n->y, n->x, n->h, n->w);
+	struct node *c = newnode(typ, n->parent, sp, n->y, n->x, n->h, n->w);
 	if( v != NULL && c != NULL ) {
 		struct node *p = n->parent;
 		c->c1 = n;
