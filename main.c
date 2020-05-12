@@ -256,9 +256,8 @@ removechild(NODE *p, const NODE *c) /* Replace p with other child. */
 }
 
 static int
-deletenode(NODE *n, const char **args) /* Delete a node. */
+deletenode(NODE *n)
 {
-	(void) args;
     if (!n || !n->parent)
         exit(EXIT_SUCCESS);
     if (n == focused)
@@ -419,7 +418,7 @@ getinput(NODE *n, fd_set *f) /* Recursively check all ptty's for input. */
         if (r > 0)
             vtwrite(&n->vp, iobuf, r);
         if (r <= 0 && errno != EINTR && errno != EWOULDBLOCK)
-            return deletenode(n, NULL), false;
+            return deletenode(n), false;
     }
 
     return true;
@@ -581,7 +580,6 @@ build_bindings()
 	add_key(cmd_keys, L'c', split, NULL);
 	add_key(cmd_keys, L'|', reorient, "|", NULL);
 	add_key(cmd_keys, L'-', reorient, "-", NULL);
-	add_key(cmd_keys, L'w', deletenode, NULL);
 	add_key(cmd_keys, L'r', redrawroot, NULL);
 	add_key(cmd_keys, L'j', mov, "down", NULL);
 	add_key(cmd_keys, L'k', mov, "up", NULL);
