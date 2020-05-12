@@ -368,18 +368,28 @@ draw(NODE *n) /* Draw a node. */
 }
 
 static int
+reorient(NODE *n, const char *args[])
+{
+	if( n && n->parent ) {
+		n->parent->split = args[0][0];
+		reshapechildren(n->parent);
+		drawchildren(n->parent);
+	}
+	return 0;
+}
+
+static int
 split(NODE *n, const char *args[])
 {
-	int t = args[0] && args[0][0] == 'v' ? '|' : '-';
-
-	int nh = t == '-'? (n->h - 1) / 2 : n->h;
-	int nw = t == '|' ? (n->w) / 2 : n->w;
+	(void)args;
+	int nh = (n->h - 1) / 2;
+	int nw = n->w;
 	NODE *p = n->parent;
 	NODE *v = newview(NULL, 0, 0, MAX(0, nh), MAX(0, nw));
 	if (!v)
 		return -1;
 
-	struct node *c = newnode(t, n->parent, n->y, n->x, n->h, n->w);
+	struct node *c = newnode('-', n->parent, n->y, n->x, n->h, n->w);
 	if( c != NULL ) {
 		c->c1 = n;
 		c->c2 = v;
@@ -570,7 +580,8 @@ build_bindings()
 	add_key(cmd_keys, L',', scrolln, "-1", NULL);
 	add_key(cmd_keys, L'm', scrolln, "+1", NULL);
 	add_key(cmd_keys, L'c', split, NULL);
-	add_key(cmd_keys, L'|', split, "v", NULL);
+	add_key(cmd_keys, L'|', reorient, "|", NULL);
+	add_key(cmd_keys, L'-', reorient, "-", NULL);
 	add_key(cmd_keys, L'w', deletenode, NULL);
 	add_key(cmd_keys, L'r', redrawroot, NULL);
 	add_key(cmd_keys, L'j', mov, "down", NULL);
