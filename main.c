@@ -147,10 +147,10 @@ getterm(void)
 }
 
 static struct node *
-newview(struct node *p, int y, int x, int h, int w)
+newview(int y, int x, int h, int w)
 {
 	struct winsize ws = {.ws_row = h, .ws_col = w}; /* tty(4) */
-	struct node *n = newnode(0, p, y, x, h, w);
+	struct node *n = newnode(0, NULL, y, x, h, w);
 	if( n == NULL ) {
 		goto fail;
 	}
@@ -173,10 +173,7 @@ newview(struct node *p, int y, int x, int h, int w)
 
 	pid_t pid = forkpty(&n->pt, NULL, NULL, &ws);
 	if( pid < 0 ) {
-		assert( p == NULL);
-		if( p == NULL ) {
-			perror("forkpty");
-		}
+		perror("forkpty");
 		goto fail;
 	} else if( pid == 0 ) {
 		char buf[64] = {0};
@@ -380,7 +377,7 @@ split(NODE *n, const char *args[])
 	assert( !n->split );
 	int default_type = n->parent ? n->parent->split : '-';
 	int typ = *args ? **args : default_type ? default_type :'-';
-	struct node *v = newview(NULL, 0, 0, n->h, n->w);
+	struct node *v = newview(0, 0, n->h, n->w);
 	struct node *c = newnode(typ, n->parent, n->y, n->x, n->h, n->w);
 	if( v != NULL && c != NULL ) {
 		struct node *p = n->parent;
@@ -738,7 +735,7 @@ main(int argc, char **argv)
 	start_color();
 	use_default_colors();
 
-	root = newview(NULL, 0, 0, LINES, COLS);
+	root = newview(0, 0, LINES, COLS);
 	if( root == NULL ) {
 		err(EXIT_FAILURE, "Unable to create root window");
 	}
