@@ -210,26 +210,6 @@ focus(NODE *n) /* Focus a node. */
         focus(n->c1? n->c1 : n->c2);
 }
 
-#define ABOVE(n) n->y - 2, n->x + n->w / 2
-#define BELOW(n) n->y + n->h + 2, n->x + n->w / 2
-#define LEFT(n)  n->y + n->h / 2, n->x - 2
-#define RIGHT(n) n->y + n->h / 2, n->x + n->w + 2
-
-static NODE *
-findnode(NODE *n, int y, int x) /* Find the node enclosing y,x. */
-{
-    #define IN(n, y, x) (y >= n->y && y <= n->y + n->h && \
-                         x >= n->x && x <= n->x + n->w)
-    if (IN(n, y, x)){
-        if (n->c1 && IN(n->c1, y, x))
-            return findnode(n->c1, y, x);
-        if (n->c2 && IN(n->c2, y, x))
-            return findnode(n->c2, y, x);
-        return n;
-    }
-    return NULL;
-}
-
 static void
 replacechild(NODE *n, NODE *c1, NODE *c2) /* Replace c1 of n with c2. */
 {
