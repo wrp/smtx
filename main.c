@@ -253,7 +253,6 @@ removechild(NODE *p, const NODE *c) /* Replace p with other child. */
 	}
 }
 
-
 static void
 reshapeview(NODE *n, int d, int ow) /* Reshape a view. */
 {
@@ -324,10 +323,11 @@ drawchildren(const NODE *n) /* Draw all children of n. */
 	if( binding == &cmd_keys ) {
 		attron(A_REVERSE);
 	}
-	if (n->split == '|')
-		mvvline(n->y, n->x + n->w / 2, ACS_VLINE, n->h);
-	else
-		mvhline(n->y + n->h / 2, n->x, ACS_HLINE, n->w);
+	if (n->split == '|') {
+		mvvline(n->y, n->c1->x + n->c1->w, ACS_VLINE, n->h);
+	} else {
+		mvhline(n->c1->y + n->c1->h, n->x, ACS_HLINE, n->w);
+	}
 	if( binding == &cmd_keys ) {
 		attroff(A_REVERSE);
 	}
