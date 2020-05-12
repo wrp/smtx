@@ -346,19 +346,21 @@ drawchildren(const NODE *n) /* Draw all children of n. */
 static void
 draw(NODE *n) /* Draw a node. */
 {
-	assert( strchr("|-", n->split) );
-	if( ! n->split ) {
-		pnoutrefresh(
-			n->s->win,  /* pad */
-			n->s->off,  /* pminrow */
-			0,          /* pmincol */
-			n->y,       /* sminrow */
-			n->x,       /* smincol */
-			n->y + n->h - 1,  /* smaxrow */
-			n->x + n->w - 1   /* smaxcol */
-		);
-	} else {
-		drawchildren(n);
+	if( n != NULL ) {
+		if( ! n->split ) {
+			pnoutrefresh(
+				n->s->win,  /* pad */
+				n->s->off,  /* pminrow */
+				0,          /* pmincol */
+				n->y,       /* sminrow */
+				n->x,       /* smincol */
+				n->y + n->h - 1,  /* smaxrow */
+				n->x + n->w - 1   /* smaxcol */
+			);
+		} else {
+			assert( strchr("|-", n->split) );
+			drawchildren(n);
+		}
 	}
 }
 
