@@ -52,10 +52,10 @@ static void freenode(NODE *n);
 static action split;
 
 void
-safewrite(int fd, const char *b, size_t n) /* Write, retry on interrupt */
+safewrite(int fd, const char *b, size_t n) /* Write with retry on interrupt */
 {
 	ssize_t s;
-	while( n > 0 && ((s = write(fd, b, n)) >= 0 || errno == EINTR)) {
+	while( n > 0 && ((s = write(fd, b, n)) >= 0 || errno == EINTR) ) {
 		if( s > 0 ) {
 			b += s;
 			n -= s;
