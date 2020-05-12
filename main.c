@@ -202,22 +202,6 @@ fail:
 	return NULL;
 }
 
-static NODE *
-newcontainer(Node t, NODE *p, int y, int x, int h, int w,
-             NODE *c1, NODE *c2) /* Create a new container */
-{
-    NODE *n = newnode(t, p, y, x, h, w);
-    if (!n)
-        return NULL;
-
-    n->c1 = c1;
-    n->c2 = c2;
-    c1->parent = c2->parent = n;
-
-    reshapechildren(n);
-    return n;
-}
-
 static void
 focus(NODE *n) /* Focus a node. */
 {
@@ -391,18 +375,23 @@ split(NODE *n, const char *args[])
 {
 	Node t = args[0] && args[0][0] == 'v' ? HORIZONTAL : VERTICAL;
 
-    int nh = t == VERTICAL? (n->h - 1) / 2 : n->h;
-    int nw = t == HORIZONTAL? (n->w) / 2 : n->w;
-    NODE *p = n->parent;
-    NODE *v = newview(NULL, 0, 0, MAX(0, nh), MAX(0, nw));
-    if (!v)
-        return -1;
+	int nh = t == VERTICAL? (n->h - 1) / 2 : n->h;
+	int nw = t == HORIZONTAL? (n->w) / 2 : n->w;
+	NODE *p = n->parent;
+	NODE *v = newview(NULL, 0, 0, MAX(0, nh), MAX(0, nw));
+	if (!v)
+		return -1;
 
-    NODE *c = newcontainer(t, n->parent, n->y, n->x, n->h, n->w, n, v);
-    if (!c){
-        freenode(v, false);
-        return -1;
-    }
+	struct node *c = newnode(t, n->parent, n->y, n->x, n->h, n->w);
+	if( c != NULL ) {
+		c->c1 = n;
+		c->c2 = v;
+		n->parent = v->parent = c;
+		reshapechildren(c);
+	} else {
+		freenode(v, false);
+		return -1;
+	}
 
     replacechild(p, n, c);
     focus(v);
