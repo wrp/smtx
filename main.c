@@ -45,6 +45,7 @@ static void draw(NODE *n);
 static void reshapechildren(NODE *n);
 static const char *term = NULL;
 static void freenode(NODE *n, bool recursive);
+static action split;
 
 void
 safewrite(int fd, const char *b, size_t n) /* Write, retry on interrupt */
@@ -375,6 +376,8 @@ reorient(NODE *n, const char *args[])
 		n->parent->split = args[0][0];
 		reshapechildren(n->parent);
 		drawchildren(n->parent);
+	} else {
+		split(n, args);
 	}
 	return 0;
 }
