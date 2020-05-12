@@ -410,7 +410,9 @@ getinput(NODE *n, fd_set *f) /* Recursively check all ptty's for input. */
 		assert(n->c1 == NULL);
 		assert(n->c2 == NULL);
 
-		if( !n->parent ) {
+		if( n->parent == NULL ) {
+			assert( n == root );
+			freenode(n, false);
 			exit(EXIT_SUCCESS);
 		}
 		if( n == focused ) {
@@ -712,9 +714,6 @@ parse_args(int argc, char **argv)
 void
 cleanup(void)
 {
-	if (root) {
-		freenode(root, true);
-	}
 	endwin();
 }
 
