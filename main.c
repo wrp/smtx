@@ -194,11 +194,10 @@ newview(struct node *p, int y, int x, int h, int w)
 		perror("execl");
 		return NULL;
 	}
-
-    FD_SET(n->pt, &fds);
-    fcntl(n->pt, F_SETFL, O_NONBLOCK);
-    nfds = n->pt > nfds? n->pt : nfds;
-    return n;
+	FD_SET(n->pt, &fds);
+	fcntl(n->pt, F_SETFL, O_NONBLOCK);
+	nfds = n->pt > nfds? n->pt : nfds;
+	return n;
 }
 
 static NODE *
