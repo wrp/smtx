@@ -155,13 +155,12 @@ newview(struct node *p, int y, int x, int h, int w)
 	struct winsize ws = {.ws_row = h, .ws_col = w}; /* tty(4) */
 	struct node *n = newnode(VIEW, p, y, x, h, w);
 	if( n == NULL ) {
-		return NULL;
+		goto fail;
 	}
 	n->pri.win = newpad(MAX(h, scrollback_history), w);
 	n->alt.win = newpad(h, w);
 	if( n->pri.win == NULL || n->alt.win == NULL ) {
-		freenode(n, false);
-		return NULL;
+		goto fail;
 	}
 	n->pri.tos = n->pri.off = MAX(0, scrollback_history - h);
 	n->s = &n->pri;
@@ -181,7 +180,7 @@ newview(struct node *p, int y, int x, int h, int w)
 		if( p == NULL ) {
 			perror("forkpty");
 		}
-		return freenode(n, false), NULL;
+		goto fail;
 	} else if( pid == 0 ) {
 		char buf[64] = {0};
 		snprintf(buf, sizeof buf  - 1, "%lu", (unsigned long)getppid());
@@ -198,6 +197,9 @@ newview(struct node *p, int y, int x, int h, int w)
 	fcntl(n->pt, F_SETFL, O_NONBLOCK);
 	nfds = n->pt > nfds? n->pt : nfds;
 	return n;
+fail:
+	freenode(n, false);
+	return NULL;
 }
 
 static NODE *
