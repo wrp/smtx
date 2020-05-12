@@ -320,7 +320,7 @@ static void
 drawchildren(const NODE *n) /* Draw all children of n. */
 {
 	draw(n->c1);
-	if( binding == &cmd_keys ) {
+	if( binding == &cmd_keys && (n->c1 == focused || n->c2 == focused) ) {
 		attron(A_REVERSE);
 	}
 	if (n->split == '|') {
@@ -328,9 +328,7 @@ drawchildren(const NODE *n) /* Draw all children of n. */
 	} else {
 		mvhline(n->c1->y + n->c1->h, n->x, ACS_HLINE, n->w);
 	}
-	if( binding == &cmd_keys ) {
-		attroff(A_REVERSE);
-	}
+	attroff(A_REVERSE);
 	wnoutrefresh(stdscr);
 	draw(n->c2);
 }
