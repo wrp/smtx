@@ -74,7 +74,7 @@ getshell(void) /* Get the user's preferred shell. */
 }
 
 static bool *
-newtabs(int w, int ow, bool *oldtabs) /* Initialize default tabstops. */
+newtabs(int w, int ow, bool *oldtabs)
 {
 	bool *tabs = calloc(w, sizeof *tabs);
 	for( int i = 0; tabs != NULL && i < w; i++ ) {
@@ -84,7 +84,7 @@ newtabs(int w, int ow, bool *oldtabs) /* Initialize default tabstops. */
 }
 
 static NODE *
-newnode(int t, NODE *p, int y, int x, int h, int w) /* Create a new node. */
+newnode(int t, NODE *p, int y, int x, int h, int w)
 {
 	NODE *n = NULL;
 	if( h > 1 && w > 1 && (n = calloc(1, sizeof *n)) != NULL ) {
