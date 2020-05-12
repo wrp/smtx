@@ -384,25 +384,21 @@ split(NODE *n, const char *args[])
 {
 	assert( !n->split );
 	int typ = args[0] ? args[0][0] : '-';
-	struct node *p = n->parent;
 	struct node *v = newview(NULL, 0, 0, n->h, n->w);
-	if( v == NULL ) {
-		return -1;
-	}
 	struct node *c = newnode(typ, n->parent, n->y, n->x, n->h, n->w);
-	if( c != NULL ) {
+	if( v != NULL && c != NULL ) {
+		struct node *p = n->parent;
 		c->c1 = n;
 		c->c2 = v;
 		n->parent = v->parent = c;
 		reshapechildren(c);
+		replacechild(p, n, c);
+		focus(v);
+		draw(p ? p : root);
 	} else {
 		freenode(v, false);
-		return -1;
+		freenode(c, false);
 	}
-
-	replacechild(p, n, c);
-	focus(v);
-	draw(p ? p : root);
 	return 0;
 }
 
