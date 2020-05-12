@@ -378,7 +378,8 @@ static int
 split(NODE *n, const char *args[])
 {
 	assert( !n->split );
-	int typ = args[0] ? args[0][0] : '-';
+	int default_type = n->parent ? n->parent->split : '-';
+	int typ = *args ? **args : default_type ? default_type :'-';
 	struct node *v = newview(NULL, 0, 0, n->h, n->w);
 	struct node *c = newnode(typ, n->parent, n->y, n->x, n->h, n->w);
 	if( v != NULL && c != NULL ) {
