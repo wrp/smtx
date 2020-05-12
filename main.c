@@ -175,16 +175,17 @@ newview(struct node *p, int y, int x, int h, int w)
 			perror("forkpty");
 		}
 		return freenode(n, false), NULL;
-    } else if (pid == 0){
-        char buf[100] = {0};
-        snprintf(buf, sizeof(buf) - 1, "%lu", (unsigned long)getppid());
-        setsid();
-        setenv("MTM", buf, 1);
-        setenv("TERM", getterm(), 1);
-        signal(SIGCHLD, SIG_DFL);
-        execl(getshell(), getshell(), NULL);
-        return NULL;
-    }
+	} else if( pid == 0 ) {
+		char buf[64] = {0};
+		snprintf(buf, sizeof buf  - 1, "%lu", (unsigned long)getppid());
+		setsid();
+		setenv("STTM", buf, 1);
+		setenv("STTM_VERSION", VERSION, 1);
+		setenv("TERM", getterm(), 1);
+		signal(SIGCHLD, SIG_DFL);
+		execl(getshell(), getshell(), NULL);
+		return NULL;
+	}
 
     FD_SET(n->pt, &fds);
     fcntl(n->pt, F_SETFL, O_NONBLOCK);
