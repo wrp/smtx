@@ -255,8 +255,10 @@ replacechild(NODE *n, NODE *c1, NODE *c2) /* Replace c1 of n with c2. */
 static void
 removechild(NODE *p, const NODE *c) /* Replace p with other child. */
 {
-    replacechild(p->parent, p, c == p->c1? p->c2 : p->c1);
-    freenode(p, false);
+	if( p != NULL ) {
+		replacechild(p->parent, p, c == p->c1? p->c2 : p->c1);
+		freenode(p, false);
+	}
 }
 
 
