@@ -534,6 +534,21 @@ send(NODE *n, const char **args)
 }
 
 int
+equalize(struct node *n, const char **args)
+{
+	(void) args;
+	assert( n->split == '\0' );
+	int split = n->parent ? n->parent->split : '\0';
+	int count = 2;
+	while( n->parent && n->parent->split == split  ) {
+		n = n->parent;
+		n->split_point = 1 / (double) count++;
+	}
+	reshapechildren(n);
+	return 0;
+}
+
+int
 transition(NODE *n, const char **args)
 {
 	assert(args);
@@ -586,6 +601,7 @@ build_bindings()
 	add_key(cmd_keys, L'\r', transition, NULL);
 	add_key(cmd_keys, L',', scrolln, "-1", NULL);
 	add_key(cmd_keys, L'm', scrolln, "+1", NULL);
+	add_key(cmd_keys, L'=', equalize, NULL);
 	add_key(cmd_keys, L'c', split, NULL);
 	add_key(cmd_keys, L'|', reorient, NULL);
 	add_key(cmd_keys, L'r', redrawroot, NULL);
