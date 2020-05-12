@@ -708,13 +708,6 @@ parse_args(int argc, char **argv)
 	}
 }
 
-
-void
-cleanup(void)
-{
-	endwin();
-}
-
 int
 main(int argc, char **argv)
 {
@@ -727,7 +720,6 @@ main(int argc, char **argv)
 	if( initscr() == NULL ) {
 		exit(EXIT_FAILURE);
 	}
-	atexit(cleanup);
 	raw();
 	noecho();
 	nonl();
@@ -742,5 +734,6 @@ main(int argc, char **argv)
 	focus(root);
 	draw(root);
 	run();
+	endwin();
 	return EXIT_SUCCESS;
 }
