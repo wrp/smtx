@@ -451,20 +451,6 @@ reorient(NODE *n, const char *args[])
 	return 0;
 }
 
-static double
-compute_split_point(struct node *n, int typ)
-{
-	assert(typ == '|' || typ == '-');
-	if( cmd_count == 0 ) {
-		return 0.5;
-	} else {
-		unsigned total = typ == '|' ? n->w : n->h;
-		unsigned c = cmd_count;
-		c = c < 2 ? 2 : c > total - 2 ? total - 2 : c;
-		return 1.0 - (double) c / total;
-	}
-}
-
 static int
 split(NODE *n, const char *args[])
 {
@@ -472,7 +458,7 @@ split(NODE *n, const char *args[])
 	assert( n->c[0] == NULL );
 	int default_type = n->parent ? n->parent->split : '-';
 	int typ = *args ? **args : default_type ? default_type :'-';
-	double sp = compute_split_point(n, typ);
+	double sp = 1.0 - (cmd_count ? MIN(100, cmd_count) / 100.0 : 0.5);
 	struct node *v = n->c[0] = newwindow(0, 0, n->h, n->w);
 	struct node *c = newnode(typ, n->parent, sp, n->y, n->x, n->h, n->w);
 	n->c[0] = NULL; /* Put in the tree for next_available_id() */
