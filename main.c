@@ -789,7 +789,7 @@ main(int argc, char **argv)
 	raw();
 	noecho();
 	nonl();
-	intrflush(stdscr, FALSE);
+	intrflush(NULL, FALSE);
 	start_color();
 	use_default_colors();
 
