@@ -397,12 +397,15 @@ split(NODE *n, const char *args[])
 	struct node *c = newnode(typ, n->parent, sp, n->y, n->x, n->h, n->w);
 	if( v != NULL && c != NULL ) {
 		struct node *p = n->parent;
-		c->c[0] = n;
-		c->c[1] = v;
+		int tmpid = n->id;
+		n->id = c->id;
+		c->id = tmpid;
+		c->c[0] = v;
+		c->c[1] = n;
 		n->parent = v->parent = c;
 		reshapechildren(c);
 		replacechild(p, n, c);
-		focus(v);
+		focus(n);
 		draw(p ? p : root);
 	} else {
 		freenode(v);
