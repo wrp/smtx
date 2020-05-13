@@ -614,7 +614,7 @@ build_bindings()
 	add_key(cmd_keys, L'm', scrolln, "+1", NULL);
 	add_key(cmd_keys, L'=', equalize, NULL);
 	add_key(cmd_keys, L'c', split, NULL);
-	add_key(cmd_keys, L'|', reorient, NULL);
+	add_key(cmd_keys, L'x', reorient, NULL);
 	add_key(cmd_keys, L'r', redrawroot, NULL);
 	add_key(cmd_keys, L'j', mov, "down", NULL);
 	add_key(cmd_keys, L'k', mov, "up", NULL);
