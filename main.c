@@ -215,7 +215,11 @@ focus(struct node *n)
 static void
 replacechild(NODE *n, NODE *c1, NODE *c2) /* Replace c1 of n with c2. */
 {
+	assert( c1 && c2 );
 	c2->parent = n;
+	int tmpid = c1->id;
+	c1->id = c2->id;
+	c2->id = tmpid;
 	if( n == NULL ){
 		root = c2;
 		reshape(c2, 0, 0, LINES, COLS);
@@ -229,7 +233,7 @@ replacechild(NODE *n, NODE *c1, NODE *c2) /* Replace c1 of n with c2. */
 }
 
 static void
-removechild(NODE *p, const NODE *c) /* Replace p with other child. */
+reap_dead_window(NODE *p, const NODE *c)
 {
 	if( p != NULL ) {
 		replacechild(p->parent, p, c == p->c[0]? p->c[1] : p->c[0]);
@@ -449,9 +453,6 @@ split(NODE *n, const char *args[])
 	struct node *c = newnode(typ, n->parent, sp, n->y, n->x, n->h, n->w);
 	if( v != NULL && c != NULL ) {
 		struct node *p = n->parent;
-		int tmpid = n->id;
-		n->id = c->id;
-		c->id = tmpid;
 		c->c[0] = v;
 		c->c[1] = n;
 		n->parent = v->parent = c;
@@ -485,7 +486,7 @@ getinput(NODE *n, fd_set *f) /* Recursively check all ptty's for input. */
 			if( p && n == focused ) {
 				focus(navfocus = p->c[ n == p->c[0]]);
 			}
-			removechild(n->parent, n);
+			reap_dead_window(n->parent, n);
 			freenode(n);
 			if( n == root ) {
 				root = focused = NULL;
