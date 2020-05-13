@@ -89,6 +89,7 @@ mark(struct node *n, char *used, int offset, int siz)
 {
 	if( n ) {
 		if( n->id >= offset && n->id - offset < siz ) {
+			assert( used[n->id - offset] == 0 );
 			used[n->id - offset] = 1;
 		}
 		mark(n->c[0], used, offset, siz);
