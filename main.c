@@ -308,7 +308,7 @@ static void
 drawchildren(const NODE *n) /* Draw all children of n. */
 {
 	draw(n->c[0]);
-	if( binding == &cmd_keys && (n->c[0] == focused || n->c[1] == focused) ) {
+	if( binding == &cmd_keys && n->c[0] == focused ) {
 		attron(A_REVERSE);
 	}
 	char id[2][32];
@@ -322,8 +322,12 @@ drawchildren(const NODE *n) /* Draw all children of n. */
 		for( char *s = id[0]; *s; s++ ) {
 			mvprintw(y++, x, "%c", *s);
 		}
+		attroff(A_REVERSE);
 		mvvline(y, x, ACS_VLINE, len);
 		y += len;
+		if( binding == &cmd_keys && n->c[1] == focused ) {
+			attron(A_REVERSE);
+		}
 		for( char *s = id[1]; *s; s++ ) {
 			mvprintw(y++, x, "%c", *s);
 		}
@@ -332,9 +336,13 @@ drawchildren(const NODE *n) /* Draw all children of n. */
 		int y = n->c[0]->y + n->c[0]->h;
 		int x = n->c[0]->x;
 		mvprintw(y, x, "%s", id[0]);
+		attroff(A_REVERSE);
 		x += strlen(id[0]);
 		mvhline(y, x, ACS_HLINE, len);
 		x += len;
+		if( binding == &cmd_keys && n->c[1] == focused ) {
+			attron(A_REVERSE);
+		}
 		mvprintw(y, x, "%s", id[1]);
 	}
 	attroff(A_REVERSE);
