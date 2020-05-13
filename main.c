@@ -127,7 +127,7 @@ freenode(NODE *n)
 }
 
 static void
-fixcursor(void) /* Move the terminal cursor to the active view. */
+fixcursor(void) /* Move the terminal cursor to the active window. */
 {
     if (focused){
         int y, x;
@@ -151,7 +151,7 @@ getterm(void)
 }
 
 static struct node *
-newview(int y, int x, int h, int w)
+newwindow(int y, int x, int h, int w)
 {
 	struct winsize ws = {.ws_row = h, .ws_col = w}; /* tty(4) */
 	struct node *n = newnode(0, NULL, 0, y, x, h, w);
@@ -238,7 +238,7 @@ removechild(NODE *p, const NODE *c) /* Replace p with other child. */
 }
 
 static void
-reshapeview(NODE *n, int d, int ow) /* Reshape a view. */
+reshape_window(NODE *n, int d, int ow)
 {
     int oy, ox;
     bool *tabs = newtabs(n->w, ow, n->tabs);
@@ -267,7 +267,7 @@ reshapeview(NODE *n, int d, int ow) /* Reshape a view. */
 }
 
 static void
-reshapechildren(NODE *n) /* Reshape all children of a view. */
+reshapechildren(NODE *n)
 {
 	if( n->split == '|' ) {
 		int w[2];
@@ -298,7 +298,7 @@ reshape(NODE *n, int y, int x, int h, int w) /* Reshape a node. */
     n->w = MAX(w, 1);
 
     if (! n->split)
-        reshapeview(n, d, ow);
+        reshape_window(n, d, ow);
     else
         reshapechildren(n);
     draw(n);
@@ -393,7 +393,7 @@ split(NODE *n, const char *args[])
 	int default_type = n->parent ? n->parent->split : '-';
 	int typ = *args ? **args : default_type ? default_type :'-';
 	double sp = compute_split_point(n, typ);
-	struct node *v = newview(0, 0, n->h, n->w);
+	struct node *v = newwindow(0, 0, n->h, n->w);
 	struct node *c = newnode(typ, n->parent, sp, n->y, n->x, n->h, n->w);
 	if( v != NULL && c != NULL ) {
 		struct node *p = n->parent;
@@ -784,7 +784,7 @@ main(int argc, char **argv)
 	start_color();
 	use_default_colors();
 
-	root = newview(0, 0, LINES, COLS);
+	root = newwindow(0, 0, LINES, COLS);
 	if( root == NULL ) {
 		err(EXIT_FAILURE, "Unable to create root window");
 	}
