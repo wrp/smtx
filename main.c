@@ -288,20 +288,14 @@ reshape_window(NODE *n, int d, int ow)
         wmove(n->s->win, oy + d, ox);
         wscrl(n->s->win, -d);
     }
+    wrefresh(n->s->win);
     doupdate();
-    refresh();
     ioctl(n->pt, TIOCSWINSZ, &ws);
 }
 
 static void
 reshapechildren(NODE *n)
 {
-	if(n->c[0]->s) {
-		wclear(n->c[0]->s->win);
-	}
-	if(n->c[1]->s) {
-		wclear(n->c[1]->s->win);
-	}
 	if( n->div ) {
 		wclear(n->div);
 		wnoutrefresh(n->div);
@@ -635,7 +629,7 @@ resize(struct node *n, const char **args)
 	if( n->parent ) {
 		double factor = cmd_count ? MIN(100, cmd_count) / 100.0 : 0.5;
 		n->parent->split_point = factor;
-		reshapechildren(n->parent);
+		reshapechildren(root);
 	}
 	return 0;
 }
