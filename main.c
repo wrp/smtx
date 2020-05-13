@@ -543,6 +543,20 @@ reshape_root(NODE *n, const char **args)
 	return 0;
 }
 
+
+static struct node *
+find_node(struct node *b, int id) {
+	struct node *r = NULL;
+	if( b != NULL ) {
+		if( b->id == id ) {
+			r = b;
+		} else if( ( r = find_node(b->c[0], id)) == NULL ) {
+			r = find_node(b->c[1], id);
+		}
+	}
+	return r;
+}
+
 int
 mov(struct node *n, const char **args)
 {
@@ -565,6 +579,9 @@ mov(struct node *n, const char **args)
 		while( count-- && t && t->c[cmd == 'l']) {
 			t = t->c[cmd == 'l'];
 		}
+		break;
+	case 'g':
+		t = find_node(root, cmd_count);
 		break;
 	case 'p':
 		t = lastfocused;
@@ -671,6 +688,7 @@ build_bindings()
 	add_key(cmd_keys, L'c', split, NULL);
 	add_key(cmd_keys, L'x', reorient, NULL);
 	add_key(cmd_keys, L'r', redrawroot, NULL);
+	add_key(cmd_keys, L'g', mov, "g", NULL);
 	add_key(cmd_keys, L'j', mov, "j", NULL);
 	add_key(cmd_keys, L'k', mov, "k", NULL);
 	add_key(cmd_keys, L'h', mov, "h", NULL);
