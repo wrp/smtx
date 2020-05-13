@@ -393,12 +393,12 @@ draw(NODE *n) /* Draw a node. */
 static int
 reorient(NODE *n, const char *args[])
 {
-	assert(n);
-	(void) args;
-	if( n->parent && n->parent->split != '\0') {
-		n->parent->split = n->parent->split == '|' ? '-' : '|';
-		reshapechildren(n->parent);
-		drawchildren(n->parent);
+	if( n && n->split == '\0' ) {
+		reorient(n->parent, args);
+	} else if( n ) {
+		n->split = n->split == '|' ? '-' : '|';
+		reshapechildren(n);
+		drawchildren(n);
 	}
 	return 0;
 }
