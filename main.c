@@ -37,7 +37,8 @@ static struct handler keys[128];
 static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 static struct handler (*binding)[128] = &keys;
-static NODE *root, *focused, *lastfocused = NULL;
+static struct node *root, *focused, *lastfocused = NULL;
+static struct node *navfocus;
 static char commandkey = CTL(COMMAND_KEY);
 static int nfds = 1; /* stdin */
 static fd_set fds;
@@ -201,15 +202,14 @@ fail:
 }
 
 static void
-focus(NODE *n) /* Focus a node. */
+focus(struct node *n)
 {
-    if (!n)
-        return;
-    else if( ! n->split ) {
-        lastfocused = focused;
-        focused = n;
-    } else
-        focus(n->c[0]? n->c[0] : n->c[1]);
+	if( n && ! n->split ) {
+		lastfocused = focused;
+		focused = n;
+	} else if( n ) {
+		focus(n->c[0]? n->c[0] : n->c[1]);
+	}
 }
 
 static void
@@ -308,7 +308,7 @@ static void
 drawchildren(const NODE *n) /* Draw all children of n. */
 {
 	draw(n->c[0]);
-	if( binding == &cmd_keys && n->c[0] == focused ) {
+	if( binding == &cmd_keys && n->c[0] == navfocus ) {
 		attron(A_REVERSE);
 	}
 	char id[2][32];
@@ -325,7 +325,7 @@ drawchildren(const NODE *n) /* Draw all children of n. */
 		attroff(A_REVERSE);
 		mvvline(y, x, ACS_VLINE, len);
 		y += len;
-		if( binding == &cmd_keys && n->c[1] == focused ) {
+		if( binding == &cmd_keys && n->c[1] == navfocus ) {
 			attron(A_REVERSE);
 		}
 		for( char *s = id[1]; *s; s++ ) {
@@ -340,7 +340,7 @@ drawchildren(const NODE *n) /* Draw all children of n. */
 		x += strlen(id[0]);
 		mvhline(y, x, ACS_HLINE, len);
 		x += len;
-		if( binding == &cmd_keys && n->c[1] == focused ) {
+		if( binding == &cmd_keys && n->c[1] == navfocus ) {
 			attron(A_REVERSE);
 		}
 		mvprintw(y, x, "%s", id[1]);
@@ -413,7 +413,7 @@ split(NODE *n, const char *args[])
 		n->parent = v->parent = c;
 		reshapechildren(c);
 		replacechild(p, n, c);
-		focus(n);
+		focus(navfocus = n);
 		draw(p ? p : root);
 	} else {
 		freenode(v);
@@ -437,9 +437,9 @@ getinput(NODE *n, fd_set *f) /* Recursively check all ptty's for input. */
 		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
 			assert(n->c[0] == NULL);
 			assert(n->c[1] == NULL);
-
-			if( n->parent && n == focused ) {
-				focus(n->parent->c[0] == n ? n->parent->c[1] : n->parent->c[0]);
+			struct node * p = n->parent;
+			if( p && n == focused ) {
+				focus(navfocus = p->c[ n == p->c[0]]);
 			}
 			removechild(n->parent, n);
 			freenode(n);
@@ -502,45 +502,24 @@ reshape_root(NODE *n, const char **args)
 int
 mov(struct node *n, const char **args)
 {
-	struct node *t = n;
+	assert( navfocus != NULL );
+	char cmd = args[0][0];
+	struct node *t = n = navfocus;
 	int count = cmd_count == 0 ? 1 : cmd_count;
-	assert( n->split == '\0');
-	assert( !n->parent || n->parent->split != '\0' );
-	while( t && count-- ) switch(args[0][0]) {
-	case 'u':
-		while( t->parent && ( t->parent->split != '-'
-				|| t == t->parent->c[0]) ) {
+	switch( cmd ) {
+	case 'k': /* move to parent */
+	case 'j': /* move to sibling */
+		while( count-- && t->parent ) {
 			t = t->parent;
 		}
-		if( t->parent ) {
-			t = t->parent->c[0];
+		if( args[0][0] == 'j' && n->parent ) {
+			t = t->c[n == n->parent->c[1] ? 0 : 1];
 		}
 		break;
-	case 'd':
-		while( t->parent && ( t->parent->split != '-'
-				|| t == t->parent->c[1]) ) {
-			t = t->parent;
-		}
-		if( t->parent ) {
-			t = t->parent->c[1];
-		}
-		break;
-	case 'l':
-		while( t->parent && ( t->parent->split != '|'
-				|| t == t->parent->c[0]) ) {
-			t = t->parent;
-		}
-		if( t->parent ) {
-			t = t->parent->c[0];
-		}
-		break;
-	case 'r':
-		while( t->parent && ( t->parent->split != '|'
-				|| t == t->parent->c[1]) ) {
-			t = t->parent;
-		}
-		if( t->parent ) {
-			t = t->parent->c[1];
+	case 'h': /* Move to 1st child (fallthru) */
+	case 'l': /* Move to 2nd child */
+		while( count-- && t && t->c[cmd == 'l']) {
+			t = t->c[cmd == 'l'];
 		}
 		break;
 	case 'p':
@@ -549,7 +528,7 @@ mov(struct node *n, const char **args)
 	default:
 		assert(0);
 	}
-	focus(t);
+	focus(navfocus = t);
 	return 0;
 }
 
@@ -650,10 +629,10 @@ build_bindings()
 	add_key(cmd_keys, L'c', split, NULL);
 	add_key(cmd_keys, L'x', reorient, NULL);
 	add_key(cmd_keys, L'r', redrawroot, NULL);
-	add_key(cmd_keys, L'j', mov, "down", NULL);
-	add_key(cmd_keys, L'k', mov, "up", NULL);
-	add_key(cmd_keys, L'h', mov, "left", NULL);
-	add_key(cmd_keys, L'l', mov, "right", NULL);
+	add_key(cmd_keys, L'j', mov, "j", NULL);
+	add_key(cmd_keys, L'k', mov, "k", NULL);
+	add_key(cmd_keys, L'h', mov, "h", NULL);
+	add_key(cmd_keys, L'l', mov, "l", NULL);
 	add_key(cmd_keys, L'o', mov, "previous", NULL);
 	add_key(cmd_keys, L't', new_tabstop, NULL);
 	for( int i=0; i < 10; i++ ) {
@@ -795,7 +774,7 @@ main(int argc, char **argv)
 	start_color();
 	use_default_colors();
 
-	root = newwindow(0, 0, LINES, COLS);
+	navfocus = root = newwindow(0, 0, LINES, COLS);
 	if( root == NULL ) {
 		err(EXIT_FAILURE, "Unable to create root window");
 	}
