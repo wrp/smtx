@@ -75,8 +75,9 @@ struct node {
 	int y, x, h, w, pt, ntabs;
 	bool *tabs, pnm, decom, am, lnm;
 	wchar_t repc;
-	NODE *parent;
+	struct node *parent;
 	struct node *c[2];
+	WINDOW *div;
 	struct screen pri, alt, *s;
 	wchar_t *g0, *g1, *g2, *g3, *gc, *gs, *sgc, *sgs;
 	VTPARSER vp;

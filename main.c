@@ -269,18 +269,38 @@ reshape_window(NODE *n, int d, int ow)
 static void
 reshapechildren(NODE *n)
 {
+	if(n->c[0]->s) {
+		wclear(n->c[0]->s->win);
+	}
+	if(n->c[1]->s) {
+		wclear(n->c[1]->s->win);
+	}
+	if( n->div ) {
+		wclear(n->div);
+		wnoutrefresh(n->div);
+	}
 	if( n->split == '|' ) {
 		int w[2];
 		w[0] = n->w * n->split_point;
 		w[1] = n->w - w[0] - 1;
 		reshape(n->c[0], n->y, n->x, n->h, w[0]);
 		reshape(n->c[1], n->y, n->x + w[0] + 1, n->h, w[1]);
+		if( n->div ) {
+			wresize(n->div, n->h, 1);
+		} else {
+			n->div = newpad(n->h, 1);
+		}
 	} else if( n->split == '-' ) {
 		int h[2];
 		h[0] = n->h * n->split_point;
 		h[1] = n->h - h[0] - 1;
 		reshape(n->c[0], n->y, n->x, h[0], n->w);
 		reshape(n->c[1], n->y + h[0] + 1, n->x, h[1], n->w);
+		if( n->div ) {
+			wresize(n->div, 1, n->w);
+		} else {
+			n->div = newpad(1, n->w);
+		}
 	}
 }
 
@@ -314,49 +334,51 @@ draw_divider(const struct node *n)
 	len -= snprintf(id[1], sizeof id[0], "%d", n->c[1]->id);
 	if (n->split == '|') {
 		assert( n->c[0]->y == n->y );
-		int y = n->c[0]->y;
-		int x = n->c[0]->x + n->c[0]->w;
+		int y = 0;
 		if( n->c[0] == navfocus ) {
-			attron(attrs);
+			wattron(n->div, attrs);
 		}
 		for( char *s = id[0]; *s; s++ ) {
-			mvprintw(y++, x, "%c", *s);
+			mvwprintw(n->div, y++, 0, "%c", *s);
 		}
-		attroff(attrs);
+		wattroff(n->div, attrs);
 		if( n == navfocus ) {
-			attron(attrs);
+			wattron(n->div, attrs);
 		}
-		mvvline(y, x, ACS_VLINE, len);
+		mvwvline(n->div, y, 0, ACS_VLINE, len);
 		y += len;
-		attroff(attrs);
+		wattroff(n->div, attrs);
 		if( n->c[1] == navfocus ) {
-			attron(attrs);
+			wattron(n->div, attrs);
 		}
 		for( char *s = id[1]; *s; s++ ) {
-			mvprintw(y++, x, "%c", *s);
+			mvwprintw(n->div, y++, 0, "%c", *s);
 		}
-		attroff(attrs);
+		wattroff(n->div, attrs);
+		pnoutrefresh(n->div, 0, 0, n->y, n->x + n->c[0]->w,
+			n->y + n->h, n->x + n->c[0]->w);
 	} else {
 		assert( n->c[0]->x == n->x );
-		int y = n->c[0]->y + n->c[0]->h;
-		int x = n->c[0]->x;
+		int x = 0;
 		if( n->c[0] == navfocus ) {
-			attron(attrs);
+			wattron(n->div, attrs);
 		}
-		mvprintw(y, x, "%s", id[0]);
+		mvwprintw(n->div, 0, x, "%s", id[0]);
 		x += strlen(id[0]);
-		attroff(attrs);
+		wattroff(n->div, attrs);
 		if( n == navfocus ) {
-			attron(attrs);
+			wattron(n->div, attrs);
 		}
-		mvhline(y, x, ACS_HLINE, len);
+		mvwhline(n->div, 0, x, ACS_HLINE, len);
 		x += len;
-		attroff(attrs);
+		wattroff(n->div, attrs);
 		if( n->c[1] == navfocus ) {
-			attron(attrs);
+			wattron(n->div, attrs);
 		}
-		mvprintw(y, x, "%s", id[1]);
-		attroff(attrs);
+		mvwprintw(n->div, 0, x, "%s", id[1]);
+		wattroff(n->div, attrs);
+		pnoutrefresh(n->div, 0, 0, n->y + n->c[0]->h, n->x,
+			n->y + n->c[0]->h, n->x + n->w);
 	}
 }
 
@@ -366,7 +388,6 @@ drawchildren(const struct node *n)
 	draw(n->c[0]);
 	draw_divider(n);
 	draw(n->c[1]);
-	wnoutrefresh(stdscr);
 }
 
 static void
@@ -407,10 +428,14 @@ static double
 compute_split_point(struct node *n, int typ)
 {
 	assert(typ == '|' || typ == '-');
-	unsigned total = typ == '|' ? n->w : n->h;
-	unsigned c = cmd_count ? cmd_count : total / 2;
-	c = c < 2 ? 2 : c > total - 2 ? total - 2 : c;
-	return 1.0 - (double) c / total;
+	if( cmd_count == 0 ) {
+		return 0.5;
+	} else {
+		unsigned total = typ == '|' ? n->w : n->h;
+		unsigned c = cmd_count;
+		c = c < 2 ? 2 : c > total - 2 ? total - 2 : c;
+		return 1.0 - (double) c / total;
+	}
 }
 
 static int
@@ -556,9 +581,7 @@ redrawroot(struct node *n, const char **args)
 {
 	(void) n;
 	(void) args;
-	touchwin(stdscr);
 	draw(root);
-	redrawwin(stdscr);
 	return 0;
 }
 
