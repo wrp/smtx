@@ -31,7 +31,6 @@
 
 #include "main.h"
 
-int id;
 int tabstop = 8;
 static struct handler keys[128];
 static struct handler cmd_keys[128];
@@ -85,6 +84,35 @@ newtabs(int w, int ow, bool *oldtabs)
 	return tabs;
 }
 
+static void
+mark(struct node *n, char *used, int offset, int siz)
+{
+	if( n ) {
+		if( n->id >= offset && n->id - offset < siz ) {
+			used[n->id - offset] = 1;
+		}
+		mark(n->c[0], used, offset, siz);
+		mark(n->c[1], used, offset, siz);
+	}
+}
+
+/* Get the lowest available index.  It is highly unlikely that anyone
+ * would ever use 128 windows, so the naive algorithm is fine.
+ */
+static int
+next_availble_id(struct node *n, int offset)
+{
+	char used[128] = {0};
+	mark(n, used, offset, sizeof used / sizeof *used);
+	for( unsigned i = 0; i < sizeof used / sizeof *used; i++ ) {
+		if( ! used[i] ) {
+			return i + offset;
+		}
+	}
+	return next_availble_id(n, offset + sizeof used / sizeof *used);
+
+}
+
 static NODE *
 newnode(int t, NODE *p, double sp, int y, int x, int h, int w)
 {
@@ -94,7 +122,7 @@ newnode(int t, NODE *p, double sp, int y, int x, int h, int w)
 			free(n);
 			n = NULL;
 		} else {
-			n->id = id++;
+			n->id = next_availble_id(root, 0);
 			n->split = t;
 			n->split_point = sp;
 			n->parent = p;
@@ -446,11 +474,13 @@ static int
 split(NODE *n, const char *args[])
 {
 	assert( !n->split );
+	assert( n->c[0] == NULL );
 	int default_type = n->parent ? n->parent->split : '-';
 	int typ = *args ? **args : default_type ? default_type :'-';
 	double sp = compute_split_point(n, typ);
-	struct node *v = newwindow(0, 0, n->h, n->w);
+	struct node *v = n->c[0] = newwindow(0, 0, n->h, n->w);
 	struct node *c = newnode(typ, n->parent, sp, n->y, n->x, n->h, n->w);
+	n->c[0] = NULL; /* Put in the tree for next_available_id() */
 	if( v != NULL && c != NULL ) {
 		struct node *p = n->parent;
 		c->c[0] = v;
