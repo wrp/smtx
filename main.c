@@ -31,6 +31,7 @@
 
 #include "main.h"
 
+int id;
 int tabstop = 8;
 static struct handler keys[128];
 static struct handler cmd_keys[128];
@@ -92,6 +93,7 @@ newnode(int t, NODE *p, double sp, int y, int x, int h, int w)
 			free(n);
 			n = NULL;
 		} else {
+			n->id = id++;
 			n->split = t;
 			n->split_point = sp;
 			n->parent = p;
@@ -309,10 +311,31 @@ drawchildren(const NODE *n) /* Draw all children of n. */
 	if( binding == &cmd_keys && (n->c[0] == focused || n->c[1] == focused) ) {
 		attron(A_REVERSE);
 	}
+	char id[2][32];
+	int len = n->split == '|' ? n->h : n->w;
+	len -= snprintf(id[0], sizeof id[0], "%d", n->c[0]->id);
+	len -= snprintf(id[1], sizeof id[0], "%d", n->c[1]->id);
 	if (n->split == '|') {
-		mvvline(n->y, n->c[0]->x + n->c[0]->w, ACS_VLINE, n->h);
+		assert( n->c[0]->y == n->y );
+		int y = n->c[0]->y;
+		int x = n->c[0]->x + n->c[0]->w;
+		for( char *s = id[0]; *s; s++ ) {
+			mvprintw(y++, x, "%c", *s);
+		}
+		mvvline(y, x, ACS_VLINE, len);
+		y += len;
+		for( char *s = id[1]; *s; s++ ) {
+			mvprintw(y++, x, "%c", *s);
+		}
 	} else {
-		mvhline(n->c[0]->y + n->c[0]->h, n->x, ACS_HLINE, n->w);
+		assert( n->c[0]->x == n->x );
+		int y = n->c[0]->y + n->c[0]->h;
+		int x = n->c[0]->x;
+		mvprintw(y, x, "%s", id[0]);
+		x += strlen(id[0]);
+		mvhline(y, x, ACS_HLINE, len);
+		x += len;
+		mvprintw(y, x, "%s", id[1]);
 	}
 	attroff(A_REVERSE);
 	wnoutrefresh(stdscr);
