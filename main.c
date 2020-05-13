@@ -207,7 +207,7 @@ focus(NODE *n) /* Focus a node. */
         lastfocused = focused;
         focused = n;
     } else
-        focus(n->c1? n->c1 : n->c2);
+        focus(n->c[0]? n->c[0] : n->c[1]);
 }
 
 static void
@@ -217,11 +217,11 @@ replacechild(NODE *n, NODE *c1, NODE *c2) /* Replace c1 of n with c2. */
 	if( n == NULL ){
 		root = c2;
 		reshape(c2, 0, 0, LINES, COLS);
-	} else if( n->c1 == c1 ) {
-		n->c1 = c2;
+	} else if( n->c[0] == c1 ) {
+		n->c[0] = c2;
 		reshape(n, n->y, n->x, n->h, n->w);
-	} else if( n->c2 == c1 ) {
-		n->c2 = c2;
+	} else if( n->c[1] == c1 ) {
+		n->c[1] = c2;
 		reshape(n, n->y, n->x, n->h, n->w);
 	}
 }
@@ -230,7 +230,7 @@ static void
 removechild(NODE *p, const NODE *c) /* Replace p with other child. */
 {
 	if( p != NULL ) {
-		replacechild(p->parent, p, c == p->c1? p->c2 : p->c1);
+		replacechild(p->parent, p, c == p->c[0]? p->c[1] : p->c[0]);
 		freenode(p);
 	}
 }
@@ -271,14 +271,14 @@ reshapechildren(NODE *n) /* Reshape all children of a view. */
 		int w[2];
 		w[0] = n->w * n->split_point;
 		w[1] = n->w - w[0] - 1;
-		reshape(n->c1, n->y, n->x, n->h, w[0]);
-		reshape(n->c2, n->y, n->x + w[0] + 1, n->h, w[1]);
+		reshape(n->c[0], n->y, n->x, n->h, w[0]);
+		reshape(n->c[1], n->y, n->x + w[0] + 1, n->h, w[1]);
 	} else if( n->split == '-' ) {
 		int h[2];
 		h[0] = n->h * n->split_point;
 		h[1] = n->h - h[0] - 1;
-		reshape(n->c1, n->y, n->x, h[0], n->w);
-		reshape(n->c2, n->y + h[0] + 1, n->x, h[1], n->w);
+		reshape(n->c[0], n->y, n->x, h[0], n->w);
+		reshape(n->c[1], n->y + h[0] + 1, n->x, h[1], n->w);
 	}
 }
 
@@ -305,18 +305,18 @@ reshape(NODE *n, int y, int x, int h, int w) /* Reshape a node. */
 static void
 drawchildren(const NODE *n) /* Draw all children of n. */
 {
-	draw(n->c1);
-	if( binding == &cmd_keys && (n->c1 == focused || n->c2 == focused) ) {
+	draw(n->c[0]);
+	if( binding == &cmd_keys && (n->c[0] == focused || n->c[1] == focused) ) {
 		attron(A_REVERSE);
 	}
 	if (n->split == '|') {
-		mvvline(n->y, n->c1->x + n->c1->w, ACS_VLINE, n->h);
+		mvvline(n->y, n->c[0]->x + n->c[0]->w, ACS_VLINE, n->h);
 	} else {
-		mvhline(n->c1->y + n->c1->h, n->x, ACS_HLINE, n->w);
+		mvhline(n->c[0]->y + n->c[0]->h, n->x, ACS_HLINE, n->w);
 	}
 	attroff(A_REVERSE);
 	wnoutrefresh(stdscr);
-	draw(n->c2);
+	draw(n->c[1]);
 }
 
 static void
@@ -374,8 +374,8 @@ split(NODE *n, const char *args[])
 	struct node *c = newnode(typ, n->parent, sp, n->y, n->x, n->h, n->w);
 	if( v != NULL && c != NULL ) {
 		struct node *p = n->parent;
-		c->c1 = n;
-		c->c2 = v;
+		c->c[0] = n;
+		c->c[1] = v;
 		n->parent = v->parent = c;
 		reshapechildren(c);
 		replacechild(p, n, c);
@@ -392,20 +392,20 @@ static bool
 getinput(NODE *n, fd_set *f) /* Recursively check all ptty's for input. */
 {
 	bool status = true;;
-	if( n && n->c1 && !getinput(n->c1, f) ) {
+	if( n && n->c[0] && !getinput(n->c[0], f) ) {
 		status = false;
-	} else if( n && n->c2 && !getinput(n->c2, f) ) {
+	} else if( n && n->c[1] && !getinput(n->c[1], f) ) {
 		status = false;
 	} else if( n && ! n->split  && n->pt > 0 && FD_ISSET(n->pt, f) ) {
 		ssize_t r = read(n->pt, iobuf, sizeof(iobuf));
 		if( r > 0 ) {
 			vtwrite(&n->vp, iobuf, r);
 		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
-			assert(n->c1 == NULL);
-			assert(n->c2 == NULL);
+			assert(n->c[0] == NULL);
+			assert(n->c[1] == NULL);
 
 			if( n->parent && n == focused ) {
-				focus(n->parent->c1 == n ? n->parent->c2 : n->parent->c1);
+				focus(n->parent->c[0] == n ? n->parent->c[1] : n->parent->c[0]);
 			}
 			removechild(n->parent, n);
 			freenode(n);
@@ -475,38 +475,38 @@ mov(struct node *n, const char **args)
 	while( t && count-- ) switch(args[0][0]) {
 	case 'u':
 		while( t->parent && ( t->parent->split != '-'
-				|| t == t->parent->c1) ) {
+				|| t == t->parent->c[0]) ) {
 			t = t->parent;
 		}
 		if( t->parent ) {
-			t = t->parent->c1;
+			t = t->parent->c[0];
 		}
 		break;
 	case 'd':
 		while( t->parent && ( t->parent->split != '-'
-				|| t == t->parent->c2) ) {
+				|| t == t->parent->c[1]) ) {
 			t = t->parent;
 		}
 		if( t->parent ) {
-			t = t->parent->c2;
+			t = t->parent->c[1];
 		}
 		break;
 	case 'l':
 		while( t->parent && ( t->parent->split != '|'
-				|| t == t->parent->c1) ) {
+				|| t == t->parent->c[0]) ) {
 			t = t->parent;
 		}
 		if( t->parent ) {
-			t = t->parent->c1;
+			t = t->parent->c[0];
 		}
 		break;
 	case 'r':
 		while( t->parent && ( t->parent->split != '|'
-				|| t == t->parent->c2) ) {
+				|| t == t->parent->c[1]) ) {
 			t = t->parent;
 		}
 		if( t->parent ) {
-			t = t->parent->c2;
+			t = t->parent->c[1];
 		}
 		break;
 	case 'p':

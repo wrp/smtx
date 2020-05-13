@@ -70,12 +70,12 @@ struct screen {
 typedef struct node NODE;
 struct node {
 	int split;  /* '|', '-', or '\0' (lateral, transverse, or no split) */
-	double split_point; /* percent of window dedicated to c1 */
+	double split_point; /* percent of window dedicated to c[0] */
 	int y, x, h, w, pt, ntabs;
 	bool *tabs, pnm, decom, am, lnm;
 	wchar_t repc;
 	NODE *parent;
-	NODE *c1, *c2;
+	struct node *c[2];
 	struct screen pri, alt, *s;
 	wchar_t *g0, *g1, *g2, *g3, *gc, *gs, *sgc, *sgs;
 	VTPARSER vp;
