@@ -642,7 +642,19 @@ send(NODE *n, const char **args)
 	return 0;
 }
 
-int
+static int
+resize(struct node *n, const char **args)
+{
+	(void) args;
+	if( n->parent ) {
+		double factor = cmd_count ? MIN(100, cmd_count) / 100.0 : 0.5;
+		n->parent->split_point = factor;
+		reshapechildren(n->parent);
+	}
+	return 0;
+}
+
+static int
 equalize(struct node *n, const char **args)
 {
 	(void) args;
@@ -711,6 +723,7 @@ build_bindings()
 	add_key(cmd_keys, L',', scrolln, "-1", NULL);
 	add_key(cmd_keys, L'm', scrolln, "+1", NULL);
 	add_key(cmd_keys, L'=', equalize, NULL);
+	add_key(cmd_keys, L'>', resize, NULL);
 	add_key(cmd_keys, L'c', split, NULL);
 	add_key(cmd_keys, L'x', reorient, NULL);
 	add_key(cmd_keys, L'r', redrawroot, NULL);
