@@ -305,12 +305,9 @@ reshape(NODE *n, int y, int x, int h, int w) /* Reshape a node. */
 }
 
 static void
-drawchildren(const NODE *n) /* Draw all children of n. */
+draw_divider(const struct node *n)
 {
-	draw(n->c[0]);
-	if( binding == &cmd_keys && n->c[0] == navfocus ) {
-		attron(A_REVERSE);
-	}
+	int attrs = binding == &cmd_keys ? A_REVERSE : 0;
 	char id[2][32];
 	int len = n->split == '|' ? n->h : n->w;
 	len -= snprintf(id[0], sizeof id[0], "%d", n->c[0]->id);
@@ -319,35 +316,57 @@ drawchildren(const NODE *n) /* Draw all children of n. */
 		assert( n->c[0]->y == n->y );
 		int y = n->c[0]->y;
 		int x = n->c[0]->x + n->c[0]->w;
+		if( n->c[0] == navfocus ) {
+			attron(attrs);
+		}
 		for( char *s = id[0]; *s; s++ ) {
 			mvprintw(y++, x, "%c", *s);
 		}
-		attroff(A_REVERSE);
+		attroff(attrs);
+		if( n == navfocus ) {
+			attron(attrs);
+		}
 		mvvline(y, x, ACS_VLINE, len);
 		y += len;
-		if( binding == &cmd_keys && n->c[1] == navfocus ) {
-			attron(A_REVERSE);
+		attroff(attrs);
+		if( n->c[1] == navfocus ) {
+			attron(attrs);
 		}
 		for( char *s = id[1]; *s; s++ ) {
 			mvprintw(y++, x, "%c", *s);
 		}
+		attroff(attrs);
 	} else {
 		assert( n->c[0]->x == n->x );
 		int y = n->c[0]->y + n->c[0]->h;
 		int x = n->c[0]->x;
+		if( n->c[0] == navfocus ) {
+			attron(attrs);
+		}
 		mvprintw(y, x, "%s", id[0]);
-		attroff(A_REVERSE);
 		x += strlen(id[0]);
+		attroff(attrs);
+		if( n == navfocus ) {
+			attron(attrs);
+		}
 		mvhline(y, x, ACS_HLINE, len);
 		x += len;
-		if( binding == &cmd_keys && n->c[1] == navfocus ) {
-			attron(A_REVERSE);
+		attroff(attrs);
+		if( n->c[1] == navfocus ) {
+			attron(attrs);
 		}
 		mvprintw(y, x, "%s", id[1]);
+		attroff(attrs);
 	}
-	attroff(A_REVERSE);
-	wnoutrefresh(stdscr);
+}
+
+static void
+drawchildren(const struct node *n)
+{
+	draw(n->c[0]);
+	draw_divider(n);
 	draw(n->c[1]);
+	wnoutrefresh(stdscr);
 }
 
 static void
