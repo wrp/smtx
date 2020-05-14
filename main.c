@@ -451,14 +451,14 @@ split(NODE *n, const char *args[])
 {
 	assert( !n->split );
 	assert( n->c[0] == NULL );
-	int default_type = n->parent ? n->parent->split : '-';
-	int typ = *args ? **args : default_type ? default_type :'-';
+	assert( n->c[1] == NULL );
+	struct node *p = n->parent;
+	int typ = *args ? **args : p ? p->split ? p->split : '-' : '-';
 	double sp = 1.0 - (cmd_count ? MIN(100, cmd_count) / 100.0 : 0.5);
 	struct node *v = n->c[0] = newwindow(0, 0, n->h, n->w);
 	struct node *c = newnode(typ, n->parent, sp, n->y, n->x, n->h, n->w);
 	n->c[0] = NULL; /* Put in the tree for next_available_id() */
 	if( v != NULL && c != NULL ) {
-		struct node *p = n->parent;
 		c->c[0] = v;
 		c->c[1] = n;
 		n->parent = v->parent = c;
