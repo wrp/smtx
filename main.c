@@ -276,8 +276,8 @@ reshape_window(NODE *n, int d, int ow)
     }
 
     getyx(n->s->win, oy, ox);
-    wresize(n->pri.win, MAX(n->h, scrollback_history), MAX(n->w, 2));
-    wresize(n->alt.win, MAX(n->h, 2), MAX(n->w, 2));
+    wresize(n->pri.win, MAX(n->h, scrollback_history), MAX(n->w, 128));
+    wresize(n->alt.win, MAX(n->h, 64), MAX(n->w, 128));
     n->pri.tos = n->pri.off = MAX(0, scrollback_history - n->h);
     n->alt.tos = n->alt.off = 0;
     wsetscrreg(n->pri.win, 0, MAX(scrollback_history, n->h) - 1);
