@@ -33,7 +33,6 @@ static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 static struct handler (*binding)[128] = &keys;
 static struct node *root, *focused, *lastfocused = NULL;
-static struct node *navfocus;
 static char commandkey = CTL(COMMAND_KEY);
 static int nfds = 1; /* stdin */
 static fd_set fds;
@@ -361,7 +360,7 @@ draw_title(struct node *n)
 {
 	char id[128];
 	int x = 0;
-	if( binding == &cmd_keys && n == navfocus ) {
+	if( binding == &cmd_keys && n == focused ) {
 		wattron(n->div, A_REVERSE);
 	} else {
 		wattroff(n->div, A_REVERSE);
@@ -440,7 +439,7 @@ split(NODE *n, const char *args[])
 		n->parent = v->parent = c;
 		reshapechildren(c);
 		replacechild(p, n, c);
-		focus(navfocus = v);
+		focus(v);
 		draw(p ? p : root);
 	} else {
 		freenode(v);
@@ -466,7 +465,7 @@ getinput(NODE *n, fd_set *f) /* Recursively check all ptty's for input. */
 			assert(n->c[1] == NULL);
 			struct node * p = n->parent;
 			if( p && n == focused ) {
-				focus(navfocus = p->c[ n == p->c[0]]);
+				focus(p->c[ n == p->c[0]]);
 			}
 			reap_dead_window(n->parent, n);
 			freenode(n);
@@ -526,7 +525,6 @@ reshape_root(NODE *n, const char **args)
 	return 0;
 }
 
-
 static struct node *
 find_node(struct node *b, int id) {
 	struct node *r = NULL;
@@ -541,35 +539,75 @@ find_node(struct node *b, int id) {
 }
 
 int
+contains(struct node *n, int y, int x)
+{
+	return y >= n->y && y < n->y + n->h && x >= n->x && x <= n->x + n->w;
+}
+
+struct node *
+find_window(struct node *n, int y, int x)
+{
+	if( n != NULL && n->split ) {
+		if( n->split == '-' ) {
+			assert( n->c[0]->h + n->c[1]->h == n->h );
+			assert( n->c[0]->y + n->c[0]->h == n->c[1]->y );
+			if( y < n->c[1]->y ) {
+				n = n->c[0];
+			} else {
+				n = n->c[1];
+			}
+		} else if( n->split == '|' ) {
+			assert( n->c[0]->w + n->c[1]->w + 1 == n->w );
+			assert( n->c[0]->x + n->c[0]->w + 1 == n->c[1]->x );
+			/* Treat the divider as belonging to left window */
+			if( x < n->c[1]->x ) {
+				n = n->c[0];
+			} else {
+				n = n->c[1];
+			}
+		}
+		n = find_window(n, y, x);
+	}
+	if( n && ! contains(n, y, x) ) {
+		n = NULL;
+	}
+	return n;
+}
+
+int
 mov(struct node *n, const char **args)
 {
-	assert( navfocus != NULL );
+	assert( n == focused && n != NULL );
 	char cmd = args[0][0];
-	struct node *t = n = navfocus;
 	int count = cmd_count == 0 ? 1 : cmd_count;
-	switch( cmd ) {
-	case 'k': /* move to parent */
-		while( count-- && t->parent ) {
-			t = t->parent;
+	int midx = n->x + n->w / 2;
+	int midy = n->y + n->h / 2;
+	for( struct node *t = n; t && count--; n = t ? t : n ) {
+		switch( cmd ) {
+		case 'k': /* move up */
+			t = find_window(root, t->y - 1, midx);
+			break;
+		case 'j': /* move down */
+			t = find_window(root, t->y + t->h + 1, midx );
+			break;
+		case 'l': /* move right */
+			t = find_window(root, midy, t->x + t->w + 1);
+			break;
+		case 'h': /* move left */
+			t = find_window(root, midy, t->x - 1);
+			break;
+		case 'g':
+			t = find_node(root, cmd_count);
+			transition(t, NULL);
+			break;
+		case 'p':
+			t = lastfocused;
+			break;
+		default:
+			assert(0);
 		}
-		break;
-	case 'j': /* Move to 1st child (fallthru) */
-	case 'l': /* Move to 2nd child */
-		while( count-- && t && t->c[cmd == 'l']) {
-			t = t->c[cmd == 'l'];
-		}
-		break;
-	case 'g':
-		t = find_node(root, cmd_count);
-		transition(t, NULL);
-		break;
-	case 'p':
-		t = lastfocused;
-		break;
-	default:
-		assert(0);
 	}
-	focus(navfocus = t);
+	focus(n);
 	return 0;
 }
 
@@ -684,7 +722,8 @@ build_bindings()
 	add_key(cmd_keys, L'j', mov, "j", NULL);
 	add_key(cmd_keys, L'k', mov, "k", NULL);
 	add_key(cmd_keys, L'l', mov, "l", NULL);
-	add_key(cmd_keys, L'o', mov, "previous", NULL);
+	add_key(cmd_keys, L'h', mov, "h", NULL);
+	add_key(cmd_keys, L'p', mov, "p", NULL);
 	add_key(cmd_keys, L't', new_tabstop, NULL);
 	for( int i=0; i < 10; i++ ) {
 		char *buf = calloc(2, 1);
@@ -824,7 +863,7 @@ main(int argc, char **argv)
 	start_color();
 	use_default_colors();
 
-	navfocus = root = newwindow(0, 0, LINES, COLS);
+	root = newwindow(0, 0, LINES, COLS);
 	if( root == NULL ) {
 		err(EXIT_FAILURE, "Unable to create root window");
 	}
