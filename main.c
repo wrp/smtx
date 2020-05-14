@@ -44,6 +44,7 @@ static void draw(NODE *n);
 static void reshapechildren(NODE *n);
 static const char *term = NULL;
 static void freenode(NODE *n);
+static action transition;
 static action split;
 
 void
@@ -588,6 +589,7 @@ mov(struct node *n, const char **args)
 		break;
 	case 'g':
 		t = find_node(root, cmd_count);
+		transition(t, NULL);
 		break;
 	case 'p':
 		t = lastfocused;
@@ -649,12 +651,11 @@ equalize(struct node *n, const char **args)
 	return 0;
 }
 
-int
+static int
 transition(NODE *n, const char **args)
 {
-	assert(args);
 	binding = binding == &keys ? &cmd_keys : &keys;
-	if( args[0] ) {
+	if( args && args[0] ) {
 		send(n, args);
 	}
 	if( binding == &keys ) {
@@ -773,8 +774,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 			safewrite(n->pt, c, strlen(c));
 		}
 		if( binding != &keys ) {
-			const char *a[] = { NULL };
-			transition(n, a);
+			transition(n, NULL);
 		}
 	}
 	if( !b || !(b->act == digit) ) {
