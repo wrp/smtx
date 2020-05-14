@@ -357,21 +357,6 @@ reshape(struct node *n, int y, int x, int h, int w)
 }
 
 static void
-draw_divider(const struct node *n)
-{
-	char id[2][32];
-	int len = n->split == '|' ? n->h : n->w;
-	len -= snprintf(id[0], sizeof id[0], "%d", n->c[0]->id);
-	len -= snprintf(id[1], sizeof id[0], "%d", n->c[1]->id);
-	if (n->split == '|') {
-		assert( n->c[0]->y == n->y );
-		mvwvline(n->div, 0, 0, ACS_VLINE, n->h);
-		pnoutrefresh(n->div, 0, 0, n->y, n->x + n->c[0]->w,
-			n->y + n->h, n->x + n->c[0]->w);
-	}
-}
-
-static void
 draw_title(struct node *n)
 {
 	char id[128];
@@ -392,7 +377,12 @@ static void
 drawchildren(const struct node *n)
 {
 	draw(n->c[0]);
-	draw_divider(n);
+	if (n->split == '|') {
+		assert( n->c[0]->y == n->y );
+		mvwvline(n->div, 0, 0, ACS_VLINE, n->h);
+		pnoutrefresh(n->div, 0, 0, n->y, n->x + n->c[0]->w,
+			n->y + n->h, n->x + n->c[0]->w);
+	}
 	draw(n->c[1]);
 }
 
