@@ -40,11 +40,11 @@ static char iobuf[BUFSIZ];
 static unsigned cmd_count = 0;
 int scrollback_history = 1024;
 
-static void reshape(NODE *n, int y, int x, int h, int w);
-static void draw(NODE *n);
-static void reshapechildren(NODE *n);
+static void reshape(struct node *n, int y, int x, int h, int w);
+static void draw(struct node *n);
+static void reshapechildren(struct node *n);
 static const char *term = NULL;
-static void freenode(NODE *n);
+static void freenode(struct node *n);
 static action transition;
 static action split;
 
@@ -109,10 +109,10 @@ next_availble_id(struct node *n, int offset)
 
 }
 
-static NODE *
+static struct node *
 newnode(int t, double sp, int y, int x, int h, int w)
 {
-	NODE *n = NULL;
+	struct node *n = NULL;
 	if( h > 1 && w > 1 && (n = calloc(1, sizeof *n)) != NULL ) {
 		if( (n->tabs = newtabs(w, 0, NULL)) == NULL ) {
 			free(n);
@@ -136,7 +136,7 @@ newnode(int t, double sp, int y, int x, int h, int w)
 }
 
 static void
-freenode(NODE *n)
+freenode(struct node *n)
 {
 	if( n ) {
 		if( lastfocused == n )
@@ -245,8 +245,9 @@ focus(struct node *n)
 	}
 }
 
+/* Replace c1 of n with c2. */
 static void
-replacechild(NODE *n, NODE *c1, NODE *c2) /* Replace c1 of n with c2. */
+replacechild(struct node *n, struct node *c1, struct node *c2)
 {
 	assert( c1 && c2 );
 	c2->parent = n;
@@ -263,7 +264,7 @@ replacechild(NODE *n, NODE *c1, NODE *c2) /* Replace c1 of n with c2. */
 }
 
 static void
-reap_dead_window(NODE *p, const NODE *c)
+reap_dead_window(struct node *p, const struct node *c)
 {
 	if( p != NULL ) {
 		replacechild(p->parent, p, c == p->c[0]? p->c[1] : p->c[0]);
@@ -272,7 +273,7 @@ reap_dead_window(NODE *p, const NODE *c)
 }
 
 static void
-reshape_window(NODE *n, int d, int ow)
+reshape_window(struct node *n, int d, int ow)
 {
     int oy, ox;
     bool *tabs = newtabs(n->w, ow, n->tabs);
@@ -301,7 +302,7 @@ reshape_window(NODE *n, int d, int ow)
 }
 
 static void
-reshapechildren(NODE *n)
+reshapechildren(struct node *n)
 {
 	if( n->div ) {
 		wclear(n->div);
@@ -388,7 +389,7 @@ drawchildren(const struct node *n)
 }
 
 static void
-draw(NODE *n) /* Draw a node. */
+draw(struct node *n) /* Draw a node. */
 {
 	if( n != NULL ) {
 		if( ! n->split ) {
@@ -410,7 +411,7 @@ draw(NODE *n) /* Draw a node. */
 }
 
 static int
-reorient(NODE *n, const char *args[])
+reorient(struct node *n, const char *args[])
 {
 	if( n && n->split == '\0' ) {
 		reorient(n->parent, args);
@@ -423,7 +424,7 @@ reorient(NODE *n, const char *args[])
 }
 
 static int
-split(NODE *n, const char *args[])
+split(struct node *n, const char *args[])
 {
 	assert( !n->split );
 	assert( n->c[0] == NULL );
@@ -450,7 +451,7 @@ split(NODE *n, const char *args[])
 }
 
 static bool
-getinput(NODE *n, fd_set *f) /* Recursively check all ptty's for input. */
+getinput(struct node *n, fd_set *f) /* check all ptty's for input. */
 {
 	bool status = true;;
 	if( n && n->c[0] && !getinput(n->c[0], f) ) {
@@ -480,13 +481,13 @@ getinput(NODE *n, fd_set *f) /* Recursively check all ptty's for input. */
 }
 
 static void
-scrollbottom(NODE *n)
+scrollbottom(struct node *n)
 {
     n->s->off = n->s->tos;
 }
 
 static int
-digit(NODE *n, const char **args)
+digit(struct node *n, const char **args)
 {
 	(void)n;
 	(void)args;
@@ -497,7 +498,7 @@ digit(NODE *n, const char **args)
 }
 
 static int
-scrolln(NODE *n, const char **args)
+scrolln(struct node *n, const char **args)
 {
 	if(args[0][0] == '-') {
 		n->s->off = MAX(0, n->s->off - n->h / 2);
@@ -508,7 +509,7 @@ scrolln(NODE *n, const char **args)
 }
 
 static int
-sendarrow(NODE *n, const char **args)
+sendarrow(struct node *n, const char **args)
 {
 	const char *k = args[0];
     char buf[100] = {0};
@@ -518,7 +519,7 @@ sendarrow(NODE *n, const char **args)
 }
 
 int
-reshape_root(NODE *n, const char **args)
+reshape_root(struct node *n, const char **args)
 {
 	(void)args;
 	reshape(root, 0, 0, LINES, COLS);
@@ -622,7 +623,7 @@ redrawroot(struct node *n, const char **args)
 }
 
 int
-send(NODE *n, const char **args)
+send(struct node *n, const char **args)
 {
 	if( n->lnm && args[0][0] == '\r' ) {
 		assert( args[0][1] == '\0' );
@@ -663,7 +664,7 @@ equalize(struct node *n, const char **args)
 }
 
 static int
-transition(NODE *n, const char **args)
+transition(struct node *n, const char **args)
 {
 	binding = binding == &keys ? &cmd_keys : &keys;
 	if( args && args[0] ) {
@@ -766,7 +767,7 @@ static void
 handlechar(int r, int k) /* Handle a single input character. */
 {
 	struct handler *b = NULL;
-	NODE *n = focused;
+	struct node *n = focused;
 
 	assert( r != ERR );
 	if( r == OK && k > 0 && k < (int)sizeof *binding ) {

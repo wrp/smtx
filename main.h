@@ -67,7 +67,6 @@ struct screen {
 	WINDOW *win;
 };
 
-typedef struct node NODE;
 struct node {
 	int id;
 	int split;  /* '|', '-', or '\0' (lateral, transverse, or no split) */
@@ -83,7 +82,7 @@ struct node {
 	VTPARSER vp;
 };
 
-typedef int(action)(NODE *n, const char **args);
+typedef int(action)(struct node *n, const char **args);
 struct handler {
 	action *act;
 	const char *args[7];
@@ -96,5 +95,5 @@ extern wchar_t CSET_GRAPH[]; /* Graphics Set One */
 extern int scrollback_history;
 extern int tabstop;
 
-void setupevents(NODE *n);
+void setupevents(struct node *n);
 void safewrite(int fd, const char *b, size_t n);

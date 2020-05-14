@@ -26,7 +26,7 @@
 #define P1(x) (!P0(x)? 1 : P0(x))
 #define CALL(x) (x)(v, n, 0, 0, 0, NULL, NULL)
 #define COMMONVARS                                                      \
-    NODE *n = (NODE *)p;                                                \
+    struct node *n = (struct node *)p;                                  \
     struct screen *s = n->s;                                            \
     WINDOW *win = s->win;                                               \
     int py, px, y, x, my, mx, top = 0, bot = 0, tos = s->tos;           \
@@ -497,7 +497,7 @@ HANDLER(so) /* Switch Out/In Character Set */
 ENDHANDLER
 
 void
-setupevents(NODE *n)
+setupevents(struct node *n)
 {
     n->vp.p = n;
     vtonevent(&n->vp, VTPARSER_CONTROL, 0x05, ack);
