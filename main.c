@@ -288,8 +288,6 @@ reshape_window(NODE *n, int d, int ow)
         wmove(n->s->win, oy + d, ox);
         wscrl(n->s->win, -d);
     }
-    wclrtobot(n->alt.win);
-    wclrtobot(n->pri.win);
     wrefresh(n->s->win);
     doupdate();
     ioctl(n->pt, TIOCSWINSZ, &ws);
