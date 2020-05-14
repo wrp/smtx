@@ -108,7 +108,7 @@ next_availble_id(struct node *n, int offset)
 }
 
 static NODE *
-newnode(int t, NODE *p, double sp, int y, int x, int h, int w)
+newnode(int t, double sp, int y, int x, int h, int w)
 {
 	NODE *n = NULL;
 	if( h > 1 && w > 1 && (n = calloc(1, sizeof *n)) != NULL ) {
@@ -119,7 +119,6 @@ newnode(int t, NODE *p, double sp, int y, int x, int h, int w)
 			n->id = next_availble_id(root, 0);
 			n->split = t;
 			n->split_point = sp;
-			n->parent = p;
 			n->y = y;
 			n->x = x;
 			n->h = h;
@@ -177,7 +176,7 @@ static struct node *
 newwindow(int y, int x, int h, int w)
 {
 	struct winsize ws = {.ws_row = h, .ws_col = w}; /* tty(4) */
-	struct node *n = newnode(0, NULL, 0, y, x, h, w);
+	struct node *n = newnode(0, 0, y, x, h, w);
 	if( n == NULL ) {
 		goto fail;
 	}
@@ -454,9 +453,10 @@ split(NODE *n, const char *args[])
 	int typ = *args ? **args : p ? p->split ? p->split : '-' : '-';
 	double sp = 1.0 - (cmd_count ? MIN(100, cmd_count) / 100.0 : 0.5);
 	struct node *v = n->c[0] = newwindow(0, 0, n->h, n->w);
-	struct node *c = newnode(typ, n->parent, sp, n->y, n->x, n->h, n->w);
+	struct node *c = newnode(typ, sp, n->y, n->x, n->h, n->w);
 	n->c[0] = NULL; /* Put in the tree for next_available_id() */
 	if( v != NULL && c != NULL ) {
+		c->parent = n->parent;
 		c->c[0] = v;
 		c->c[1] = n;
 		n->parent = v->parent = c;
