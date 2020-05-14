@@ -36,7 +36,6 @@ static struct node *root, *focused, *lastfocused = NULL;
 static char commandkey = CTL(COMMAND_KEY);
 static int nfds = 1; /* stdin */
 static fd_set fds;
-static char iobuf[BUFSIZ];
 static unsigned cmd_count = 0;
 int scrollback_history = 1024;
 
@@ -361,15 +360,17 @@ reshape(struct node *n, int y, int x, int h, int w)
 static void
 draw_title(struct node *n)
 {
-	char id[128];
+	char t[128];
 	int x = 0;
+	size_t s = MAX(n->w - 2, (int)sizeof t);
 	if( binding == &cmd_keys && n == focused ) {
 		wattron(n->div, A_REVERSE);
 	} else {
 		wattroff(n->div, A_REVERSE);
 	}
-	x += snprintf(id, sizeof id, "%d (%d)", n->id, (int)n->pid);
-	mvwprintw(n->div, 0, 0, "%s", id);
+	snprintf(t, s, "%d (%d) %s", n->id, (int)n->pid, n->cmd);
+	x += strlen(t);
+	mvwprintw(n->div, 0, 0, "%s", t);
 	mvwhline(n->div, 0, x, ACS_HLINE, n->w - x);
 	pnoutrefresh(n->div, 0, 0, n->y + n->h - 1, n->x,
 		n->y + n->h - 1, n->x + n->w);
@@ -459,6 +460,7 @@ getinput(struct node *n, fd_set *f) /* check all ptty's for input. */
 	} else if( n && n->c[1] && !getinput(n->c[1], f) ) {
 		status = false;
 	} else if( n && ! n->split  && n->pt > 0 && FD_ISSET(n->pt, f) ) {
+		char iobuf[BUFSIZ];
 		ssize_t r = read(n->pt, iobuf, sizeof(iobuf));
 		if( r > 0 ) {
 			vtwrite(&n->vp, iobuf, r);
@@ -771,7 +773,16 @@ handlechar(int r, int k) /* Handle a single input character. */
 
 	assert( r != ERR );
 	if( r == OK && k > 0 && k < (int)sizeof *binding ) {
+		unsigned len = strlen(n->putative_cmd);
+		if( k == '\r' ) {
+			strcpy(n->cmd, n->putative_cmd);
+			n->putative_cmd[0] = '\0';
+		} else if( len < sizeof n->putative_cmd - 1 ) {
+			n->putative_cmd[len] = k;
+			n->putative_cmd[len + 1] = '\0';
+		}
 		b = &(*binding)[k];
+
 	} else if( r == KEY_CODE_YES ) {
 		assert( k >= KEY_MIN && k <= KEY_MAX );
 		b = &code_keys[k - KEY_MIN];
