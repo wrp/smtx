@@ -83,6 +83,7 @@ mark(struct node *n, char *used, int offset, int siz)
 {
 	if( n ) {
 		if( n->id >= offset && n->id - offset < siz ) {
+			assert( offset > 0 ); /* id 0 is duplicated */
 			assert( used[n->id - offset] == 0 );
 			used[n->id - offset] = 1;
 		}
@@ -117,7 +118,11 @@ newnode(int t, double sp, int y, int x, int h, int w)
 			free(n);
 			n = NULL;
 		} else {
-			n->id = next_availble_id(root, 0);
+			if( t ) {
+				n->id = 0;
+			} else {
+				n->id = next_availble_id(root, 1);
+			}
 			n->split = t;
 			n->split_point = sp;
 			n->y = y;
@@ -245,9 +250,6 @@ replacechild(NODE *n, NODE *c1, NODE *c2) /* Replace c1 of n with c2. */
 {
 	assert( c1 && c2 );
 	c2->parent = n;
-	int tmpid = c1->id;
-	c1->id = c2->id;
-	c2->id = tmpid;
 	if( n == NULL ){
 		root = c2;
 		reshape(c2, 0, 0, LINES, COLS);
@@ -429,9 +431,8 @@ split(NODE *n, const char *args[])
 	struct node *p = n->parent;
 	int typ = *args ? **args : p ? p->split ? p->split : '-' : '-';
 	double sp = 1.0 - (cmd_count ? MIN(100, cmd_count) / 100.0 : 0.5);
-	struct node *c = n->c[0] = newnode(typ, sp, n->y, n->x, n->h, n->w);
+	struct node *c = newnode(typ, sp, n->y, n->x, n->h, n->w);
 	struct node *v = newwindow(0, 0, n->h, n->w);
-	n->c[0] = NULL; /* Put in the tree for next_available_id() */
 	if( v != NULL && c != NULL ) {
 		c->parent = n->parent;
 		c->c[0] = n;
