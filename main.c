@@ -177,13 +177,13 @@ getterm(void)
 static struct node *
 newwindow(int y, int x, int h, int w)
 {
-	struct winsize ws = {.ws_row = h, .ws_col = w}; /* tty(4) */
+	struct winsize ws = {.ws_row = h - 1, .ws_col = w}; /* tty(4) */
 	struct node *n = newnode(0, 0, y, x, h, w);
 	if( n == NULL ) {
 		goto fail;
 	}
-	n->pri.win = newpad(MAX(h, scrollback_history), w);
-	n->alt.win = newpad(h, w);
+	n->pri.win = newpad(MAX(h - 1, scrollback_history), w);
+	n->alt.win = newpad(h - 1, w);
 	if( n->pri.win == NULL || n->alt.win == NULL ) {
 		goto fail;
 	}
@@ -218,6 +218,12 @@ newwindow(int y, int x, int h, int w)
 	FD_SET(n->pt, &fds);
 	fcntl(n->pt, F_SETFL, O_NONBLOCK);
 	nfds = n->pt > nfds? n->pt : nfds;
+
+	if( n->div ) {
+		wresize(n->div, 1, n->w);
+	} else {
+		n->div = newpad(1, n->w);
+	}
 	return n;
 fail:
 	freenode(n);
@@ -269,7 +275,7 @@ reshape_window(NODE *n, int d, int ow)
 {
     int oy, ox;
     bool *tabs = newtabs(n->w, ow, n->tabs);
-    struct winsize ws = {.ws_row = n->h, .ws_col = n->w}; /* tty(4) */
+    struct winsize ws = {.ws_row = n->h - 1, .ws_col = n->w}; /* tty(4) */
 
     if (tabs){
         free(n->tabs);
@@ -278,12 +284,12 @@ reshape_window(NODE *n, int d, int ow)
     }
 
     getyx(n->s->win, oy, ox);
-    wresize(n->pri.win, MAX(n->h, scrollback_history), MAX(n->w, 128));
-    wresize(n->alt.win, MAX(n->h, 64), MAX(n->w, 128));
-    n->pri.tos = n->pri.off = MAX(0, scrollback_history - n->h);
+    wresize(n->pri.win, MAX(n->h - 1, scrollback_history), MAX(n->w, 128));
+    wresize(n->alt.win, MAX(n->h - 1, 64), MAX(n->w, 128));
+    n->pri.tos = n->pri.off = MAX(0, scrollback_history - n->h + 1);
     n->alt.tos = n->alt.off = 0;
-    wsetscrreg(n->pri.win, 0, MAX(scrollback_history, n->h) - 1);
-    wsetscrreg(n->alt.win, 0, n->h - 1);
+    wsetscrreg(n->pri.win, 0, MAX(scrollback_history, n->h - 1) - 1);
+    wsetscrreg(n->alt.win, 0, n->h - 1 - 1);
     if( d != 0 ) {
         wmove(n->s->win, oy + d, ox);
         wscrl(n->s->win, -d);
@@ -314,93 +320,72 @@ reshapechildren(NODE *n)
 	} else if( n->split == '-' ) {
 		int h[2];
 		h[0] = n->h * n->split_point;
-		h[1] = n->h - h[0] - 1;
+		h[1] = n->h - h[0];
 		reshape(n->c[0], n->y, n->x, h[0], n->w);
-		reshape(n->c[1], n->y + h[0] + 1, n->x, h[1], n->w);
+		reshape(n->c[1], n->y + h[0], n->x, h[1], n->w);
 		if( n->div ) {
-			wresize(n->div, 1, n->w);
-		} else {
-			n->div = newpad(1, n->w);
+			delwin(n->div);
+			n->div = NULL;
 		}
 	}
 }
 
 static void
-reshape(NODE *n, int y, int x, int h, int w) /* Reshape a node. */
+reshape(struct node *n, int y, int x, int h, int w)
 {
-    if (n->y == y && n->x == x && n->h == h && n->w == w && ! n->split)
-        return;
+	if (n->y == y && n->x == x && n->h == h && n->w == w && ! n->split)
+		return;
 
-    int d = n->h - h;
-    int ow = n->w;
-    n->y = y;
-    n->x = x;
-    n->h = MAX(h, 1);
-    n->w = MAX(w, 1);
+	int d = n->h - h;
+	int ow = n->w;
+	n->y = y;
+	n->x = x;
+	n->h = MAX(h, 1);
+	n->w = MAX(w, 1);
 
-    if (! n->split)
-        reshape_window(n, d, ow);
-    else
-        reshapechildren(n);
-    draw(n);
+	if( n->split == '\0' ) {
+		reshape_window(n, d, ow);
+		if( n->div ) {
+			wresize(n->div, 1, n->w);
+		} else {
+			n->div = newpad(1, n->w);
+		}
+	} else {
+		reshapechildren(n);
+	}
+	draw(n);
 }
 
 static void
 draw_divider(const struct node *n)
 {
-	int attrs = binding == &cmd_keys ? A_REVERSE : 0;
 	char id[2][32];
 	int len = n->split == '|' ? n->h : n->w;
 	len -= snprintf(id[0], sizeof id[0], "%d", n->c[0]->id);
 	len -= snprintf(id[1], sizeof id[0], "%d", n->c[1]->id);
 	if (n->split == '|') {
 		assert( n->c[0]->y == n->y );
-		int y = 0;
-		if( n->c[0] == navfocus ) {
-			wattron(n->div, attrs);
-		}
-		for( char *s = id[0]; *s; s++ ) {
-			mvwprintw(n->div, y++, 0, "%c", *s);
-		}
-		wattroff(n->div, attrs);
-		if( n == navfocus ) {
-			wattron(n->div, attrs);
-		}
-		mvwvline(n->div, y, 0, ACS_VLINE, len);
-		y += len;
-		wattroff(n->div, attrs);
-		if( n->c[1] == navfocus ) {
-			wattron(n->div, attrs);
-		}
-		for( char *s = id[1]; *s; s++ ) {
-			mvwprintw(n->div, y++, 0, "%c", *s);
-		}
-		wattroff(n->div, attrs);
+		mvwvline(n->div, 0, 0, ACS_VLINE, n->h);
 		pnoutrefresh(n->div, 0, 0, n->y, n->x + n->c[0]->w,
 			n->y + n->h, n->x + n->c[0]->w);
-	} else {
-		assert( n->c[0]->x == n->x );
-		int x = 0;
-		if( n->c[0] == navfocus ) {
-			wattron(n->div, attrs);
-		}
-		mvwprintw(n->div, 0, x, "%s", id[0]);
-		x += strlen(id[0]);
-		wattroff(n->div, attrs);
-		if( n == navfocus ) {
-			wattron(n->div, attrs);
-		}
-		mvwhline(n->div, 0, x, ACS_HLINE, len);
-		x += len;
-		wattroff(n->div, attrs);
-		if( n->c[1] == navfocus ) {
-			wattron(n->div, attrs);
-		}
-		mvwprintw(n->div, 0, x, "%s", id[1]);
-		wattroff(n->div, attrs);
-		pnoutrefresh(n->div, 0, 0, n->y + n->c[0]->h, n->x,
-			n->y + n->c[0]->h, n->x + n->w);
 	}
+}
+
+static void
+draw_title(struct node *n)
+{
+	char id[128];
+	int x = 0;
+	if( binding == &cmd_keys && n == navfocus ) {
+		wattron(n->div, A_REVERSE);
+	} else {
+		wattroff(n->div, A_REVERSE);
+	}
+	x += snprintf(id, sizeof id, "%d", n->id);
+	mvwprintw(n->div, 0, 0, "%s", id);
+	mvwhline(n->div, 0, x, ACS_HLINE, n->w - x);
+	pnoutrefresh(n->div, 0, 0, n->y + n->h - 1, n->x,
+		n->y + n->h - 1, n->x + n->w);
 }
 
 static void
@@ -416,6 +401,7 @@ draw(NODE *n) /* Draw a node. */
 {
 	if( n != NULL ) {
 		if( ! n->split ) {
+			draw_title(n);
 			pnoutrefresh(
 				n->s->win,  /* pad */
 				n->s->off,  /* pminrow */
