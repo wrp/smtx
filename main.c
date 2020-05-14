@@ -203,11 +203,11 @@ newwindow(int y, int x, int h, int w)
 
 	setupevents(n);
 
-	pid_t pid = forkpty(&n->pt, NULL, NULL, &ws);
-	if( pid < 0 ) {
+	n->pid = forkpty(&n->pt, NULL, NULL, &ws);
+	if( n->pid < 0 ) {
 		perror("forkpty");
 		goto fail;
-	} else if( pid == 0 ) {
+	} else if( n->pid == 0 ) {
 		char buf[64] = {0};
 		snprintf(buf, sizeof buf  - 1, "%lu", (unsigned long)getppid());
 		setsid();
@@ -368,7 +368,7 @@ draw_title(struct node *n)
 	} else {
 		wattroff(n->div, A_REVERSE);
 	}
-	x += snprintf(id, sizeof id, "%d", n->id);
+	x += snprintf(id, sizeof id, "%d (%d)", n->id, (int)n->pid);
 	mvwprintw(n->div, 0, 0, "%s", id);
 	mvwhline(n->div, 0, x, ACS_HLINE, n->w - x);
 	pnoutrefresh(n->div, 0, 0, n->y + n->h - 1, n->x,
