@@ -21,6 +21,8 @@
      Register signal handlers for TERM and HUP (at least).  Need to ensure
        that endwin is called.
      Handle SIGWINCH better.
+     Handle resizing better in general.  If a user swaps from lateral
+       to transverse split and back, the final result should not change.
  */
 
 #include "main.h"
@@ -282,10 +284,12 @@ reshape_window(NODE *n, int d, int ow)
     n->alt.tos = n->alt.off = 0;
     wsetscrreg(n->pri.win, 0, MAX(scrollback_history, n->h) - 1);
     wsetscrreg(n->alt.win, 0, n->h - 1);
-    if (d > 0){ /* make sure the new top line syncs up after reshape */
+    if( d != 0 ) {
         wmove(n->s->win, oy + d, ox);
         wscrl(n->s->win, -d);
     }
+    wclrtobot(n->alt.win);
+    wclrtobot(n->pri.win);
     wrefresh(n->s->win);
     doupdate();
     ioctl(n->pt, TIOCSWINSZ, &ws);
