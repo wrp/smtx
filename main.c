@@ -573,15 +573,11 @@ mov(struct node *n, const char **args)
 	int count = cmd_count == 0 ? 1 : cmd_count;
 	switch( cmd ) {
 	case 'k': /* move to parent */
-	case 'j': /* move to sibling */
 		while( count-- && t->parent ) {
 			t = t->parent;
 		}
-		if( args[0][0] == 'j' && n->parent ) {
-			t = t->c[n == n->parent->c[1] ? 0 : 1];
-		}
 		break;
-	case 'h': /* Move to 1st child (fallthru) */
+	case 'j': /* Move to 1st child (fallthru) */
 	case 'l': /* Move to 2nd child */
 		while( count-- && t && t->c[cmd == 'l']) {
 			t = t->c[cmd == 'l'];
@@ -711,7 +707,6 @@ build_bindings()
 	add_key(cmd_keys, L'g', mov, "g", NULL);
 	add_key(cmd_keys, L'j', mov, "j", NULL);
 	add_key(cmd_keys, L'k', mov, "k", NULL);
-	add_key(cmd_keys, L'h', mov, "h", NULL);
 	add_key(cmd_keys, L'l', mov, "l", NULL);
 	add_key(cmd_keys, L'o', mov, "previous", NULL);
 	add_key(cmd_keys, L't', new_tabstop, NULL);
