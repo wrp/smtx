@@ -452,17 +452,17 @@ split(NODE *n, const char *args[])
 	struct node *p = n->parent;
 	int typ = *args ? **args : p ? p->split ? p->split : '-' : '-';
 	double sp = 1.0 - (cmd_count ? MIN(100, cmd_count) / 100.0 : 0.5);
-	struct node *v = n->c[0] = newwindow(0, 0, n->h, n->w);
-	struct node *c = newnode(typ, sp, n->y, n->x, n->h, n->w);
+	struct node *c = n->c[0] = newnode(typ, sp, n->y, n->x, n->h, n->w);
+	struct node *v = newwindow(0, 0, n->h, n->w);
 	n->c[0] = NULL; /* Put in the tree for next_available_id() */
 	if( v != NULL && c != NULL ) {
 		c->parent = n->parent;
-		c->c[0] = v;
-		c->c[1] = n;
+		c->c[0] = n;
+		c->c[1] = v;
 		n->parent = v->parent = c;
 		reshapechildren(c);
 		replacechild(p, n, c);
-		focus(navfocus = n);
+		focus(navfocus = v);
 		draw(p ? p : root);
 	} else {
 		freenode(v);
