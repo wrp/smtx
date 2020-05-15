@@ -28,6 +28,7 @@
 #include "main.h"
 
 int tabstop = 8;
+static int id;
 static struct handler keys[128];
 static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
@@ -78,37 +79,6 @@ newtabs(int w, int ow, bool *oldtabs)
 	return tabs;
 }
 
-static void
-mark(struct node *n, char *used, int offset, int siz)
-{
-	if( n ) {
-		if( n->id >= offset && n->id - offset < siz ) {
-			assert( offset > 0 ); /* id 0 is duplicated */
-			assert( used[n->id - offset] == 0 );
-			used[n->id - offset] = 1;
-		}
-		mark(n->c[0], used, offset, siz);
-		mark(n->c[1], used, offset, siz);
-	}
-}
-
-/* Get the lowest available index.  It is highly unlikely that anyone
- * would ever use 128 windows, so the naive algorithm is fine.
- */
-static int
-next_availble_id(struct node *n, int offset)
-{
-	char used[128] = {0};
-	mark(n, used, offset, sizeof used / sizeof *used);
-	for( unsigned i = 0; i < sizeof used / sizeof *used; i++ ) {
-		if( ! used[i] ) {
-			return i + offset;
-		}
-	}
-	return next_availble_id(n, offset + sizeof used / sizeof *used);
-
-}
-
 static struct node *
 newnode(int t, double sp, int y, int x, int h, int w)
 {
@@ -121,7 +91,7 @@ newnode(int t, double sp, int y, int x, int h, int w)
 			if( t ) {
 				n->id = 0;
 			} else {
-				n->id = next_availble_id(root, 1);
+				n->id = ++id;
 			}
 			n->split = t;
 			n->split_point = sp;
