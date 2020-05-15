@@ -244,11 +244,10 @@ reap_dead_window(struct node *p, const struct node *c)
 }
 
 static void
-reshape_window(struct node *n, int d, int ow)
+reshape_window(struct node *n, int d)
 {
     int oy, ox;
-    assert(ow == n->ntabs);
-    bool *tabs = newtabs(n->w, ow, n->tabs, n->tabstop);
+    bool *tabs = newtabs(n->w, n->ntabs, n->tabs, n->tabstop);
     struct winsize ws = {.ws_row = n->h - 1, .ws_col = n->w}; /* tty(4) */
 
     if (tabs){
@@ -311,14 +310,13 @@ reshape(struct node *n, int y, int x, int h, int w)
 		return;
 
 	int d = n->h - h;
-	int ow = n->w;
 	n->y = y;
 	n->x = x;
 	n->h = MAX(h, 1);
 	n->w = MAX(w, 1);
 
 	if( n->split == '\0' ) {
-		reshape_window(n, d, ow);
+		reshape_window(n, d);
 		if( n->div ) {
 			wresize(n->div, 1, n->w);
 		} else {
