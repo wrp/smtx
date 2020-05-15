@@ -33,6 +33,7 @@ static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 static struct handler (*binding)[128] = &keys;
 static struct node *root, *focused, *lastfocused = NULL;
+static struct node *view_root;
 static char commandkey = CTL(COMMAND_KEY);
 static int nfds = 1; /* stdin */
 static fd_set fds;
@@ -253,7 +254,7 @@ replacechild(struct node *n, struct node *c1, struct node *c2)
 	assert( c1 && c2 );
 	c2->parent = n;
 	if( n == NULL ){
-		root = c2;
+		view_root = root = c2;
 		reshape(c2, 0, 0, LINES, COLS);
 	} else if( n->c[0] == c1 ) {
 		n->c[0] = c2;
@@ -476,7 +477,7 @@ getinput(struct node *n, fd_set *f) /* check all ptty's for input. */
 			reap_dead_window(n->parent, n);
 			freenode(n);
 			if( n == root ) {
-				root = focused = NULL;
+				view_root = root = focused = NULL;
 			}
 			status = false;
 		}
@@ -526,15 +527,16 @@ int
 reshape_root(struct node *n, const char **args)
 {
 	(void)args;
-	reshape(root, 0, 0, LINES, COLS);
+	reshape(view_root, 0, 0, LINES, COLS);
 	scrollbottom(n);
 	return 0;
 }
 
 static struct node *
-find_node(struct node *b, int id) {
-	struct node *r = NULL;
-	if( b != NULL ) {
+find_node(struct node *b, int id)
+{
+	struct node *r = id ? NULL : root;
+	if( id && b != NULL ) {
 		if( b->id == id ) {
 			r = b;
 		} else if( ( r = find_node(b->c[0], id)) == NULL ) {
@@ -591,16 +593,16 @@ mov(struct node *n, const char **args)
 	for( struct node *t = n; t && count--; n = t ? t : n ) {
 		switch( cmd ) {
 		case 'k': /* move up */
-			t = find_window(root, t->y - 1, midx);
+			t = find_window(view_root, t->y - 1, midx);
 			break;
 		case 'j': /* move down */
-			t = find_window(root, t->y + t->h + 1, midx );
+			t = find_window(view_root, t->y + t->h + 1, midx );
 			break;
 		case 'l': /* move right */
-			t = find_window(root, midy, t->x + t->w + 1);
+			t = find_window(view_root, midy, t->x + t->w + 1);
 			break;
 		case 'h': /* move left */
-			t = find_window(root, midy, t->x - 1);
+			t = find_window(view_root, midy, t->x - 1);
 			break;
 		case 'g':
 			t = find_node(root, cmd_count);
@@ -622,7 +624,8 @@ redrawroot(struct node *n, const char **args)
 {
 	(void) n;
 	(void) args;
-	draw(root);
+	reshapechildren(view_root);
+	draw(view_root);
 	return 0;
 }
 
@@ -647,7 +650,7 @@ resize(struct node *n, const char **args)
 	if( n->parent ) {
 		double factor = cmd_count ? MIN(100, cmd_count) / 100.0 : 0.5;
 		n->parent->split_point = factor;
-		reshapechildren(root);
+		reshapechildren(view_root);
 	}
 	return 0;
 }
@@ -705,6 +708,21 @@ new_tabstop(struct node *n, const char **args)
 	return 0;
 }
 
+static int
+set_root(struct node *n, const char **args)
+{
+	if( args[0] ) {
+		n = root;
+	} else if( cmd_count ) {
+		n = find_node(root, cmd_count);
+	} else {
+		n = n->parent;
+	}
+	view_root = n ? n : root;
+	reshape(view_root, 0, 0, LINES, COLS);
+	return 0;
+}
+
 static void
 build_bindings()
 {
@@ -731,6 +749,8 @@ build_bindings()
 	add_key(cmd_keys, L'h', mov, "h", NULL);
 	add_key(cmd_keys, L'p', mov, "p", NULL);
 	add_key(cmd_keys, L't', new_tabstop, NULL);
+	add_key(cmd_keys, L'v', set_root, NULL);
+	add_key(cmd_keys, L'V', set_root, "base");
 	for( int i=0; i < 10; i++ ) {
 		char *buf = calloc(2, 1);
 		if( buf == NULL ) {
@@ -851,7 +871,7 @@ run(void)
 			handlechar(r, w);
 		}
 		getinput(root, &sfds);
-		draw(root);
+		draw(view_root);
 		doupdate();
 		fixcursor();
 		draw(focused);
@@ -909,12 +929,12 @@ main(int argc, char **argv)
 	start_color();
 	use_default_colors();
 
-	root = newwindow(0, 0, LINES, COLS);
+	view_root = root = newwindow(0, 0, LINES, COLS);
 	if( root == NULL ) {
 		err(EXIT_FAILURE, "Unable to create root window");
 	}
-	focus(root);
-	draw(root);
+	focus(view_root);
+	draw(view_root);
 	run();
 	endwin();
 	return EXIT_SUCCESS;
