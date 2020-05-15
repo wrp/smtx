@@ -27,7 +27,6 @@
 
 #include "main.h"
 
-int tabstop = 8;
 static int id;
 static struct handler keys[128];
 static struct handler cmd_keys[128];
@@ -70,7 +69,7 @@ getshell(void) /* Get the user's preferred shell. */
 }
 
 static bool *
-newtabs(int w, int ow, bool *oldtabs)
+newtabs(int w, int ow, bool *oldtabs, int tabstop)
 {
 	bool *tabs = calloc(w, sizeof *tabs);
 	for( int i = 0; tabs != NULL && i < w; i++ ) {
@@ -84,7 +83,7 @@ newnode(int t, double sp, int y, int x, int h, int w)
 {
 	struct node *n = NULL;
 	if( h > 1 && w > 1 && (n = calloc(1, sizeof *n)) != NULL ) {
-		if( (n->tabs = newtabs(w, 0, NULL)) == NULL ) {
+		if( (n->tabs = newtabs(w, 0, NULL, n->tabstop = 8)) == NULL ) {
 			free(n);
 			n = NULL;
 		} else {
@@ -248,7 +247,8 @@ static void
 reshape_window(struct node *n, int d, int ow)
 {
     int oy, ox;
-    bool *tabs = newtabs(n->w, ow, n->tabs);
+    assert(ow == n->ntabs);
+    bool *tabs = newtabs(n->w, ow, n->tabs, n->tabstop);
     struct winsize ws = {.ws_row = n->h - 1, .ws_col = n->w}; /* tty(4) */
 
     if (tabs){
@@ -673,9 +673,9 @@ static int
 new_tabstop(struct node *n, const char **args)
 {
 	(void) args;
-	tabstop = cmd_count ? cmd_count : 8;
 	free(n->tabs);
-	n->tabs = newtabs(n->w, 0, NULL);
+	n->tabstop = cmd_count ? cmd_count : 8;
+	n->tabs = newtabs(n->w, 0, NULL, n->tabstop);
 	return 0;
 }
 

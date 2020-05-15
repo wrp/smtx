@@ -72,7 +72,7 @@ struct node {
 	int id;
 	int split;  /* '|', '-', or '\0' (lateral, transverse, or no split) */
 	double split_point; /* percent of window dedicated to c[0] */
-	int y, x, h, w, pt, ntabs;
+	int y, x, h, w, pt, ntabs, tabstop;
 	pid_t pid;
 	bool *tabs, pnm, decom, am, lnm;
 	wchar_t repc;
