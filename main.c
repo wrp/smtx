@@ -765,6 +765,34 @@ build_bindings()
 	add_key(code_keys, KEY_LEFT, sendarrow, "D", NULL);
 }
 
+/* Naive test to determine if k "looks like" a command */
+static int
+is_command(const char *k)
+{
+	const char *space = strchr(k, ' ');
+	char *path = getenv("PATH");
+	char name[PATH_MAX];
+	size_t len = space ? (size_t)(space - k) : strlen(k);
+	if( k[0] == '/' ) {
+		return access(k, X_OK) == 0;
+	} else for( char *c = strchr(path, ':'); c; c = strchr(path, ':') ) {
+		size_t n = c - path;
+		if( n > sizeof name - 2 - len ) {
+			/* horribly ill-formed PATH */
+			return 0;
+		}
+		memcpy(name, path, n);
+		name[n] = '/';
+		memcpy(name + n + 1, k, len);
+		name[n + len + 1] = '\0';
+		if( access(name, X_OK) == 0 ) {
+			return 1;
+		}
+		path = c + 1;
+	}
+	return 0;
+}
+
 static void
 handlechar(int r, int k) /* Handle a single input character. */
 {
@@ -775,12 +803,14 @@ handlechar(int r, int k) /* Handle a single input character. */
 	if( r == OK && k > 0 && k < (int)sizeof *binding ) {
 		unsigned len = strlen(n->putative_cmd);
 		if( k == '\r' ) {
-			strcpy(n->cmd, n->putative_cmd);
-			n->putative_cmd[0] = '\0';
-		} else if( len < sizeof n->putative_cmd - 1 ) {
-			n->putative_cmd[len] = isprint(k) ? k : '?';
-			n->putative_cmd[len + 1] = '\0';
+			if( is_command(n->putative_cmd) ) {
+				strcpy(n->cmd, n->putative_cmd);
+			}
+			len = 0;
+		} else if( len < sizeof n->putative_cmd - 1 && isprint(k) ) {
+			n->putative_cmd[len++] = k;
 		}
+		n->putative_cmd[len] = '\0';
 		b = &(*binding)[k];
 
 	} else if( r == KEY_CODE_YES ) {
