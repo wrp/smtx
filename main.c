@@ -778,7 +778,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 			strcpy(n->cmd, n->putative_cmd);
 			n->putative_cmd[0] = '\0';
 		} else if( len < sizeof n->putative_cmd - 1 ) {
-			n->putative_cmd[len] = k;
+			n->putative_cmd[len] = isprint(k) ? k : '?';
 			n->putative_cmd[len + 1] = '\0';
 		}
 		b = &(*binding)[k];
