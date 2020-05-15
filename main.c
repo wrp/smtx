@@ -401,7 +401,7 @@ draw(struct node *n) /* Draw a node. */
 				0,          /* pmincol */
 				n->y,       /* sminrow */
 				n->x,       /* smincol */
-				n->y + n->h - 1,  /* smaxrow */
+				n->y + n->h - 2,  /* smaxrow */
 				n->x + n->w - 1   /* smaxcol */
 			);
 		} else {
