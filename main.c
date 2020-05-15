@@ -759,12 +759,14 @@ static int
 is_command(const char *k)
 {
 	const char *space = strchr(k, ' ');
-	char *path = getenv("PATH");
+	char *c, *path = getenv("PATH");
 	char name[PATH_MAX];
 	size_t len = space ? (size_t)(space - k) : strlen(k);
-	if( k[0] == '/' ) {
+	if( (c = strchr(k, '/' )) && c < k + len ) {
+		memcpy(name, k, len);
+		name[len] = '\0';
 		return access(k, X_OK) == 0;
-	} else for( char *c = strchr(path, ':'); c; c = strchr(path, ':') ) {
+	} else for( c = strchr(path, ':'); c; c = strchr(path, ':') ) {
 		size_t n = c - path;
 		if( n > sizeof name - 2 - len ) {
 			/* horribly ill-formed PATH */
