@@ -865,7 +865,8 @@ parse_args(int argc, char **argv)
 	while( (c = getopt(argc, argv, ":hc:s:T:t:")) != -1 ) {
 		switch (c) {
 		case 'h':
-			printf("usage: %s [-T NAME] [-t NAME] [-c KEY]\n",
+			printf("usage: %s [-s history-size] [-T NAME]"
+				" [-t NAME] [-c KEY]\n",
 				name ? name + 1 : argv[0]);
 			exit(0);
 		case 'c':
