@@ -52,11 +52,9 @@ void
 safewrite(int fd, const char *b, size_t n) /* Write with retry on interrupt */
 {
 	ssize_t s;
-	while( n > 0 && ((s = write(fd, b, n)) >= 0 || errno == EINTR) ) {
-		if( s > 0 ) {
-			b += s;
-			n -= s;
-		}
+	const char *e = b + n;
+	while( b < e && ((s = write(fd, b, e - b)) >= 0 || errno == EINTR) ) {
+		b += s > 0 ? s : 0;
 	}
 }
 
