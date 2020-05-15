@@ -672,9 +672,10 @@ add_key(struct handler *b, wchar_t k, action act, ...)
 static int
 new_tabstop(struct node *n, const char **args)
 {
-	(void)n;
 	(void) args;
 	tabstop = cmd_count ? cmd_count : 8;
+	free(n->tabs);
+	n->tabs = newtabs(n->w, 0, NULL);
 	return 0;
 }
 
