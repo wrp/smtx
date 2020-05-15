@@ -202,6 +202,8 @@ newwindow(int y, int x, int h, int w)
 
 	setupevents(n);
 
+	strncpy(n->title, getshell(), sizeof n->title);
+	n->title[sizeof n->title - 1] = '\0';
 	n->pid = forkpty(&n->pt, NULL, NULL, &ws);
 	if( n->pid < 0 ) {
 		perror("forkpty");
@@ -214,7 +216,7 @@ newwindow(int y, int x, int h, int w)
 		setenv("STTM_VERSION", VERSION, 1);
 		setenv("TERM", getterm(), 1);
 		signal(SIGCHLD, SIG_DFL);
-		execl(getshell(), getshell(), NULL);
+		execl(n->title, n->title, NULL);
 		perror("execl");
 		_exit(EXIT_FAILURE);
 	}
@@ -368,7 +370,7 @@ draw_title(struct node *n)
 	} else {
 		wattroff(n->div, A_REVERSE);
 	}
-	snprintf(t, s, "%d (%d) %s", n->id, (int)n->pid, n->cmd);
+	snprintf(t, s, "%d (%d) %s ", n->id, (int)n->pid, n->title);
 	x += strlen(t);
 	mvwprintw(n->div, 0, 0, "%s", t);
 	mvwhline(n->div, 0, x, ACS_HLINE, n->w - x);
@@ -804,7 +806,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 		unsigned len = strlen(n->putative_cmd);
 		if( k == '\r' ) {
 			if( is_command(n->putative_cmd) ) {
-				strcpy(n->cmd, n->putative_cmd);
+				strcpy(n->title, n->putative_cmd);
 			}
 			len = 0;
 		} else if( len < sizeof n->putative_cmd - 1 && isprint(k) ) {

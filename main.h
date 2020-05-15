@@ -78,7 +78,7 @@ struct node {
 	wchar_t repc;
 	struct node *parent;
 	struct node *c[2];
-	char cmd[32];
+	char title[32];
 	char putative_cmd[32];
 	WINDOW *div;
 	struct screen pri, alt, *s;
