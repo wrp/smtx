@@ -609,7 +609,7 @@ resize(struct node *n, const char **args)
 {
 	(void) args;
 	if( n->parent ) {
-		double factor = cmd_count ? MIN(100, cmd_count) / 100.0 : 0.5;
+		double factor = cmd_count ? MIN(100, cmd_count) / 100.0 : 1.0;
 		n->parent->split_point = factor;
 		reshapechildren(view_root);
 	}
