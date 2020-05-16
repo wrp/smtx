@@ -514,18 +514,20 @@ contains(struct node *n, int y, int x)
 struct node *
 find_window(struct node *n, int y, int x)
 {
+	assert( !n || n->split != '-' || n->c[0]->h + n->c[1]->h == n->h );
+	assert( !n || n->split != '-' || n->c[0]->y + n->c[0]->h
+		== n->c[1]->y );
+	assert( !n || n->split != '|' || n->c[0]->w + n->c[1]->w + 1 == n->w );
+	assert( !n || n->split != '|' || n->c[0]->x + n->c[0]->w + 1
+		== n->c[1]->x );
 	if( n != NULL && n->split ) {
 		if( n->split == '-' ) {
-			assert( n->c[0]->h + n->c[1]->h == n->h );
-			assert( n->c[0]->y + n->c[0]->h == n->c[1]->y );
 			if( y < n->c[1]->y ) {
 				n = n->c[0];
 			} else {
 				n = n->c[1];
 			}
 		} else if( n->split == '|' ) {
-			assert( n->c[0]->w + n->c[1]->w + 1 == n->w );
-			assert( n->c[0]->x + n->c[0]->w + 1 == n->c[1]->x );
 			/* Treat the divider as belonging to left window */
 			if( x < n->c[1]->x ) {
 				n = n->c[0];
