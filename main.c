@@ -69,9 +69,9 @@ getshell(void) /* Get the user's preferred shell. */
 static bool *
 newtabs(int w, int ow, bool *oldtabs, int tabstop)
 {
-	bool *tabs = calloc(w, sizeof *tabs);
-	for( int i = 0; tabs != NULL && i < w; i++ ) {
-		tabs[i] = i < ow ? oldtabs[i] : i % tabstop == 0;
+	bool *tabs = realloc(oldtabs, w * sizeof *tabs);
+	for( ; tabs != NULL && ow < w; ow++ ) {
+		tabs[ow] = ow % tabstop == tabstop - 1;
 	}
 	return tabs;
 }
@@ -248,11 +248,8 @@ reshape_window(struct node *n, int d)
     bool *tabs = newtabs(n->w, n->ntabs, n->tabs, n->tabstop);
     struct winsize ws = {.ws_row = n->h - 1, .ws_col = n->w}; /* tty(4) */
 
-    if (tabs){
-        free(n->tabs);
-        n->tabs = tabs;
-        n->ntabs = n->w;
-    }
+    n->tabs = tabs;
+    n->ntabs = tabs ? n->w : 0;
 
     getyx(n->s->win, oy, ox);
     wresize(n->pri.win, MAX(n->h - 1, scrollback_history), MAX(n->w, 128));
