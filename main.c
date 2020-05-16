@@ -85,11 +85,7 @@ newnode(int t, double sp, int y, int x, int h, int w)
 			free(n);
 			n = NULL;
 		} else {
-			if( t ) {
-				n->id = 0;
-			} else {
-				n->id = ++id;
-			}
+			n->id = t ? 0 : ++id;
 			n->split = t;
 			n->split_point = sp;
 			n->y = y;
