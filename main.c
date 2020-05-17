@@ -522,18 +522,9 @@ find_window(struct node *n, int y, int x)
 		== n->c[1]->x );
 	if( n != NULL && n->split ) {
 		if( n->split == '-' ) {
-			if( y < n->c[1]->y ) {
-				n = n->c[0];
-			} else {
-				n = n->c[1];
-			}
+			n = n->c[ y >= n->c[1]->y ];
 		} else if( n->split == '|' ) {
-			/* Treat the divider as belonging to left window */
-			if( x < n->c[1]->x ) {
-				n = n->c[0];
-			} else {
-				n = n->c[1];
-			}
+			n = n->c[ x >= n->c[1]->x ];
 		}
 		n = find_window(n, y, x);
 	}
