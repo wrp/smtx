@@ -117,8 +117,6 @@ static void
 freenode(struct node *n)
 {
 	if( n ) {
-		if( lastfocused == n )
-			lastfocused = NULL;
 		delwinnul(n->pri.win);
 		delwinnul(n->alt.win);
 		if( n->pt >= 0 ) {
@@ -232,6 +230,9 @@ reap_dead_window(struct node *c)
 		freenode(p);
 	}
 	freenode(c);
+	if( lastfocused == c ) {
+		lastfocused = NULL;
+	}
 }
 
 static void
