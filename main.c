@@ -89,6 +89,7 @@ newnode(int y, int x, int h, int w, int id)
 		n->y = y;
 		n->x = x;
 		n->h = h;
+		n->div = newpad(1, w);
 		if( ! extend_tabs(n, n->tabstop = 8) ) {
 			free(n);
 			n = NULL;
@@ -172,12 +173,13 @@ new_screens(struct node *n)
 static int
 new_pty(struct node *n)
 {
-	int h = n->h, w = n->w;
-	struct winsize ws = {.ws_row = h - 1, .ws_col = w}; /* tty(4) */
+	int h = n->h > 1 ? n->h : 40;
+	int w = n->w ? n->w : 80;
+	struct winsize ws = {.ws_row = h - 1, .ws_col = w};
 	n->pid = forkpty(&n->pt, NULL, NULL, &ws);
 	if( n->pid < 0 ) {
 		perror("forkpty");
-		return 0;
+		return -1;
 	} else if( n->pid == 0 ) {
 		char buf[64] = {0};
 		snprintf(buf, sizeof buf  - 1, "%lu", (unsigned long)getppid());
@@ -192,14 +194,8 @@ new_pty(struct node *n)
 	}
 	FD_SET(n->pt, &fds);
 	fcntl(n->pt, F_SETFL, O_NONBLOCK);
-	nfds = n->pt > nfds? n->pt : nfds;
-
-	if( n->div ) {
-		wresize(n->div, 1, n->w);
-	} else {
-		n->div = newpad(1, n->w);
-	}
-	return 1;
+	nfds = n->pt > nfds ? n->pt : nfds;
+	return n->pt;
 }
 
 static void
