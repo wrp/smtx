@@ -80,6 +80,7 @@ extend_tabs(struct node *n, int tabstop)
 			n->ntabs = 0;
 		}
 	}
+	assert( n->ntabs == n->w || (n->ntabs == 0 && n->tabs == NULL) );
 }
 
 static struct node *
