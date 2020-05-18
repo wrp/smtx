@@ -106,16 +106,16 @@ newnode(int y, int x, int h, int w, int id)
 	return n;
 }
 
+static int delwinnul(WINDOW *w) { return w ? delwin(w) : 0; }
+
 static void
 freenode(struct node *n)
 {
 	if( n ) {
 		if( lastfocused == n )
 			lastfocused = NULL;
-		if( n->pri.win )
-			delwin(n->pri.win);
-		if( n->alt.win )
-			delwin(n->alt.win);
+		delwinnul(n->pri.win);
+		delwinnul(n->alt.win);
 		if( n->pt >= 0 ) {
 			close(n->pt);
 			FD_CLR(n->pt, &fds);
@@ -282,10 +282,8 @@ reshapechildren(struct node *n)
 		h[1] = n->h - h[0];
 		reshape(n->c[0], n->y, n->x, h[0], n->w);
 		reshape(n->c[1], n->y + h[0], n->x, h[1], n->w);
-		if( n->twin ) {
-			delwin(n->twin);
-			n->twin = NULL;
-		}
+		delwinnul(n->twin);
+		n->twin = NULL;
 	}
 }
 
