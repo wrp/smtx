@@ -213,30 +213,24 @@ focus(struct node *n)
 	}
 }
 
-/* Replace c1 of n with c2. */
 static void
-replacechild(struct node *n, struct node *c1, struct node *c2)
+reap_dead_window(struct node *c1, const struct node *c)
 {
-	assert( c1 && c2 );
-	c2->parent = n;
-	if( n == NULL ){
-		view_root = root = c2;
-		reshape(c2, 0, 0, LINES, COLS);
-	} else if( n->c[0] == c1 ) {
-		n->c[0] = c2;
-		reshape(n, n->y, n->x, n->h, n->w);
-	} else if( n->c[1] == c1 ) {
-		n->c[1] = c2;
-		reshape(n, n->y, n->x, n->h, n->w);
-	}
-}
-
-static void
-reap_dead_window(struct node *p, const struct node *c)
-{
-	if( p != NULL ) {
-		replacechild(p->parent, p, c == p->c[0]? p->c[1] : p->c[0]);
-		freenode(p);
+	if( c1 != NULL ) {
+		struct node *n = c1->parent;
+		struct node *c2 = c1->c[c == c1->c[0]];
+		c2->parent = n;
+		if( n == NULL ) {
+			n = view_root = root = c2;
+			reshape(c2, 0, 0, LINES, COLS);
+		} else if( c1 == n->c[0] ) {
+			n->c[0] = c2;
+			reshape(n, n->y, n->x, n->h, n->w);
+		} else {
+			n->c[1] = c2;
+			reshape(n, n->y, n->x, n->h, n->w);
+		}
+		freenode(c1);
 	}
 }
 
