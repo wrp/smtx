@@ -469,7 +469,7 @@ getinput(struct node *n, fd_set *f) /* check all ptty's for input. */
 static void
 scrollbottom(struct node *n)
 {
-	if( n->s ) {
+	if( n && n->s ) {
 		n->s->off = n->s->tos;
 	}
 }
