@@ -177,9 +177,9 @@ new_screens(struct node *n)
 static int
 new_pty(struct node *n)
 {
-	int h = n->h > 1 ? n->h : 40;
+	int h = n->h > 1 ? n->h - 1 : 24;
 	int w = n->w ? n->w : 80;
-	struct winsize ws = {.ws_row = h - 1, .ws_col = w};
+	struct winsize ws = {.ws_row = h, .ws_col = w};
 	n->pid = forkpty(&n->pt, NULL, NULL, &ws);
 	if( n->pid < 0 ) {
 		perror("forkpty");
