@@ -309,7 +309,7 @@ HANDLER(ris) /* RIS - Reset to Initial State */
     wsetscrreg(n->pri.win, 0, MAX(scrollback_history, n->h) - 1);
     wsetscrreg(n->alt.win, 0, n->h - 1);
     for (int i = 0; i < n->ntabs; i++)
-        n->tabs[i] = (i % n->tabstop == (n->tabstop - 1));
+        n->tabs[i] = (i % n->tabstop == 0);
 ENDHANDLER
 
 HANDLER(mode) /* Set or Reset Mode */

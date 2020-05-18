@@ -72,7 +72,7 @@ extend_tabs(struct node *n, int tabstop)
 	if( n->ntabs < n->w ) {
 		n->tabs = realloc(n->tabs, n->w * sizeof *n->tabs);
 		for( ; n->tabs && n->ntabs < n->w; n->ntabs++ ) {
-			n->tabs[n->ntabs] = (n->ntabs + 1) % tabstop == 0;
+			n->tabs[n->ntabs] = n->ntabs % tabstop == 0;
 		}
 	}
 	return n->tabs != NULL;
