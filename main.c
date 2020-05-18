@@ -284,10 +284,14 @@ reshapechildren(struct node *n)
 	if( n->split == '|' ) {
 		int w[2];
 		w[0] = n->w * n->split_point;
-		if( w[0] && w[0] == n->w ) {
+		if( w[0] == n->w && n->w > 1 ) {
 			w[0] -= 1;
 		}
 		w[1] = n->w - w[0] - 1;
+		if( w[1] - w[0] == 1 ) {
+			w[0] += 1;
+			w[1] -= 1;
+		}
 		assert( w[1] >= 0 && w[0] >= 0 );
 		assert( n->h >= 0 && n->x >= 0 && n->y >= 0 );
 		reshape(n->c[0], n->y, n->x, n->h, w[0]);
@@ -301,6 +305,10 @@ reshapechildren(struct node *n)
 		int h[2];
 		h[0] = n->h * n->split_point;
 		h[1] = n->h - h[0];
+		if( h[1] - h[0] == 1 ) {
+			h[0] += 1;
+			h[1] -= 1;
+		}
 		assert( h[0] <= n->h && h[0] >= 0 && h[1] >= 0 );
 		reshape(n->c[0], n->y, n->x, h[0], n->w);
 		reshape(n->c[1], n->y + h[0], n->x, h[1], n->w);
