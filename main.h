@@ -80,7 +80,7 @@ struct node {
 	struct node *c[2];
 	char title[32];
 	char putative_cmd[32];
-	WINDOW *div;
+	WINDOW *twin;  /* Window for title, or divider */
 	struct screen pri, alt, *s;
 	wchar_t *g0, *g1, *g2, *g3, *gc, *gs, *sgc, *sgs;
 	VTPARSER vp;
