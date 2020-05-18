@@ -219,24 +219,24 @@ focus(struct node *n)
 }
 
 static void
-reap_dead_window(struct node *c1, const struct node *c)
+reap_dead_window(struct node *c)
 {
-	if( c1 != NULL ) {
-		struct node *n = c1->parent;
-		struct node *c2 = c1->c[c == c1->c[0]];
-		c2->parent = n;
+	struct node *p = c->parent;
+	if( p != NULL ) {
+		struct node *n = p->parent;
+		int idx = c == p->c[0] ? 0 : 1;
+		struct node *sibling = p->c[!idx];
+		sibling->parent = n;
 		if( n == NULL ) {
-			n = view_root = root = c2;
-			reshape(c2, 0, 0, LINES, COLS);
-		} else if( c1 == n->c[0] ) {
-			n->c[0] = c2;
-			reshape(n, n->y, n->x, n->h, n->w);
+			view_root = root = sibling;
+			reshape(root, 0, 0, LINES, COLS);
 		} else {
-			n->c[1] = c2;
+			n->c[idx] = sibling;
 			reshape(n, n->y, n->x, n->h, n->w);
 		}
-		freenode(c1);
+		freenode(p);
 	}
+	freenode(c);
 }
 
 static void
@@ -443,8 +443,7 @@ getinput(struct node *n, fd_set *f) /* check all ptty's for input. */
 			if( p && n == focused ) {
 				focus(p->c[ n == p->c[0]]);
 			}
-			reap_dead_window(n->parent, n);
-			freenode(n);
+			reap_dead_window(n);
 			if( n == root ) {
 				view_root = root = focused = NULL;
 			}
