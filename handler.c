@@ -201,10 +201,16 @@ HANDLER(rc) /* RC - Restore Cursor */
 ENDHANDLER
 
 HANDLER(tbc) /* TBC - Tabulation Clear */
-    switch (P0(0)){
-        case 0: n->tabs[x < n->ntabs? x : 0] = false;          break;
-        case 3: memset(n->tabs, 0, sizeof(bool) * (n->ntabs)); break;
-    }
+	if( n->tabs != NULL ) {
+		switch( P0(0) ) {
+		case 0:
+			n->tabs[x < n->ntabs? x : 0] = false;
+			break;
+		case 3:
+			memset(n->tabs, 0, sizeof(bool) * (n->ntabs));
+			break;
+		}
+	}
 ENDHANDLER
 
 HANDLER(cub) /* CUB - Cursor Backward */
