@@ -219,14 +219,13 @@ reap_dead_window(struct node *c)
 	struct node *p = c->parent;
 	if( p != NULL ) {
 		struct node *n = p->parent;
-		int idx = c == p->c[0] ? 0 : 1;
-		struct node *sibling = p->c[!idx];
+		struct node *sibling = p->c[ c == p->c[0] ];
 		sibling->parent = n;
 		if( n == NULL ) {
 			view_root = root = sibling;
 			reshape(root, 0, 0, LINES, COLS);
 		} else {
-			n->c[idx] = sibling;
+			n->c[ p == n->c[1] ] = sibling;
 			reshapechildren(n);
 		}
 		freenode(p);
