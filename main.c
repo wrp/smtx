@@ -367,8 +367,9 @@ drawchildren(const struct node *n)
 {
 	draw(n->c[0]);
 	if (n->split == '|' && n->twin ) {
+		int glyph = ! n->c[0]->w ? '<' : ! n->c[1]->w ? '>' : ACS_VLINE;
 		assert( n->c[0]->y == n->y );
-		mvwvline(n->twin, 0, 0, ACS_VLINE, n->h);
+		mvwvline(n->twin, 0, 0, glyph, n->h);
 		pnoutrefresh(n->twin, 0, 0, n->y, n->x + n->c[0]->w,
 			n->y + n->h, n->x + n->c[0]->w);
 	}
