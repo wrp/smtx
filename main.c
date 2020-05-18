@@ -252,7 +252,7 @@ reshape_window(struct node *n, int d)
 	n->pri.tos = n->pri.off = MAX(0, scrollback_history - h);
 	n->alt.tos = n->alt.off = 0;
 	wsetscrreg(n->pri.win, 0, MAX(scrollback_history, h) - 1);
-	wsetscrreg(n->alt.win, 0, n->h - 1 - 1);
+	wsetscrreg(n->alt.win, 0, h - 1);
 	if( d != 0 ) {
 		wmove(n->s->win, oy + d, ox);
 		wscrl(n->s->win, -d);
