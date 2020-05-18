@@ -205,7 +205,7 @@ focus(struct node *n)
 		lastfocused = focused;
 		focused = n;
 	} else if( n ) {
-		focus(n->c[0]? n->c[0] : n->c[1]);
+		focus(n->c[0] ? n->c[0] : n->c[1]);
 	}
 }
 
