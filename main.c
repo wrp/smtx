@@ -229,11 +229,15 @@ reap_dead_window(struct node *c)
 			reshapechildren(n);
 		}
 		freenode(p);
+		if( c == focused ) {
+			focused = sibling;
+			lastfocused = NULL;
+		}
+	} else {
+		assert( c == root );
+		view_root = root = focused = NULL;
 	}
 	freenode(c);
-	if( lastfocused == c ) {
-		lastfocused = NULL;
-	}
 }
 
 static void
@@ -454,14 +458,7 @@ getinput(struct node *n, fd_set *f) /* check all ptty's for input. */
 		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
 			assert(n->c[0] == NULL);
 			assert(n->c[1] == NULL);
-			struct node * p = n->parent;
-			if( p && n == focused ) {
-				focus(p->c[ n == p->c[0]]);
-			}
 			reap_dead_window(n);
-			if( n == root ) {
-				view_root = root = focused = NULL;
-			}
 			status = false;
 		}
 	}
