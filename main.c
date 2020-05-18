@@ -132,14 +132,15 @@ freenode(struct node *n)
 static void
 fixcursor(void) /* Move the terminal cursor to the active window. */
 {
-    if (focused){
-        int y, x;
-        int show = binding != &cmd_keys && focused->s->vis;
-        curs_set(focused->s->off != focused->s->tos? 0 : show);
-        getyx(focused->s->win, y, x);
-        y = MIN(MAX(y, focused->s->tos), focused->s->tos + focused->h - 1);
-        wmove(focused->s->win, y, x);
-    }
+	struct node *f = focused;
+	if( f && f->s ) {
+		int y, x;
+		int show = binding != &cmd_keys && f->s->vis;
+		curs_set(f->s->off != f->s->tos ? 0 : show);
+		getyx(f->s->win, y, x);
+		y = MIN(MAX(y, f->s->tos), f->s->tos + f->h - 1);
+		wmove(f->s->win, y, x);
+	}
 }
 
 static const char *
@@ -468,7 +469,9 @@ getinput(struct node *n, fd_set *f) /* check all ptty's for input. */
 static void
 scrollbottom(struct node *n)
 {
-    n->s->off = n->s->tos;
+	if( n->s ) {
+		n->s->off = n->s->tos;
+	}
 }
 
 static int
