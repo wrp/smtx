@@ -35,7 +35,7 @@
  * speed boost.
  */
 #define DEFAULT_TERMINAL "screen-bce"
-#define DEFAULT_256_COLOR_TERMINAL "screen-256color-bce"
+#define DEFAULT_COLOR_TERMINAL "screen-256color-bce"
 
 /* The default command prefix key, when modified by cntrl.
  * This can be changed at runtime using the '-c' flag.

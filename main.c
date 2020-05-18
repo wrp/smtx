@@ -135,12 +135,8 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 static const char *
 getterm(void)
 {
-    const char *envterm = getenv("TERM");
-    if (term)
-        return term;
-    if (envterm && COLORS >= 256 && !strstr(DEFAULT_TERMINAL, "-256color"))
-        return DEFAULT_256_COLOR_TERMINAL;
-    return DEFAULT_TERMINAL;
+	const char *t = term ? term : getenv("TERM");
+	return t ? t : COLORS > 255 ? DEFAULT_COLOR_TERMINAL : DEFAULT_TERMINAL;
 }
 
 static int
