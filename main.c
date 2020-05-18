@@ -46,6 +46,7 @@ static void reshapechildren(struct node *n);
 static const char *term = NULL;
 static void freenode(struct node *n);
 static struct node * splice(struct node *old, struct node *new, int, double);
+static struct node * sibling(const struct node *);
 static action transition;
 static action split;
 
@@ -355,8 +356,12 @@ draw_title(struct node *n)
 	snprintf(t, s, "%d (%d) %s ", n->id, (int)n->pid, n->title);
 	x += strlen(t);
 	if( n->twin ) {
+		int glyph = ACS_HLINE;
+		if( n->parent && sibling(n)->h == 0 ) {
+			glyph = n == n->parent->c[0] ? ACS_DARROW : ACS_UARROW;
+		}
 		mvwprintw(n->twin, 0, 0, "%s", t);
-		mvwhline(n->twin, 0, x, ACS_HLINE, n->w - x);
+		mvwhline(n->twin, 0, x, glyph, n->w - x);
 		pnoutrefresh(n->twin, 0, 0, n->y + n->h - 1, n->x,
 			n->y + n->h - 1, n->x + n->w);
 	}
@@ -367,7 +372,12 @@ drawchildren(const struct node *n)
 {
 	draw(n->c[0]);
 	if (n->split == '|' && n->twin ) {
-		int glyph = ! n->c[0]->w ? '<' : ! n->c[1]->w ? '>' : ACS_VLINE;
+		int glyph = ACS_VLINE;
+		if( ! n->c[0]->w ) {
+			glyph = ACS_LARROW;
+		} else if( ! n->c[1]->w ) {
+			glyph = ACS_RARROW;
+		}
 		assert( n->c[0]->y == n->y );
 		mvwvline(n->twin, 0, 0, glyph, n->h);
 		pnoutrefresh(n->twin, 0, 0, n->y, n->x + n->c[0]->w,
