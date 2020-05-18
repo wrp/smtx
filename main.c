@@ -387,26 +387,41 @@ reorient(struct node *n, const char *args[])
 	return 0;
 }
 
+static int splice(struct node *old, struct node *new, int, double);
+
 static int
 split(struct node *n, const char *args[])
 {
+	assert( n != NULL );
 	assert( !n->split );
 	assert( n->c[0] == NULL );
 	assert( n->c[1] == NULL );
 	struct node *p = n->parent;
 	int typ = *args ? **args : p ? p->split ? p->split : '-' : '-';
 	double sp = 1.0 - (cmd_count ? MIN(100, cmd_count) / 100.0 : 0.5);
-	struct node *c = newnode(typ, sp, n->y, n->x, n->h, n->w);
 	struct node *v = newnode('\0', 0, 0, 0, n->h, n->w);
+	return splice(n, v, typ, sp);
+}
+
+static int
+splice(struct node *n, struct node *v, int typ, double sp)
+{
+	struct node *p = n->parent;
+	struct node *c = newnode(typ, sp, n->y, n->x, n->h, n->w);
 	if( v != NULL && c != NULL && new_screens(v) && new_pty(v) ) {
 		c->parent = n->parent;
 		c->c[0] = n;
 		c->c[1] = v;
 		n->parent = v->parent = c;
-		reshapechildren(c);
-		replacechild(p, n, c);
+		if( p ) {
+			p->c[ p->c[1] == n ] = c;
+			reshapechildren(p);
+		} else {
+			view_root = p = root = c;
+			reshape(c, 0, 0, LINES, COLS);
+		}
 		focus(v);
-		draw(p ? p : root);
+		draw(p);
 	} else {
 		freenode(v);
 		freenode(c);
