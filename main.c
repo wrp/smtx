@@ -89,12 +89,14 @@ newnode(int y, int x, int h, int w, int id)
 		n->y = y;
 		n->x = x;
 		n->h = h;
-		n->twin = newpad(1, w);
+		n->pt = -1;
 		if( ! extend_tabs(n, n->tabstop = 8) ) {
 			free(n);
 			n = NULL;
 		} else {
-			n->pt = -1;
+			n->twin = newpad(1, w);
+			strncpy(n->title, getshell(), sizeof n->title);
+			n->title[sizeof n->title - 1] = '\0';
 		}
 	}
 	return n;
@@ -160,9 +162,6 @@ new_screens(struct node *n)
 	keypad(n->alt.win, TRUE);
 
 	setupevents(n);
-
-	strncpy(n->title, getshell(), sizeof n->title);
-	n->title[sizeof n->title - 1] = '\0';
 	return 1;
 }
 
