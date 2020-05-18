@@ -90,6 +90,10 @@ newnode(int y, int x, int h, int w, int id)
 		n->x = x;
 		n->h = h;
 		n->pt = -1;
+		/* Are tabs an attribute of the node, or the screen?  Can
+		the alternate screen have different tabstops?   This
+		seems out of place here.
+		*/
 		if( ! extend_tabs(n, n->tabstop = 8) ) {
 			free(n);
 			n = NULL;
