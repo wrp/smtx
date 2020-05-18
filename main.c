@@ -45,7 +45,7 @@ static void draw(struct node *n);
 static void reshapechildren(struct node *n);
 static const char *term = NULL;
 static void freenode(struct node *n);
-static int splice(struct node *old, struct node *new, int, double);
+static struct node * splice(struct node *old, struct node *new, int, double);
 static action transition;
 static action split;
 
@@ -394,24 +394,26 @@ split(struct node *n, const char *args[])
 	assert( n->c[0] == NULL );
 	assert( n->c[1] == NULL );
 	(void)args;
-	for( int count = cmd_count ? cmd_count : 1; count; count -= 1 ) {
-		struct node *p = n->parent;
+	int split = n->parent ? n->parent->split : '-';
+	for( int count = cmd_count ? cmd_count : 1; n && count; count -= 1 ) {
 		struct node *v = newnode(0, 0, n->h, n->w, ++id);
-		splice(n, v, p ? p->split : '-', 1.0 / ( count + 1));
+		if( v != NULL && new_screens(v) && new_pty(v) ) {
+			splice(n, v, split, 1.0 / ( count + 1));
+		}
 		n = v;
 	}
 	return 0;
 }
 
-static int
+static struct node *
 splice(struct node *n, struct node *v, int typ, double sp)
 {
 	struct node *p = n->parent;
 	struct node *c = newnode(n->y, n->x, n->h, n->w, 0);
-	c->split = typ;
-	c->split_point = sp;
-	if( v != NULL && c != NULL && new_screens(v) && new_pty(v) ) {
-		c->parent = n->parent;
+	if( c != NULL ) {
+		c->split = typ;
+		c->split_point = sp;
+		c->parent = p;
 		c->c[0] = n;
 		c->c[1] = v;
 		n->parent = v->parent = c;
@@ -424,11 +426,8 @@ splice(struct node *n, struct node *v, int typ, double sp)
 		}
 		focus(v);
 		draw(p);
-	} else {
-		freenode(v);
-		freenode(c);
 	}
-	return 0;
+	return c;
 }
 
 static bool
