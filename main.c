@@ -106,7 +106,12 @@ newnode(int y, int x, int h, int w, int id)
 	return n;
 }
 
-static int delwinnul(WINDOW *w) { return w ? delwin(w) : 0; }
+static int
+delwinnul(WINDOW *w)
+{
+	return w ? delwin(w) : 0;
+}
+
 static int
 resize_pad(WINDOW **p, int h, int w)
 {
