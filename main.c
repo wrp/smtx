@@ -66,14 +66,16 @@ getshell(void) /* Get the user's preferred shell. */
 	return shell && *shell ? shell : pwd ? pwd->pw_shell : "/bin/sh";
 }
 
-static bool *
-newtabs(int w, int ow, bool *oldtabs, int tabstop)
+static int
+extend_tabs(struct node *n, int tabstop)
 {
-	bool *tabs = realloc(oldtabs, w * sizeof *tabs);
-	for( ; tabs != NULL && ow < w; ow++ ) {
-		tabs[ow] = ow % tabstop == tabstop - 1;
+	if( n->ntabs < n->w ) {
+		n->tabs = realloc(n->tabs, n->w * sizeof *n->tabs);
+		for( ; n->tabs && n->ntabs < n->w; n->ntabs++ ) {
+			n->tabs[n->ntabs] = (n->ntabs + 1) % tabstop == 0;
+		}
 	}
-	return tabs;
+	return n->tabs != NULL;
 }
 
 static struct node *
@@ -81,7 +83,8 @@ newnode(int t, double sp, int y, int x, int h, int w)
 {
 	struct node *n = NULL;
 	if( h > 1 && w > 1 && (n = calloc(1, sizeof *n)) != NULL ) {
-		if( (n->tabs = newtabs(w, 0, NULL, n->tabstop = 8)) == NULL ) {
+		n->w = w;
+		if( ! extend_tabs(n, n->tabstop = 8) ) {
 			free(n);
 			n = NULL;
 		} else {
@@ -91,7 +94,6 @@ newnode(int t, double sp, int y, int x, int h, int w)
 			n->y = y;
 			n->x = x;
 			n->h = h;
-			n->ntabs = n->w = w;
 			n->pt = -1;
 		}
 	}
@@ -241,12 +243,9 @@ static void
 reshape_window(struct node *n, int d)
 {
     int oy, ox;
-    bool *tabs = newtabs(n->w, n->ntabs, n->tabs, n->tabstop);
     struct winsize ws = {.ws_row = n->h - 1, .ws_col = n->w}; /* tty(4) */
 
-    n->tabs = tabs;
-    n->ntabs = tabs ? n->w : 0;
-
+    extend_tabs(n, n->tabstop);
     getyx(n->s->win, oy, ox);
     wresize(n->pri.win, MAX(n->h - 1, scrollback_history), MAX(n->w, 128));
     wresize(n->alt.win, MAX(n->h - 1, 64), MAX(n->w, 128));
@@ -655,9 +654,8 @@ static int
 new_tabstop(struct node *n, const char **args)
 {
 	(void) args;
-	free(n->tabs);
-	n->tabstop = cmd_count ? cmd_count : 8;
-	n->tabs = newtabs(n->w, 0, NULL, n->tabstop);
+	n->ntabs = 0;
+	extend_tabs(n, n->tabstop = cmd_count ? cmd_count : 8);
 	return 0;
 }
 
