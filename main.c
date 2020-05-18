@@ -67,7 +67,7 @@ getshell(void) /* Get the user's preferred shell. */
 	return shell && *shell ? shell : pwd ? pwd->pw_shell : "/bin/sh";
 }
 
-static int
+static void
 extend_tabs(struct node *n, int tabstop)
 {
 	if( n->ntabs < n->w ) {
@@ -76,7 +76,6 @@ extend_tabs(struct node *n, int tabstop)
 			n->tabs[n->ntabs] = n->ntabs % tabstop == 0;
 		}
 	}
-	return n->tabs != NULL;
 }
 
 static struct node *
@@ -90,18 +89,10 @@ newnode(int y, int x, int h, int w, int id)
 		n->x = x;
 		n->h = h;
 		n->pt = -1;
-		/* Are tabs an attribute of the node, or the screen?  Can
-		the alternate screen have different tabstops?   This
-		seems out of place here.
-		*/
-		if( ! extend_tabs(n, n->tabstop = 8) ) {
-			free(n);
-			n = NULL;
-		} else {
-			n->twin = newpad(1, w);
-			strncpy(n->title, getshell(), sizeof n->title);
-			n->title[sizeof n->title - 1] = '\0';
-		}
+		extend_tabs(n, n->tabstop = 8);
+		n->twin = newpad(1, w);
+		strncpy(n->title, getshell(), sizeof n->title);
+		n->title[sizeof n->title - 1] = '\0';
 	}
 	return n;
 }
