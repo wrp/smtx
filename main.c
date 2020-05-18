@@ -177,8 +177,8 @@ new_pty(struct node *n)
 		perror("forkpty");
 		return -1;
 	} else if( n->pid == 0 ) {
-		char buf[64] = {0};
-		snprintf(buf, sizeof buf  - 1, "%lu", (unsigned long)getppid());
+		char buf[64];
+		snprintf(buf, sizeof buf - 1, "%lu", (unsigned long)getppid());
 		setsid();
 		setenv("STTM", buf, 1);
 		setenv("STTM_VERSION", VERSION, 1);
