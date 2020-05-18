@@ -143,18 +143,15 @@ getterm(void)
     return DEFAULT_TERMINAL;
 }
 
-static struct node *
-newwindow(int y, int x, int h, int w)
+static int
+new_screens(struct node *n)
 {
-	struct winsize ws = {.ws_row = h - 1, .ws_col = w}; /* tty(4) */
-	struct node *n = newnode(0, 0, y, x, h, w);
-	if( n == NULL ) {
-		goto fail;
-	}
+	int h = n->h, w = n->w;
+
 	n->pri.win = newpad(MAX(h - 1, scrollback_history), w);
 	n->alt.win = newpad(h - 1, w);
 	if( n->pri.win == NULL || n->alt.win == NULL ) {
-		goto fail;
+		return 0;
 	}
 	n->pri.tos = n->pri.off = MAX(0, scrollback_history - h);
 	n->s = &n->pri;
@@ -170,10 +167,18 @@ newwindow(int y, int x, int h, int w)
 
 	strncpy(n->title, getshell(), sizeof n->title);
 	n->title[sizeof n->title - 1] = '\0';
+	return 1;
+}
+
+static int
+new_pty(struct node *n)
+{
+	int h = n->h, w = n->w;
+	struct winsize ws = {.ws_row = h - 1, .ws_col = w}; /* tty(4) */
 	n->pid = forkpty(&n->pt, NULL, NULL, &ws);
 	if( n->pid < 0 ) {
 		perror("forkpty");
-		goto fail;
+		return 0;
 	} else if( n->pid == 0 ) {
 		char buf[64] = {0};
 		snprintf(buf, sizeof buf  - 1, "%lu", (unsigned long)getppid());
@@ -195,10 +200,7 @@ newwindow(int y, int x, int h, int w)
 	} else {
 		n->div = newpad(1, n->w);
 	}
-	return n;
-fail:
-	freenode(n);
-	return NULL;
+	return 1;
 }
 
 static void
@@ -395,8 +397,8 @@ split(struct node *n, const char *args[])
 	int typ = *args ? **args : p ? p->split ? p->split : '-' : '-';
 	double sp = 1.0 - (cmd_count ? MIN(100, cmd_count) / 100.0 : 0.5);
 	struct node *c = newnode(typ, sp, n->y, n->x, n->h, n->w);
-	struct node *v = newwindow(0, 0, n->h, n->w);
-	if( v != NULL && c != NULL ) {
+	struct node *v = newnode('\0', 0, 0, 0, n->h, n->w);
+	if( v != NULL && c != NULL && new_screens(v) && new_pty(v) ) {
 		c->parent = n->parent;
 		c->c[0] = n;
 		c->c[1] = v;
@@ -882,8 +884,8 @@ main(int argc, char **argv)
 	start_color();
 	use_default_colors();
 
-	view_root = root = newwindow(0, 0, LINES, COLS);
-	if( root == NULL ) {
+	view_root = root = newnode('\0', 0, 0, 0, LINES, COLS);
+	if( root == NULL || !new_screens(root) || !new_pty(root) ) {
 		err(EXIT_FAILURE, "Unable to create root window");
 	}
 	focus(view_root);
