@@ -633,14 +633,25 @@ send(struct node *n, const char **args)
 	return 0;
 }
 
+static struct node *
+sibling(const struct node *n)
+{
+	struct node *p = n->parent;
+	return p ? p->c[ n == p->c[0] ] : NULL;
+}
+
 static int
 resize(struct node *n, const char **args)
 {
+	assert( n == focused );
 	if( n->parent ) {
 		double val = cmd_count ? MIN(100, cmd_count) / 100.0 : 1.0;
 		val = **args == '>' ? val : 1 - val;
 		n->parent->split_point = val;
-		reshapechildren(view_root);
+		reshapechildren(n->parent);
+		if( ! n->h || ! n->w ) {
+			focus(sibling(n));
+		}
 	}
 	return 0;
 }
