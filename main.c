@@ -281,37 +281,32 @@ reshapechildren(struct node *n)
 		wclear(n->twin);
 		wnoutrefresh(n->twin);
 	}
+	int d[2];
+	int *curr = n->split == '|' ? &n->w : &n->h;
+	d[0] = *curr * n->split_point;
+	d[1] = *curr - d[0];
+	if( d[1] - d[0] == 1 ) {
+		d[0] += 1;
+		d[1] -= 1;
+	}
+	assert( n->h >= 0 && n->x >= 0 && n->y >= 0 );
+	assert( d[0] <= *curr && d[0] >= 0 && d[1] >= 0 );
 	if( n->split == '|' ) {
-		int w[2];
-		w[0] = n->w * n->split_point;
-		if( w[0] == n->w && n->w > 1 ) {
-			w[0] -= 1;
+		assert(curr == &n->w);
+		if( d[0] ) {
+			d[0] -= 1;
 		}
-		w[1] = n->w - w[0] - 1;
-		if( w[1] - w[0] == 1 ) {
-			w[0] += 1;
-			w[1] -= 1;
-		}
-		assert( w[1] >= 0 && w[0] >= 0 );
-		assert( n->h >= 0 && n->x >= 0 && n->y >= 0 );
-		reshape(n->c[0], n->y, n->x, n->h, w[0]);
-		reshape(n->c[1], n->y, n->x + w[0] + 1, n->h, w[1]);
+		assert( d[1] >= 0 && d[0] >= 0 );
+		reshape(n->c[0], n->y, n->x, n->h, d[0]);
+		reshape(n->c[1], n->y, n->x + d[0] + 1, n->h, d[1]);
 		if( n->w && n->h ) {
 			resize_pad(&n->twin, n->h, 1);
 		} else {
 			delwinnul(&n->twin);
 		}
 	} else if( n->split == '-' ) {
-		int h[2];
-		h[0] = n->h * n->split_point;
-		h[1] = n->h - h[0];
-		if( h[1] - h[0] == 1 ) {
-			h[0] += 1;
-			h[1] -= 1;
-		}
-		assert( h[0] <= n->h && h[0] >= 0 && h[1] >= 0 );
-		reshape(n->c[0], n->y, n->x, h[0], n->w);
-		reshape(n->c[1], n->y + h[0], n->x, h[1], n->w);
+		reshape(n->c[0], n->y, n->x, d[0], n->w);
+		reshape(n->c[1], n->y + d[0], n->x, d[1], n->w);
 		delwinnul(&n->twin);
 	}
 }
