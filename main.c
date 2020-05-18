@@ -206,7 +206,7 @@ new_pty(struct node *n)
 static void
 focus(struct node *n)
 {
-	if( n && ! n->split ) {
+	if( n && n->s && n->s->win ) {
 		lastfocused = focused;
 		focused = n;
 	} else if( n ) {
@@ -231,7 +231,7 @@ reap_dead_window(struct node *c)
 		}
 		freenode(p);
 		if( c == focused ) {
-			focused = sibling;
+			focus(sibling);
 			lastfocused = NULL;
 		}
 	} else {
