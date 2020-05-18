@@ -243,24 +243,27 @@ reap_dead_window(struct node *p, const struct node *c)
 static void
 reshape_window(struct node *n, int d)
 {
-    int oy, ox;
-    struct winsize ws = {.ws_row = n->h - 1, .ws_col = n->w}; /* tty(4) */
+	int h = n->h > 1 ? n->h - 1 : 24;
+	int w = n->w ? n->w : 80;
+	int oy, ox;
+	struct winsize ws = {.ws_row = h, .ws_col = w}; /* tty(4) */
 
-    extend_tabs(n, n->tabstop);
-    getyx(n->s->win, oy, ox);
-    wresize(n->pri.win, MAX(n->h - 1, scrollback_history), MAX(n->w, 128));
-    wresize(n->alt.win, MAX(n->h - 1, 64), MAX(n->w, 128));
-    n->pri.tos = n->pri.off = MAX(0, scrollback_history - n->h + 1);
-    n->alt.tos = n->alt.off = 0;
-    wsetscrreg(n->pri.win, 0, MAX(scrollback_history, n->h - 1) - 1);
-    wsetscrreg(n->alt.win, 0, n->h - 1 - 1);
-    if( d != 0 ) {
-        wmove(n->s->win, oy + d, ox);
-        wscrl(n->s->win, -d);
-    }
-    wrefresh(n->s->win);
-    doupdate();
-    ioctl(n->pt, TIOCSWINSZ, &ws);
+	extend_tabs(n, n->tabstop);
+	getyx(n->s->win, oy, ox);
+
+	resize_pad(&n->pri.win, MAX(h, scrollback_history), w);
+	resize_pad(&n->alt.win, h, w);
+
+	n->pri.tos = n->pri.off = MAX(0, scrollback_history - h);
+	n->alt.tos = n->alt.off = 0;
+	wsetscrreg(n->pri.win, 0, MAX(scrollback_history, h) - 1);
+	wsetscrreg(n->alt.win, 0, n->h - 1 - 1);
+	if( d != 0 ) {
+		wmove(n->s->win, oy + d, ox);
+		wscrl(n->s->win, -d);
+	}
+	wrefresh(n->s->win);
+	ioctl(n->pt, TIOCSWINSZ, &ws);
 }
 
 static void
@@ -307,6 +310,7 @@ reshape(struct node *n, int y, int x, int h, int w)
 		reshapechildren(n);
 	}
 	draw(n);
+	doupdate();
 }
 
 static void
