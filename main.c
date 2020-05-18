@@ -80,21 +80,19 @@ extend_tabs(struct node *n, int tabstop)
 }
 
 static struct node *
-newnode(int t, double sp, int y, int x, int h, int w)
+newnode(int y, int x, int h, int w, int id)
 {
 	struct node *n = NULL;
 	if( h > 1 && w > 1 && (n = calloc(1, sizeof *n)) != NULL ) {
+		n->id = id;
 		n->w = w;
+		n->y = y;
+		n->x = x;
+		n->h = h;
 		if( ! extend_tabs(n, n->tabstop = 8) ) {
 			free(n);
 			n = NULL;
 		} else {
-			n->id = t ? 0 : ++id;
-			n->split = t;
-			n->split_point = sp;
-			n->y = y;
-			n->x = x;
-			n->h = h;
 			n->pt = -1;
 		}
 	}
@@ -398,7 +396,7 @@ split(struct node *n, const char *args[])
 	(void)args;
 	for( int count = cmd_count ? cmd_count : 1; count; count -= 1 ) {
 		struct node *p = n->parent;
-		struct node *v = newnode('\0', 0, 0, 0, n->h, n->w);
+		struct node *v = newnode(0, 0, n->h, n->w, ++id);
 		splice(n, v, p ? p->split : '-', 1.0 / ( count + 1));
 		n = v;
 	}
@@ -409,7 +407,9 @@ static int
 splice(struct node *n, struct node *v, int typ, double sp)
 {
 	struct node *p = n->parent;
-	struct node *c = newnode(typ, sp, n->y, n->x, n->h, n->w);
+	struct node *c = newnode(n->y, n->x, n->h, n->w, 0);
+	c->split = typ;
+	c->split_point = sp;
 	if( v != NULL && c != NULL && new_screens(v) && new_pty(v) ) {
 		c->parent = n->parent;
 		c->c[0] = n;
@@ -901,7 +901,7 @@ main(int argc, char **argv)
 	start_color();
 	use_default_colors();
 
-	view_root = root = newnode('\0', 0, 0, 0, LINES, COLS);
+	view_root = root = newnode(0, 0, LINES, COLS, ++id);
 	if( root == NULL || !new_screens(root) || !new_pty(root) ) {
 		err(EXIT_FAILURE, "Unable to create root window");
 	}
