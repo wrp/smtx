@@ -213,7 +213,8 @@ new_pty(struct node *n)
 static void
 focus(struct node *n)
 {
-	if( n && n->s && n->s->win ) {
+	if( n && n->w && n->h ) {
+		assert( n->s && n->s->win );
 		lastfocused = focused;
 		focused = n;
 	} else if( n ) {
