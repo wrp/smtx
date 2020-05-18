@@ -396,11 +396,14 @@ split(struct node *n, const char *args[])
 	assert( !n->split );
 	assert( n->c[0] == NULL );
 	assert( n->c[1] == NULL );
-	struct node *p = n->parent;
-	int typ = *args ? **args : p ? p->split ? p->split : '-' : '-';
-	double sp = 1.0 - (cmd_count ? MIN(100, cmd_count) / 100.0 : 0.5);
-	struct node *v = newnode('\0', 0, 0, 0, n->h, n->w);
-	return splice(n, v, typ, sp);
+	(void)args;
+	for( int count = cmd_count ? cmd_count : 1; count; count -= 1 ) {
+		struct node *p = n->parent;
+		struct node *v = newnode('\0', 0, 0, 0, n->h, n->w);
+		splice(n, v, p ? p->split : '-', 1.0 / ( count + 1));
+		n = v;
+	}
+	return 0;
 }
 
 static int
