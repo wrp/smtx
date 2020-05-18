@@ -79,8 +79,8 @@ extend_tabs(struct node *n, int tabstop)
 		} else {
 			n->ntabs = 0;
 		}
+		assert( n->ntabs == n->w || (n->ntabs == 0 && ! n->tabs) );
 	}
-	assert( n->ntabs == n->w || (n->ntabs == 0 && n->tabs == NULL) );
 }
 
 static struct node *
@@ -152,10 +152,11 @@ getterm(void)
 static int
 new_screens(struct node *n)
 {
-	int h = n->h, w = n->w;
+	int h = n->h > 2 ? n->h - 1 : 24;
+	int w = n->w > 1 ? n->w : 80;
 
-	n->pri.win = newpad(MAX(h - 1, scrollback_history), w);
-	n->alt.win = newpad(h - 1, w);
+	resize_pad(&n->pri.win, MAX(h, scrollback_history), w);
+	resize_pad(&n->alt.win, h, w);
 	if( n->pri.win == NULL || n->alt.win == NULL ) {
 		return 0;
 	}
@@ -272,14 +273,24 @@ reshapechildren(struct node *n)
 	if( n->split == '|' ) {
 		int w[2];
 		w[0] = n->w * n->split_point;
+		if( w[0] == n->w ) {
+			w[0] -= 1;
+		}
 		w[1] = n->w - w[0] - 1;
+		assert( w[1] >= 0 && w[0] >= 0 );
+		assert( n->h >= 0 && n->x >= 0 && n->y >= 0 );
 		reshape(n->c[0], n->y, n->x, n->h, w[0]);
 		reshape(n->c[1], n->y, n->x + w[0] + 1, n->h, w[1]);
-		resize_pad(&n->twin, n->h, 1);
+		if( n->w > 0 ) {
+			resize_pad(&n->twin, n->h, 1);
+		} else {
+			delwinnul(n->twin);
+		}
 	} else if( n->split == '-' ) {
 		int h[2];
 		h[0] = n->h * n->split_point;
 		h[1] = n->h - h[0];
+		assert( h[0] <= n->h );
 		reshape(n->c[0], n->y, n->x, h[0], n->w);
 		reshape(n->c[1], n->y + h[0], n->x, h[1], n->w);
 		delwinnul(n->twin);
@@ -296,12 +307,16 @@ reshape(struct node *n, int y, int x, int h, int w)
 	int d = n->h - h;
 	n->y = y;
 	n->x = x;
-	n->h = MAX(h, 1);
-	n->w = MAX(w, 1);
+	n->h = h;
+	n->w = w;
 
 	if( n->split == '\0' ) {
 		reshape_window(n, d);
-		resize_pad(&n->twin, 1, n->w);
+		if( n->h ) {
+			resize_pad(&n->twin, 1, n->w);
+		} else {
+			delwinnul(n->twin);
+		}
 	} else {
 		reshapechildren(n);
 	}
@@ -322,17 +337,19 @@ draw_title(struct node *n)
 	}
 	snprintf(t, s, "%d (%d) %s ", n->id, (int)n->pid, n->title);
 	x += strlen(t);
-	mvwprintw(n->twin, 0, 0, "%s", t);
-	mvwhline(n->twin, 0, x, ACS_HLINE, n->w - x);
-	pnoutrefresh(n->twin, 0, 0, n->y + n->h - 1, n->x,
-		n->y + n->h - 1, n->x + n->w);
+	if( n->twin ) {
+		mvwprintw(n->twin, 0, 0, "%s", t);
+		mvwhline(n->twin, 0, x, ACS_HLINE, n->w - x);
+		pnoutrefresh(n->twin, 0, 0, n->y + n->h - 1, n->x,
+			n->y + n->h - 1, n->x + n->w);
+	}
 }
 
 static void
 drawchildren(const struct node *n)
 {
 	draw(n->c[0]);
-	if (n->split == '|') {
+	if (n->split == '|' && n->twin ) {
 		assert( n->c[0]->y == n->y );
 		mvwvline(n->twin, 0, 0, ACS_VLINE, n->h);
 		pnoutrefresh(n->twin, 0, 0, n->y, n->x + n->c[0]->w,
@@ -347,15 +364,17 @@ draw(struct node *n) /* Draw a node. */
 	if( n != NULL ) {
 		if( ! n->split ) {
 			draw_title(n);
-			pnoutrefresh(
-				n->s->win,  /* pad */
-				n->s->off,  /* pminrow */
-				0,          /* pmincol */
-				n->y,       /* sminrow */
-				n->x,       /* smincol */
-				n->y + n->h - 2,  /* smaxrow */
-				n->x + n->w - 1   /* smaxcol */
-			);
+			if( n->h > 1 && n->w > 0 ) {
+				pnoutrefresh(
+					n->s->win,  /* pad */
+					n->s->off,  /* pminrow */
+					0,          /* pmincol */
+					n->y,       /* sminrow */
+					n->x,       /* smincol */
+					n->y + n->h - 2,  /* smaxrow */
+					n->x + n->w - 1   /* smaxcol */
+				);
+			}
 		} else {
 			assert( strchr("|-", n->split) );
 			drawchildren(n);
