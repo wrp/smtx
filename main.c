@@ -45,6 +45,7 @@ static void draw(struct node *n);
 static void reshapechildren(struct node *n);
 static const char *term = NULL;
 static void freenode(struct node *n);
+static int splice(struct node *old, struct node *new, int, double);
 static action transition;
 static action split;
 
@@ -386,8 +387,6 @@ reorient(struct node *n, const char *args[])
 	}
 	return 0;
 }
-
-static int splice(struct node *old, struct node *new, int, double);
 
 static int
 split(struct node *n, const char *args[])
