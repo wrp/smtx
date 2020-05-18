@@ -232,7 +232,7 @@ reap_dead_window(struct node *c)
 			reshape(root, 0, 0, LINES, COLS);
 		} else {
 			n->c[idx] = sibling;
-			reshape(n, n->y, n->x, n->h, n->w);
+			reshapechildren(n);
 		}
 		freenode(p);
 	}
