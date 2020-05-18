@@ -107,6 +107,11 @@ newnode(int y, int x, int h, int w, int id)
 }
 
 static int delwinnul(WINDOW *w) { return w ? delwin(w) : 0; }
+static int
+resize_pad(WINDOW **p, int h, int w)
+{
+	return *p ? wresize(*p, h, w ) : (*p = newpad(h, w)) ? OK : ERR;
+}
 
 static void
 freenode(struct node *n)
@@ -271,11 +276,7 @@ reshapechildren(struct node *n)
 		w[1] = n->w - w[0] - 1;
 		reshape(n->c[0], n->y, n->x, n->h, w[0]);
 		reshape(n->c[1], n->y, n->x + w[0] + 1, n->h, w[1]);
-		if( n->twin ) {
-			wresize(n->twin, n->h, 1);
-		} else {
-			n->twin = newpad(n->h, 1);
-		}
+		resize_pad(&n->twin, n->h, 1);
 	} else if( n->split == '-' ) {
 		int h[2];
 		h[0] = n->h * n->split_point;
@@ -301,11 +302,7 @@ reshape(struct node *n, int y, int x, int h, int w)
 
 	if( n->split == '\0' ) {
 		reshape_window(n, d);
-		if( n->twin ) {
-			wresize(n->twin, 1, n->w);
-		} else {
-			n->twin = newpad(1, n->w);
-		}
+		resize_pad(&n->twin, 1, n->w);
 	} else {
 		reshapechildren(n);
 	}
