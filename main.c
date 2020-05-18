@@ -87,7 +87,7 @@ static struct node *
 newnode(int y, int x, int h, int w, int id)
 {
 	struct node *n = NULL;
-	if( h > 1 && w > 1 && (n = calloc(1, sizeof *n)) != NULL ) {
+	if( (n = calloc(1, sizeof *n)) != NULL ) {
 		n->id = id;
 		n->w = w;
 		n->y = y;
@@ -277,7 +277,7 @@ reshapechildren(struct node *n)
 	if( n->split == '|' ) {
 		int w[2];
 		w[0] = n->w * n->split_point;
-		if( w[0] == n->w ) {
+		if( w[0] && w[0] == n->w ) {
 			w[0] -= 1;
 		}
 		w[1] = n->w - w[0] - 1;
@@ -294,7 +294,7 @@ reshapechildren(struct node *n)
 		int h[2];
 		h[0] = n->h * n->split_point;
 		h[1] = n->h - h[0];
-		assert( h[0] <= n->h );
+		assert( h[0] <= n->h && h[0] >= 0 && h[1] >= 0 );
 		reshape(n->c[0], n->y, n->x, h[0], n->w);
 		reshape(n->c[1], n->y + h[0], n->x, h[1], n->w);
 		delwinnul(n->twin);
