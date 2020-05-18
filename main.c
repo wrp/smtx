@@ -95,7 +95,9 @@ newnode(int y, int x, int h, int w, int id)
 		n->h = h;
 		n->pt = -1;
 		extend_tabs(n, n->tabstop = 8);
-		n->twin = newpad(1, w);
+		if( h && w ) {
+			n->twin = newpad(1, w);
+		}
 		strncpy(n->title, getshell(), sizeof n->title);
 		n->title[sizeof n->title - 1] = '\0';
 	}
