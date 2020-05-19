@@ -49,6 +49,7 @@ static struct node * splice(struct node *old, struct node *new, int, double);
 static struct node * sibling(const struct node *);
 static action transition;
 static action create;
+static action equalize;
 
 void
 safewrite(int fd, const char *b, size_t n) /* Write with retry on interrupt */
@@ -439,6 +440,7 @@ create(struct node *n, const char *args[])
 		}
 		n = v;
 	}
+	equalize(n, NULL);
 	return 0;
 }
 
