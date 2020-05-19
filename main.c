@@ -37,7 +37,7 @@ static struct node *view_root;
 static char commandkey = CTL(COMMAND_KEY);
 static int nfds = 1; /* stdin */
 static fd_set fds;
-static unsigned cmd_count = 0;
+static int cmd_count = -1;
 int scrollback_history = 1024;
 
 static void reshape(struct node *n, int y, int x, int h, int w);
@@ -431,7 +431,8 @@ split(struct node *n, const char *args[])
 	assert( n->c[1] == NULL );
 	(void)args;
 	int split = n->parent ? n->parent->split : '-';
-	for( int count = cmd_count ? cmd_count : 1; n && count; count -= 1 ) {
+	int count = cmd_count > 0 ? cmd_count : 1;
+	for( ; n && count; count -= 1 ) {
 		struct node *v = newnode(0, 0, n->h, n->w, ++id);
 		if( v != NULL && new_screens(v) && new_pty(v) ) {
 			splice(n, v, split, 1.0 / ( count + 1));
@@ -501,10 +502,7 @@ static int
 digit(struct node *n, const char **args)
 {
 	(void)n;
-	(void)args;
-	assert( args && args[0]);
-
-	cmd_count = 10 * cmd_count + args[0][0] - '0';
+	cmd_count = 10 * (cmd_count == -1 ? 0 : cmd_count) + args[0][0] - '0';
 	return 0;
 }
 
@@ -586,7 +584,7 @@ mov(struct node *n, const char **args)
 {
 	assert( n == focused && n != NULL );
 	char cmd = args[0][0];
-	int count = cmd_count == 0 ? 1 : cmd_count;
+	int count = cmd_count < 1 ? 1 : cmd_count;
 	int midx = n->x + n->w / 2;
 	for( struct node *t = n; t && count--; n = t ? t : n ) {
 		switch( cmd ) {
@@ -604,7 +602,9 @@ mov(struct node *n, const char **args)
 			break;
 		case 'G':
 		case 'g':
-			n = cmd_count ? find_node(root, cmd_count) : n;
+			if( cmd_count != -1 ) {
+				n = find_node(root, cmd_count);
+			}
 			if( cmd == 'g' && n->parent && n == n->parent->c[0] ) {
 				n = n->parent;
 			}
@@ -658,7 +658,7 @@ resize(struct node *n, const char **args)
 {
 	assert( n == focused );
 	if( n->parent ) {
-		double val = cmd_count ? MIN(100, cmd_count) / 100.0 : 1.0;
+		double val = cmd_count > -1 ? MIN(100, cmd_count) / 100.0 : 1.0;
 		val = **args == '>' ? val : 1 - val;
 		n->parent->split_point = val;
 		reshapechildren(n->parent);
@@ -718,7 +718,7 @@ new_tabstop(struct node *n, const char **args)
 {
 	(void) args;
 	n->ntabs = 0;
-	extend_tabs(n, n->tabstop = cmd_count ? cmd_count : 8);
+	extend_tabs(n, n->tabstop = cmd_count > -1 ? cmd_count : 8);
 	return 0;
 }
 
@@ -854,7 +854,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 		}
 	}
 	if( !b || !(b->act == digit) ) {
-		cmd_count = 0;
+		cmd_count = -1;
 	}
 }
 
