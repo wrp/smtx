@@ -4,7 +4,7 @@ AM_CPPFLAGS = -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=600 -D_XOPEN_SOURCE_EXTE
 LIBS = -lncursesw -lutil
 
 CLEANFILES = *.gcda *.gcno *.gcov version *.1
-EXTRA_DIST = build-aux/package-version
+EXTRA_DIST = build-aux/package-version version
 noinst_HEADERS = vtparser.h main.h
 
 .PHONY: version
