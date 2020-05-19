@@ -15,9 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 /*
-   TODO: (feature requests)
+   TODO:
+     Test suite!!
      Copy-mode, with stack of registers and ability to edit.
      Ability to set titles.
      Register signal handlers for TERM and HUP.  Need to ensure
