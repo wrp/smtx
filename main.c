@@ -602,17 +602,22 @@ mov(struct node *n, const char **args)
 		case 'h': /* move left */
 			t = find_window(view_root, n->y, t->x - 1);
 			break;
+		case 'G':
+			view_root = n = root;
+			reshape(view_root, 0, 0, LINES, COLS);
+			goto done;
 		case 'g':
-			t = find_node(root, cmd_count);
-			transition(t, NULL);
-			break;
+			n = cmd_count ? find_node(root, cmd_count) : n;
+			reshape(view_root = n, 0, 0, LINES, COLS);
+			goto done;
 		case 'p':
-			t = lastfocused;
-			break;
+			n = lastfocused;
+			goto done;
 		default:
 			assert(0);
 		}
 	}
+done:
 	focus(n);
 	return 0;
 }
@@ -717,21 +722,6 @@ new_tabstop(struct node *n, const char **args)
 	return 0;
 }
 
-static int
-set_root(struct node *n, const char **args)
-{
-	if( args[0] ) {
-		n = root;
-	} else if( cmd_count ) {
-		n = find_node(root, cmd_count);
-	} else {
-		n = n->parent;
-	}
-	view_root = n ? n : root;
-	reshape(view_root, 0, 0, LINES, COLS);
-	return 0;
-}
-
 static void
 build_bindings()
 {
@@ -753,14 +743,13 @@ build_bindings()
 	add_key(cmd_keys, L'x', reorient, NULL);
 	add_key(cmd_keys, L'r', redrawroot, NULL);
 	add_key(cmd_keys, L'g', mov, "g", NULL);
+	add_key(cmd_keys, L'G', mov, "G", NULL);
 	add_key(cmd_keys, L'j', mov, "j", NULL);
 	add_key(cmd_keys, L'k', mov, "k", NULL);
 	add_key(cmd_keys, L'l', mov, "l", NULL);
 	add_key(cmd_keys, L'h', mov, "h", NULL);
 	add_key(cmd_keys, L'p', mov, "p", NULL);
 	add_key(cmd_keys, L't', new_tabstop, NULL);
-	add_key(cmd_keys, L'v', set_root, NULL);
-	add_key(cmd_keys, L'V', set_root, "base");
 	for( int i=0; i < 10; i++ ) {
 		char *buf = calloc(2, 1);
 		if( buf == NULL ) {
