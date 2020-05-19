@@ -45,7 +45,7 @@ static void draw(struct node *n);
 static void reshapechildren(struct node *n);
 static const char *term = NULL;
 static void freenode(struct node *n);
-static struct node * splice(struct node *old, struct node *new, int, double);
+static struct node * splice(struct node *, struct node *, int, int, double);
 static struct node * sibling(const struct node *);
 static action transition;
 static action create;
@@ -436,7 +436,7 @@ create(struct node *n, const char *args[])
 	for( ; n && count; count -= 1 ) {
 		struct node *v = newnode(0, 0, n->h, n->w, ++id);
 		if( v != NULL && new_screens(v) && new_pty(v) ) {
-			splice(n, v, split, 1.0 / ( count + 1));
+			splice(n, v, 1, split, 1.0 / ( count + 1));
 		}
 		n = v;
 	}
@@ -444,17 +444,19 @@ create(struct node *n, const char *args[])
 	return 0;
 }
 
+/* Splice v as the new sibling of n.  v becomes the mth child */
 static struct node *
-splice(struct node *n, struct node *v, int typ, double sp)
+splice(struct node *n, struct node *v, int m, int typ, double sp)
 {
+	assert( m == 0 || m == 1 );
 	struct node *p = n->parent;
 	struct node *c = newnode(n->y, n->x, n->h, n->w, 0);
 	if( c != NULL ) {
 		c->split = typ;
 		c->split_point = sp;
 		c->parent = p;
-		c->c[0] = n;
-		c->c[1] = v;
+		c->c[!m] = n;
+		c->c[m] = v;
 		n->parent = v->parent = c;
 		if( p ) {
 			p->c[ p->c[1] == n ] = c;
