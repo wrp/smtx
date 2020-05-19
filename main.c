@@ -225,11 +225,16 @@ on_screen(const struct node *n)
 static void
 focus(struct node *n)
 {
-	if( n && n != focused && n->s && n->s->win ) {
-		lastfocused = focused;
-		focused = n;
-		if( ! on_screen(n) ) {
-			reshape(view_root = n, 0, 0, LINES, COLS);
+	if( n && n != focused ) {
+		while( n->split ) {
+			n = n->c[0];
+		}
+		if( n->s && n->s->win ) {
+			lastfocused = focused;
+			focused = n;
+			if( ! on_screen(n) ) {
+				reshape(view_root = n, 0, 0, LINES, COLS);
+			}
 		}
 	}
 }
@@ -250,9 +255,11 @@ prune(struct node *c)
 			equalize(sibling, NULL);
 		}
 		if( c == focused ) {
-			struct node *previous = lastfocused;
+			focus(lastfocused);
 			focus(sibling);
-			lastfocused = previous;
+		}
+		if( c == lastfocused ) {
+			lastfocused = NULL;
 		}
 	} else {
 		assert( c == root );
@@ -620,11 +627,11 @@ mov(struct node *n, const char **args)
 		if( cmd_count != -1 ) {
 			t = find_node(root, cmd_count);
 		}
-		if( cmd == 'v' && t->parent && t == t->parent->c[0] ) {
-			t = t->parent;
-		}
 		if( cmd_count != 0 ) {
 			n = t;
+		}
+		if( cmd == 'v' && t->parent && t == t->parent->c[0] ) {
+			t = t->parent;
 		}
 		reshape(view_root = t, 0, 0, LINES, COLS);
 		break;
