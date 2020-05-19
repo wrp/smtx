@@ -209,12 +209,28 @@ new_pty(struct node *n)
 	return n->pt;
 }
 
+static int
+on_screen(const struct node *n)
+{
+	int rv = 0;
+	if( n->w && n->h && n->s && n->s->win ) {
+		while( n && n != view_root ) {
+			n = n->parent;
+		}
+		rv = n != NULL;
+	}
+	return rv;
+}
+
 static void
 focus(struct node *n)
 {
-	if( n && n->w && n->h && n->s && n->s->win ) {
+	if( n && n != focused && n->s && n->s->win ) {
 		lastfocused = focused;
 		focused = n;
+		if( ! on_screen(n) ) {
+			reshape(view_root = n, 0, 0, LINES, COLS);
+		}
 	}
 }
 
@@ -223,9 +239,8 @@ prune(struct node *c)
 {
 	struct node *p = c->parent;
 	if( p != NULL ) {
-		struct node *n = p->parent;
 		struct node *sibling = p->c[ c == p->c[0] ];
-		sibling->parent = sibling->parent->parent;
+		struct node *n = sibling->parent = p->parent;
 		if( n == NULL ) {
 			assert( root == p );
 			root = sibling;
@@ -241,7 +256,7 @@ prune(struct node *c)
 		}
 	} else {
 		assert( c == root );
-		view_root = root = focused = NULL;
+		view_root = root = focused = lastfocused = NULL;
 	}
 	if( view_root == c || view_root == p ) {
 		view_root = root;
@@ -686,7 +701,6 @@ static int
 equalize(struct node *n, const char **args)
 {
 	(void) args;
-	assert( n->split == '\0' );
 	int split = n->parent ? n->parent->split : '\0';
 	int count = 2;
 	while( n != view_root && n->parent && n->parent->split == split  ) {
