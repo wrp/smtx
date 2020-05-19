@@ -219,7 +219,7 @@ focus(struct node *n)
 }
 
 static void
-reap_dead_window(struct node *c)
+prune(struct node *c)
 {
 	struct node *p = c->parent;
 	if( p != NULL ) {
@@ -234,7 +234,6 @@ reap_dead_window(struct node *c)
 			n->c[ p == n->c[1] ] = sibling;
 			equalize(sibling, NULL);
 		}
-		freenode(p);
 		if( c == focused ) {
 			struct node *previous = lastfocused;
 			focus(sibling);
@@ -247,6 +246,13 @@ reap_dead_window(struct node *c)
 	if( view_root == c || view_root == p ) {
 		view_root = root;
 	}
+}
+
+static void
+reap_dead_window(struct node *c)
+{
+	prune(c);
+	freenode(c->parent);
 	freenode(c);
 }
 
