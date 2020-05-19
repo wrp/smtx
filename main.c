@@ -300,6 +300,7 @@ reshape_window(struct node *n, int d)
 static void
 reshapechildren(struct node *n)
 {
+	assert(n->split);
 	if( n->twin ) {
 		int x = n->x + n->c ? n->c[0]->w : 0;
 		wclear(n->twin);
@@ -655,7 +656,9 @@ redrawroot(struct node *n, const char **args)
 {
 	(void) n;
 	(void) args;
-	reshapechildren(view_root);
+	if( view_root->split ) {
+		reshapechildren(view_root);
+	}
 	draw(view_root);
 	return 0;
 }
@@ -707,7 +710,9 @@ equalize(struct node *n, const char **args)
 		n = n->parent;
 		n->split_point = 1 / (double) count++;
 	}
-	reshapechildren(n);
+	if( n->split ) {
+		reshapechildren(n);
+	}
 	return 0;
 }
 
