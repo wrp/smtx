@@ -8,10 +8,8 @@ EXTRA_DIST = build-aux/package-version
 
 .PHONY: version
 version:
-	{ cd $(top_srcdir) && build-aux/package-version; } | { read v; \
-	echo "$$v" > version; \
-	awk '/VERSION/{$$3 = sprintf("\"%s\"", v)}1' v=$$v config.h > config.h.new \
-	&& mv config.h.new config.h; }
+	cd $(top_srcdir) && autoreconf -ivf
+	cd $(top_srcdir) && build-aux/package-version > version;
 
 sttm_SOURCES = vtparser.c main.c cset.c handler.c
 
