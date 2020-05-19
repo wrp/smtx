@@ -5,6 +5,7 @@ LIBS = -lncursesw -lutil
 
 CLEANFILES = *.gcda *.gcno *.gcov version *.1
 EXTRA_DIST = build-aux/package-version
+noinst_HEADERS = vtparser.h main.h
 
 .PHONY: version
 version:
