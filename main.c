@@ -106,11 +106,8 @@ newnode(int y, int x, int h, int w, int id)
 static int
 delwinnul(WINDOW **w)
 {
-	int rv = 0;
-	if( *w ) {
-		rv = delwin(*w);
-		*w = NULL;
-	}
+	int rv = *w ? delwin(*w) : OK;
+	*w = NULL;
 	return rv;
 }
 
