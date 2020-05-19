@@ -73,15 +73,12 @@ static void
 extend_tabs(struct node *n, int tabstop)
 {
 	if( n->ntabs < n->w ) {
-		n->tabs = realloc(n->tabs, n->w * sizeof *n->tabs);
-		if( n->tabs != NULL ) {
-			for( ; n->ntabs < n->w; n->ntabs++ ) {
+		typeof(*n->tabs) *new;
+		if( (new = realloc(n->tabs, n->w * sizeof *n->tabs)) != NULL ) {
+			for( n->tabs = new; n->ntabs < n->w; n->ntabs++ ) {
 				n->tabs[n->ntabs] = n->ntabs % tabstop == 0;
 			}
-		} else {
-			n->ntabs = 0;
 		}
-		assert( n->ntabs == n->w || (n->ntabs == 0 && ! n->tabs) );
 	}
 }
 
