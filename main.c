@@ -676,7 +676,7 @@ equalize(struct node *n, const char **args)
 	assert( n->split == '\0' );
 	int split = n->parent ? n->parent->split : '\0';
 	int count = 2;
-	while( n->parent && n->parent->split == split  ) {
+	while( n != view_root && n->parent->split == split  ) {
 		n = n->parent;
 		n->split_point = 1 / (double) count++;
 	}
