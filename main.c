@@ -603,11 +603,11 @@ mov(struct node *n, const char **args)
 			t = find_window(view_root, n->y, t->x - 1);
 			break;
 		case 'G':
-			view_root = n = root;
-			reshape(view_root, 0, 0, LINES, COLS);
-			goto done;
 		case 'g':
 			n = cmd_count ? find_node(root, cmd_count) : n;
+			if( cmd == 'g' && n->parent && n == n->parent->c[0] ) {
+				n = n->parent;
+			}
 			reshape(view_root = n, 0, 0, LINES, COLS);
 			goto done;
 		case 'p':
