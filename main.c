@@ -297,7 +297,7 @@ reshapechildren(struct node *n)
 		assert(curr == &n->w);
 		if( d[0] > d[1] ) {
 			d[0] -= 1;
-		} else if( d[1] > d[0] ) {
+		} else if( d[1] && d[0] ) {
 			d[1] -= 1;
 		}
 		assert( d[1] >= 0 && d[0] >= 0 );
