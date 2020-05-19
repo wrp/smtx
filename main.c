@@ -307,12 +307,7 @@ reshape_window(struct node *n, int d)
 static void
 reshapechildren(struct node *n)
 {
-	assert(n->split);
-	if( n->twin ) {
-		int x = n->x + n->c ? n->c[0]->w : 0;
-		wclear(n->twin);
-		pnoutrefresh(n->twin, 0, 0, n->y, x, n->y + n->h, x);
-	}
+	assert(n && n->split);
 	int d[2];
 	int *curr = n->split == '|' ? &n->w : &n->h;
 	d[0] = *curr * n->split_point;
