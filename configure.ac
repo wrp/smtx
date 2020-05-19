@@ -20,6 +20,7 @@ AC_TYPE_SSIZE_T
 AC_FUNC_REALLOC
 AC_SEARCH_LIBS([endwin],[ncursesw])
 AC_SEARCH_LIBS([forkpty],[util])
+AC_CHECK_FUNC([alloc_pair],AC_DEFINE([HAVE_ALLOC_PAIR],[1],[ ]))
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
