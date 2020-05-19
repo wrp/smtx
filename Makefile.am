@@ -10,7 +10,7 @@ noinst_HEADERS = vtparser.h main.h
 .PHONY: version
 version:
 	cd $(top_srcdir) && autoreconf -ivf
-	cd $(top_srcdir) && build-aux/package-version > version;
+	( cd $(top_srcdir) && build-aux/package-version ) > version;
 
 sttm_SOURCES = vtparser.c main.c cset.c handler.c
 
