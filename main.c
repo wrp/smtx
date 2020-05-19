@@ -587,12 +587,12 @@ mov(struct node *n, const char **args)
 	int starty = n->y + n->h - 1;
 	struct node *t = n;
 	switch( cmd ) {
-	case 'G':
-	case 'g':
+	case 'V':
+	case 'v':
 		if( cmd_count != -1 ) {
 			t = find_node(root, cmd_count);
 		}
-		if( cmd == 'g' && t->parent && t == t->parent->c[0] ) {
+		if( cmd == 'v' && t->parent && t == t->parent->c[0] ) {
 			t = t->parent;
 		}
 		if( cmd_count != 0 ) {
@@ -743,8 +743,8 @@ build_bindings()
 	add_key(cmd_keys, L'c', create, NULL);
 	add_key(cmd_keys, L'x', reorient, NULL);
 	add_key(cmd_keys, L'r', redrawroot, NULL);
-	add_key(cmd_keys, L'g', mov, "g", NULL);
-	add_key(cmd_keys, L'G', mov, "G", NULL);
+	add_key(cmd_keys, L'v', mov, "v", NULL);
+	add_key(cmd_keys, L'V', mov, "V", NULL);
 	add_key(cmd_keys, L'j', mov, "j", NULL);
 	add_key(cmd_keys, L'k', mov, "k", NULL);
 	add_key(cmd_keys, L'l', mov, "l", NULL);
