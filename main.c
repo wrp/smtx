@@ -588,7 +588,6 @@ mov(struct node *n, const char **args)
 	char cmd = args[0][0];
 	int count = cmd_count == 0 ? 1 : cmd_count;
 	int midx = n->x + n->w / 2;
-	int midy = n->y + n->h / 2;
 	for( struct node *t = n; t && count--; n = t ? t : n ) {
 		switch( cmd ) {
 		case 'k': /* move up */
@@ -598,10 +597,10 @@ mov(struct node *n, const char **args)
 			t = find_window(view_root, t->y + t->h + 1, midx );
 			break;
 		case 'l': /* move right */
-			t = find_window(view_root, midy, t->x + t->w + 1);
+			t = find_window(view_root, n->y, t->x + t->w + 1);
 			break;
 		case 'h': /* move left */
-			t = find_window(view_root, midy, t->x - 1);
+			t = find_window(view_root, n->y, t->x - 1);
 			break;
 		case 'g':
 			t = find_node(root, cmd_count);
