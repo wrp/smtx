@@ -735,6 +735,28 @@ new_tabstop(struct node *n, const char **args)
 	return 0;
 }
 
+static int
+swap(struct node *a, const char **args)
+{
+	int rv = -1;
+	(void) args;
+	if( cmd_count > 0 && a->parent ) {
+		struct node *b = find_node(root, cmd_count);
+		int ca = a == a->parent->c[1];
+		int cb = b == b->parent->c[1];
+		struct node *siba = sibling(a);
+		struct node *sibb = sibling(b);
+		b->parent->c[cb] = a;
+		a->parent->c[ca] = b;
+		a->parent = b->parent;
+		b->parent = siba->parent;
+		reshapechildren(siba->parent);
+		reshapechildren(sibb->parent);
+		rv = 0;
+	}
+	return rv;
+}
+
 static void
 build_bindings()
 {
@@ -762,6 +784,7 @@ build_bindings()
 	add_key(cmd_keys, L'l', mov, "l", NULL);
 	add_key(cmd_keys, L'h', mov, "h", NULL);
 	add_key(cmd_keys, L'p', mov, "p", NULL);
+	add_key(cmd_keys, L's', swap, NULL);
 	add_key(cmd_keys, L't', new_tabstop, NULL);
 	for( int i=0; i < 10; i++ ) {
 		char *buf = calloc(2, 1);
