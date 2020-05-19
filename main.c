@@ -585,39 +585,42 @@ mov(struct node *n, const char **args)
 	assert( n == focused && n != NULL );
 	char cmd = args[0][0];
 	int count = cmd_count < 1 ? 1 : cmd_count;
-	int midx = n->x + n->w / 2;
-	for( struct node *t = n; t && count--; n = t ? t : n ) {
-		switch( cmd ) {
+	int startx = n->x + n->w / 2;
+	int starty = n->y + n->h - 1;
+	struct node *t = n;
+	switch( cmd ) {
+	case 'G':
+	case 'g':
+		if( cmd_count != -1 ) {
+			t = find_node(root, cmd_count);
+		}
+		if( cmd == 'g' && t->parent && t == t->parent->c[0] ) {
+			t = t->parent;
+		}
+		if( cmd_count != 0 ) {
+			n = t;
+		}
+		reshape(view_root = t, 0, 0, LINES, COLS);
+		break;
+	case 'p':
+		n = lastfocused;
+		break;
+	default:
+		for( ; t && count--; n = t ? t : n ) switch( cmd ) {
 		case 'k': /* move up */
-			t = find_window(view_root, t->y - 1, midx);
+			t = find_window(view_root, t->y - 1, startx);
 			break;
 		case 'j': /* move down */
-			t = find_window(view_root, t->y + t->h + 1, midx );
+			t = find_window(view_root, t->y + t->h + 1, startx );
 			break;
 		case 'l': /* move right */
-			t = find_window(view_root, n->y, t->x + t->w + 1);
+			t = find_window(view_root, starty, t->x + t->w + 1);
 			break;
 		case 'h': /* move left */
-			t = find_window(view_root, n->y, t->x - 1);
+			t = find_window(view_root, starty, t->x - 1);
 			break;
-		case 'G':
-		case 'g':
-			if( cmd_count != -1 ) {
-				n = find_node(root, cmd_count);
-			}
-			if( cmd == 'g' && n->parent && n == n->parent->c[0] ) {
-				n = n->parent;
-			}
-			reshape(view_root = n, 0, 0, LINES, COLS);
-			goto done;
-		case 'p':
-			n = lastfocused;
-			goto done;
-		default:
-			assert(0);
 		}
 	}
-done:
 	focus(n);
 	return 0;
 }
