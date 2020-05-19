@@ -139,14 +139,13 @@ static void
 fixcursor(void) /* Move the terminal cursor to the active window. */
 {
 	struct node *f = focused;
-	if( f && f->s ) {
-		int y, x;
-		int show = binding != &cmd_keys && f->s->vis;
-		curs_set(f->s->off != f->s->tos ? 0 : show);
-		getyx(f->s->win, y, x);
-		y = MIN(MAX(y, f->s->tos), f->s->tos + f->h - 1);
-		wmove(f->s->win, y, x);
-	}
+	assert( f && f->s );
+	int y, x;
+	int show = binding != &cmd_keys && f->s->vis;
+	curs_set(f->s->off != f->s->tos ? 0 : show);
+	getyx(f->s->win, y, x);
+	y = MIN(MAX(y, f->s->tos), f->s->tos + f->h - 1);
+	wmove(f->s->win, y, x);
 }
 
 static const char *
@@ -923,6 +922,12 @@ run(void)
 		int r;
 		wint_t w = 0;
 		fd_set sfds = fds;
+
+		draw(view_root);
+		doupdate();
+		fixcursor();
+		draw(focused);
+		doupdate();
 		if( select(nfds + 1, &sfds, NULL, NULL, NULL) < 0 ) {
 			FD_ZERO(&sfds);
 		}
@@ -930,11 +935,6 @@ run(void)
 			handlechar(r, w);
 		}
 		getinput(root, &sfds);
-		draw(view_root);
-		doupdate();
-		fixcursor();
-		draw(focused);
-		doupdate();
 	}
 }
 
