@@ -301,9 +301,9 @@ static void
 reshapechildren(struct node *n)
 {
 	if( n->twin ) {
+		int x = n->x + n->c ? n->c[0]->w : 0;
 		wclear(n->twin);
-		pnoutrefresh(n->twin, 0, 0, n->y, n->x + n->c[0]->w,
-			n->y + n->h, n->x + n->c[0]->w);
+		pnoutrefresh(n->twin, 0, 0, n->y, x, n->y + n->h, x);
 	}
 	int d[2];
 	int *curr = n->split == '|' ? &n->w : &n->h;
