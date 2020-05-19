@@ -48,7 +48,7 @@ static void freenode(struct node *n);
 static struct node * splice(struct node *old, struct node *new, int, double);
 static struct node * sibling(const struct node *);
 static action transition;
-static action split;
+static action create;
 
 void
 safewrite(int fd, const char *b, size_t n) /* Write with retry on interrupt */
@@ -423,7 +423,7 @@ reorient(struct node *n, const char *args[])
 }
 
 static int
-split(struct node *n, const char *args[])
+create(struct node *n, const char *args[])
 {
 	assert( n != NULL );
 	assert( !n->split );
@@ -742,7 +742,7 @@ build_bindings()
 	add_key(cmd_keys, L'=', equalize, NULL);
 	add_key(cmd_keys, L'>', resize, ">", NULL);
 	add_key(cmd_keys, L'<', resize, "<", NULL);
-	add_key(cmd_keys, L'c', split, NULL);
+	add_key(cmd_keys, L'c', create, NULL);
 	add_key(cmd_keys, L'x', reorient, NULL);
 	add_key(cmd_keys, L'r', redrawroot, NULL);
 	add_key(cmd_keys, L'g', mov, "g", NULL);
