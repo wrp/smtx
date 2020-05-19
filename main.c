@@ -52,7 +52,7 @@ static action create;
 static action equalize;
 
 void
-safewrite(int fd, const char *b, size_t n) /* Write with retry on interrupt */
+safewrite(int fd, const char *b, size_t n)
 {
 	ssize_t s;
 	const char *e = b + n;
@@ -62,7 +62,7 @@ safewrite(int fd, const char *b, size_t n) /* Write with retry on interrupt */
 }
 
 static const char *
-getshell(void) /* Get the user's preferred shell. */
+getshell(void)
 {
 	const char *shell = getenv("SHELL");
 	struct passwd *pwd = shell && *shell ? NULL : getpwuid(geteuid());
