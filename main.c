@@ -542,10 +542,11 @@ digit(struct node *n, const char **args)
 static int
 scrolln(struct node *n, const char **args)
 {
+	int count = cmd_count == -1 ? n->h / 2 : cmd_count;
 	if(args[0][0] == '-') {
-		n->s->off = MAX(0, n->s->off - n->h / 2);
+		n->s->off = MAX(0, n->s->off - count);
 	} else {
-		n->s->off = MIN(n->s->tos, n->s->off + n->h / 2);
+		n->s->off = MIN(n->s->tos, n->s->off + count);
 	}
 	return 0;
 }
@@ -795,8 +796,8 @@ build_bindings()
 
 	add_key(cmd_keys, commandkey, transition, &commandkey, "1", NULL);
 	add_key(cmd_keys, L'\r', transition, NULL);
-	add_key(cmd_keys, L',', scrolln, "-1", NULL);
-	add_key(cmd_keys, L'm', scrolln, "+1", NULL);
+	add_key(cmd_keys, L',', scrolln, "-", NULL);
+	add_key(cmd_keys, L'm', scrolln, "+", NULL);
 	add_key(cmd_keys, L'=', equalize, NULL);
 	add_key(cmd_keys, L'>', resize, ">", NULL);
 	add_key(cmd_keys, L'<', resize, "<", NULL);
