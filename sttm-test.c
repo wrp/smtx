@@ -1,5 +1,21 @@
 #include "main.h"
 
+const char *args[10];
+
+static const char **
+make_args(const char *a, ...)
+{
+	va_list ap;
+	int i = 0;
+	args[i++] = a;
+	va_start(ap, a);
+	do {
+		args[i] = va_arg(ap, const char *);
+	} while( args[i++] != NULL );
+	va_end(ap);
+	return args;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -29,30 +45,30 @@ main(int argc, char **argv)
 
 	struct node *c[2];
 
-	create(root, (const char *[]){ NULL });
+	create(root, make_args(NULL));
 	c[0] = find_node(root, 1);
 	c[1] = find_node(root, 2);
 	assert(c[1] == focused);
 	assert(c[0] == root->c[0]);
 	assert(c[1] == root->c[1]);
-	mov(c[1], (const char *[]) { "j", NULL });
+	mov(c[1], make_args("j", NULL));
 	assert(c[1] == focused);
-	mov(c[1], (const char *[]) { "k", NULL });
+	mov(c[1], make_args("k", NULL));
 	assert(c[0] == focused);
 	reorient(c[0], NULL);
 	assert(c[0] == focused);
-	mov(c[0], (const char *[]) { "l", NULL });
+	mov(c[0], make_args("l", NULL));
 	assert(c[1] == focused);
-	mov(c[1], (const char *[]) { "h", NULL });
+	mov(c[1], make_args("h", NULL));
 	assert(c[0] == focused);
 	redrawroot(c[0], NULL);
 	equalize(c[0], NULL);
-	digit(c[0], (const char *[]) { "2", NULL });
+	digit(c[0], make_args("2", NULL));
 	swap(c[0], NULL);
 	assert(c[0] == focused);
 	assert(c[1] == root->c[0]);
 	assert(c[0] == root->c[1]);
-	create(c[0], (const char *[]){ NULL });
+	create(c[0], make_args(NULL));
 	prune(c[1]);
 	endwin();
 	return EXIT_SUCCESS;
