@@ -3,7 +3,9 @@ bin_PROGRAMS = sttm
 AM_CPPFLAGS = -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=600 -D_XOPEN_SOURCE_EXTENDED
 LIBS = -lncursesw -lutil
 
-noinst_PROGRAMS = find-node-test
+noinst_LTLIBRARIES = libsttm.la
+libsttm_la_SOURCES = vtparser.c main.c cset.c handler.c
+check_PROGRAMS = find-node-test
 TESTS = find-node-test
 
 CLEANFILES = *.gcda *.gcno *.gcov version *.1
@@ -15,8 +17,8 @@ version:
 	cd $(top_srcdir) && autoreconf -ivf
 	( cd $(top_srcdir) && build-aux/package-version ) > version;
 
-sttm_SOURCES = sttm.c vtparser.c main.c cset.c handler.c
-find_node_test_SOURCES = find-node-test.c main.c cset.c handler.c vtparser.c
+sttm_SOURCES = sttm.c libsttm.la
+find_node_test_SOURCES = find-node-test.c libsttm.la
 
 install-terminfo: $(top_srcdir)/sttm.ti
 	tic -s -x $(top_srcdir)/sttm.ti
