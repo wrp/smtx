@@ -29,7 +29,7 @@ main(int argc, char **argv)
 
 	struct node *c[2];
 
-	create(root, NULL);
+	create(root, (const char *[]){ NULL });
 	c[0] = find_node(root, 1);
 	c[1] = find_node(root, 2);
 	assert(c[1] == focused);
@@ -52,7 +52,7 @@ main(int argc, char **argv)
 	assert(c[0] == focused);
 	assert(c[1] == root->c[0]);
 	assert(c[0] == root->c[1]);
-	create(c[0], NULL);
+	create(c[0], (const char *[]){ NULL });
 	prune(c[1]);
 	endwin();
 	return EXIT_SUCCESS;

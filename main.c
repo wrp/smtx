@@ -439,11 +439,15 @@ int
 create(struct node *n, const char *args[])
 {
 	assert( n != NULL );
-	assert( !n->split );
+	assert( n->split == '\0' );
 	assert( n->c[0] == NULL );
 	assert( n->c[1] == NULL );
-	(void)args;
-	int split = n->parent ? n->parent->split : '-';
+	int split = args[0] ? '|' : '-';
+	if( n->parent && n->parent->split == split ) {
+		/* Always split last window in a chain */
+		for( n = n->parent->c[1]; n->split == split; n = n->c[1] )
+			;
+	}
 	int count = cmd_count > 0 ? cmd_count : 1;
 	for( ; n && count; count -= 1 ) {
 		struct node *v = newnode(0, 0, n->h, n->w, ++id);
@@ -785,6 +789,7 @@ build_bindings()
 	add_key(cmd_keys, L'>', resize, ">", NULL);
 	add_key(cmd_keys, L'<', resize, "<", NULL);
 	add_key(cmd_keys, L'c', create, NULL);
+	add_key(cmd_keys, L'C', create, "C", NULL);
 	add_key(cmd_keys, L'x', reorient, NULL);
 	add_key(cmd_keys, L'r', redrawroot, NULL);
 	add_key(cmd_keys, L'v', mov, "v", NULL);
