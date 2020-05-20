@@ -3,6 +3,9 @@ bin_PROGRAMS = sttm
 AM_CPPFLAGS = -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=600 -D_XOPEN_SOURCE_EXTENDED
 LIBS = -lncursesw -lutil
 
+noinst_PROGRAMS = find-node-test
+TESTS = find-node-test
+
 CLEANFILES = *.gcda *.gcno *.gcov version *.1
 EXTRA_DIST = build-aux/package-version version
 noinst_HEADERS = vtparser.h main.h
@@ -13,6 +16,7 @@ version:
 	( cd $(top_srcdir) && build-aux/package-version ) > version;
 
 sttm_SOURCES = sttm.c vtparser.c main.c cset.c handler.c
+find_node_test_SOURCES = find-node-test.c main.c cset.c handler.c vtparser.c
 
 install-terminfo: $(top_srcdir)/sttm.ti
 	tic -s -x $(top_srcdir)/sttm.ti

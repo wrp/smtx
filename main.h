@@ -99,5 +99,6 @@ extern wchar_t CSET_GRAPH[]; /* Graphics Set One */
 extern int scrollback_history;
 extern int tabstop;
 
-void setupevents(struct node *n);
-void safewrite(int fd, const char *b, size_t n);
+extern void setupevents(struct node *n);
+extern void safewrite(int fd, const char *b, size_t n);
+extern struct node * find_node(struct node *b, int id);

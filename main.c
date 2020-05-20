@@ -548,7 +548,7 @@ reshape_root(struct node *n, const char **args)
 	return 0;
 }
 
-static struct node *
+struct node *
 find_node(struct node *b, int id)
 {
 	struct node *r = id ? NULL : root;
