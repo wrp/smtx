@@ -7,10 +7,10 @@ LDADD = libsttm.la
 noinst_LTLIBRARIES = libsttm.la
 libsttm_la_SOURCES = vtparser.c main.c cset.c handler.c
 check_PROGRAMS = find-node-test
-TESTS = find-node-test coverage-test
+TESTS = main-test find-node-test coverage-test
 
 CLEANFILES = *.gcda *.gcno *.gcov version *.1
-EXTRA_DIST = build-aux/package-version version
+EXTRA_DIST = build-aux/package-version version main-test coverage-test
 noinst_HEADERS = vtparser.h main.h
 
 .PHONY: version
