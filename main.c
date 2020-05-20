@@ -1005,6 +1005,8 @@ main2(int argc, char **argv)
 		assert(c[0] == focused);
 		assert(c[1] == root->c[0]);
 		assert(c[0] == root->c[1]);
+		create(c[0], NULL);
+		prune(c[1]);
 	}
 	endwin();
 	return EXIT_SUCCESS;
