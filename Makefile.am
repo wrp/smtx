@@ -12,7 +12,7 @@ version:
 	cd $(top_srcdir) && autoreconf -ivf
 	( cd $(top_srcdir) && build-aux/package-version ) > version;
 
-sttm_SOURCES = vtparser.c main.c cset.c handler.c
+sttm_SOURCES = sttm.c vtparser.c main.c cset.c handler.c
 
 install-terminfo: $(top_srcdir)/sttm.ti
 	tic -s -x $(top_srcdir)/sttm.ti

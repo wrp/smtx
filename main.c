@@ -954,7 +954,7 @@ parse_args(int argc, char **argv)
 }
 
 int
-main(int argc, char **argv)
+main2(int argc, char **argv)
 {
 	FD_SET(STDIN_FILENO, &fds);
 	setlocale(LC_ALL, "");
