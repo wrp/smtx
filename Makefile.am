@@ -3,6 +3,7 @@ bin_PROGRAMS = sttm
 AM_CPPFLAGS = -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=600 -D_XOPEN_SOURCE_EXTENDED
 LIBS = -lncursesw -lutil
 
+LDADD = libsttm.la
 noinst_LTLIBRARIES = libsttm.la
 libsttm_la_SOURCES = vtparser.c main.c cset.c handler.c
 check_PROGRAMS = find-node-test
@@ -16,9 +17,6 @@ noinst_HEADERS = vtparser.h main.h
 version:
 	cd $(top_srcdir) && autoreconf -ivf
 	( cd $(top_srcdir) && build-aux/package-version ) > version;
-
-sttm_SOURCES = sttm.c libsttm.la
-find_node_test_SOURCES = find-node-test.c libsttm.la
 
 install-terminfo: $(top_srcdir)/sttm.ti
 	tic -s -x $(top_srcdir)/sttm.ti
