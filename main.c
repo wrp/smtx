@@ -700,14 +700,22 @@ equalize(struct node *n, const char **args)
 {
 	(void) args;
 	int split = n->parent ? n->parent->split : '\0';
-	int count = 2;
+	int count = cmd_count == -1 ? 0 : cmd_count;;
 
+	if( count ) {
+		while( count-- && n->parent ) {
+			n = n->parent;
+		}
+		n->split_point = .5;
+		reshapechildren(n);
+		return 0;
+	}
 	if( n->parent ) {
-		/* Always equalize one last window in a chain */
+		/* Always equalize from last window in a chain */
 		for( n = n->parent->c[1]; n->split == split; n = n->c[1] )
 			;
 	}
-
+	count = 2;
 	while( n != view_root && n->parent && n->parent->split == split  ) {
 		n = n->parent;
 		n->split_point = 1 / (double) count++;
