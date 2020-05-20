@@ -978,9 +978,7 @@ main2(int argc, char **argv)
 	}
 	focus(view_root);
 	draw(view_root);
-	if( argv[1] && strcmp(argv[1], "test" ) ) {
-		run();
-	} else {
+	if( argv[1] && ! strcmp(argv[1], "test" ) ) {
 		struct node *c[2];
 		create(root, NULL);
 		c[0] = find_node(root, 1);
@@ -1007,6 +1005,8 @@ main2(int argc, char **argv)
 		assert(c[0] == root->c[1]);
 		create(c[0], NULL);
 		prune(c[1]);
+	} else {
+		run();
 	}
 	endwin();
 	return EXIT_SUCCESS;
