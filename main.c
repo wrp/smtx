@@ -30,23 +30,22 @@
 
 #include "main.h"
 
-static int id;
+int id;
 static struct handler keys[128];
 static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 static struct handler (*binding)[128] = &keys;
-static struct node *root, *focused, *lastfocused = NULL;
-static struct node *view_root;
-static char commandkey = CTL(COMMAND_KEY);
-static int nfds = 1; /* stdin */
-static fd_set fds;
+static struct node *focused, *lastfocused = NULL;
+struct node *root, *view_root;
+char commandkey = CTL(COMMAND_KEY);
+int nfds = 1; /* stdin */
+fd_set fds;
 static int cmd_count = -1;
 int scrollback_history = 1024;
 
 static void reshape(struct node *n, int y, int x, int h, int w);
-static void draw(struct node *n);
 static void reshapechildren(struct node *n);
-static const char *term = NULL;
+const char *term = NULL;
 static void freenode(struct node *n);
 static struct node * splice(struct node *, struct node *, int, int, double);
 static struct node * sibling(const struct node *);
@@ -85,7 +84,7 @@ extend_tabs(struct node *n, int tabstop)
 	}
 }
 
-static struct node *
+struct node *
 newnode(int y, int x, int h, int w, int id)
 {
 	struct node *n = NULL;
@@ -155,7 +154,7 @@ getterm(void)
 	return t ? t : COLORS > 255 ? DEFAULT_COLOR_TERMINAL : DEFAULT_TERMINAL;
 }
 
-static int
+int
 new_screens(struct node *n)
 {
 	int h = n->h > 2 ? n->h - 1 : 24;
@@ -180,7 +179,7 @@ new_screens(struct node *n)
 	return 1;
 }
 
-static int
+int
 new_pty(struct node *n)
 {
 	int h = n->h > 1 ? n->h - 1 : 24;
@@ -208,7 +207,7 @@ new_pty(struct node *n)
 	return n->pt;
 }
 
-static void
+void
 focus(struct node *n)
 {
 	if( n && n != focused ) {
@@ -393,7 +392,7 @@ drawchildren(const struct node *n)
 	draw(n->c[1]);
 }
 
-static void
+void
 draw(struct node *n) /* Draw a node. */
 {
 	if( n != NULL ) {
@@ -762,7 +761,7 @@ swap(struct node *a, const char **args)
 	return rv;
 }
 
-static void
+void
 build_bindings()
 {
 	assert( KEY_MAX - KEY_MIN < 2048 ); /* Avoid overly large luts */
@@ -899,8 +898,8 @@ handlechar(int r, int k) /* Handle a single input character. */
 	}
 }
 
-static void
-run(void)
+void
+main_loop(void)
 {
 	while( root != NULL ) {
 		int r;
@@ -920,94 +919,4 @@ run(void)
 		}
 		getinput(root, &sfds);
 	}
-}
-
-static void
-parse_args(int argc, char **argv)
-{
-	int c;
-	char *name = strrchr(argv[0], '/');
-	while( (c = getopt(argc, argv, ":hc:s:T:t:")) != -1 ) {
-		switch (c) {
-		case 'h':
-			printf("usage: %s [-s history-size] [-T NAME]"
-				" [-t NAME] [-c KEY]\n",
-				name ? name + 1 : argv[0]);
-			exit(0);
-		case 'c':
-			commandkey = CTL(optarg[0]);
-			break;
-		case 's':
-			scrollback_history = strtol(optarg, NULL, 10);
-			break;
-		case 'T':
-			setenv("TERM", optarg, 1);
-			break;
-		case 't':
-			term = optarg;
-			break;
-		default:
-			fprintf(stderr, "Unkown option: %c\n", optopt);
-			exit(EXIT_FAILURE);
-		}
-	}
-}
-
-int
-main2(int argc, char **argv)
-{
-	FD_SET(STDIN_FILENO, &fds);
-	setlocale(LC_ALL, "");
-	signal(SIGCHLD, SIG_IGN); /* automatically reap children */
-	parse_args(argc, argv);
-	build_bindings();
-
-	if( initscr() == NULL ) {
-		exit(EXIT_FAILURE);
-	}
-	raw();
-	noecho();
-	nonl();
-	intrflush(NULL, FALSE);
-	start_color();
-	use_default_colors();
-
-	view_root = root = newnode(0, 0, LINES, COLS, ++id);
-	if( root == NULL || !new_screens(root) || !new_pty(root) ) {
-		err(EXIT_FAILURE, "Unable to create root window");
-	}
-	focus(view_root);
-	draw(view_root);
-	if( argv[1] && ! strcmp(argv[1], "test" ) ) {
-		struct node *c[2];
-		create(root, NULL);
-		c[0] = find_node(root, 1);
-		c[1] = find_node(root, 2);
-		assert(c[1] == focused);
-		assert(c[0] == root->c[0]);
-		assert(c[1] == root->c[1]);
-		mov(c[1], (const char *[]) { "j", NULL });
-		assert(c[1] == focused);
-		mov(c[1], (const char *[]) { "k", NULL });
-		assert(c[0] == focused);
-		reorient(c[0], NULL);
-		assert(c[0] == focused);
-		mov(c[0], (const char *[]) { "l", NULL });
-		assert(c[1] == focused);
-		mov(c[1], (const char *[]) { "h", NULL });
-		assert(c[0] == focused);
-		redrawroot(c[0], NULL);
-		equalize(c[0], NULL);
-		cmd_count = 2;
-		swap(c[0],NULL);
-		assert(c[0] == focused);
-		assert(c[1] == root->c[0]);
-		assert(c[0] == root->c[1]);
-		create(c[0], NULL);
-		prune(c[1]);
-	} else {
-		run();
-	}
-	endwin();
-	return EXIT_SUCCESS;
 }

@@ -98,7 +98,20 @@ extern wchar_t CSET_UK[]; /* "United Kingdom" */
 extern wchar_t CSET_GRAPH[]; /* Graphics Set One */
 extern int scrollback_history;
 extern int tabstop;
+extern int id;
+extern int nfds;
+extern fd_set fds;
+extern char commandkey;
+extern const char *term;
+extern struct node *root, *view_root;
 
 extern void setupevents(struct node *n);
 extern void safewrite(int fd, const char *b, size_t n);
 extern struct node * find_node(struct node *b, int id);
+extern struct node * newnode(int y, int x, int h, int w, int id);
+extern void main_loop(void);
+extern void build_bindings(void);
+extern int new_pty(struct node *n);
+extern int new_screens(struct node *n);
+extern void focus(struct node *n);
+extern void draw(struct node *n);
