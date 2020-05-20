@@ -19,6 +19,10 @@
    TODO:
      Copy-mode, with stack of registers and ability to edit.
      Ability to set titles.
+     Needs to be easier to navigate in full screen mode.   Perhaps
+       title bar would show title of windows above, below, to the
+       left, and right.  Then hjkl navigation would stay in full
+       screen mode while going between them.
      Need to be able to focus on internal nodes.  If the tree is a fully
        balanced 7 node tree, it is currently impossible to change the split
        line for the root.  Idea: we don't need to focus on an internal node.
