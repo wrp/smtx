@@ -6,8 +6,8 @@ LIBS = -lncursesw -lutil
 LDADD = libsttm.la
 noinst_LTLIBRARIES = libsttm.la
 libsttm_la_SOURCES = vtparser.c main.c cset.c handler.c
-check_PROGRAMS = find-node-test
-TESTS = main-test find-node-test coverage-test
+check_PROGRAMS = find-node-test sttm-test
+TESTS = main-test find-node-test sttm-test coverage-test
 
 CLEANFILES = *.gcda *.gcno *.gcov version *.1
 EXTRA_DIST = build-aux/package-version version main-test coverage-test

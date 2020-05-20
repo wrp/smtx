@@ -35,12 +35,12 @@ static struct handler keys[128];
 static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 static struct handler (*binding)[128] = &keys;
-static struct node *focused, *lastfocused = NULL;
+struct node *focused, *lastfocused = NULL;
 struct node *root, *view_root;
 char commandkey = CTL(COMMAND_KEY);
 int nfds = 1; /* stdin */
 fd_set fds;
-static int cmd_count = -1;
+int cmd_count = -1;
 int scrollback_history = 1024;
 
 static void reshape(struct node *n, int y, int x, int h, int w);
@@ -49,9 +49,6 @@ const char *term = NULL;
 static void freenode(struct node *n);
 static struct node * splice(struct node *, struct node *, int, int, double);
 static struct node * sibling(const struct node *);
-static action transition;
-static action create;
-static action equalize;
 
 void
 safewrite(int fd, const char *b, size_t n)
@@ -221,7 +218,7 @@ focus(struct node *n)
 	}
 }
 
-static void
+void
 prune(struct node *c)
 {
 	struct node *p = c->parent;
@@ -416,7 +413,7 @@ draw(struct node *n) /* Draw a node. */
 	}
 }
 
-static int
+int
 reorient(struct node *n, const char *args[])
 {
 	if( n && n->split == '\0' ) {
@@ -429,7 +426,7 @@ reorient(struct node *n, const char *args[])
 	return 0;
 }
 
-static int
+int
 create(struct node *n, const char *args[])
 {
 	assert( n != NULL );
@@ -636,7 +633,7 @@ mov(struct node *n, const char **args)
 	return 0;
 }
 
-static int
+int
 redrawroot(struct node *n, const char **args)
 {
 	(void) n;
@@ -685,7 +682,7 @@ resize(struct node *n, const char **args)
 	return 0;
 }
 
-static int
+int
 equalize(struct node *n, const char **args)
 {
 	(void) args;
@@ -701,7 +698,7 @@ equalize(struct node *n, const char **args)
 	return 0;
 }
 
-static int
+int
 transition(struct node *n, const char **args)
 {
 	binding = binding == &keys ? &cmd_keys : &keys;
@@ -739,7 +736,7 @@ new_tabstop(struct node *n, const char **args)
 	return 0;
 }
 
-static int
+int
 swap(struct node *a, const char **args)
 {
 	int rv = -1;

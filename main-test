@@ -1,6 +1,4 @@
 #!/bin/sh
 
-
 export SHELL=/bin/sh
-# ./sttm test || exit
 echo '{ echo foo; exit; }' | ./sttm -c l || exit

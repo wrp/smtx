@@ -97,6 +97,7 @@ extern wchar_t CSET_US[]; /* "USASCII" */
 extern wchar_t CSET_UK[]; /* "United Kingdom" */
 extern wchar_t CSET_GRAPH[]; /* Graphics Set One */
 extern int scrollback_history;
+extern int cmd_count;
 extern int tabstop;
 extern int id;
 extern int nfds;
@@ -104,6 +105,7 @@ extern fd_set fds;
 extern char commandkey;
 extern const char *term;
 extern struct node *root, *view_root;
+extern struct node *focused;
 
 extern void setupevents(struct node *n);
 extern void safewrite(int fd, const char *b, size_t n);
@@ -115,3 +117,12 @@ extern int new_pty(struct node *n);
 extern int new_screens(struct node *n);
 extern void focus(struct node *n);
 extern void draw(struct node *n);
+extern void prune(struct node *c);
+extern action transition;
+extern action create;
+extern action equalize;
+extern action reorient;
+extern action equalize;
+extern action swap;
+extern action mov;
+extern action redrawroot;
