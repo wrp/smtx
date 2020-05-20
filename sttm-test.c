@@ -83,6 +83,7 @@ main(int argc, char **argv)
 	equalize(c[2], NULL);
 	assert(root->split_point == 50.0 / 100.0);
 
+	reshape_root(focused, NULL);
 	endwin();
 	return EXIT_SUCCESS;
 }
