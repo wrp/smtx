@@ -47,8 +47,8 @@ main(int argc, char **argv)
 	assert(c[0] == focused);
 	redrawroot(c[0], NULL);
 	equalize(c[0], NULL);
-	cmd_count = 2;
-	swap(c[0],NULL);
+	digit(c[0], (const char *[]) { "2", NULL });
+	swap(c[0], NULL);
 	assert(c[0] == focused);
 	assert(c[1] == root->c[0]);
 	assert(c[0] == root->c[1]);

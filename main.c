@@ -40,7 +40,7 @@ struct node *root, *view_root;
 char commandkey = CTL(COMMAND_KEY);
 int nfds = 1; /* stdin */
 fd_set fds;
-int cmd_count = -1;
+static int cmd_count = -1;
 int scrollback_history = 1024;
 
 static void reshape(struct node *n, int y, int x, int h, int w);
@@ -505,7 +505,7 @@ scrollbottom(struct node *n)
 	}
 }
 
-static int
+int
 digit(struct node *n, const char **args)
 {
 	(void)n;

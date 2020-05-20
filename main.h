@@ -97,7 +97,6 @@ extern wchar_t CSET_US[]; /* "USASCII" */
 extern wchar_t CSET_UK[]; /* "United Kingdom" */
 extern wchar_t CSET_GRAPH[]; /* Graphics Set One */
 extern int scrollback_history;
-extern int cmd_count;
 extern int tabstop;
 extern int id;
 extern int nfds;
@@ -120,6 +119,7 @@ extern void draw(struct node *n);
 extern void prune(struct node *c);
 extern action transition;
 extern action create;
+extern action digit;
 extern action equalize;
 extern action reorient;
 extern action equalize;
