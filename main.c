@@ -20,6 +20,9 @@
      Test suite!!
      Copy-mode, with stack of registers and ability to edit.
      Ability to set titles.
+     Need to be able to focus on internal nodes.  If the tree is a fully
+       balanced 7 node tree, it is currently impossible to change the split
+       line for the root.
      Register signal handlers for TERM and HUP.  Need to ensure
        that endwin is called.
      Handle SIGWINCH better.
