@@ -205,19 +205,6 @@ new_pty(struct node *n)
 	return n->pt;
 }
 
-static int
-on_screen(const struct node *n)
-{
-	int rv = 0;
-	if( n->w && n->h && n->s && n->s->win ) {
-		while( n && n != view_root ) {
-			n = n->parent;
-		}
-		rv = n != NULL;
-	}
-	return rv;
-}
-
 static void
 focus(struct node *n)
 {
@@ -228,9 +215,6 @@ focus(struct node *n)
 		if( n->s && n->s->win ) {
 			lastfocused = focused;
 			focused = n;
-			if( ! on_screen(n) ) {
-				reshape(view_root = n, 0, 0, LINES, COLS);
-			}
 		}
 	}
 }
