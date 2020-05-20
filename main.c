@@ -49,7 +49,7 @@ struct node *root, *view_root;
 char commandkey = CTL(COMMAND_KEY);
 int nfds = 1; /* stdin */
 fd_set fds;
-static int cmd_count = -1;
+int cmd_count = -1;
 int scrollback_history = 1024;
 
 static void reshape(struct node *n, int y, int x, int h, int w);
@@ -679,7 +679,7 @@ sibling(const struct node *n)
 	return p ? p->c[ n == p->c[0] ] : NULL;
 }
 
-static int
+int
 resize(struct node *n, const char **args)
 {
 	assert( n == focused );
@@ -701,6 +701,13 @@ equalize(struct node *n, const char **args)
 	(void) args;
 	int split = n->parent ? n->parent->split : '\0';
 	int count = 2;
+
+	if( n->parent ) {
+		/* Always equalize one last window in a chain */
+		for( n = n->parent->c[1]; n->split == split; n = n->c[1] )
+			;
+	}
+
 	while( n != view_root && n->parent && n->parent->split == split  ) {
 		n = n->parent;
 		n->split_point = 1 / (double) count++;

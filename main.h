@@ -99,6 +99,7 @@ extern wchar_t CSET_GRAPH[]; /* Graphics Set One */
 extern int scrollback_history;
 extern int tabstop;
 extern int id;
+extern int cmd_count;
 extern int nfds;
 extern fd_set fds;
 extern char commandkey;
@@ -126,3 +127,4 @@ extern action equalize;
 extern action swap;
 extern action mov;
 extern action redrawroot;
+extern action resize;

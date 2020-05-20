@@ -9,9 +9,9 @@ make_args(const char *a, ...)
 	int i = 0;
 	args[i++] = a;
 	va_start(ap, a);
-	do {
-		args[i] = va_arg(ap, const char *);
-	} while( args[i++] != NULL );
+	while( args[i - 1] != NULL ) {
+		args[i++] = va_arg(ap, const char *);
+	}
 	va_end(ap);
 	return args;
 }
@@ -43,7 +43,7 @@ main(int argc, char **argv)
 	focus(view_root);
 	draw(view_root);
 
-	struct node *c[2];
+	struct node *c[3];
 
 	create(root, make_args(NULL));
 	c[0] = find_node(root, 1);
@@ -65,11 +65,24 @@ main(int argc, char **argv)
 	equalize(c[0], NULL);
 	digit(c[0], make_args("2", NULL));
 	swap(c[0], NULL);
+	cmd_count = -1;
 	assert(c[0] == focused);
 	assert(c[1] == root->c[0]);
 	assert(c[0] == root->c[1]);
 	create(c[0], make_args(NULL));
-	prune(c[1]);
+	c[2] = find_node(root, 3);
+	assert(c[2] == root->c[1]->c[1]);
+	prune(root->c[1]->c[0]);
+	assert(c[2] == root->c[1]);
+	assert(c[2] == focused);
+
+	/* Test equalize */
+	cmd_count = 20;
+	resize(c[2], make_args(">"));
+	assert(root->split_point == 20.0 / 100.0);
+	equalize(c[2], NULL);
+	assert(root->split_point == 50.0 / 100.0);
+
 	endwin();
 	return EXIT_SUCCESS;
 }
