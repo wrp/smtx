@@ -17,12 +17,17 @@
  */
 /*
    TODO:
-     Test suite!!
      Copy-mode, with stack of registers and ability to edit.
      Ability to set titles.
      Need to be able to focus on internal nodes.  If the tree is a fully
        balanced 7 node tree, it is currently impossible to change the split
-       line for the root.
+       line for the root.  Idea: we don't need to focus on an internal node.
+       To make equalize work, we need to make sure the tree is always
+       well-formed (ambiguous definition right now).  Basically, we
+       never want a node to have have a split that is the same as its
+       sibling.  Then we can do something like 3= to walk up 3 nodes
+       in the tree and equzlize a parent. Also, want to descend the tree
+       so that equalize actually works.
      Register signal handlers for TERM and HUP.  Need to ensure
        that endwin is called.
      Handle SIGWINCH better.
