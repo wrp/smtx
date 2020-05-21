@@ -504,7 +504,7 @@ getinput(struct node *n, fd_set *f) /* check all ptty's for input. */
 		status = false;
 	} else if( n && n->c[1] && !getinput(n->c[1], f) ) {
 		status = false;
-	} else if( n && ! n->split  && n->p.pt > 0 && FD_ISSET(n->p.pt, f) ) {
+	} else if( n && ! n->split && n->p.pt > 0 && FD_ISSET(n->p.pt, f) ) {
 		char iobuf[BUFSIZ];
 		ssize_t r = read(n->p.pt, iobuf, sizeof(iobuf));
 		if( r > 0 ) {
