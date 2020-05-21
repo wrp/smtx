@@ -187,7 +187,7 @@ new_screens(struct node *N)
 	keypad(n->pri.win, TRUE);
 	keypad(n->alt.win, TRUE);
 
-	setupevents(N);
+	setupevents(n);
 	return 1;
 }
 

@@ -113,7 +113,7 @@ extern const char *term;
 extern struct node *root, *view_root;
 extern struct node *focused;
 
-extern void setupevents(struct node *n);
+extern void setupevents(struct proc *);
 extern void safewrite(int fd, const char *b, size_t n);
 extern struct node * find_node(struct node *b, int id);
 extern struct node * newnode(int y, int x, int h, int w, int id);

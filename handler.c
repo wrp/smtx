@@ -511,9 +511,8 @@ HANDLER(so) /* Switch Out/In Character Set */
 ENDHANDLER
 
 void
-setupevents(struct node *k)
+setupevents(struct proc *n)
 {
-	struct proc *n = &k->p;
     n->vp.p = n;
     vtonevent(&n->vp, VTPARSER_CONTROL, 0x05, ack);
     vtonevent(&n->vp, VTPARSER_CONTROL, 0x07, bell);
