@@ -196,12 +196,13 @@ new_pty(struct node *n)
 {
 	int h = n->h > 1 ? n->h - 1 : 24;
 	int w = n->w ? n->w : 80;
-	n->p.ws = (struct winsize) {.ws_row = h, .ws_col = w};
-	n->p.pid = forkpty(&n->p.pt, NULL, NULL, &n->p.ws);
-	if( n->p.pid < 0 ) {
+	struct proc *p = &n->p;
+	p->ws = (struct winsize) {.ws_row = h, .ws_col = w};
+	p->pid = forkpty(&p->pt, NULL, NULL, &p->ws);
+	if( p->pid < 0 ) {
 		perror("forkpty");
 		return -1;
-	} else if( n->p.pid == 0 ) {
+	} else if( p->pid == 0 ) {
 		char buf[64];
 		snprintf(buf, sizeof buf - 1, "%lu", (unsigned long)getppid());
 		setsid();
@@ -213,11 +214,11 @@ new_pty(struct node *n)
 		perror("execl");
 		_exit(EXIT_FAILURE);
 	}
-	FD_SET(n->p.pt, &fds);
-	fcntl(n->p.pt, F_SETFL, O_NONBLOCK);
-	nfds = n->p.pt > nfds ? n->p.pt : nfds;
-	extend_tabs(n, n->p.tabstop = 8);
-	return n->p.pt;
+	FD_SET(p->pt, &fds);
+	fcntl(p->pt, F_SETFL, O_NONBLOCK);
+	nfds = p->pt > nfds ? p->pt : nfds;
+	extend_tabs(n, p->tabstop = 8);
+	return p->pt;
 }
 
 void
