@@ -632,7 +632,7 @@ mov(struct node *n, const char **args)
 			t = find_window(view_root, t->y - 1, startx);
 			break;
 		case 'j': /* move down */
-			t = find_window(view_root, t->y + t->h + 1, startx );
+			t = find_window(view_root, t->y + t->h, startx );
 			break;
 		case 'l': /* move right */
 			t = find_window(view_root, starty, t->x + t->w + 1);
