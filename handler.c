@@ -140,7 +140,7 @@ HANDLER(cbt) /* CBT - Cursor Backwards Tab */
 ENDHANDLER
 
 HANDLER(ht) /* HT - Horizontal Tab */
-    for (int i = x + 1; i < N->w && i < n->ntabs; i++) if (n->tabs[i]){
+    for (int i = x + 1; i < n->ws.ws_col && i < n->ntabs; i++) if (n->tabs[i]){
         wmove(win, py, i);
         return;
     }
@@ -319,8 +319,8 @@ HANDLER(ris) /* RIS - Reset to Initial State */
     n->am = n->pnm = true;
     n->pri.vis = n->alt.vis = 1;
     n->s = &n->pri;
-    wsetscrreg(n->pri.win, 0, MAX(scrollback_history, N->h) - 1);
-    wsetscrreg(n->alt.win, 0, N->h - 1);
+    wsetscrreg(n->pri.win, 0, MAX(scrollback_history, n->ws.ws_row));
+    wsetscrreg(n->alt.win, 0, n->ws.ws_row);
     for (int i = 0; i < n->ntabs; i++)
         n->tabs[i] = (i % n->tabstop == 0);
 ENDHANDLER
