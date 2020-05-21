@@ -121,6 +121,7 @@ extern void main_loop(void);
 extern void build_bindings(void);
 extern int new_pty(struct node *n);
 extern int new_screens(struct node *n);
+extern int sttm_main(int, char *const*);
 extern void focus(struct node *n);
 extern void draw(struct node *n);
 extern void prune(struct node *c);
