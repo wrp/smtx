@@ -100,29 +100,7 @@ test1() {
 	case -1:
 		err(1, "forkpty");
 	case 0:
-		/* TODO: remove all this boiler plate */
-		FD_SET(STDIN_FILENO, &fds);
-		setlocale(LC_ALL, "");
-		signal(SIGCHLD, SIG_IGN);
-		build_bindings();
-		if( initscr() == NULL ) {
-			exit(EXIT_FAILURE);
-		}
-		raw();
-		noecho();
-		nonl();
-		intrflush(NULL, FALSE);
-		start_color();
-		use_default_colors();
-
-		view_root = root = newnode(0, 0, LINES, COLS, ++id);
-		if( root == NULL || !new_screens(root) || !new_pty(root) ) {
-			err(EXIT_FAILURE, "Unable to create root window");
-		}
-		focus(view_root);
-		draw(view_root);
-		main_loop();
-		endwin();
+		sttm_main(1, (char *const[]) { "sttm-test", NULL });
 		exit(0);
 	default: {
 		char cmd[] = "tput cuu\rtput cud\rexit\r";
