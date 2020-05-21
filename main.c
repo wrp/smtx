@@ -300,10 +300,6 @@ reshapechildren(struct node *n)
 	int *curr = n->split == '|' ? &n->w : &n->h;
 	d[0] = *curr * n->split_point;
 	d[1] = *curr - d[0];
-	if( d[1] - d[0] == 1 ) {
-		d[0] += 1;
-		d[1] -= 1;
-	}
 	assert( n->h >= 0 && n->x >= 0 && n->y >= 0 );
 	assert( d[0] <= *curr && d[0] >= 0 && d[1] >= 0 );
 	if( n->split == '|' ) {
