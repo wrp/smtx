@@ -80,16 +80,11 @@ getshell(void)
 static void
 extend_tabs(struct node *n, int tabstop)
 {
-	struct winsize ws;
 	struct proc *p = &n->p;
-	if( ioctl(p->pt, TIOCGWINSZ, &ws) == -1 ) {
-		perror("ioctl"); /* For now, punt on error */
-		return;
-	}
-	assert(ws.ws_row == n->h - 1 || (ws.ws_row == 24 && n->h < 2 ));
-	assert(ws.ws_col == n->w || (ws.ws_col == 80 && n->w == 0 ));
+	assert(p->ws.ws_row == n->h - 1 || (p->ws.ws_row == 24 && n->h < 2 ));
+	assert(p->ws.ws_col == n->w || (p->ws.ws_col == 80 && n->w == 0 ));
 
-	int w = ws.ws_col;;
+	int w = p->ws.ws_col;;
 	if( p->ntabs < w ) {
 		typeof(*p->tabs) *new;
 		if( (new = realloc(p->tabs, w * sizeof *p->tabs)) != NULL ) {
@@ -201,8 +196,8 @@ new_pty(struct node *n)
 {
 	int h = n->h > 1 ? n->h - 1 : 24;
 	int w = n->w ? n->w : 80;
-	struct winsize ws = {.ws_row = h, .ws_col = w};
-	n->p.pid = forkpty(&n->p.pt, NULL, NULL, &ws);
+	n->p.ws = (struct winsize) {.ws_row = h, .ws_col = w};
+	n->p.pid = forkpty(&n->p.pt, NULL, NULL, &n->p.ws);
 	if( n->p.pid < 0 ) {
 		perror("forkpty");
 		return -1;
@@ -284,8 +279,8 @@ reshape_window(struct node *N, int d)
 	int h = N->h > 1 ? N->h - 1 : 24;
 	int w = N->w ? N->w : 80;
 	int oy, ox;
-	struct winsize ws = {.ws_row = h, .ws_col = w}; /* tty(4) */
 	struct proc *n = &N->p;
+	n->ws = (struct winsize) {.ws_row = h, .ws_col = w};
 
 	getyx(n->s->win, oy, ox);
 
@@ -301,7 +296,7 @@ reshape_window(struct node *N, int d)
 		wscrl(n->s->win, -d);
 	}
 	wrefresh(n->s->win);
-	ioctl(n->pt, TIOCSWINSZ, &ws);
+	ioctl(n->pt, TIOCSWINSZ, &n->ws);
 	extend_tabs(N, n->tabstop);
 }
 
