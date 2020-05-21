@@ -103,9 +103,18 @@ test1() {
 		sttm_main(1, (char *const[]) { "sttm-test", NULL });
 		exit(0);
 	default: {
-		char cmd[] = "tput cuu; tput cud; exit\r";
+		char *cmds[] = {
+			"tput cud 2; tput cuu 2; tput cuf 1 ",
+			"tput cub 1; tput dch 1; tput ack",
+			"tabs -5",
+			"exit",
+			NULL
+		};
 		int status;
-		write(fd, cmd, strlen(cmd));
+		for( char **cmd = cmds; *cmd; cmd++ ) {
+			write(fd, *cmd, strlen(*cmd));
+			write(fd, "\r", 1);
+		}
 		wait(&status);
 		assert( WIFEXITED(status) && WEXITSTATUS(status) == 0 );
 		}
