@@ -80,10 +80,19 @@ getshell(void)
 static void
 extend_tabs(struct node *n, int tabstop)
 {
-	if( n->ntabs < n->w ) {
+	struct winsize ws;
+	if( ioctl(n->pt, TIOCGWINSZ, &ws) == -1 ) {
+		perror("ioctl"); /* For now, punt on error */
+		return;
+	}
+	assert(ws.ws_row == n->h - 1 || (ws.ws_row == 24 && n->h < 2 ));
+	assert(ws.ws_col == n->w || (ws.ws_col == 80 && n->w == 0 ));
+
+	int w = ws.ws_col;;
+	if( n->ntabs < w ) {
 		typeof(*n->tabs) *new;
-		if( (new = realloc(n->tabs, n->w * sizeof *n->tabs)) != NULL ) {
-			for( n->tabs = new; n->ntabs < n->w; n->ntabs++ ) {
+		if( (new = realloc(n->tabs, w * sizeof *n->tabs)) != NULL ) {
+			for( n->tabs = new; n->ntabs < w; n->ntabs++ ) {
 				n->tabs[n->ntabs] = n->ntabs % tabstop == 0;
 			}
 		}
@@ -101,7 +110,6 @@ newnode(int y, int x, int h, int w, int id)
 		n->x = x;
 		n->h = h;
 		n->pt = -1;
-		extend_tabs(n, n->tabstop = 8);
 		if( h && w ) {
 			n->twin = newpad(1, w);
 		}
@@ -210,6 +218,7 @@ new_pty(struct node *n)
 	FD_SET(n->pt, &fds);
 	fcntl(n->pt, F_SETFL, O_NONBLOCK);
 	nfds = n->pt > nfds ? n->pt : nfds;
+	extend_tabs(n, n->tabstop = 8);
 	return n->pt;
 }
 
@@ -274,7 +283,6 @@ reshape_window(struct node *n, int d)
 	int oy, ox;
 	struct winsize ws = {.ws_row = h, .ws_col = w}; /* tty(4) */
 
-	extend_tabs(n, n->tabstop);
 	getyx(n->s->win, oy, ox);
 
 	resize_pad(&n->pri.win, MAX(h, scrollback_history), w);
@@ -290,6 +298,7 @@ reshape_window(struct node *n, int d)
 	}
 	wrefresh(n->s->win);
 	ioctl(n->pt, TIOCSWINSZ, &ws);
+	extend_tabs(n, n->tabstop);
 }
 
 static void
@@ -751,7 +760,7 @@ add_key(struct handler *b, wchar_t k, action act, ...)
 	va_end(ap);
 }
 
-static int
+int
 new_tabstop(struct node *n, const char **args)
 {
 	(void) args;

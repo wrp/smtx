@@ -84,6 +84,13 @@ main(int argc, char **argv)
 	assert(root->split_point == 50.0 / 100.0);
 
 	reshape_root(focused, NULL);
+	cmd_count = -1;
+	new_tabstop(focused, NULL);
+	mov(focused, make_args("V", NULL));
+	mov(focused, make_args("v", NULL));
+	cmd_count = 7;
+	new_tabstop(focused, NULL);
+
 	endwin();
 	return EXIT_SUCCESS;
 }
