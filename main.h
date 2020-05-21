@@ -68,22 +68,27 @@ struct screen {
 	WINDOW *win;
 };
 
+struct proc {
+	int pt, ntabs, tabstop;
+	pid_t pid;
+	bool *tabs, pnm, decom, am, lnm;
+	wchar_t repc;
+	struct screen pri, alt, *s;
+	wchar_t *g0, *g1, *g2, *g3, *gc, *gs, *sgc, *sgs;
+	VTPARSER vp;
+};
+
 struct node {
 	int id;
 	int split;  /* '|', '-', or '\0' (lateral, transverse, or no split) */
 	double split_point; /* percent of window dedicated to c[0] */
-	int y, x, h, w, pt, ntabs, tabstop;
-	pid_t pid;
-	bool *tabs, pnm, decom, am, lnm;
-	wchar_t repc;
+	int y, x, h, w;
+	struct proc p;
 	struct node *parent;
 	struct node *c[2];
 	char title[32];
 	char putative_cmd[32];
 	WINDOW *twin;  /* Window for title, or divider */
-	struct screen pri, alt, *s;
-	wchar_t *g0, *g1, *g2, *g3, *gc, *gs, *sgc, *sgs;
-	VTPARSER vp;
 };
 
 typedef int(action)(struct node *n, const char **args);

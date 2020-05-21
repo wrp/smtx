@@ -81,7 +81,8 @@ static void
 extend_tabs(struct node *n, int tabstop)
 {
 	struct winsize ws;
-	if( ioctl(n->pt, TIOCGWINSZ, &ws) == -1 ) {
+	struct proc *p = &n->p;
+	if( ioctl(p->pt, TIOCGWINSZ, &ws) == -1 ) {
 		perror("ioctl"); /* For now, punt on error */
 		return;
 	}
@@ -89,11 +90,11 @@ extend_tabs(struct node *n, int tabstop)
 	assert(ws.ws_col == n->w || (ws.ws_col == 80 && n->w == 0 ));
 
 	int w = ws.ws_col;;
-	if( n->ntabs < w ) {
-		typeof(*n->tabs) *new;
-		if( (new = realloc(n->tabs, w * sizeof *n->tabs)) != NULL ) {
-			for( n->tabs = new; n->ntabs < w; n->ntabs++ ) {
-				n->tabs[n->ntabs] = n->ntabs % tabstop == 0;
+	if( p->ntabs < w ) {
+		typeof(*p->tabs) *new;
+		if( (new = realloc(p->tabs, w * sizeof *p->tabs)) != NULL ) {
+			for( p->tabs = new; p->ntabs < w; p->ntabs++ ) {
+				p->tabs[p->ntabs] = p->ntabs % tabstop == 0;
 			}
 		}
 	}
@@ -109,7 +110,7 @@ newnode(int y, int x, int h, int w, int id)
 		n->y = y;
 		n->x = x;
 		n->h = h;
-		n->pt = -1;
+		n->p.pt = -1;
 		if( h && w ) {
 			n->twin = newpad(1, w);
 		}
@@ -137,13 +138,13 @@ static void
 freenode(struct node *n)
 {
 	if( n ) {
-		delwinnul(&n->pri.win);
-		delwinnul(&n->alt.win);
-		if( n->pt >= 0 ) {
-			close(n->pt);
-			FD_CLR(n->pt, &fds);
+		delwinnul(&n->p.pri.win);
+		delwinnul(&n->p.alt.win);
+		if( n->p.pt >= 0 ) {
+			close(n->p.pt);
+			FD_CLR(n->p.pt, &fds);
 		}
-		free(n->tabs);
+		free(n->p.tabs);
 		free(n);
 	}
 }
@@ -151,13 +152,14 @@ freenode(struct node *n)
 static void
 fixcursor(void) /* Move the terminal cursor to the active window. */
 {
-	struct node *f = focused;
+	struct node *fo = focused;
+	struct proc *f = &fo->p;  /* Odd name for backwards churn avoidance */
 	assert( f && f->s );
 	int y, x;
 	int show = binding != &cmd_keys && f->s->vis;
 	curs_set(f->s->off != f->s->tos ? 0 : show);
 	getyx(f->s->win, y, x);
-	y = MIN(MAX(y, f->s->tos), f->s->tos + f->h - 1);
+	y = MIN(MAX(y, f->s->tos), f->s->tos + fo->h - 1);
 	wmove(f->s->win, y, x);
 }
 
@@ -169,10 +171,11 @@ getterm(void)
 }
 
 int
-new_screens(struct node *n)
+new_screens(struct node *N)
 {
-	int h = n->h > 2 ? n->h - 1 : 24;
-	int w = n->w > 1 ? n->w : 80;
+	int h = N->h > 2 ? N->h - 1 : 24;
+	int w = N->w > 1 ? N->w : 80;
+	struct proc *n = &N->p;
 
 	resize_pad(&n->pri.win, MAX(h, scrollback_history), w);
 	resize_pad(&n->alt.win, h, w);
@@ -189,7 +192,7 @@ new_screens(struct node *n)
 	keypad(n->pri.win, TRUE);
 	keypad(n->alt.win, TRUE);
 
-	setupevents(n);
+	setupevents(N);
 	return 1;
 }
 
@@ -199,11 +202,11 @@ new_pty(struct node *n)
 	int h = n->h > 1 ? n->h - 1 : 24;
 	int w = n->w ? n->w : 80;
 	struct winsize ws = {.ws_row = h, .ws_col = w};
-	n->pid = forkpty(&n->pt, NULL, NULL, &ws);
-	if( n->pid < 0 ) {
+	n->p.pid = forkpty(&n->p.pt, NULL, NULL, &ws);
+	if( n->p.pid < 0 ) {
 		perror("forkpty");
 		return -1;
-	} else if( n->pid == 0 ) {
+	} else if( n->p.pid == 0 ) {
 		char buf[64];
 		snprintf(buf, sizeof buf - 1, "%lu", (unsigned long)getppid());
 		setsid();
@@ -215,11 +218,11 @@ new_pty(struct node *n)
 		perror("execl");
 		_exit(EXIT_FAILURE);
 	}
-	FD_SET(n->pt, &fds);
-	fcntl(n->pt, F_SETFL, O_NONBLOCK);
-	nfds = n->pt > nfds ? n->pt : nfds;
-	extend_tabs(n, n->tabstop = 8);
-	return n->pt;
+	FD_SET(n->p.pt, &fds);
+	fcntl(n->p.pt, F_SETFL, O_NONBLOCK);
+	nfds = n->p.pt > nfds ? n->p.pt : nfds;
+	extend_tabs(n, n->p.tabstop = 8);
+	return n->p.pt;
 }
 
 void
@@ -229,7 +232,7 @@ focus(struct node *n)
 		while( n->split ) {
 			n = n->c[0];
 		}
-		if( n->s && n->s->win ) {
+		if( n->p.s && n->p.s->win ) {
 			lastfocused = focused;
 			focused = n;
 		}
@@ -276,12 +279,13 @@ reap_dead_window(struct node *c)
 }
 
 static void
-reshape_window(struct node *n, int d)
+reshape_window(struct node *N, int d)
 {
-	int h = n->h > 1 ? n->h - 1 : 24;
-	int w = n->w ? n->w : 80;
+	int h = N->h > 1 ? N->h - 1 : 24;
+	int w = N->w ? N->w : 80;
 	int oy, ox;
 	struct winsize ws = {.ws_row = h, .ws_col = w}; /* tty(4) */
+	struct proc *n = &N->p;
 
 	getyx(n->s->win, oy, ox);
 
@@ -298,7 +302,7 @@ reshape_window(struct node *n, int d)
 	}
 	wrefresh(n->s->win);
 	ioctl(n->pt, TIOCSWINSZ, &ws);
-	extend_tabs(n, n->tabstop);
+	extend_tabs(N, n->tabstop);
 }
 
 static void
@@ -370,7 +374,7 @@ draw_title(struct node *n)
 	} else {
 		wattroff(n->twin, A_REVERSE);
 	}
-	snprintf(t, s, "%d (%d) %s ", n->id, (int)n->pid, n->title);
+	snprintf(t, s, "%d (%d) %s ", n->id, (int)n->p.pid, n->title);
 	x += strlen(t);
 	if( n->twin ) {
 		int glyph = ACS_HLINE;
@@ -411,8 +415,8 @@ draw(struct node *n) /* Draw a node. */
 			draw_title(n);
 			if( n->h > 1 && n->w > 0 ) {
 				pnoutrefresh(
-					n->s->win,  /* pad */
-					n->s->off,  /* pminrow */
+					n->p.s->win,  /* pad */
+					n->p.s->off,  /* pminrow */
 					0,          /* pmincol */
 					n->y,       /* sminrow */
 					n->x,       /* smincol */
@@ -500,11 +504,11 @@ getinput(struct node *n, fd_set *f) /* check all ptty's for input. */
 		status = false;
 	} else if( n && n->c[1] && !getinput(n->c[1], f) ) {
 		status = false;
-	} else if( n && ! n->split  && n->pt > 0 && FD_ISSET(n->pt, f) ) {
+	} else if( n && ! n->split  && n->p.pt > 0 && FD_ISSET(n->p.pt, f) ) {
 		char iobuf[BUFSIZ];
-		ssize_t r = read(n->pt, iobuf, sizeof(iobuf));
+		ssize_t r = read(n->p.pt, iobuf, sizeof(iobuf));
 		if( r > 0 ) {
-			vtwrite(&n->vp, iobuf, r);
+			vtwrite(&n->p.vp, iobuf, r);
 		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
 			assert(n->c[0] == NULL);
 			assert(n->c[1] == NULL);
@@ -518,8 +522,8 @@ getinput(struct node *n, fd_set *f) /* check all ptty's for input. */
 static void
 scrollbottom(struct node *n)
 {
-	if( n && n->s ) {
-		n->s->off = n->s->tos;
+	if( n && n->p.s ) {
+		n->p.s->off = n->p.s->tos;
 	}
 }
 
@@ -536,9 +540,9 @@ scrolln(struct node *n, const char **args)
 {
 	int count = cmd_count == -1 ? n->h / 2 : cmd_count;
 	if(args[0][0] == '-') {
-		n->s->off = MAX(0, n->s->off - count);
+		n->p.s->off = MAX(0, n->p.s->off - count);
 	} else {
-		n->s->off = MIN(n->s->tos, n->s->off + count);
+		n->p.s->off = MIN(n->p.s->tos, n->p.s->off + count);
 	}
 	return 0;
 }
@@ -548,8 +552,8 @@ sendarrow(struct node *n, const char **args)
 {
 	const char *k = args[0];
     char buf[100] = {0};
-    snprintf(buf, sizeof(buf) - 1, "\033%s%s", n->pnm? "O" : "[", k);
-    safewrite(n->pt, buf, strlen(buf));
+    snprintf(buf, sizeof(buf) - 1, "\033%s%s", n->p.pnm? "O" : "[", k);
+    safewrite(n->p.pt, buf, strlen(buf));
     return 0;
 }
 
@@ -666,13 +670,13 @@ redrawroot(struct node *n, const char **args)
 int
 send(struct node *n, const char **args)
 {
-	if( n->lnm && args[0][0] == '\r' ) {
+	if( n->p.lnm && args[0][0] == '\r' ) {
 		assert( args[0][1] == '\0' );
 		assert( args[1] == NULL );
 		args[0] = "\r\n";
 	}
 	size_t len = args[1] ? strtoul(args[1], NULL, 10 ) : strlen(args[0]);
-	safewrite(n->pt, args[0], len);
+	safewrite(n->p.pt, args[0], len);
 	scrollbottom(n);
 	return 0;
 }
@@ -764,8 +768,8 @@ int
 new_tabstop(struct node *n, const char **args)
 {
 	(void) args;
-	n->ntabs = 0;
-	extend_tabs(n, n->tabstop = cmd_count > -1 ? cmd_count : 8);
+	n->p.ntabs = 0;
+	extend_tabs(n, n->p.tabstop = cmd_count > -1 ? cmd_count : 8);
 	return 0;
 }
 
@@ -918,7 +922,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 		char c[MB_LEN_MAX + 1] = {0};
 		if( wctomb(c, k) > 0 ) {
 			scrollbottom(n);
-			safewrite(n->pt, c, strlen(c));
+			safewrite(n->p.pt, c, strlen(c));
 		}
 		if( binding != &keys ) {
 			transition(n, NULL);
@@ -945,7 +949,7 @@ main_loop(void)
 		if( select(nfds + 1, &sfds, NULL, NULL, NULL) < 0 ) {
 			FD_ZERO(&sfds);
 		}
-		while( (r = wget_wch(focused->s->win, &w)) != ERR ) {
+		while( (r = wget_wch(focused->p.s->win, &w)) != ERR ) {
 			handlechar(r, w);
 		}
 		getinput(root, &sfds);

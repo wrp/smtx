@@ -34,8 +34,6 @@ parse_args(int argc, char **argv)
 int
 main(int argc, char **argv)
 {
-	printf("sleep 5 (to allow debug attach)\n");
-	printf("pid: %d\n", getpid());
 	FD_SET(STDIN_FILENO, &fds);
 	setlocale(LC_ALL, "");
 	signal(SIGCHLD, SIG_IGN); /* automatically reap children */

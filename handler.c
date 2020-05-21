@@ -24,9 +24,10 @@
 #define PD(x, d) (argc < (x) || !argv? (d) : argv[(x)])
 #define P0(x) PD(x, 0)
 #define P1(x) (!P0(x)? 1 : P0(x))
-#define CALL(x) (x)(v, n, 0, 0, 0, NULL, NULL)
+#define CALL(x) (x)(v, N, 0, 0, 0, NULL, NULL)
 #define COMMONVARS                                                      \
-    struct node *n = (struct node *)p;                                  \
+    struct node *N = (struct node *)p;                                  \
+    struct proc *n = &N->p;                                             \
     struct screen *s = n->s;                                            \
     WINDOW *win = s->win;                                               \
     int py, px, y, x, my, mx, top = 0, bot = 0, tos = s->tos;           \
@@ -139,7 +140,7 @@ HANDLER(cbt) /* CBT - Cursor Backwards Tab */
 ENDHANDLER
 
 HANDLER(ht) /* HT - Horizontal Tab */
-    for (int i = x + 1; i < n->w && i < n->ntabs; i++) if (n->tabs[i]){
+    for (int i = x + 1; i < N->w && i < n->ntabs; i++) if (n->tabs[i]){
         wmove(win, py, i);
         return;
     }
@@ -318,8 +319,8 @@ HANDLER(ris) /* RIS - Reset to Initial State */
     n->am = n->pnm = true;
     n->pri.vis = n->alt.vis = 1;
     n->s = &n->pri;
-    wsetscrreg(n->pri.win, 0, MAX(scrollback_history, n->h) - 1);
-    wsetscrreg(n->alt.win, 0, n->h - 1);
+    wsetscrreg(n->pri.win, 0, MAX(scrollback_history, N->h) - 1);
+    wsetscrreg(n->alt.win, 0, N->h - 1);
     for (int i = 0; i < n->ntabs; i++)
         n->tabs[i] = (i % n->tabstop == 0);
 ENDHANDLER
@@ -511,9 +512,10 @@ HANDLER(so) /* Switch Out/In Character Set */
 ENDHANDLER
 
 void
-setupevents(struct node *n)
+setupevents(struct node *k)
 {
-    n->vp.p = n;
+	struct proc *n = &k->p;
+    n->vp.p = k;
     vtonevent(&n->vp, VTPARSER_CONTROL, 0x05, ack);
     vtonevent(&n->vp, VTPARSER_CONTROL, 0x07, bell);
     vtonevent(&n->vp, VTPARSER_CONTROL, 0x08, cub);
@@ -577,5 +579,5 @@ setupevents(struct node *n)
     vtonevent(&n->vp, VTPARSER_ESCAPE,  L'=', numkp);
     vtonevent(&n->vp, VTPARSER_ESCAPE,  L'>', numkp);
     vtonevent(&n->vp, VTPARSER_PRINT,   0,    print);
-    ris(&n->vp, n, L'c', 0, 0, NULL, NULL);
+    ris(&n->vp, k, L'c', 0, 0, NULL, NULL);
 }
