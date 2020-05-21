@@ -14,7 +14,7 @@
  *                       x, y     - cursor position
  *                       mx, my   - max possible values for x and y
  *                       px, py   - physical cursor position in scrollback
- *                       n        - the current node
+ *                       n        - the current proc
  *                       win      - the current window
  *                       top, bot - the scrolling region
  *                       tos      - top of the screen in the pad
@@ -24,10 +24,9 @@
 #define PD(x, d) (argc < (x) || !argv? (d) : argv[(x)])
 #define P0(x) PD(x, 0)
 #define P1(x) (!P0(x)? 1 : P0(x))
-#define CALL(x) (x)(v, N, 0, 0, 0, NULL, NULL)
+#define CALL(x) (x)(v, n, 0, 0, 0, NULL, NULL)
 #define COMMONVARS                                                      \
-    struct node *N = (struct node *)p;                                  \
-    struct proc *n = &N->p;                                             \
+    struct proc *n = p;       \
     struct screen *s = n->s;                                            \
     WINDOW *win = s->win;                                               \
     int py, px, y, x, my, mx, top = 0, bot = 0, tos = s->tos;           \
@@ -515,7 +514,7 @@ void
 setupevents(struct node *k)
 {
 	struct proc *n = &k->p;
-    n->vp.p = k;
+    n->vp.p = n;
     vtonevent(&n->vp, VTPARSER_CONTROL, 0x05, ack);
     vtonevent(&n->vp, VTPARSER_CONTROL, 0x07, bell);
     vtonevent(&n->vp, VTPARSER_CONTROL, 0x08, cub);
@@ -579,5 +578,5 @@ setupevents(struct node *k)
     vtonevent(&n->vp, VTPARSER_ESCAPE,  L'=', numkp);
     vtonevent(&n->vp, VTPARSER_ESCAPE,  L'>', numkp);
     vtonevent(&n->vp, VTPARSER_PRINT,   0,    print);
-    ris(&n->vp, k, L'c', 0, 0, NULL, NULL);
+    ris(&n->vp, n, L'c', 0, 0, NULL, NULL);
 }
