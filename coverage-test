@@ -4,24 +4,34 @@
 # this will likely just get skipped.  (eg, configure with
 # CFLAGS='--coverage -g -O0' to enable this test)
 
-name=main
 if ! test -f find-node-test.gcda; then
 	exit 77
 fi
 RV=0
 
-if test -f .libs/$name.gcno; then
-	arg='-o .libs'
-else
-	unset arg
-fi
-gcov $name $arg
-if < "$name".c.gcov sed \
-		-e '\@{ /\* uncovered block \*/@,'"$( :
-			)"'\@} /\* end uncovered \*/@d' \
-		-e '/#####/!d' \
-		-e '\@/\* uncovered \*/@d' | grep .; then
-	echo The above lines were not executed during testing
-	RV=77  # Skip this until such time as we actually have coverage
-fi >&2
-exit $RV
+for name in \
+	cset \
+	find-node-test \
+	handler \
+	main \
+	sttm-test \
+	sttm \
+	vtparser \
+	;
+do
+	if test -f .libs/$name.gcno; then
+		arg='-o .libs'
+	else
+		unset arg
+	fi
+	gcov $name $arg
+	if < "$name".c.gcov sed \
+			-e '\@{ /\* uncovered block \*/@,'"$( :
+				)"'\@} /\* end uncovered \*/@d' \
+			-e '/#####/!d' \
+			-e '\@/\* uncovered \*/@d' | grep .; then
+		echo The above lines were not executed during testing
+		RV=77  # Skip this until such time as we actually have coverage
+	fi >&2
+done
+	exit $RV
