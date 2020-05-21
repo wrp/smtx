@@ -103,7 +103,7 @@ test1() {
 		sttm_main(1, (char *const[]) { "sttm-test", NULL });
 		exit(0);
 	default: {
-		char cmd[] = "tput cuu\rtput cud\rexit\r";
+		char cmd[] = "tput cuu; tput cud; exit\r";
 		int status;
 		write(fd, cmd, strlen(cmd));
 		wait(&status);
