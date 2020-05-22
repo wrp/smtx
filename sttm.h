@@ -69,7 +69,7 @@ struct screen {
 };
 
 struct proc {
-	int pt, ntabs, tabstop;
+	int pt, ntabs, tabstop; /* Should tabs be in struct screen ? */
 	pid_t pid;
 	bool *tabs, pnm, decom, am, lnm;
 	wchar_t repc;
@@ -80,16 +80,35 @@ struct proc {
 };
 
 struct node {
-	int id;
-	int split;  /* '|', '-', or '\0' (lateral, transverse, or no split) */
-	double split_point; /* percent of window dedicated to c[0] */
-	int y, x, h, w;
+	int id; /* obsolete */
+	int y, x, h, w, h1, w1;
+	int hide_title;
+	int hide_div;
 	struct proc p;
 	struct node *parent;
+	/*
+	This window contains both c[0] and c[1], and shows only the upper
+	left corner.  eg: y = 0, x = 0, h=8, w=42, w1=14, h1=4,
+	    split_point = { 0.5, 0.333 }
+
+	-----------top of screen (y == -1)--------
+	             |<-wdiv
+	    wpty     |              c1
+	             |
+	----wtit-----|-------c1->wtit-------------
+
+	               c0
+
+	-------------c0->wtit---------------------
+	c[0] is the window below this, c[1] is the window to the right
+	*/
 	struct node *c[2];
+	double split_point[2]; /* percent of window dedicated to c[i] */
 	char title[32];
 	char putative_cmd[32];
-	WINDOW *twin;  /* Window for title, or divider */
+	WINDOW *wpty;  /* Window for p */
+	WINDOW *wtit;  /* Window for title */
+	WINDOW *wdiv;  /* Window for divider */
 };
 
 typedef int(action)(struct node *n, const char **args);

@@ -23,15 +23,6 @@
        title bar would show title of windows above, below, to the
        left, and right.  Then hjkl navigation would stay in full
        screen mode while going between them.
-     Need to be able to focus on internal nodes.  If the tree is a fully
-       balanced 7 node tree, it is currently impossible to change the split
-       line for the root.  Idea: we don't need to focus on an internal node.
-       To make equalize work, we need to make sure the tree is always
-       well-formed (ambiguous definition right now).  Basically, we
-       never want a node to have have a split that is the same as its
-       sibling.  Then we can do something like 3= to walk up 3 nodes
-       in the tree and equzlize a parent. Also, want to descend the tree
-       so that equalize actually works.
      Register signal handlers for TERM and HUP.  Need to ensure
        that endwin is called.
      Handle SIGWINCH better.
@@ -53,11 +44,8 @@ int cmd_count = -1;
 int scrollback_history = 1024;
 
 static void reshape(struct node *n, int y, int x, int h, int w);
-static void reshapechildren(struct node *n);
 const char *term = NULL;
 static void freenode(struct node *n);
-static struct node * splice(struct node *, struct node *, int, int, double);
-static struct node * sibling(const struct node *);
 
 void
 safewrite(int fd, const char *b, size_t n)
@@ -81,8 +69,9 @@ static void
 extend_tabs(struct node *n, int tabstop)
 {
 	struct proc *p = &n->p;
-	assert(p->ws.ws_row == n->h - 1 || (p->ws.ws_row == 24 && n->h < 2 ));
-	assert(p->ws.ws_col == n->w || (p->ws.ws_col == 80 && n->w == 0 ));
+	int d = n->c[1] != NULL;
+	assert(p->ws.ws_row == n->h1 - 1 || (p->ws.ws_row == 24 && n->h1 < 2 ));
+	assert(p->ws.ws_col == n->w1 - d || (p->ws.ws_col == 80 ) );
 
 	int w = p->ws.ws_col;;
 	if( p->ntabs < w ) {
@@ -101,13 +90,15 @@ newnode(int y, int x, int h, int w, int id)
 	struct node *n = NULL;
 	if( (n = calloc(1, sizeof *n)) != NULL ) {
 		n->id = id;
-		n->w = w;
 		n->y = y;
 		n->x = x;
-		n->h = h;
+		n->h = n->h1 = h;
+		n->w = n->w1 = w;
+		n->split_point[0] = 1.0;
+		n->split_point[1] = 1.0;
 		n->p.pt = -1;
 		if( h && w ) {
-			n->twin = newpad(1, w);
+			n->wtit = newpad(1, w);
 		}
 		strncpy(n->title, getshell(), sizeof n->title);
 		n->title[sizeof n->title - 1] = '\0';
@@ -168,8 +159,8 @@ getterm(void)
 int
 new_screens(struct node *N)
 {
-	int h = N->h > 2 ? N->h - 1 : 24;
-	int w = N->w > 1 ? N->w : 80;
+	int h = N->h1 > 2 ? N->h1 - 1 : 24;
+	int w = N->w1 > 1 ? N->w1 : 80;
 	struct proc *n = &N->p;
 
 	resize_pad(&n->pri.win, MAX(h, scrollback_history), w);
@@ -194,8 +185,8 @@ new_screens(struct node *N)
 int
 new_pty(struct node *n)
 {
-	int h = n->h > 1 ? n->h - 1 : 24;
-	int w = n->w ? n->w : 80;
+	int h = n->h1 > 1 ? n->h1 - 1 : 24;
+	int w = n->w1 > 0 ? n->w1 : 80;
 	struct proc *p = &n->p;
 	p->ws = (struct winsize) {.ws_row = h, .ws_col = w};
 	p->pid = forkpty(&p->pt, NULL, NULL, &p->ws);
@@ -224,17 +215,13 @@ new_pty(struct node *n)
 void
 focus(struct node *n)
 {
-	if( n && n != focused ) {
-		while( n->split ) {
-			n = n->c[0];
-		}
-		if( n->p.s && n->p.s->win ) {
-			lastfocused = focused;
-			focused = n;
-		}
+	if( n && n != focused && n->p.s && n->p.s->win ) {
+		lastfocused = focused;
+		focused = n;
 	}
 }
 
+#if 0
 void
 prune(struct node *c)
 {
@@ -265,11 +252,12 @@ prune(struct node *c)
 		view_root = root;
 	}
 }
+#endif
 
 static void
 reap_dead_window(struct node *c)
 {
-	prune(c);
+	/* prune(c); */
 	freenode(c->parent);
 	freenode(c);
 }
@@ -277,8 +265,9 @@ reap_dead_window(struct node *c)
 static void
 reshape_window(struct node *N, int d)
 {
-	int h = N->h > 1 ? N->h - 1 : 24;
-	int w = N->w ? N->w : 80;
+	int need_div = N->c[1] != NULL;
+	int h = N->h1 > 1 ? N->h1 - 1 : 24;
+	int w = N->w1 > need_div ? N->w1 - need_div : 80;
 	int oy, ox;
 	struct proc *n = &N->p;
 	n->ws = (struct winsize) {.ws_row = h, .ws_col = w};
@@ -302,131 +291,86 @@ reshape_window(struct node *N, int d)
 }
 
 static void
-reshapechildren(struct node *n)
-{
-	assert(n && n->split);
-	int d[2];
-	int *curr = n->split == '|' ? &n->w : &n->h;
-	d[0] = *curr * n->split_point;
-	d[1] = *curr - d[0];
-	assert( n->h >= 0 && n->x >= 0 && n->y >= 0 );
-	assert( d[0] <= *curr && d[0] >= 0 && d[1] >= 0 );
-	if( n->split == '|' ) {
-		assert(curr == &n->w);
-		if( d[0] > d[1] ) {
-			d[0] -= 1;
-		} else if( d[1] ) {
-			d[1] -= 1;
-		}
-		assert( d[1] >= 0 && d[0] >= 0 );
-		reshape(n->c[0], n->y, n->x, n->h, d[0]);
-		reshape(n->c[1], n->y, n->x + d[0] + 1, n->h, d[1]);
-		if( n->w && n->h ) {
-			resize_pad(&n->twin, n->h, 1);
-		} else {
-			delwinnul(&n->twin);
-		}
-	} else if( n->split == '-' ) {
-		reshape(n->c[0], n->y, n->x, d[0], n->w);
-		reshape(n->c[1], n->y + d[0], n->x, d[1], n->w);
-		delwinnul(&n->twin);
-	}
-}
-
-static void
 reshape(struct node *n, int y, int x, int h, int w)
 {
-	if (n->y == y && n->x == x && n->h == h && n->w == w && ! n->split)
-		return;
+	if( n ) {
+		int d = n->h1 - h * n->split_point[0];
+		n->y = y;
+		n->x = x;
+		n->h = h;
+		n->w = w;
+		n->h1 = h * n->split_point[0];
+		n->w1 = w * n->split_point[1];
 
-	int d = n->h - h;
-	n->y = y;
-	n->x = x;
-	n->h = h;
-	n->w = w;
-
-	if( n->split == '\0' ) {
 		reshape_window(n, d);
-		if( n->h ) {
-			resize_pad(&n->twin, 1, n->w);
+		if( n->h1 && ! n->hide_title ) {
+			resize_pad(&n->wtit, 1, n->w1 - (n->c[1] != NULL));
 		} else {
-			delwinnul(&n->twin);
+			delwinnul(&n->wtit);
 		}
-	} else {
-		reshapechildren(n);
+		if( n->w1 && ! n->hide_div && n->c[1] != NULL ) {
+			resize_pad(&n->wdiv, n->h1, 1);
+		}
+
+		reshape(n->c[0], n->y + n->h1, n->x, n->h - n->h1, n->w);
+		reshape(n->c[1], n->y, n->x + n->w1, n->h1, n->w - n->w1);
+		draw(n);
+		doupdate();
 	}
-	draw(n);
-	doupdate();
 }
 
 static void
 draw_title(struct node *n)
 {
-	char t[128];
-	int x = 0;
-	size_t s = MAX(n->w - 2, (int)sizeof t);
-	if( binding == &cmd_keys && n == focused ) {
-		wattron(n->twin, A_REVERSE);
-	} else {
-		wattroff(n->twin, A_REVERSE);
-	}
-	snprintf(t, s, "%d (%d) %s ", n->id, (int)n->p.pid, n->title);
-	x += strlen(t);
-	if( n->twin ) {
-		int glyph = ACS_HLINE;
-		if( n->parent && sibling(n)->h == 0 ) {
-			glyph = n == n->parent->c[0] ? ACS_DARROW : ACS_UARROW;
+	if( n->wtit ) {
+		char t[128];
+		int x = 0;
+		size_t s = MAX(n->w1 - 2, (int)sizeof t);
+		if( binding == &cmd_keys && n == focused ) {
+			wattron(n->wtit, A_REVERSE);
+		} else {
+			wattroff(n->wtit, A_REVERSE);
 		}
-		mvwprintw(n->twin, 0, 0, "%s", t);
-		mvwhline(n->twin, 0, x, glyph, n->w - x);
-		pnoutrefresh(n->twin, 0, 0, n->y + n->h - 1, n->x,
-			n->y + n->h - 1, n->x + n->w);
+		snprintf(t, s, "%d (%d) %s ", n->id, (int)n->p.pid, n->title);
+		x += strlen(t);
+		int glyph = ACS_HLINE;
+		mvwprintw(n->wtit, 0, 0, "%s", t);
+		mvwhline(n->wtit, 0, x, glyph, n->w - x);
+		pnoutrefresh(n->wtit, 0, 0, n->y + n->h1 - 1, n->x,
+			n->y + n->h1 - 1, n->x + n->w1 - (n->c[1] ? 1 : 0));
 	}
 }
 
-static void
-drawchildren(const struct node *n)
-{
-	draw(n->c[0]);
-	if (n->split == '|' && n->twin ) {
-		int glyph = ACS_VLINE;
-		if( ! n->c[0]->w ) {
-			glyph = ACS_LARROW;
-		} else if( ! n->c[1]->w ) {
-			glyph = ACS_RARROW;
-		}
-		assert( n->c[0]->y == n->y );
-		mvwvline(n->twin, 0, 0, glyph, n->h);
-		pnoutrefresh(n->twin, 0, 0, n->y, n->x + n->c[0]->w,
-			n->y + n->h, n->x + n->c[0]->w);
-	}
-	draw(n->c[1]);
-}
 
 void
 draw(struct node *n) /* Draw a node. */
 {
 	if( n != NULL ) {
-		if( ! n->split ) {
-			draw_title(n);
-			if( n->h > 1 && n->w > 0 ) {
-				pnoutrefresh(
-					n->p.s->win,  /* pad */
-					n->p.s->off,  /* pminrow */
-					0,          /* pmincol */
-					n->y,       /* sminrow */
-					n->x,       /* smincol */
-					n->y + n->h - 2,  /* smaxrow */
-					n->x + n->w - 1   /* smaxcol */
-				);
-			}
-		} else {
-			assert( strchr("|-", n->split) );
-			drawchildren(n);
+		assert( n->c[0] == NULL || n->c[0]->x == n->x );
+		assert( n->c[1] == NULL || n->c[1]->y == n->y );
+		draw_title(n);
+		if( n->h1 > 1 && n->w1 > 0 ) {
+			pnoutrefresh(
+				n->p.s->win,
+				n->p.s->off,
+				0,
+				n->y,
+				n->x,
+				n->y + n->h1 - 2,
+				n->x + n->w1 - 1
+			);
 		}
+		draw(n->c[0]);
+		if( n->wdiv ) {
+			mvwvline(n->wdiv, 0, 0, ACS_VLINE, n->h1);
+			pnoutrefresh(n->wdiv, 0, 0, n->y, n->x + n->w1 - 1,
+				n->y + n->h1, n->x + n->w1 - 1);
+		}
+		draw(n->c[1]);
 	}
 }
 
+#if 0
 int
 reorient(struct node *n, const char *args[])
 {
@@ -434,62 +378,35 @@ reorient(struct node *n, const char *args[])
 		reorient(n->parent, args);
 	} else if( n ) {
 		n->split = n->split == '|' ? '-' : '|';
-		reshapechildren(n);
-		drawchildren(n);
+		reshape(n);
+		draw(n);
 	}
 	return 0;
 }
+#endif
 
 int
 create(struct node *n, const char *args[])
 {
 	assert( n != NULL );
-	assert( n->split == '\0' );
-	assert( n->c[0] == NULL );
-	assert( n->c[1] == NULL );
-	int split = args[0] ? '|' : '-';
-	if( n->parent && n->parent->split == split ) {
-		/* Always split last window in a chain */
-		for( n = n->parent->c[1]; n->split == split; n = n->c[1] )
-			;
+	int dir = *args && **args == 'C' ? 1 : 0;
+	/* Always split last window in a chain */
+	while( n->c[dir] != NULL ) {
+		n = n->c[dir];
 	}
-	int count = cmd_count > 0 ? cmd_count : 1;
-	for( ; n && count; count -= 1 ) {
-		struct node *v = newnode(0, 0, n->h, n->w, ++id);
-		if( v != NULL && new_screens(v) && new_pty(v) ) {
-			splice(n, v, 1, split, 1.0 / ( count + 1));
-		}
-		n = v;
+	assert( n->c[dir] == NULL );
+	int y = ( dir == 0 ) ? n->y + n->h / 2 : n->y;
+	int h = ( dir == 0 ) ? n->h / 2 : n->h1;
+	int x = ( dir == 1 ) ? n->x + n->w / 2 : n->x;
+	int w = ( dir == 1 ) ? n->w / 2 : n->w1;
+	n->split_point[dir] = 0.5;
+	struct node *v = newnode(y, x, h, w, ++id);
+	if( v != NULL && new_screens(v) && new_pty(v) ) {
+		n->c[dir] = v;
+		v->parent = n;
 	}
-	equalize(n, NULL);
+	equalize(v, NULL);
 	return 0;
-}
-
-/* Splice v as the new sibling of n.  v becomes the mth child */
-static struct node *
-splice(struct node *n, struct node *v, int m, int typ, double sp)
-{
-	assert( m == 0 || m == 1 );
-	struct node *p = n->parent;
-	struct node *c = newnode(n->y, n->x, n->h, n->w, 0);
-	if( c != NULL ) {
-		c->split = typ;
-		c->split_point = sp;
-		c->parent = p;
-		c->c[!m] = n;
-		c->c[m] = v;
-		n->parent = v->parent = c;
-		if( p ) {
-			p->c[ p->c[1] == n ] = c;
-			reshapechildren(p);
-		} else {
-			view_root = p = root = c;
-			reshape(c, 0, 0, LINES, COLS);
-		}
-		focus(v);
-		draw(p);
-	}
-	return c;
 }
 
 static bool
@@ -500,14 +417,12 @@ getinput(struct node *n, fd_set *f) /* check all ptty's for input. */
 		status = false;
 	} else if( n && n->c[1] && !getinput(n->c[1], f) ) {
 		status = false;
-	} else if( n && ! n->split && n->p.pt > 0 && FD_ISSET(n->p.pt, f) ) {
+	} else if( n && n->p.pt > 0 && FD_ISSET(n->p.pt, f) ) {
 		char iobuf[BUFSIZ];
 		ssize_t r = read(n->p.pt, iobuf, sizeof(iobuf));
 		if( r > 0 ) {
 			vtwrite(&n->p.vp, iobuf, r);
 		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
-			assert(n->c[0] == NULL);
-			assert(n->c[1] == NULL);
 			reap_dead_window(n);
 			status = false;
 		}
@@ -579,30 +494,19 @@ find_node(struct node *b, int id)
 int
 contains(struct node *n, int y, int x)
 {
-	return y >= n->y && y < n->y + n->h && x >= n->x && x <= n->x + n->w;
+	return y >= n->y && y < n->y + n->h1 && x >= n->x && x <= n->x + n->w1;
 }
 
 struct node *
 find_window(struct node *n, int y, int x)
 {
-	assert( !n || n->split != '-' || n->c[0]->h + n->c[1]->h == n->h );
-	assert( !n || n->split != '-' || n->c[0]->y + n->c[0]->h
-		== n->c[1]->y );
-	assert( !n || n->split != '|' || n->c[0]->w + n->c[1]->w + 1 == n->w );
-	assert( !n || n->split != '|' || n->c[0]->x + n->c[0]->w + 1
-		== n->c[1]->x );
-	if( n != NULL && n->split ) {
-		if( n->split == '-' ) {
-			n = n->c[ y >= n->c[1]->y ];
-		} else if( n->split == '|' ) {
-			n = n->c[ x >= n->c[1]->x ];
+	struct node *r = n;
+	if( n && !contains(n, y, x) ) {
+		if( ( r = find_window(n->c[0], y, x)) == NULL ) {
+			r = find_window(n->c[1], y, x);
 		}
-		n = find_window(n, y, x);
 	}
-	if( n && ! contains(n, y, x) ) {
-		n = NULL;
-	}
-	return n;
+	return r;
 }
 
 int
@@ -611,8 +515,8 @@ mov(struct node *n, const char **args)
 	assert( n == focused && n != NULL );
 	char cmd = args[0][0];
 	int count = cmd_count < 1 ? 1 : cmd_count;
-	int startx = n->x + n->w / 2;
-	int starty = n->y + n->h - 1;
+	int startx = n->x + n->w1 / 2;
+	int starty = n->y + n->h1 - 1;
 	struct node *t = n;
 	switch( cmd ) {
 	case 'V':
@@ -637,10 +541,10 @@ mov(struct node *n, const char **args)
 			t = find_window(view_root, t->y - 1, startx);
 			break;
 		case 'j': /* move down */
-			t = find_window(view_root, t->y + t->h, startx );
+			t = find_window(view_root, t->y + t->h1, startx );
 			break;
 		case 'l': /* move right */
-			t = find_window(view_root, starty, t->x + t->w + 1);
+			t = find_window(view_root, starty, t->x + t->w1 + 1);
 			break;
 		case 'h': /* move left */
 			t = find_window(view_root, starty, t->x - 1);
@@ -654,12 +558,10 @@ mov(struct node *n, const char **args)
 int
 redrawroot(struct node *n, const char **args)
 {
-	(void) n;
+	n = view_root;;
 	(void) args;
-	if( view_root->split ) {
-		reshapechildren(view_root);
-	}
-	draw(view_root);
+	reshape(n, n->y, n->x, n->h, n->w);
+	draw(n);
 	return 0;
 }
 
@@ -677,57 +579,22 @@ send(struct node *n, const char **args)
 	return 0;
 }
 
-static struct node *
-sibling(const struct node *n)
-{
-	struct node *p = n->parent;
-	return p ? p->c[ n == p->c[0] ] : NULL;
-}
-
-int
-resize(struct node *n, const char **args)
-{
-	assert( n == focused );
-	if( n->parent ) {
-		double val = cmd_count > -1 ? MIN(100, cmd_count) / 100.0 : 1.0;
-		val = **args == '>' ? val : 1 - val;
-		n->parent->split_point = val;
-		reshapechildren(n->parent);
-		if( ! n->h || ! n->w ) {
-			focus(sibling(n));
-		}
-	}
-	return 0;
-}
-
 int
 equalize(struct node *n, const char **args)
 {
 	(void) args;
-	int split = n->parent ? n->parent->split : '\0';
-	int count = cmd_count == -1 ? 0 : cmd_count;;
+	assert( n != NULL );
 
-	if( count ) {
-		while( count-- && n->parent ) {
-			n = n->parent;
-		}
-		n->split_point = .5;
-		reshapechildren(n);
-		return 0;
+	int dir = n->parent ? n == n->parent->c[1] : 0;
+	int count = 2;
+	while( n->c[dir] != NULL ) {
+		n = n->c[dir];
 	}
-	if( n->parent ) {
-		/* Always equalize from last window in a chain */
-		for( n = n->parent->c[1]; n->split == split; n = n->c[1] )
-			;
-	}
-	count = 2;
-	while( n != view_root && n->parent && n->parent->split == split  ) {
+	while( n != view_root && n->parent && n == n->parent->c[dir] ) {
 		n = n->parent;
-		n->split_point = 1 / (double) count++;
+		n->split_point[dir] = 1 / (double) count++;
 	}
-	if( n->split ) {
-		reshapechildren(n);
-	}
+	reshape(n, n->y, n->x, n->h, n->w);
 	return 0;
 }
 
@@ -769,6 +636,7 @@ new_tabstop(struct node *n, const char **args)
 	return 0;
 }
 
+#if 0
 int
 swap(struct node *a, const char **args)
 {
@@ -790,6 +658,7 @@ swap(struct node *a, const char **args)
 	}
 	return rv;
 }
+#endif
 
 void
 build_bindings()
@@ -806,11 +675,8 @@ build_bindings()
 	add_key(cmd_keys, L',', scrolln, "-", NULL);
 	add_key(cmd_keys, L'm', scrolln, "+", NULL);
 	add_key(cmd_keys, L'=', equalize, NULL);
-	add_key(cmd_keys, L'>', resize, ">", NULL);
-	add_key(cmd_keys, L'<', resize, "<", NULL);
 	add_key(cmd_keys, L'c', create, NULL);
 	add_key(cmd_keys, L'C', create, "C", NULL);
-	add_key(cmd_keys, L'x', reorient, NULL);
 	add_key(cmd_keys, L'r', redrawroot, NULL);
 	add_key(cmd_keys, L'v', mov, "v", NULL);
 	add_key(cmd_keys, L'V', mov, "V", NULL);
@@ -819,7 +685,6 @@ build_bindings()
 	add_key(cmd_keys, L'l', mov, "l", NULL);
 	add_key(cmd_keys, L'h', mov, "h", NULL);
 	add_key(cmd_keys, L'p', mov, "p", NULL);
-	add_key(cmd_keys, L's', swap, NULL);
 	add_key(cmd_keys, L't', new_tabstop, NULL);
 	for( int i=0; i < 10; i++ ) {
 		char *buf = calloc(2, 1);
