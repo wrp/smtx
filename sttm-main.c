@@ -37,7 +37,7 @@
      Handle SIGWINCH better.
  */
 
-#include "main.h"
+#include "sttm.h"
 
 int id;
 static struct handler keys[128];

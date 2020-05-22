@@ -1,4 +1,4 @@
-#include "main.h"
+#include "sttm.h"
 #include <sys/wait.h>
 
 const char *args[10];

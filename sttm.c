@@ -1,4 +1,4 @@
-#include "main.h"
+#include "sttm.h"
 
 int
 main(int argc, char *const*argv)

@@ -1,4 +1,4 @@
-#include "main.h"
+#include "sttm.h"
 #include <err.h>
 
 static void

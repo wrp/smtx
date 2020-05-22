@@ -11,7 +11,7 @@ TESTS = main-test find-node-test sttm-test coverage-test
 
 CLEANFILES = *.gcda *.gcno *.gcov version *.1
 EXTRA_DIST = build-aux/package-version version main-test coverage-test
-noinst_HEADERS = vtparser.h main.h
+noinst_HEADERS = vtparser.h sttm.h
 
 .PHONY: version
 version:
