@@ -218,6 +218,8 @@ focus(struct node *n)
 	if( n && n != focused && n->p.s && n->p.s->win ) {
 		lastfocused = focused;
 		focused = n;
+	} else {
+		focused = root.c[0];
 	}
 }
 
@@ -239,14 +241,20 @@ prune(struct node *x)
 		o->c[d] = n;
 		if( n ) {
 			assert( n->parent == x );
-			n->parent = p;
+			n->parent = o;
 		}
+		equalize(o, NULL);
+		equalize(p, NULL);
 		freenode(x);
 	} else {
 		assert( o == NULL );
 		p->c[d] = n;
+		p->split_point[d] = 1.0; /* Cheesy.  Need to fix equalize() */
 		if( n ) {
 			n->parent = p;
+		}
+		if( p != &root ) {
+			equalize(p, NULL);
 		}
 		freenode(x);
 	}
@@ -840,7 +848,7 @@ sttm_main(int argc, char *const*argv)
 	use_default_colors();
 
 	r = view_root = root.c[0] = newnode(0, 0, LINES, COLS, ++id);
-	r->parent = root;
+	r->parent = &root;
 	if( r == NULL || !new_screens(r) || !new_pty(r) ) {
 		err(EXIT_FAILURE, "Unable to create root window");
 	}
