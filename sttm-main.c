@@ -840,6 +840,7 @@ sttm_main(int argc, char *const*argv)
 	use_default_colors();
 
 	r = view_root = root.c[0] = newnode(0, 0, LINES, COLS, ++id);
+	r->parent = root;
 	if( r == NULL || !new_screens(r) || !new_pty(r) ) {
 		err(EXIT_FAILURE, "Unable to create root window");
 	}
