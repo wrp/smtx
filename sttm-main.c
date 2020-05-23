@@ -221,12 +221,12 @@ focus(struct node *n)
 	}
 }
 
-#if 0
 void
 prune(struct node *x)
 {
 	struct node *p = x->parent;
-	int d = ( p ? x == p->c[1] : 0);
+	assert( p != NULL );
+	int d = x == p->c[1];
 	struct node *n = x->c[d];
 	struct node *o = x->c[!d];
 	if( o && o->c[d] ) {
@@ -234,47 +234,30 @@ prune(struct node *x)
 	} else if( o ) {
 		assert( o->c[d] == NULL );
 		assert( o->parent == x );
-		if( p ) {
-			p->c[d] = o;
-			o->parent = p;
-		} else {
-			root = o;
-			o->parent = NULL;
-		}
+		p->c[d] = o;
+		o->parent = p;
 		o->c[d] = n;
 		if( n ) {
 			assert( n->parent == x );
-			n->parent = p ? p : root;
+			n->parent = p;
 		}
 		freenode(x);
 	} else {
 		assert( o == NULL );
-		if( p ) {
-			p->c[d] = n;
-		} else {
-			root = n;
-			if( n ) {
-				n->parent = NULL;
-			}
-		}
+		p->c[d] = n;
 		if( n ) {
 			n->parent = p;
 		}
 		freenode(x);
 	}
-	if( root != NULL ) {
-		reshape(root, 0, 0, LINES, COLS);
-	} else {
-		view_root = focused = lastfocused = NULL;
-	}
-	if( view_root == x || view_root == p ) {
-		view_root = root;
+	reshape(root.c[0], 0, 0, LINES, COLS);
+	if( view_root == x ) {
+		view_root = root.c[0];
 	}
 	if( x == focused ) {
-		focus(p);
+		focus(p->c[d]);
 	}
 }
-#endif
 
 static void
 reshape_window(struct node *N, int d)
@@ -437,7 +420,7 @@ getinput(struct node *n, fd_set *f) /* check all ptty's for input. */
 		if( r > 0 ) {
 			vtwrite(&n->p.vp, iobuf, r);
 		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
-			/* prune(n); */
+			prune(n);
 			status = false;
 		}
 	}
