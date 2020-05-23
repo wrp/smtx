@@ -313,12 +313,18 @@ reshape(struct node *n, int y, int x, int h, int w)
 		} else {
 			delwinnul(&n->wtit);
 		}
-		if( n->w1 && ! n->hide_div && n->c[1] != NULL ) {
+		if( n->w1 && ! n->hide_div && (n->c[1] || n->parent->dir) ) {
 			resize_pad(&n->wdiv, n->h1, 1);
 		}
 
+		y = n->y + n->h1;
+		if( n->dir ) {
+		reshape(n->c[0], n->y + n->h1, n->x, n->h - n->h1, n->w - n->w1);
+		reshape(n->c[1], n->y, n->x + n->w1, n->h, n->w - n->w1);
+		} else {
 		reshape(n->c[0], n->y + n->h1, n->x, n->h - n->h1, n->w);
 		reshape(n->c[1], n->y, n->x + n->w1, n->h1, n->w - n->w1);
+		}
 		draw(n);
 		doupdate();
 	}
@@ -409,6 +415,7 @@ create(struct node *n, const char *args[])
 	if( v != NULL && new_screens(v) && new_pty(v) ) {
 		n->c[dir] = v;
 		v->parent = n;
+		v->dir = dir;
 	}
 	equalize(v, NULL);
 	return 0;
