@@ -36,7 +36,7 @@ static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 static struct handler (*binding)[128] = &keys;
 struct node *focused, *lastfocused = NULL;
-struct node *root, *view_root;
+struct node root, *view_root;
 char commandkey = CTL(COMMAND_KEY);
 int nfds = 1; /* stdin */
 fd_set fds;
@@ -221,12 +221,12 @@ focus(struct node *n)
 	}
 }
 
+#if 0
 void
 prune(struct node *x)
 {
 	struct node *p = x->parent;
 	int d = ( p ? x == p->c[1] : 0);
-	assert( ( !p && x == root ) || x == p->c[d] );
 	struct node *n = x->c[d];
 	struct node *o = x->c[!d];
 	if( o && o->c[d] ) {
@@ -274,6 +274,7 @@ prune(struct node *x)
 		focus(p);
 	}
 }
+#endif
 
 static void
 reshape_window(struct node *N, int d)
@@ -436,7 +437,7 @@ getinput(struct node *n, fd_set *f) /* check all ptty's for input. */
 		if( r > 0 ) {
 			vtwrite(&n->p.vp, iobuf, r);
 		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
-			prune(n);
+			/* prune(n); */
 			status = false;
 		}
 	}
@@ -493,7 +494,7 @@ reshape_root(struct node *n, const char **args)
 struct node *
 find_node(struct node *b, int id)
 {
-	struct node *r = id ? NULL : root;
+	struct node *r = id ? NULL : root.c[0];
 	if( id && b != NULL ) {
 		if( b->id == id ) {
 			r = b;
@@ -532,19 +533,6 @@ mov(struct node *n, const char **args)
 	int starty = n->y + n->h1 - 1;
 	struct node *t = n;
 	switch( cmd ) {
-	case 'V':
-	case 'v':
-		if( cmd_count != -1 ) {
-			t = find_node(root, cmd_count);
-		}
-		if( cmd_count != 0 ) {
-			n = t;
-		}
-		if( cmd == 'v' && t->parent && t == t->parent->c[0] ) {
-			t = t->parent;
-		}
-		reshape(view_root = t, 0, 0, LINES, COLS);
-		break;
 	case 'p':
 		n = lastfocused;
 		break;
@@ -565,16 +553,6 @@ mov(struct node *n, const char **args)
 		}
 	}
 	focus(n);
-	return 0;
-}
-
-int
-redrawroot(struct node *n, const char **args)
-{
-	n = view_root;;
-	(void) args;
-	reshape(n, n->y, n->x, n->h, n->w);
-	draw(n);
 	return 0;
 }
 
@@ -690,9 +668,6 @@ build_bindings()
 	add_key(cmd_keys, L'=', equalize, NULL);
 	add_key(cmd_keys, L'c', create, NULL);
 	add_key(cmd_keys, L'C', create, "C", NULL);
-	add_key(cmd_keys, L'r', redrawroot, NULL);
-	add_key(cmd_keys, L'v', mov, "v", NULL);
-	add_key(cmd_keys, L'V', mov, "V", NULL);
 	add_key(cmd_keys, L'j', mov, "j", NULL);
 	add_key(cmd_keys, L'k', mov, "k", NULL);
 	add_key(cmd_keys, L'l', mov, "l", NULL);
@@ -810,7 +785,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 void
 main_loop(void)
 {
-	while( root != NULL ) {
+	while( root.c[0] != NULL ) {
 		int r;
 		wint_t w = 0;
 		fd_set sfds = fds;
@@ -826,7 +801,7 @@ main_loop(void)
 		while( (r = wget_wch(focused->p.s->win, &w)) != ERR ) {
 			handlechar(r, w);
 		}
-		getinput(root, &sfds);
+		getinput(root.c[0], &sfds);
 	}
 }
 
@@ -864,6 +839,7 @@ parse_args(int argc, char *const*argv)
 int
 sttm_main(int argc, char *const*argv)
 {
+	struct node *r;
 	FD_SET(STDIN_FILENO, &fds);
 	setlocale(LC_ALL, "");
 	signal(SIGCHLD, SIG_IGN); /* automatically reap children */
@@ -880,8 +856,8 @@ sttm_main(int argc, char *const*argv)
 	start_color();
 	use_default_colors();
 
-	view_root = root = newnode(0, 0, LINES, COLS, ++id);
-	if( root == NULL || !new_screens(root) || !new_pty(root) ) {
+	r = view_root = root.c[0] = newnode(0, 0, LINES, COLS, ++id);
+	if( r == NULL || !new_screens(r) || !new_pty(r) ) {
 		err(EXIT_FAILURE, "Unable to create root window");
 	}
 	focus(view_root);

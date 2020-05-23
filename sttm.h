@@ -129,7 +129,7 @@ extern int nfds;
 extern fd_set fds;
 extern char commandkey;
 extern const char *term;
-extern struct node *root, *view_root;
+extern struct node root, *view_root;
 extern struct node *focused;
 
 extern void setupevents(struct proc *);
