@@ -313,12 +313,12 @@ reshape(struct node *n, int y, int x, int h, int w)
 		} else {
 			delwinnul(&n->wtit);
 		}
-		if( n->w1 && ! n->hide_div && (n->c[1] || n->parent->dir) ) {
+		if( n->w1 && ! n->hide_div && (n->c[1] || n->parent->typ) ) {
 			resize_pad(&n->wdiv, n->h1, 1);
 		}
 
 		y = n->y + n->h1;
-		if( n->dir ) {
+		if( n->typ ) {
 		reshape(n->c[0], n->y + n->h1, n->x, n->h - n->h1, n->w - n->w1);
 		reshape(n->c[1], n->y, n->x + n->w1, n->h, n->w - n->w1);
 		} else {
@@ -401,21 +401,19 @@ create(struct node *n, const char *args[])
 {
 	assert( n != NULL );
 	int dir = *args && **args == 'C' ? 1 : 0;
-	/* Always split last window in a chain */
-	while( n->c[dir] != NULL ) {
-		n = n->c[dir];
-	}
 	assert( n->c[dir] == NULL );
+	if( n->c[!dir] == NULL ) {
+		n->typ = dir;
+	}
 	int y = ( dir == 0 ) ? n->y + n->h / 2 : n->y;
-	int h = ( dir == 0 ) ? n->h / 2 : n->h1;
 	int x = ( dir == 1 ) ? n->x + n->w / 2 : n->x;
+	int h = ( dir == 0 ) ? n->h / 2 : n->h1;
 	int w = ( dir == 1 ) ? n->w / 2 : n->w1;
 	n->split_point[dir] = 0.5;
 	struct node *v = newnode(y, x, h, w, ++id);
 	if( v != NULL && new_screens(v) && new_pty(v) ) {
 		n->c[dir] = v;
 		v->parent = n;
-		v->dir = dir;
 	}
 	equalize(v, NULL);
 	return 0;

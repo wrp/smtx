@@ -83,12 +83,12 @@ struct node {
 	int y, x, h, w, h1, w1;
 	int hide_title;
 	int hide_div;
-	int dir;
+	int typ;
 	struct proc p;
 	struct node *parent;
 	/*
 	This window contains both c[0] and c[1], and shows only the upper
-	left corner.  eg: y = 0, x = 0, h=8, w=42, w1=14, h1=4, dir=0
+	left corner.  eg: y = 0, x = 0, h=8, w=42, w1=14, h1=4, typ=0
 	    split_point = { 0.5, 0.333 }
 
 	-----------top of screen (y == -1)--------
@@ -101,6 +101,7 @@ struct node {
 
 	-------------c0->wtit---------------------
 	c[0] is the window below this, c[1] is the window to the right
+	(in a typ==1 window, c1 is full height and c0 is partial width)
 	*/
 	struct node *c[2];
 	double split_point[2]; /* percent of window dedicated to c[i] */
