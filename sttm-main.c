@@ -315,7 +315,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 
 		y = n->y + n->h1;
 		if( n->typ ) {
-		reshape(n->c[0], n->y + n->h1, n->x, n->h - n->h1, n->w - n->w1);
+		reshape(n->c[0], n->y + n->h1, n->x, n->h - n->h1, n->w1);
 		reshape(n->c[1], n->y, n->x + n->w1, n->h, n->w - n->w1);
 		} else {
 		reshape(n->c[0], n->y + n->h1, n->x, n->h - n->h1, n->w);
@@ -411,6 +411,7 @@ create(struct canvas *n, const char *args[])
 	n->split_point[dir] = 0.5;
 	struct canvas *v = n->c[dir] = newcanvas(y, x, ++id);
 	if( v != NULL ) {
+		v->typ = dir;
 		v->parent = n;
 		new_screens(v);
 		new_pty(v);
