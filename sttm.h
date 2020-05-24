@@ -104,7 +104,7 @@ struct canvas {
 	(in a typ==1 window, c1 is full height and c0 is partial width)
 	*/
 	struct canvas *c[2];
-	double split_point[2]; /* percent of window dedicated to c[i] */
+	double split_point[2]; /* percent of window dedicated to wpty */
 	char title[32];
 	char putative_cmd[32];
 	WINDOW *wpty;  /* Window for p */
