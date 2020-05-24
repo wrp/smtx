@@ -126,7 +126,6 @@ extern int scrollback_history;
 extern int tabstop;
 extern int id;
 extern int cmd_count;
-extern int nfds;
 extern fd_set fds;
 extern char commandkey;
 extern const char *term;

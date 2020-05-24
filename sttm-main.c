@@ -38,7 +38,7 @@ static struct handler (*binding)[128] = &keys;
 struct canvas *focused, *lastfocused = NULL;
 struct canvas root, *view_root;
 char commandkey = CTL(COMMAND_KEY);
-int nfds = 1; /* stdin */
+static int maxfd = STDIN_FILENO;
 fd_set fds;
 int cmd_count = -1;
 int scrollback_history = 1024;
@@ -203,8 +203,8 @@ new_pty(struct canvas *n)
 		_exit(EXIT_FAILURE);
 	}
 	FD_SET(p->pt, &fds);
+	maxfd = p->pt > maxfd ? p->pt : maxfd;
 	fcntl(p->pt, F_SETFL, O_NONBLOCK);
-	nfds = p->pt > nfds ? p->pt : nfds;
 	extend_tabs(n, p->tabstop = 8);
 	return p->pt;
 }
@@ -800,7 +800,7 @@ main_loop(void)
 		fixcursor();
 		draw(focused);
 		doupdate();
-		if( select(nfds + 1, &sfds, NULL, NULL, NULL) < 0 ) {
+		if( select(maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
 			FD_ZERO(&sfds);
 		}
 		while( (r = wget_wch(focused->p.s->win, &w)) != ERR ) {
@@ -845,7 +845,7 @@ int
 sttm_main(int argc, char *const*argv)
 {
 	struct canvas *r;
-	FD_SET(STDIN_FILENO, &fds);
+	FD_SET(maxfd, &fds);
 	setlocale(LC_ALL, "");
 	signal(SIGCHLD, SIG_IGN); /* automatically reap children */
 	parse_args(argc, argv);
