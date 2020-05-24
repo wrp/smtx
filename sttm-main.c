@@ -92,14 +92,11 @@ newnode(int y, int x, int h, int w, int id)
 		n->id = id;
 		n->y = y;
 		n->x = x;
-		n->h = n->h1 = h;
-		n->w = n->w1 = w;
+		n->h = n->h1 = h; /* TODO: remove as unneeded here */
+		n->w = n->w1 = w; /* TODO: remove as unneeded here */
 		n->split_point[0] = 1.0;
 		n->split_point[1] = 1.0;
 		n->p.pt = -1;
-		if( h && w ) {
-			n->wtit = newpad(1, w);
-		}
 		strncpy(n->title, getshell(), sizeof n->title);
 		n->title[sizeof n->title - 1] = '\0';
 	}
@@ -309,7 +306,7 @@ reshape(struct node *n, int y, int x, int h, int w)
 
 		reshape_window(n, d);
 		if( n->h1 && ! n->hide_title ) {
-			resize_pad(&n->wtit, 1, n->w1 - (n->c[1] != NULL));
+			resize_pad(&n->wtit, 1, n->w1 - n->typ);
 		} else {
 			delwinnul(&n->wtit);
 		}
@@ -401,10 +398,14 @@ create(struct node *n, const char *args[])
 {
 	assert( n != NULL );
 	int dir = *args && **args == 'C' ? 1 : 0;
-	assert( n->c[dir] == NULL );
 	if( n->c[!dir] == NULL ) {
 		n->typ = dir;
 	}
+	/* Always split last window in a chain */
+	while( n->c[dir] != NULL ) {
+		n = n->c[dir];
+	}
+	assert( n->c[dir] == NULL );
 	int y = ( dir == 0 ) ? n->y + n->h / 2 : n->y;
 	int x = ( dir == 1 ) ? n->x + n->w / 2 : n->x;
 	int h = ( dir == 0 ) ? n->h / 2 : n->h1;
