@@ -129,7 +129,6 @@ extern int cmd_count;
 extern fd_set fds;
 extern char commandkey;
 extern const char *term;
-extern struct canvas root, *view_root;
 extern struct canvas *focused;
 
 extern void setupevents(struct proc *);

@@ -36,7 +36,7 @@ static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 static struct handler (*binding)[128] = &keys;
 struct canvas *focused, *lastfocused = NULL;
-struct canvas root, *view_root;
+struct canvas *root, *view_root;
 char commandkey = CTL(COMMAND_KEY);
 static int maxfd = STDIN_FILENO;
 fd_set fds;
@@ -214,7 +214,7 @@ focus(struct canvas *n)
 		lastfocused = focused;
 		focused = n;
 	} else {
-		focused = root.c[0];
+		focused = root;
 	}
 }
 
@@ -248,14 +248,14 @@ prune(struct canvas *x)
 		if( n ) {
 			n->parent = p;
 		}
-		if( p != &root ) {
+		if( p != root ) {
 			equalize(p, NULL);
 		}
 		freecanvas(x);
 	}
-	reshape(root.c[0], 0, 0, LINES, COLS);
+	reshape(root, 0, 0, LINES, COLS);
 	if( view_root == x ) {
-		view_root = root.c[0];
+		view_root = root;
 	}
 	if( x == focused ) {
 		focus(p->c[d]);
@@ -295,6 +295,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 {
 	if( n ) {
 		int d = n->h1 - h * n->split_point[0];
+		int ptyp = n->parent ? n->parent->typ : 0;
 		n->y = y;
 		n->x = x;
 		n->h = h;
@@ -308,7 +309,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		} else {
 			delwinnul(&n->wtit);
 		}
-		if( n->w1 && ! n->hide_div && (n->c[1] || n->parent->typ) ) {
+		if( n->w1 && ! n->hide_div && (n->c[1] || ptyp) ) {
 			resize_pad(&n->wdiv, n->h1, 1);
 		}
 
@@ -490,7 +491,7 @@ reshape_root(struct canvas *n, const char **args)
 struct canvas *
 find_canvas(struct canvas *b, int id)
 {
-	struct canvas *r = id ? NULL : root.c[0];
+	struct canvas *r = id ? NULL : root;
 	if( id && b != NULL ) {
 		if( b->id == id ) {
 			r = b;
@@ -786,7 +787,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 void
 main_loop(void)
 {
-	while( root.c[0] != NULL ) {
+	while( root != NULL ) {
 		int r;
 		wint_t w = 0;
 		fd_set sfds = fds;
@@ -802,7 +803,7 @@ main_loop(void)
 		while( (r = wget_wch(focused->p.s->win, &w)) != ERR ) {
 			handlechar(r, w);
 		}
-		getinput(root.c[0], &sfds);
+		getinput(root, &sfds);
 	}
 }
 
@@ -857,14 +858,14 @@ sttm_main(int argc, char *const*argv)
 	start_color();
 	use_default_colors();
 
-	r = view_root = root.c[0] = newcanvas(0, 0, ++id);
+	r = view_root = root = newcanvas(0, 0, ++id);
 	r->h = LINES;
 	r->w = COLS;
-	r->parent = &root;
 	if( r == NULL || !new_screens(r) || !new_pty(r) ) {
 		err(EXIT_FAILURE, "Unable to create root window");
 	}
 	focus(view_root);
+	reshape(view_root, 0, 0, LINES, COLS);
 	draw(view_root);
 	main_loop();
 	endwin();
