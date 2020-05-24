@@ -398,6 +398,7 @@ create(struct node *n, const char *args[])
 {
 	assert( n != NULL );
 	int dir = *args && **args == 'C' ? 1 : 0;
+	struct node *t = n;
 	if( n->c[!dir] == NULL ) {
 		n->typ = dir;
 	}
@@ -418,7 +419,7 @@ create(struct node *n, const char *args[])
 		new_pty(v);
 	}
 	balance(v);
-	reshape(n, n->y, n->x, n->h, n->w);
+	reshape(t, t->y, t->x, t->h, t->w);
 	return 0;
 }
 
