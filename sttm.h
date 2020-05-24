@@ -78,14 +78,14 @@ struct proc {
 	VTPARSER vp;
 };
 
-struct node {
+struct canvas {
 	int id; /* obsolete */
 	int y, x, h, w, h1, w1;
 	int hide_title;
 	int hide_div;
 	int typ;
 	struct proc p;
-	struct node *parent;
+	struct canvas *parent;
 	/*
 	This window contains both c[0] and c[1], and shows only the upper
 	left corner.  eg: y = 0, x = 0, h=8, w=42, w1=14, h1=4, typ=0
@@ -103,7 +103,7 @@ struct node {
 	c[0] is the window below this, c[1] is the window to the right
 	(in a typ==1 window, c1 is full height and c0 is partial width)
 	*/
-	struct node *c[2];
+	struct canvas *c[2];
 	double split_point[2]; /* percent of window dedicated to c[i] */
 	char title[32];
 	char putative_cmd[32];
@@ -112,7 +112,7 @@ struct node {
 	WINDOW *wdiv;  /* Window for divider */
 };
 
-typedef int(action)(struct node *n, const char **args);
+typedef int(action)(struct canvas *n, const char **args);
 struct handler {
 	action *act;
 	const char *args[7];
@@ -130,22 +130,22 @@ extern int nfds;
 extern fd_set fds;
 extern char commandkey;
 extern const char *term;
-extern struct node root, *view_root;
-extern struct node *focused;
+extern struct canvas root, *view_root;
+extern struct canvas *focused;
 
 extern void setupevents(struct proc *);
 extern void safewrite(int fd, const char *b, size_t n);
-extern struct node * find_node(struct node *b, int id);
-extern struct node * newnode(int y, int x, int h, int w, int id);
+extern struct canvas * find_canvas(struct canvas *b, int id);
+extern struct canvas * newcanvas(int y, int x, int h, int w, int id);
 extern void main_loop(void);
 extern void build_bindings(void);
-extern int new_pty(struct node *n);
-extern int new_screens(struct node *n);
+extern int new_pty(struct canvas *n);
+extern int new_screens(struct canvas *n);
 extern int sttm_main(int, char *const*);
-extern void balance(struct node *n);
-extern void focus(struct node *n);
-extern void draw(struct node *n);
-extern void prune(struct node *c);
+extern void balance(struct canvas *n);
+extern void focus(struct canvas *n);
+extern void draw(struct canvas *n);
+extern void prune(struct canvas *c);
 extern action transition;
 extern action create;
 extern action digit;

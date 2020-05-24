@@ -35,17 +35,17 @@ static struct handler keys[128];
 static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 static struct handler (*binding)[128] = &keys;
-struct node *focused, *lastfocused = NULL;
-struct node root, *view_root;
+struct canvas *focused, *lastfocused = NULL;
+struct canvas root, *view_root;
 char commandkey = CTL(COMMAND_KEY);
 int nfds = 1; /* stdin */
 fd_set fds;
 int cmd_count = -1;
 int scrollback_history = 1024;
 
-static void reshape(struct node *n, int y, int x, int h, int w);
+static void reshape(struct canvas *n, int y, int x, int h, int w);
 const char *term = NULL;
-static void freenode(struct node *n);
+static void freecanvas(struct canvas *n);
 
 void
 safewrite(int fd, const char *b, size_t n)
@@ -66,7 +66,7 @@ getshell(void)
 }
 
 static void
-extend_tabs(struct node *n, int tabstop)
+extend_tabs(struct canvas *n, int tabstop)
 {
 	struct proc *p = &n->p;
 	int d = n->c[1] != NULL;
@@ -84,10 +84,10 @@ extend_tabs(struct node *n, int tabstop)
 	}
 }
 
-struct node *
-newnode(int y, int x, int h, int w, int id)
+struct canvas *
+newcanvas(int y, int x, int h, int w, int id)
 {
-	struct node *n = NULL;
+	struct canvas *n = NULL;
 	if( (n = calloc(1, sizeof *n)) != NULL ) {
 		n->id = id;
 		n->y = y;
@@ -118,7 +118,7 @@ resize_pad(WINDOW **p, int h, int w)
 }
 
 static void
-freenode(struct node *n)
+freecanvas(struct canvas *n)
 {
 	if( n ) {
 		delwinnul(&n->p.pri.win);
@@ -135,7 +135,7 @@ freenode(struct node *n)
 static void
 fixcursor(void) /* Move the terminal cursor to the active window. */
 {
-	struct node *fo = focused;
+	struct canvas *fo = focused;
 	struct proc *f = &fo->p;  /* Odd name for backwards churn avoidance */
 	assert( f && f->s );
 	int y, x;
@@ -154,7 +154,7 @@ getterm(void)
 }
 
 int
-new_screens(struct node *N)
+new_screens(struct canvas *N)
 {
 	int h = N->h1 > 2 ? N->h1 - 1 : 24;
 	int w = N->w1 > 1 ? N->w1 : 80;
@@ -180,7 +180,7 @@ new_screens(struct node *N)
 }
 
 int
-new_pty(struct node *n)
+new_pty(struct canvas *n)
 {
 	int h = n->h1 > 1 ? n->h1 - 1 : 24;
 	int w = n->w1 > 0 ? n->w1 : 80;
@@ -210,7 +210,7 @@ new_pty(struct node *n)
 }
 
 void
-focus(struct node *n)
+focus(struct canvas *n)
 {
 	if( n && n != focused && n->p.s && n->p.s->win ) {
 		lastfocused = focused;
@@ -221,13 +221,13 @@ focus(struct node *n)
 }
 
 void
-prune(struct node *x)
+prune(struct canvas *x)
 {
-	struct node *p = x->parent;
+	struct canvas *p = x->parent;
 	assert( p != NULL );
 	int d = x == p->c[1];
-	struct node *n = x->c[d];
-	struct node *o = x->c[!d];
+	struct canvas *n = x->c[d];
+	struct canvas *o = x->c[!d];
 	if( o && o->c[d] ) {
 		x->split_point[!d] = 0.0;
 	} else if( o ) {
@@ -242,7 +242,7 @@ prune(struct node *x)
 		}
 		equalize(o, NULL);
 		equalize(p, NULL);
-		freenode(x);
+		freecanvas(x);
 	} else {
 		assert( o == NULL );
 		p->c[d] = n;
@@ -253,7 +253,7 @@ prune(struct node *x)
 		if( p != &root ) {
 			equalize(p, NULL);
 		}
-		freenode(x);
+		freecanvas(x);
 	}
 	reshape(root.c[0], 0, 0, LINES, COLS);
 	if( view_root == x ) {
@@ -265,7 +265,7 @@ prune(struct node *x)
 }
 
 static void
-reshape_window(struct node *N, int d)
+reshape_window(struct canvas *N, int d)
 {
 	int need_div = N->c[1] != NULL;
 	int h = N->h1 > 1 ? N->h1 - 1 : 24;
@@ -293,7 +293,7 @@ reshape_window(struct node *N, int d)
 }
 
 static void
-reshape(struct node *n, int y, int x, int h, int w)
+reshape(struct canvas *n, int y, int x, int h, int w)
 {
 	if( n ) {
 		int d = n->h1 - h * n->split_point[0];
@@ -328,7 +328,7 @@ reshape(struct node *n, int y, int x, int h, int w)
 }
 
 static void
-draw_title(struct node *n)
+draw_title(struct canvas *n)
 {
 	if( n->wtit ) {
 		char t[128];
@@ -351,7 +351,7 @@ draw_title(struct node *n)
 
 
 void
-draw(struct node *n) /* Draw a node. */
+draw(struct canvas *n) /* Draw a canvas. */
 {
 	if( n != NULL ) {
 		assert( n->c[0] == NULL || n->c[0]->x == n->x );
@@ -380,7 +380,7 @@ draw(struct node *n) /* Draw a node. */
 
 #if 0
 int
-reorient(struct node *n, const char *args[])
+reorient(struct canvas *n, const char *args[])
 {
 	if( n && n->split == '\0' ) {
 		reorient(n->parent, args);
@@ -394,11 +394,11 @@ reorient(struct node *n, const char *args[])
 #endif
 
 int
-create(struct node *n, const char *args[])
+create(struct canvas *n, const char *args[])
 {
 	assert( n != NULL );
 	int dir = *args && **args == 'C' ? 1 : 0;
-	struct node *t = n;
+	struct canvas *t = n;
 	if( n->c[!dir] == NULL ) {
 		n->typ = dir;
 	}
@@ -412,7 +412,7 @@ create(struct node *n, const char *args[])
 	int h = ( dir == 0 ) ? n->h / 2 : n->h1;
 	int w = ( dir == 1 ) ? n->w / 2 : n->w1;
 	n->split_point[dir] = 0.5;
-	struct node *v = n->c[dir] = newnode(y, x, h, w, ++id);
+	struct canvas *v = n->c[dir] = newcanvas(y, x, h, w, ++id);
 	if( v != NULL ) {
 		v->parent = n;
 		new_screens(v);
@@ -424,7 +424,7 @@ create(struct node *n, const char *args[])
 }
 
 static bool
-getinput(struct node *n, fd_set *f) /* check all ptty's for input. */
+getinput(struct canvas *n, fd_set *f) /* check all ptty's for input. */
 {
 	bool status = true;;
 	if( n && n->c[0] && !getinput(n->c[0], f) ) {
@@ -445,7 +445,7 @@ getinput(struct node *n, fd_set *f) /* check all ptty's for input. */
 }
 
 static void
-scrollbottom(struct node *n)
+scrollbottom(struct canvas *n)
 {
 	if( n && n->p.s ) {
 		n->p.s->off = n->p.s->tos;
@@ -453,7 +453,7 @@ scrollbottom(struct node *n)
 }
 
 int
-digit(struct node *n, const char **args)
+digit(struct canvas *n, const char **args)
 {
 	(void)n;
 	cmd_count = 10 * (cmd_count == -1 ? 0 : cmd_count) + args[0][0] - '0';
@@ -461,7 +461,7 @@ digit(struct node *n, const char **args)
 }
 
 static int
-scrolln(struct node *n, const char **args)
+scrolln(struct canvas *n, const char **args)
 {
 	int count = cmd_count == -1 ? n->h / 2 : cmd_count;
 	if(args[0][0] == '-') {
@@ -473,7 +473,7 @@ scrolln(struct node *n, const char **args)
 }
 
 static int
-sendarrow(struct node *n, const char **args)
+sendarrow(struct canvas *n, const char **args)
 {
 	const char *k = args[0];
     char buf[100] = {0};
@@ -483,7 +483,7 @@ sendarrow(struct node *n, const char **args)
 }
 
 int
-reshape_root(struct node *n, const char **args)
+reshape_root(struct canvas *n, const char **args)
 {
 	(void)args;
 	reshape(view_root, 0, 0, LINES, COLS);
@@ -491,30 +491,30 @@ reshape_root(struct node *n, const char **args)
 	return 0;
 }
 
-struct node *
-find_node(struct node *b, int id)
+struct canvas *
+find_canvas(struct canvas *b, int id)
 {
-	struct node *r = id ? NULL : root.c[0];
+	struct canvas *r = id ? NULL : root.c[0];
 	if( id && b != NULL ) {
 		if( b->id == id ) {
 			r = b;
-		} else if( ( r = find_node(b->c[0], id)) == NULL ) {
-			r = find_node(b->c[1], id);
+		} else if( ( r = find_canvas(b->c[0], id)) == NULL ) {
+			r = find_canvas(b->c[1], id);
 		}
 	}
 	return r;
 }
 
 int
-contains(struct node *n, int y, int x)
+contains(struct canvas *n, int y, int x)
 {
 	return y >= n->y && y < n->y + n->h1 && x >= n->x && x <= n->x + n->w1;
 }
 
-struct node *
-find_window(struct node *n, int y, int x)
+struct canvas *
+find_window(struct canvas *n, int y, int x)
 {
-	struct node *r = n;
+	struct canvas *r = n;
 	if( n && !contains(n, y, x) ) {
 		if( ( r = find_window(n->c[0], y, x)) == NULL ) {
 			r = find_window(n->c[1], y, x);
@@ -524,14 +524,14 @@ find_window(struct node *n, int y, int x)
 }
 
 int
-mov(struct node *n, const char **args)
+mov(struct canvas *n, const char **args)
 {
 	assert( n == focused && n != NULL );
 	char cmd = args[0][0];
 	int count = cmd_count < 1 ? 1 : cmd_count;
 	int startx = n->x + n->w1 / 2;
 	int starty = n->y + n->h1 - 1;
-	struct node *t = n;
+	struct canvas *t = n;
 	switch( cmd ) {
 	case 'p':
 		n = lastfocused;
@@ -557,7 +557,7 @@ mov(struct node *n, const char **args)
 }
 
 int
-send(struct node *n, const char **args)
+send(struct canvas *n, const char **args)
 {
 	if( n->p.lnm && args[0][0] == '\r' ) {
 		assert( args[0][1] == '\0' );
@@ -571,7 +571,7 @@ send(struct node *n, const char **args)
 }
 
 void
-balance(struct node *n)
+balance(struct canvas *n)
 {
 	int dir = n->parent ? n == n->parent->c[1] : 0;
 	int count = 2;
@@ -585,7 +585,7 @@ balance(struct node *n)
 }
 
 int
-equalize(struct node *n, const char **args)
+equalize(struct canvas *n, const char **args)
 {
 	(void) args;
 	assert( n != NULL );
@@ -595,7 +595,7 @@ equalize(struct node *n, const char **args)
 }
 
 int
-transition(struct node *n, const char **args)
+transition(struct canvas *n, const char **args)
 {
 	binding = binding == &keys ? &cmd_keys : &keys;
 	if( args && args[0] ) {
@@ -624,7 +624,7 @@ add_key(struct handler *b, wchar_t k, action act, ...)
 }
 
 int
-new_tabstop(struct node *n, const char **args)
+new_tabstop(struct canvas *n, const char **args)
 {
 	(void) args;
 	n->p.ntabs = 0;
@@ -634,16 +634,16 @@ new_tabstop(struct node *n, const char **args)
 
 #if 0
 int
-swap(struct node *a, const char **args)
+swap(struct canvas *a, const char **args)
 {
 	int rv = -1;
 	(void) args;
 	if( cmd_count > 0 && a->parent ) {
-		struct node *b = find_node(root, cmd_count);
+		struct canvas *b = find_canvas(root, cmd_count);
 		int ca = a == a->parent->c[1];
 		int cb = b == b->parent->c[1];
-		struct node *siba = sibling(a);
-		struct node *sibb = sibling(b);
+		struct canvas *siba = sibling(a);
+		struct canvas *sibb = sibling(b);
 		b->parent->c[cb] = a;
 		a->parent->c[ca] = b;
 		a->parent = b->parent;
@@ -749,7 +749,7 @@ static void
 handlechar(int r, int k) /* Handle a single input character. */
 {
 	struct handler *b = NULL;
-	struct node *n = focused;
+	struct canvas *n = focused;
 
 	assert( r != ERR );
 	if( r == OK && k > 0 && k < (int)sizeof *binding ) {
@@ -844,7 +844,7 @@ parse_args(int argc, char *const*argv)
 int
 sttm_main(int argc, char *const*argv)
 {
-	struct node *r;
+	struct canvas *r;
 	FD_SET(STDIN_FILENO, &fds);
 	setlocale(LC_ALL, "");
 	signal(SIGCHLD, SIG_IGN); /* automatically reap children */
@@ -861,7 +861,7 @@ sttm_main(int argc, char *const*argv)
 	start_color();
 	use_default_colors();
 
-	r = view_root = root.c[0] = newnode(0, 0, LINES, COLS, ++id);
+	r = view_root = root.c[0] = newcanvas(0, 0, LINES, COLS, ++id);
 	r->parent = &root;
 	if( r == NULL || !new_screens(r) || !new_pty(r) ) {
 		err(EXIT_FAILURE, "Unable to create root window");

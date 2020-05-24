@@ -4,14 +4,14 @@
 # this will likely just get skipped.  (eg, configure with
 # CFLAGS='--coverage -g -O0' to enable this test)
 
-if ! test -f find-node-test.gcda; then
+if ! test -f find-canvas-test.gcda; then
 	exit 77
 fi
 RV=0
 
 for name in \
 	cset \
-	find-node-test \
+	find-canvas-test \
 	handler \
 	main \
 	sttm-test \
