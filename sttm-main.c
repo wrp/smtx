@@ -151,19 +151,15 @@ getterm(void)
 	return t ? t : COLORS > 255 ? DEFAULT_COLOR_TERMINAL : DEFAULT_TERMINAL;
 }
 
-int
-new_screens(struct canvas *N)
+static int
+new_screens(struct proc *n)
 {
-	int h = N->h1 > 2 ? N->h1 - 1 : 24;
-	int w = N->w1 > 1 ? N->w1 : 80;
-	struct proc *n = &N->p;
-
-	resize_pad(&n->pri.win, MAX(h, scrollback_history), w);
-	resize_pad(&n->alt.win, h, w);
+	resize_pad(&n->pri.win, 24, 80);
+	resize_pad(&n->alt.win, 24, 80);
 	if( n->pri.win == NULL || n->alt.win == NULL ) {
 		return 0;
 	}
-	n->pri.tos = n->pri.off = MAX(0, scrollback_history - h);
+	n->pri.tos = n->pri.off = 0;
 	n->s = &n->pri;
 
 	nodelay(n->pri.win, TRUE);
@@ -413,7 +409,7 @@ create(struct canvas *n, const char *args[])
 	if( v != NULL ) {
 		v->typ = dir;
 		v->parent = n;
-		new_screens(v);
+		new_screens(&v->p);
 		new_pty(v);
 	}
 	balance(v);
@@ -862,7 +858,7 @@ sttm_main(int argc, char *const*argv)
 	r = view_root = root = newcanvas(0, 0, ++id);
 	r->h = LINES;
 	r->w = COLS;
-	if( r == NULL || !new_screens(r) || !new_pty(r) ) {
+	if( r == NULL || !new_screens(&r->p) || !new_pty(r) ) {
 		err(EXIT_FAILURE, "Unable to create root window");
 	}
 	focus(view_root);
