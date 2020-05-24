@@ -411,12 +411,14 @@ create(struct node *n, const char *args[])
 	int h = ( dir == 0 ) ? n->h / 2 : n->h1;
 	int w = ( dir == 1 ) ? n->w / 2 : n->w1;
 	n->split_point[dir] = 0.5;
-	struct node *v = newnode(y, x, h, w, ++id);
-	if( v != NULL && new_screens(v) && new_pty(v) ) {
-		n->c[dir] = v;
+	struct node *v = n->c[dir] = newnode(y, x, h, w, ++id);
+	if( v != NULL ) {
 		v->parent = n;
+		new_screens(v);
+		new_pty(v);
 	}
-	equalize(v, NULL);
+	balance(v);
+	reshape(n, n->y, n->x, n->h, n->w);
 	return 0;
 }
 
@@ -567,12 +569,9 @@ send(struct node *n, const char **args)
 	return 0;
 }
 
-int
-equalize(struct node *n, const char **args)
+void
+balance(struct node *n)
 {
-	(void) args;
-	assert( n != NULL );
-
 	int dir = n->parent ? n == n->parent->c[1] : 0;
 	int count = 2;
 	while( n->c[dir] != NULL ) {
@@ -582,6 +581,14 @@ equalize(struct node *n, const char **args)
 		n = n->parent;
 		n->split_point[dir] = 1 / (double) count++;
 	}
+}
+
+int
+equalize(struct node *n, const char **args)
+{
+	(void) args;
+	assert( n != NULL );
+	balance(n);
 	reshape(n, n->y, n->x, n->h, n->w);
 	return 0;
 }
