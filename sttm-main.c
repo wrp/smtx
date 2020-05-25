@@ -128,15 +128,14 @@ freecanvas(struct canvas *n)
 static void
 fixcursor(void) /* Move the terminal cursor to the active window. */
 {
-	struct canvas *fo = focused;
-	struct proc *f = &fo->p;  /* Odd name for backwards churn avoidance */
-	assert( f && f->s );
+	struct proc *p = &focused->p;
+	assert( p && p->s );
 	int y, x;
-	int show = binding != &cmd_keys && f->s->vis;
-	curs_set(f->s->off != f->s->tos ? 0 : show);
-	getyx(f->s->win, y, x);
-	y = MIN(MAX(y, f->s->tos), f->s->tos + fo->h - 1);
-	wmove(f->s->win, y, x);
+	int show = binding != &cmd_keys && p->s->vis;
+	curs_set(p->s->off != p->s->tos ? 0 : show);
+	getyx(p->s->win, y, x);
+	y = MIN(MAX(y, p->s->tos), p->s->tos + focused->h1 - 1);
+	wmove(p->s->win, y, x);
 }
 
 static const char *
@@ -341,6 +340,13 @@ draw(struct canvas *n) /* Draw a canvas. */
 		assert( n->c[0] == NULL || n->c[0]->x == n->x );
 		assert( n->c[1] == NULL || n->c[1]->y == n->y );
 		draw_title(n);
+		draw(n->c[0]);
+		if( n->wdiv ) {
+			mvwvline(n->wdiv, 0, 0, ACS_VLINE, n->h1);
+			pnoutrefresh(n->wdiv, 0, 0, n->y, n->x + n->w1 - 1,
+				n->y + n->h1, n->x + n->w1 - 1);
+		}
+		draw(n->c[1]);
 		if( n->h1 > 1 && n->w1 > 0 ) {
 			pnoutrefresh(
 				n->p.s->win,
@@ -352,13 +358,6 @@ draw(struct canvas *n) /* Draw a canvas. */
 				n->x + n->w1 - 1
 			);
 		}
-		draw(n->c[0]);
-		if( n->wdiv ) {
-			mvwvline(n->wdiv, 0, 0, ACS_VLINE, n->h1);
-			pnoutrefresh(n->wdiv, 0, 0, n->y, n->x + n->w1 - 1,
-				n->y + n->h1, n->x + n->w1 - 1);
-		}
-		draw(n->c[1]);
 	}
 }
 
@@ -780,8 +779,8 @@ main_loop(void)
 
 		draw(view_root);
 		doupdate();
-		fixcursor();
 		draw(focused);
+		fixcursor();
 		doupdate();
 		if( select(maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
 			FD_ZERO(&sfds);
