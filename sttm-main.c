@@ -206,8 +206,7 @@ void
 prune(struct canvas *x)
 {
 	struct canvas *p = x->parent;
-	assert( p != NULL );
-	int d = x == p->c[1];
+	int d = x->typ;
 	struct canvas *n = x->c[d];
 	struct canvas *o = x->c[!d];
 	if( o && o->c[d] ) {
@@ -215,7 +214,9 @@ prune(struct canvas *x)
 	} else if( o ) {
 		assert( o->c[d] == NULL );
 		assert( o->parent == x );
-		p->c[d] = o;
+		if( p ) {
+			p->c[d] = o;
+		}
 		o->parent = p;
 		o->c[d] = n;
 		if( n ) {
@@ -223,26 +224,23 @@ prune(struct canvas *x)
 			n->parent = o;
 		}
 		equalize(o, NULL);
-		equalize(p, NULL);
 		freecanvas(x);
 	} else {
 		assert( o == NULL );
-		p->c[d] = n;
-		p->split_point[d] = 1.0; /* Cheesy.  Need to fix equalize() */
 		if( n ) {
 			n->parent = p;
 		}
-		if( p != root ) {
+		if( p ) {
+			p->c[d] = n;
 			equalize(p, NULL);
 		}
 		freecanvas(x);
 	}
-	reshape(root, 0, 0, LINES, COLS);
 	if( view_root == x ) {
 		view_root = root;
 	}
 	if( x == focused ) {
-		focus(p->c[d]);
+		focus(p ? p->c[d] : NULL);
 	}
 }
 
@@ -401,6 +399,7 @@ create(struct canvas *n, const char *args[])
 		new_pty(&v->p);
 	}
 	balance(v);
+	/* TODO: t needs to be the first in the chain, not the splitee */
 	reshape(t, t->y, t->x, t->h, t->w);
 	return 0;
 }
