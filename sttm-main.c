@@ -44,7 +44,7 @@ int cmd_count = -1;
 int scrollback_history = 1024;
 
 static void reshape(struct canvas *n, int y, int x, int h, int w);
-static void balance(struct canvas *n);
+static struct canvas * balance(struct canvas *n);
 static void freecanvas(struct canvas *n);
 
 const char *term = NULL;
@@ -379,7 +379,6 @@ create(struct canvas *n, const char *args[])
 {
 	assert( n != NULL );
 	int dir = *args && **args == 'C' ? 1 : 0;
-	struct canvas *t = n;
 	if( n->c[!dir] == NULL ) {
 		n->typ = dir;
 	}
@@ -398,9 +397,8 @@ create(struct canvas *n, const char *args[])
 		new_screens(&v->p);
 		new_pty(&v->p);
 	}
-	balance(v);
-	/* TODO: t needs to be the first in the chain, not the splitee */
-	reshape(t, t->y, t->x, t->h, t->w);
+	n = balance(v);
+	reshape(n, n->y, n->x, n->h, n->w);
 	return 0;
 }
 
@@ -551,7 +549,7 @@ send(struct canvas *n, const char **args)
 	return 0;
 }
 
-static void
+static struct canvas *
 balance(struct canvas *n)
 {
 	int dir = n->typ;
@@ -564,6 +562,7 @@ balance(struct canvas *n)
 			break;
 		}
 	}
+	return n ? n : root;
 }
 
 int
@@ -571,7 +570,7 @@ equalize(struct canvas *n, const char **args)
 {
 	(void) args;
 	assert( n != NULL );
-	balance(n);
+	n = balance(n);
 	reshape(n, n->y, n->x, n->h, n->w);
 	return 0;
 }
