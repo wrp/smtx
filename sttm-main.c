@@ -148,21 +148,19 @@ getterm(void)
 static int
 new_screens(struct proc *n)
 {
-	resize_pad(&n->pri.win, 24, 80);
-	resize_pad(&n->alt.win, 24, 80);
-	if( n->pri.win == NULL || n->alt.win == NULL ) {
-		return 0;
+	struct screen *ss[] = { &n->pri, &n->alt, NULL };
+	for( struct screen **t = ss; *t; t += 1 ) {
+		struct screen *s = *t;
+		resize_pad(&s->win, 24, 80);
+		if( s->win == NULL ) {
+			return 0;
+		}
+		s->tos = s->off = 0;
+		nodelay(s->win, TRUE);
+		scrollok(s->win, TRUE);
+		keypad(s->win, TRUE);
 	}
-	n->pri.tos = n->pri.off = 0;
 	n->s = &n->pri;
-
-	nodelay(n->pri.win, TRUE);
-	nodelay(n->alt.win, TRUE);
-	scrollok(n->pri.win, TRUE);
-	scrollok(n->alt.win, TRUE);
-	keypad(n->pri.win, TRUE);
-	keypad(n->alt.win, TRUE);
-
 	setupevents(n);
 	return 1;
 }
