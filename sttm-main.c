@@ -82,8 +82,8 @@ extend_tabs(struct proc *p, int tabstop)
 static struct canvas *
 newcanvas(int y, int x, int id)
 {
-	struct canvas *n = NULL;
-	if( (n = calloc(1, sizeof *n)) != NULL ) {
+	struct canvas *n = calloc(1, sizeof *n);
+	if( n != NULL ) {
 		n->id = id;
 		n->y = y;
 		n->x = x;
