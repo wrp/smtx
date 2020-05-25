@@ -66,13 +66,8 @@ getshell(void)
 }
 
 static void
-extend_tabs(struct canvas *n, int tabstop)
+extend_tabs(struct proc *p, int tabstop)
 {
-	struct proc *p = &n->p;
-	int d = n->c[1] != NULL;
-	assert(p->ws.ws_row == n->h1 - 1 || (p->ws.ws_row == 24 && n->h1 < 2 ));
-	assert(p->ws.ws_col == n->w1 - d || (p->ws.ws_col == 80 ) );
-
 	int w = p->ws.ws_col;;
 	if( p->ntabs < w ) {
 		typeof(*p->tabs) *new;
@@ -173,33 +168,31 @@ new_screens(struct proc *n)
 	return 1;
 }
 
-int
-new_pty(struct canvas *n)
+static int
+new_pty(struct proc *p)
 {
-	int h = n->h1 > 1 ? n->h1 - 1 : 24;
-	int w = n->w1 > 0 ? n->w1 : 80;
-	struct proc *p = &n->p;
-	p->ws = (struct winsize) {.ws_row = h, .ws_col = w};
+	p->ws = (struct winsize) {.ws_row = 24, .ws_col = 80};
 	p->pid = forkpty(&p->pt, NULL, NULL, &p->ws);
 	if( p->pid < 0 ) {
 		perror("forkpty");
 		return -1;
 	} else if( p->pid == 0 ) {
 		char buf[64];
+		const char *sh = getshell();
 		snprintf(buf, sizeof buf - 1, "%lu", (unsigned long)getppid());
 		setsid();
 		setenv("STTM", buf, 1);
 		setenv("STTM_VERSION", VERSION, 1);
 		setenv("TERM", getterm(), 1);
 		signal(SIGCHLD, SIG_DFL);
-		execl(n->title, n->title, NULL);
+		execl(sh, sh, NULL);
 		perror("execl");
 		_exit(EXIT_FAILURE);
 	}
 	FD_SET(p->pt, &fds);
 	maxfd = p->pt > maxfd ? p->pt : maxfd;
 	fcntl(p->pt, F_SETFL, O_NONBLOCK);
-	extend_tabs(n, p->tabstop = 8);
+	extend_tabs(p, p->tabstop = 8);
 	return p->pt;
 }
 
@@ -283,7 +276,7 @@ reshape_window(struct canvas *N, int d)
 	}
 	wrefresh(n->s->win);
 	ioctl(n->pt, TIOCSWINSZ, &n->ws);
-	extend_tabs(N, n->tabstop);
+	extend_tabs(n, n->tabstop);
 }
 
 static void
@@ -410,7 +403,7 @@ create(struct canvas *n, const char *args[])
 		v->typ = dir;
 		v->parent = n;
 		new_screens(&v->p);
-		new_pty(v);
+		new_pty(&v->p);
 	}
 	balance(v);
 	reshape(t, t->y, t->x, t->h, t->w);
@@ -622,7 +615,7 @@ new_tabstop(struct canvas *n, const char **args)
 {
 	(void) args;
 	n->p.ntabs = 0;
-	extend_tabs(n, n->p.tabstop = cmd_count > -1 ? cmd_count : 8);
+	extend_tabs(&n->p, n->p.tabstop = cmd_count > -1 ? cmd_count : 8);
 	return 0;
 }
 
@@ -858,7 +851,7 @@ sttm_main(int argc, char *const*argv)
 	r = view_root = root = newcanvas(0, 0, ++id);
 	r->h = LINES;
 	r->w = COLS;
-	if( r == NULL || !new_screens(&r->p) || !new_pty(r) ) {
+	if( r == NULL || !new_screens(&r->p) || !new_pty(&r->p) ) {
 		err(EXIT_FAILURE, "Unable to create root window");
 	}
 	focus(view_root);

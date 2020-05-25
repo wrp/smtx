@@ -136,7 +136,6 @@ extern void safewrite(int fd, const char *b, size_t n);
 extern struct canvas * find_canvas(struct canvas *b, int id);
 extern void main_loop(void);
 extern void build_bindings(void);
-extern int new_pty(struct canvas *n);
 extern int sttm_main(int, char *const*);
 extern void balance(struct canvas *n);
 extern void focus(struct canvas *n);
