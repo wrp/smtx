@@ -177,12 +177,8 @@ new_pty(struct proc *p)
 		perror("forkpty");
 		return -1;
 	} else if( p->pid == 0 ) {
-		char buf[64];
 		const char *sh = getshell();
-		snprintf(buf, sizeof buf - 1, "%lu", (unsigned long)getppid());
 		setsid();
-		setenv("STTM", buf, 1);
-		setenv("STTM_VERSION", VERSION, 1);
 		setenv("TERM", getterm(), 1);
 		signal(SIGCHLD, SIG_DFL);
 		execl(sh, sh, NULL);
@@ -832,7 +828,11 @@ int
 sttm_main(int argc, char *const*argv)
 {
 	struct canvas *r;
+	char buf[32];
 	FD_SET(maxfd, &fds);
+	snprintf(buf, sizeof buf - 1, "%lu", (unsigned long)getpid());
+	setenv("STTM", buf, 1);
+	setenv("STTM_VERSION", VERSION, 1);
 	setlocale(LC_ALL, "");
 	signal(SIGCHLD, SIG_IGN); /* automatically reap children */
 	parse_args(argc, argv);
