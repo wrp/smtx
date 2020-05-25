@@ -44,8 +44,10 @@ int cmd_count = -1;
 int scrollback_history = 1024;
 
 static void reshape(struct canvas *n, int y, int x, int h, int w);
-const char *term = NULL;
+static void balance(struct canvas *n);
 static void freecanvas(struct canvas *n);
+
+const char *term = NULL;
 
 void
 safewrite(int fd, const char *b, size_t n)
@@ -550,17 +552,18 @@ send(struct canvas *n, const char **args)
 	return 0;
 }
 
-void
+static void
 balance(struct canvas *n)
 {
-	int dir = n->parent ? n == n->parent->c[1] : 0;
-	int count = 2;
+	int dir = n->typ;
 	while( n->c[dir] != NULL ) {
 		n = n->c[dir];
 	}
-	while( n != view_root && n->parent && n == n->parent->c[dir] ) {
-		n = n->parent;
-		n->split_point[dir] = 1 / (double) count++;
+	for(int count = 1; n; n = n->parent ) {
+		n->split_point[dir] = 1.0 / count++;
+		if( n->typ != dir ) {
+			break;
+		}
 	}
 }
 
