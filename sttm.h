@@ -104,7 +104,7 @@ struct canvas {
 	-------------c0->wtit---------------------
 	c[0] is the window below this, c[1] is the window to the right
 	(in a typ==1 window, c1 is full height and c0 is partial width)
-	(Note that w1 + c1->d.w == d.w - 1, subtracting 1 for wdiv)
+	(Note that m.w + c1->d.w == d.w - 1, subtracting 1 for wdiv)
 	*/
 	struct canvas *c[2];
 	double split_point[2]; /* percent of window dedicated to p.s->win */
