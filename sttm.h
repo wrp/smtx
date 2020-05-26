@@ -80,7 +80,8 @@ struct proc {
 
 struct canvas {
 	int id; /* obsolete */
-	int y, x, h, w, h1, w1;
+	int y, x, h, w;
+	int h1, w1;
 	int hide_title;
 	int hide_div;
 	int typ;

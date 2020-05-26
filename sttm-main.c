@@ -197,8 +197,6 @@ focus(struct canvas *n)
 	if( n && n != focused && n->p.s && n->p.s->win ) {
 		lastfocused = focused;
 		focused = n;
-	} else {
-		focused = root;
 	}
 }
 
@@ -247,9 +245,8 @@ prune(struct canvas *x)
 static void
 reshape_window(struct canvas *N, int d)
 {
-	int need_div = N->c[1] != NULL;
 	int h = N->h1 > 1 ? N->h1 - 1 : 24;
-	int w = N->w1 > need_div ? N->w1 - need_div : 80;
+	int w = N->w1 > 0 ? N->w1 : 80;
 	int oy, ox;
 	struct proc *n = &N->p;
 	n->ws = (struct winsize) {.ws_row = h, .ws_col = w};
@@ -277,32 +274,42 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 {
 	if( n ) {
 		int d = n->h1 - h * n->split_point[0];
-		int ptyp = n->parent ? n->parent->typ : 0;
 		n->y = y;
 		n->x = x;
 		n->h = h;
 		n->w = w;
 		n->h1 = h * n->split_point[0];
 		n->w1 = w * n->split_point[1];
+		int have_title = n->h1 && n->w1 && ! n->hide_title;
+		int have_div = n->h1 && n->w1 && ! n->hide_div && n->c[1];
 
-		reshape_window(n, d);
-		if( n->h1 && ! n->hide_title ) {
-			resize_pad(&n->wtit, 1, n->w1 - n->typ);
+		if( have_div ) {
+			n->w1 -= 1;
+			resize_pad(&n->wdiv, n->typ ? n->h : n->h1, 1);
+		} else {
+			delwinnul(&n->wdiv);
+		}
+		if( have_title ) {
+			resize_pad(&n->wtit, 1, n->w1);
 		} else {
 			delwinnul(&n->wtit);
-		}
-		if( n->w1 && ! n->hide_div && (n->c[1] || ptyp) ) {
-			resize_pad(&n->wdiv, n->h1, 1);
 		}
 
 		y = n->y + n->h1;
 		if( n->typ ) {
-		reshape(n->c[0], n->y + n->h1, n->x, n->h - n->h1, n->w1);
-		reshape(n->c[1], n->y, n->x + n->w1, n->h, n->w - n->w1);
+			/* c[1] is full height, c[0] truncated width */
+			reshape(n->c[0], n->y + n->h1, n->x,
+				n->h - n->h1, n->w1);
+			reshape(n->c[1], n->y, n->x + n->w1 + have_div,
+				n->h, n->w - n->w1 - have_div);
 		} else {
-		reshape(n->c[0], n->y + n->h1, n->x, n->h - n->h1, n->w);
-		reshape(n->c[1], n->y, n->x + n->w1, n->h1, n->w - n->w1);
+			/* c[0] is full width, c[1] truncated height */
+			reshape(n->c[0], n->y + n->h1, n->x,
+				n->h - n->h1, n->w );
+			reshape(n->c[1], n->y, n->x + n->w1 + have_div,
+				n->h1, n->w - n->w1 - have_div);
 		}
+		reshape_window(n, d);
 		draw(n);
 		doupdate();
 	}
@@ -324,9 +331,9 @@ draw_title(struct canvas *n)
 		x += strlen(t);
 		int glyph = ACS_HLINE;
 		mvwprintw(n->wtit, 0, 0, "%s", t);
-		mvwhline(n->wtit, 0, x, glyph, n->w - x);
+		mvwhline(n->wtit, 0, x, glyph, n->w1 - x);
 		pnoutrefresh(n->wtit, 0, 0, n->y + n->h1 - 1, n->x,
-			n->y + n->h1 - 1, n->x + n->w1 - (n->c[1] ? 1 : 0));
+			n->y + n->h1 - 1, n->x + n->w1 - 1);
 	}
 }
 
@@ -339,12 +346,13 @@ draw(struct canvas *n) /* Draw a canvas. */
 		assert( n->c[1] == NULL || n->c[1]->y == n->y );
 		draw_title(n);
 		draw(n->c[0]);
-		if( n->wdiv ) {
-			mvwvline(n->wdiv, 0, 0, ACS_VLINE, n->h1);
-			pnoutrefresh(n->wdiv, 0, 0, n->y, n->x + n->w1 - 1,
-				n->y + n->h1, n->x + n->w1 - 1);
-		}
 		draw(n->c[1]);
+		if( n->wdiv ) {
+			mvwvline(n->wdiv, 0, 0, ACS_VLINE,
+				n->typ ? n->h : n->h1);
+			pnoutrefresh(n->wdiv, 0, 0, n->y, n->x + n->w1,
+				n->y + (n->typ ? n->h : n->h1) - 1, n->x + n->w1);
+		}
 		if( n->h1 > 1 && n->w1 > 0 ) {
 			pnoutrefresh(
 				n->p.s->win,
@@ -352,7 +360,7 @@ draw(struct canvas *n) /* Draw a canvas. */
 				0,
 				n->y,
 				n->x,
-				n->y + n->h1 - 2,
+				n->y + n->h1 - 1 - (n->wtit != NULL),
 				n->x + n->w1 - 1
 			);
 		}
