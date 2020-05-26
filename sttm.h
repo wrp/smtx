@@ -86,17 +86,14 @@ struct canvas {
 	int id; /* obsolete */
 	struct position d; /* position of full canvas */
 	struct position m; /* position of wpty */
-	int hide_title;
-	int hide_div;
 	int typ;
 	struct proc p;
 	struct canvas *parent;
 	/*
-	This window contains both c[0] and c[1], and shows only the upper
+	A canvas contains both c[0] and c[1], and shows only the upper
 	left corner.  eg: d.h=8, d.w=42, m.w=13, m.h=3, typ=0
 	    split_point = { 0.5, 0.333 }
 
-	-----------top of screen (y == -1)--------
 	             |<-wdiv
 	    wpty     |              c1
 	             |

@@ -285,11 +285,11 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		n->d.w = w;
 		n->m.h = h * n->split_point[0];
 		n->m.w = w * n->split_point[1];
-		int have_title = n->m.h && n->m.w && ! n->hide_title;
+		int have_title = n->m.h && n->m.w;
 		if( have_title ) {
 			n->m.h -= 1;
 		}
-		int have_div = n->m.h && n->m.w && ! n->hide_div && n->c[1];
+		int have_div = n->m.h && n->m.w && n->c[1];
 
 		if( have_div ) {
 			n->m.w -= 1;
