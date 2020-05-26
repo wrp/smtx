@@ -271,8 +271,13 @@ reshape_window(struct canvas *N, int d)
 		wscrl(n->s->win, -d);
 	}
 	wrefresh(n->s->win);
-	ioctl(n->pt, TIOCSWINSZ, &n->ws);
+	if( ioctl(n->pt, TIOCSWINSZ, &n->ws) ) {
+		perror("ioctl");
+	}
 	extend_tabs(n, n->tabstop);
+	if( kill(n->pid, SIGWINCH) ) {
+		perror("kill");
+	}
 }
 
 static void
