@@ -87,8 +87,8 @@ newcanvas(int y, int x, int id)
 	struct canvas *n = calloc(1, sizeof *n);
 	if( n != NULL ) {
 		n->id = id;
-		n->y = y;
-		n->x = x;
+		n->d.y = y;
+		n->d.x = x;
 		n->split_point[0] = 1.0;
 		n->split_point[1] = 1.0;
 		n->p.pt = -1;
@@ -274,10 +274,10 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 {
 	if( n ) {
 		int d = n->h1 - h * n->split_point[0];
-		n->y = y;
-		n->x = x;
-		n->h = h;
-		n->w = w;
+		n->d.y = y;
+		n->d.x = x;
+		n->d.h = h;
+		n->d.w = w;
 		n->h1 = h * n->split_point[0];
 		n->w1 = w * n->split_point[1];
 		int have_title = n->h1 && n->w1 && ! n->hide_title;
@@ -285,7 +285,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 
 		if( have_div ) {
 			n->w1 -= 1;
-			resize_pad(&n->wdiv, n->typ ? n->h : n->h1, 1);
+			resize_pad(&n->wdiv, n->typ ? n->d.h : n->h1, 1);
 		} else {
 			delwinnul(&n->wdiv);
 		}
@@ -295,19 +295,17 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 			delwinnul(&n->wtit);
 		}
 
-		y = n->y + n->h1;
+		y = n->d.y + n->h1;
+		x = n->d.x + n->w1 + have_div;
+		w = n->d.w - n->w1 - have_div;
 		if( n->typ ) {
 			/* c[1] is full height, c[0] truncated width */
-			reshape(n->c[0], n->y + n->h1, n->x,
-				n->h - n->h1, n->w1);
-			reshape(n->c[1], n->y, n->x + n->w1 + have_div,
-				n->h, n->w - n->w1 - have_div);
+			reshape(n->c[0], y, n->d.x, n->d.h - n->h1, n->w1);
+			reshape(n->c[1], n->d.y, x, n->d.h, w);
 		} else {
 			/* c[0] is full width, c[1] truncated height */
-			reshape(n->c[0], n->y + n->h1, n->x,
-				n->h - n->h1, n->w );
-			reshape(n->c[1], n->y, n->x + n->w1 + have_div,
-				n->h1, n->w - n->w1 - have_div);
+			reshape(n->c[0], y, n->d.x, n->d.h - n->h1, n->d.w );
+			reshape(n->c[1], n->d.y, x, n->h1, w);
 		}
 		reshape_window(n, d);
 		draw(n);
@@ -332,8 +330,8 @@ draw_title(struct canvas *n)
 		int glyph = ACS_HLINE;
 		mvwprintw(n->wtit, 0, 0, "%s", t);
 		mvwhline(n->wtit, 0, x, glyph, n->w1 - x);
-		pnoutrefresh(n->wtit, 0, 0, n->y + n->h1 - 1, n->x,
-			n->y + n->h1 - 1, n->x + n->w1 - 1);
+		pnoutrefresh(n->wtit, 0, 0, n->d.y + n->h1 - 1, n->d.x,
+			n->d.y + n->h1 - 1, n->d.x + n->w1 - 1);
 	}
 }
 
@@ -342,26 +340,27 @@ void
 draw(struct canvas *n) /* Draw a canvas. */
 {
 	if( n != NULL ) {
-		assert( n->c[0] == NULL || n->c[0]->x == n->x );
-		assert( n->c[1] == NULL || n->c[1]->y == n->y );
+		assert( n->c[0] == NULL || n->c[0]->d.x == n->d.x );
+		assert( n->c[1] == NULL || n->c[1]->d.y == n->d.y );
 		draw_title(n);
 		draw(n->c[0]);
 		draw(n->c[1]);
 		if( n->wdiv ) {
 			mvwvline(n->wdiv, 0, 0, ACS_VLINE,
-				n->typ ? n->h : n->h1);
-			pnoutrefresh(n->wdiv, 0, 0, n->y, n->x + n->w1,
-				n->y + (n->typ ? n->h : n->h1) - 1, n->x + n->w1);
+				n->typ ? n->d.h : n->h1);
+			pnoutrefresh(n->wdiv, 0, 0, n->d.y, n->d.x + n->w1,
+				n->d.y + (n->typ ? n->d.h : n->h1) - 1,
+				n->d.x + n->w1);
 		}
 		if( n->h1 > 1 && n->w1 > 0 ) {
 			pnoutrefresh(
 				n->p.s->win,
 				n->p.s->off,
 				0,
-				n->y,
-				n->x,
-				n->y + n->h1 - 1 - (n->wtit != NULL),
-				n->x + n->w1 - 1
+				n->d.y,
+				n->d.x,
+				n->d.y + n->h1 - 1 - (n->wtit != NULL),
+				n->d.x + n->w1 - 1
 			);
 		}
 	}
@@ -395,8 +394,8 @@ create(struct canvas *n, const char *args[])
 		n = n->c[dir];
 	}
 	assert( n->c[dir] == NULL );
-	int y = ( dir == 0 ) ? n->y + n->h / 2 : n->y;
-	int x = ( dir == 1 ) ? n->x + n->w / 2 : n->x;
+	int y = ( dir == 0 ) ? n->d.y + n->d.h / 2 : n->d.y;
+	int x = ( dir == 1 ) ? n->d.x + n->d.w / 2 : n->d.x;
 	n->split_point[dir] = 0.5;
 	struct canvas *v = n->c[dir] = newcanvas(y, x, ++id);
 	if( v != NULL ) {
@@ -406,7 +405,7 @@ create(struct canvas *n, const char *args[])
 		new_pty(&v->p);
 	}
 	n = balance(v);
-	reshape(n, n->y, n->x, n->h, n->w);
+	reshape(n, n->d.y, n->d.x, n->d.h, n->d.w);
 	return 0;
 }
 
@@ -450,7 +449,7 @@ digit(struct canvas *n, const char **args)
 static int
 scrolln(struct canvas *n, const char **args)
 {
-	int count = cmd_count == -1 ? n->h / 2 : cmd_count;
+	int count = cmd_count == -1 ? n->d.h / 2 : cmd_count;
 	if(args[0][0] == '-') {
 		n->p.s->off = MAX(0, n->p.s->off - count);
 	} else {
@@ -495,7 +494,9 @@ find_canvas(struct canvas *b, int id)
 int
 contains(struct canvas *n, int y, int x)
 {
-	return y >= n->y && y < n->y + n->h1 && x >= n->x && x <= n->x + n->w1;
+	return
+		y >= n->d.y && y < n->d.y + n->h1 &&
+		x >= n->d.x && x <= n->d.x + n->w1;
 }
 
 struct canvas *
@@ -516,8 +517,8 @@ mov(struct canvas *n, const char **args)
 	assert( n == focused && n != NULL );
 	char cmd = args[0][0];
 	int count = cmd_count < 1 ? 1 : cmd_count;
-	int startx = n->x + n->w1 / 2;
-	int starty = n->y + n->h1 - 1;
+	int startx = n->d.x + n->w1 / 2;
+	int starty = n->d.y + n->h1 - 1;
 	struct canvas *t = n;
 	switch( cmd ) {
 	case 'p':
@@ -526,16 +527,16 @@ mov(struct canvas *n, const char **args)
 	default:
 		for( ; t && count--; n = t ? t : n ) switch( cmd ) {
 		case 'k': /* move up */
-			t = find_window(view_root, t->y - 1, startx);
+			t = find_window(view_root, t->d.y - 1, startx);
 			break;
 		case 'j': /* move down */
-			t = find_window(view_root, t->y + t->h1, startx );
+			t = find_window(view_root, t->d.y + t->h1, startx );
 			break;
 		case 'l': /* move right */
-			t = find_window(view_root, starty, t->x + t->w1 + 1);
+			t = find_window(view_root, starty, t->d.x + t->w1 + 1);
 			break;
 		case 'h': /* move left */
-			t = find_window(view_root, starty, t->x - 1);
+			t = find_window(view_root, starty, t->d.x - 1);
 			break;
 		}
 	}
@@ -579,7 +580,7 @@ equalize(struct canvas *n, const char **args)
 	(void) args;
 	assert( n != NULL );
 	n = balance(n);
-	reshape(n, n->y, n->x, n->h, n->w);
+	reshape(n, n->d.y, n->d.x, n->d.h, n->d.w);
 	return 0;
 }
 
@@ -855,8 +856,8 @@ sttm_main(int argc, char *const*argv)
 	use_default_colors();
 
 	r = view_root = root = newcanvas(0, 0, ++id);
-	r->h = LINES;
-	r->w = COLS;
+	r->d.h = LINES;
+	r->d.w = COLS;
 	if( r == NULL || !new_screens(&r->p) || !new_pty(&r->p) ) {
 		err(EXIT_FAILURE, "Unable to create root window");
 	}

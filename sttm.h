@@ -78,9 +78,13 @@ struct proc {
 	VTPARSER vp;
 };
 
+struct position {
+	int y, x, h, w;
+};
+
 struct canvas {
 	int id; /* obsolete */
-	int y, x, h, w;
+	struct position d;
 	int h1, w1;
 	int hide_title;
 	int hide_div;
@@ -89,7 +93,7 @@ struct canvas {
 	struct canvas *parent;
 	/*
 	This window contains both c[0] and c[1], and shows only the upper
-	left corner.  eg: y = 0, x = 0, h=8, w=42, w1=14, h1=4, typ=0
+	left corner.  eg: d.h=8, d.w=42, w1=13, h1=4, typ=0
 	    split_point = { 0.5, 0.333 }
 
 	-----------top of screen (y == -1)--------
@@ -103,6 +107,7 @@ struct canvas {
 	-------------c0->wtit---------------------
 	c[0] is the window below this, c[1] is the window to the right
 	(in a typ==1 window, c1 is full height and c0 is partial width)
+	(Note that w1 + c1->d.w == d.w - 1, subtracting 1 for wdiv)
 	*/
 	struct canvas *c[2];
 	double split_point[2]; /* percent of window dedicated to wpty */
