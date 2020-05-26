@@ -195,8 +195,10 @@ new_pty(struct proc *p)
 void
 focus(struct canvas *n)
 {
-	if( n && n != focused && n->p.s && n->p.s->win ) {
-		lastfocused = focused;
+	if( n && n->p.s && n->p.s->win ) {
+		if( n != focused ) {
+			lastfocused = focused;
+		}
 		focused = n;
 	} else {
 		focused = root;
