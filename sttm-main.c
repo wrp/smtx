@@ -308,8 +308,6 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 			reshape(n->c[1], n->d.y, x, n->h1, w);
 		}
 		reshape_window(n, d);
-		draw(n);
-		doupdate();
 	}
 }
 
@@ -335,6 +333,21 @@ draw_title(struct canvas *n)
 	}
 }
 
+static void
+draw_window(struct canvas *n)
+{
+	if( n->h1 > 1 && n->w1 > 0 ) {
+		pnoutrefresh(
+			n->p.s->win,
+			n->p.s->off,
+			0,
+			n->d.y,
+			n->d.x,
+			n->d.y + n->h1 - 1 - (n->wtit != NULL),
+			n->d.x + n->w1 - 1
+		);
+	}
+}
 
 void
 draw(struct canvas *n) /* Draw a canvas. */
@@ -352,17 +365,7 @@ draw(struct canvas *n) /* Draw a canvas. */
 				n->d.y + (n->typ ? n->d.h : n->h1) - 1,
 				n->d.x + n->w1);
 		}
-		if( n->h1 > 1 && n->w1 > 0 ) {
-			pnoutrefresh(
-				n->p.s->win,
-				n->p.s->off,
-				0,
-				n->d.y,
-				n->d.x,
-				n->d.y + n->h1 - 1 - (n->wtit != NULL),
-				n->d.x + n->w1 - 1
-			);
-		}
+		draw_window(n);
 	}
 }
 
@@ -786,8 +789,7 @@ main_loop(void)
 		fd_set sfds = fds;
 
 		draw(view_root);
-		doupdate();
-		draw(focused);
+		draw_window(focused);
 		fixcursor();
 		doupdate();
 		if( select(maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
@@ -863,7 +865,6 @@ sttm_main(int argc, char *const*argv)
 	}
 	focus(view_root);
 	reshape(view_root, 0, 0, LINES, COLS);
-	draw(view_root);
 	main_loop();
 	endwin();
 	return EXIT_SUCCESS;
