@@ -118,6 +118,8 @@ freecanvas(struct canvas *n)
 	if( n ) {
 		delwinnul(&n->p.pri.win);
 		delwinnul(&n->p.alt.win);
+		delwinnul(&n->wtit);
+		delwinnul(&n->wdiv);
 		if( n->p.pt >= 0 ) {
 			close(n->p.pt);
 			FD_CLR(n->p.pt, &fds);

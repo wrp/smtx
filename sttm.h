@@ -85,7 +85,7 @@ struct position {
 struct canvas {
 	int id; /* obsolete */
 	struct position d; /* position of full canvas */
-	struct position m; /* position of wpty */
+	struct position m; /* position of p.s->win */
 	int typ;
 	struct proc p;
 	struct canvas *parent;
@@ -95,7 +95,7 @@ struct canvas {
 	    split_point = { 0.5, 0.333 }
 
 	             |<-wdiv
-	    wpty     |              c1
+	  p.s->win   |              c1
 	             |
 	----wtit-----|-------c1->wtit-------------
 
@@ -107,10 +107,9 @@ struct canvas {
 	(Note that w1 + c1->d.w == d.w - 1, subtracting 1 for wdiv)
 	*/
 	struct canvas *c[2];
-	double split_point[2]; /* percent of window dedicated to wpty */
+	double split_point[2]; /* percent of window dedicated to p.s->win */
 	char title[32];
 	char putative_cmd[32];
-	WINDOW *wpty;  /* Window for p */
 	WINDOW *wtit;  /* Window for title */
 	WINDOW *wdiv;  /* Window for divider */
 };
