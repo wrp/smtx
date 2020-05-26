@@ -43,7 +43,6 @@ fd_set fds;
 int cmd_count = -1;
 int scrollback_history = 1024;
 
-static void reshape(struct canvas *n, int y, int x, int h, int w);
 static struct canvas * balance(struct canvas *n);
 static void freecanvas(struct canvas *n);
 static void draw_window(struct screen *s, struct position *d);
@@ -279,8 +278,8 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 {
 	if( n ) {
 		int d = n->m.h - h * n->split_point[0] - 1;
-		n->d.y = y;
-		n->d.x = x;
+		n->d.y = n->m.y = y;
+		n->d.x = n->m.x = x;
 		n->d.h = h;
 		n->d.w = w;
 		n->m.h = h * n->split_point[0];
