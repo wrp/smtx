@@ -108,7 +108,7 @@ delwinnul(WINDOW **w)
 static int
 resize_pad(WINDOW **p, int h, int w)
 {
-	return *p ? wresize(*p, h, w ) : (*p = newpad(h, w)) ? OK : ERR;
+	return *p ? wresize(*p, h, w ) == OK : (*p = newpad(h, w)) != NULL;
 }
 
 static void
@@ -156,8 +156,7 @@ new_screens(struct proc *n)
 	struct screen *ss[] = { &n->pri, &n->alt, NULL };
 	for( struct screen **t = ss; *t; t += 1 ) {
 		struct screen *s = *t;
-		resize_pad(&s->win, 24, 80);
-		if( s->win == NULL ) {
+		if( ! resize_pad(&s->win, 24, 80) ) {
 			return 0;
 		}
 		s->tos = s->off = 0;
