@@ -25,7 +25,6 @@
        screen mode while going between them.
      Register signal handlers for TERM and HUP.  Need to ensure
        that endwin is called.
-     Handle SIGWINCH better.
  */
 
 #include "sttm.h"
@@ -849,6 +848,8 @@ sttm_main(int argc, char *const*argv)
 	setenv("STTM", buf, 1);
 	setenv("TERM", getterm(), 1);
 	setenv("STTM_VERSION", VERSION, 1);
+	unsetenv("COLUMNS");
+	unsetenv("LINES");
 	setlocale(LC_ALL, "");
 	signal(SIGCHLD, SIG_IGN); /* automatically reap children */
 	parse_args(argc, argv);
