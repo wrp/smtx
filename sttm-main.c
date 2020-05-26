@@ -46,6 +46,7 @@ int scrollback_history = 1024;
 static void reshape(struct canvas *n, int y, int x, int h, int w);
 static struct canvas * balance(struct canvas *n);
 static void freecanvas(struct canvas *n);
+static void draw_window(struct screen *s, struct position *d);
 
 const char *term = NULL;
 
@@ -130,10 +131,16 @@ freecanvas(struct canvas *n)
 static void
 fixcursor(void) /* Move the terminal cursor to the active window. */
 {
+	struct canvas *f = focused;
 	struct proc *p = &focused->p;
 	assert( p && p->s );
 	int y, x;
 	int show = binding != &cmd_keys && p->s->vis;
+
+	struct position d = { f->d.y, f->d.x, f->h1 - (f->wtit != NULL)
+			, f->w1 };
+	draw_window(f->p.s, &d);
+
 	curs_set(p->s->off != p->s->tos ? 0 : show);
 	getyx(p->s->win, y, x);
 	y = MIN(MAX(y, p->s->tos), p->s->tos + focused->h1 - 1);
@@ -197,6 +204,8 @@ focus(struct canvas *n)
 	if( n && n != focused && n->p.s && n->p.s->win ) {
 		lastfocused = focused;
 		focused = n;
+	} else {
+		focused = root;
 	}
 }
 
@@ -334,18 +343,11 @@ draw_title(struct canvas *n)
 }
 
 static void
-draw_window(struct canvas *n)
+draw_window(struct screen *s, struct position *d)
 {
-	if( n->h1 > 1 && n->w1 > 0 ) {
-		pnoutrefresh(
-			n->p.s->win,
-			n->p.s->off,
-			0,
-			n->d.y,
-			n->d.x,
-			n->d.y + n->h1 - 1 - (n->wtit != NULL),
-			n->d.x + n->w1 - 1
-		);
+	if( d->h && d->w ) {
+		pnoutrefresh(s->win, s->off, 0, d->y, d->x,
+			d->y + d->h - 1, d->x + d->w - 1);
 	}
 }
 
@@ -365,7 +367,9 @@ draw(struct canvas *n) /* Draw a canvas. */
 				n->d.y + (n->typ ? n->d.h : n->h1) - 1,
 				n->d.x + n->w1);
 		}
-		draw_window(n);
+		struct position d = { n->d.y, n->d.x, n->h1 - (n->wtit != NULL)
+			, n->w1 };
+		draw_window(n->p.s, &d);
 	}
 }
 
@@ -789,7 +793,6 @@ main_loop(void)
 		fd_set sfds = fds;
 
 		draw(view_root);
-		draw_window(focused);
 		fixcursor();
 		doupdate();
 		if( select(maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
