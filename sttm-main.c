@@ -182,7 +182,6 @@ new_pty(struct proc *p)
 	} else if( p->pid == 0 ) {
 		const char *sh = getshell();
 		setsid();
-		setenv("TERM", getterm(), 1);
 		signal(SIGCHLD, SIG_DFL);
 		execl(sh, sh, NULL);
 		perror("execl");
@@ -848,6 +847,7 @@ sttm_main(int argc, char *const*argv)
 	FD_SET(maxfd, &fds);
 	snprintf(buf, sizeof buf - 1, "%lu", (unsigned long)getpid());
 	setenv("STTM", buf, 1);
+	setenv("TERM", getterm(), 1);
 	setenv("STTM_VERSION", VERSION, 1);
 	setlocale(LC_ALL, "");
 	signal(SIGCHLD, SIG_IGN); /* automatically reap children */
