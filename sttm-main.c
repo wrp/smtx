@@ -358,12 +358,18 @@ draw(struct canvas *n, char *id) /* Draw a canvas. */
 {
 	if( n != NULL ) {
 		char *dot = strrchr(id, '.');
+		char *end = id + strlen(id);
 		int p = strtol(dot ? dot + 1 : id, NULL, 10);
+
 		assert( n->c[0] == NULL || n->c[0]->d.x == n->d.x );
 		assert( n->c[1] == NULL || n->c[1]->d.y == n->d.y );
+		if( n->c[!n->typ] ) {
+			sprintf(end, ".1");
+		}
 		draw_title(n, id);
-		strcat(id, ".1");
+		sprintf(end, ".2");
 		draw(n->c[!n->typ], id);
+
 		sprintf(dot ? dot + 1 : id, "%d", p + 1);
 		draw(n->c[n->typ], id);
 		if( n->wdiv ) {
