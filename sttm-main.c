@@ -35,7 +35,7 @@ static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 static struct handler (*binding)[128] = &keys;
 struct canvas *focused, *lastfocused = NULL;
 struct canvas *root, *view_root;
-char commandkey = CTL(COMMAND_KEY);
+char commandkey = CTL('g'); /* Change with -c flag */
 static int maxfd = STDIN_FILENO;
 fd_set fds;
 int cmd_count = -1;
