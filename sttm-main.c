@@ -217,6 +217,7 @@ void
 prune(struct canvas *x)
 {
 	struct canvas *p = x->parent;
+	struct canvas *dummy;
 	int d = x->typ;
 	struct canvas *n = x->c[d];
 	struct canvas *o = x->c[!d];
@@ -225,30 +226,16 @@ prune(struct canvas *x)
 	} else if( o ) {
 		assert( o->c[d] == NULL );
 		assert( o->parent == x );
-		if( p ) {
-			p->c[d] = o;
-		} else {
-			view_root = root = o;
-		}
 		o->parent = p;
+		*(p ? &p->c[d] : &root) = o;
 		o->c[d] = n;
-		if( n ) {
-			assert( n->parent == x );
-			n->parent = o;
-		}
+		*(n ? &n->parent : &dummy) = o;
 		equalize(o, NULL);
 		freecanvas(x);
 	} else {
 		assert( o == NULL );
-		if( n ) {
-			n->parent = p;
-		}
-		if( p ) {
-			p->c[d] = n;
-			equalize(p, NULL);
-		} else {
-			view_root = root = n;
-		}
+		*(n ? &n->parent : &dummy) = p;
+		*(p ? &p->c[d] : &root) = n;
 		freecanvas(x);
 	}
 	if( view_root == x ) {
