@@ -244,8 +244,7 @@ prune(struct canvas *x)
 	if( x == focused ) {
 		focus(p);
 	}
-	x = root;
-	reshape(x, 0, 0, LINES, COLS);
+	reshape(root, 0, 0, LINES, COLS);
 }
 
 static void
