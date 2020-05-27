@@ -325,7 +325,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 }
 
 static void
-draw_title(struct canvas *n)
+draw_title(struct canvas *n, char *id)
 {
 	if( n->wtit ) {
 		char t[128];
@@ -336,7 +336,7 @@ draw_title(struct canvas *n)
 		} else {
 			wattroff(n->wtit, A_REVERSE);
 		}
-		snprintf(t, s, "%d (%d) %s ", n->id, (int)n->p.pid, n->title);
+		snprintf(t, s, "%s (%d) %s ", id, (int)n->p.pid, n->title);
 		x += strlen(t);
 		int glyph = ACS_HLINE;
 		mvwprintw(n->wtit, 0, 0, "%s", t);
@@ -355,15 +355,19 @@ draw_window(struct screen *s, struct position *d)
 	}
 }
 
-void
-draw(struct canvas *n) /* Draw a canvas. */
+static void
+draw(struct canvas *n, char *id) /* Draw a canvas. */
 {
 	if( n != NULL ) {
+		char *dot = strrchr(id, '.');
+		int p = strtol(dot ? dot + 1 : id, NULL, 10);
 		assert( n->c[0] == NULL || n->c[0]->d.x == n->d.x );
 		assert( n->c[1] == NULL || n->c[1]->d.y == n->d.y );
-		draw_title(n);
-		draw(n->c[0]);
-		draw(n->c[1]);
+		draw_title(n, id);
+		strcat(id, ".1");
+		draw(n->c[1], id);
+		sprintf(dot ? dot + 1 : id, "%d", p + 1);
+		draw(n->c[0], id);
 		if( n->wdiv ) {
 			mvwvline(n->wdiv, 0, 0, ACS_VLINE,
 				n->typ ? n->d.h : n->m.h + 1);
@@ -791,11 +795,13 @@ void
 main_loop(void)
 {
 	while( root != NULL ) {
+		char buf[128];
 		int r;
 		wint_t w = 0;
 		fd_set sfds = fds;
 
-		draw(view_root);
+		sprintf(buf, "1");
+		draw(view_root, buf);
 		fixcursor();
 		doupdate();
 		if( select(maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {

@@ -140,7 +140,6 @@ extern void main_loop(void);
 extern void build_bindings(void);
 extern int sttm_main(int, char *const*);
 extern void focus(struct canvas *n);
-extern void draw(struct canvas *n);
 extern void prune(struct canvas *c);
 extern action transition;
 extern action create;
