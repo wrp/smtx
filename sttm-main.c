@@ -29,7 +29,6 @@
 
 #include "sttm.h"
 
-int id;
 static struct handler keys[128];
 static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
@@ -81,11 +80,10 @@ extend_tabs(struct proc *p, int tabstop)
 }
 
 static struct canvas *
-newcanvas(int y, int x, int id)
+newcanvas(int y, int x)
 {
 	struct canvas *n = calloc(1, sizeof *n);
 	if( n != NULL ) {
-		n->id = id;
 		n->d.y = n->m.y = y;
 		n->d.x = n->m.x = x;
 		n->split_point[0] = 1.0;
@@ -411,7 +409,7 @@ create(struct canvas *n, const char *args[])
 	int y = ( dir == 0 ) ? n->d.y + n->d.h / 2 : n->d.y;
 	int x = ( dir == 1 ) ? n->d.x + n->d.w / 2 : n->d.x;
 	n->split_point[dir] = 0.5;
-	struct canvas *v = n->c[dir] = newcanvas(y, x, ++id);
+	struct canvas *v = n->c[dir] = newcanvas(y, x);
 	if( v != NULL ) {
 		v->typ = dir;
 		v->parent = n;
@@ -491,6 +489,7 @@ reshape_root(struct canvas *n, const char **args)
 	return 0;
 }
 
+#if 0
 struct canvas *
 find_canvas(struct canvas *b, int id)
 {
@@ -504,6 +503,7 @@ find_canvas(struct canvas *b, int id)
 	}
 	return r;
 }
+#endif
 
 int
 contains(struct canvas *n, int y, int x)
@@ -872,7 +872,7 @@ sttm_main(int argc, char *const*argv)
 	start_color();
 	use_default_colors();
 
-	r = view_root = root = newcanvas(0, 0, ++id);
+	r = view_root = root = newcanvas(0, 0);
 	r->d.h = LINES;
 	r->d.w = COLS;
 	if( r == NULL || !new_screens(&r->p) || !new_pty(&r->p) ) {

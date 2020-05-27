@@ -83,7 +83,6 @@ struct position {
 };
 
 struct canvas {
-	int id; /* obsolete */
 	struct position d; /* position of full canvas */
 	struct position m; /* position of p.s->win */
 	int typ;
