@@ -363,9 +363,9 @@ draw(struct canvas *n, char *id) /* Draw a canvas. */
 		assert( n->c[1] == NULL || n->c[1]->d.y == n->d.y );
 		draw_title(n, id);
 		strcat(id, ".1");
-		draw(n->c[1], id);
+		draw(n->c[!n->typ], id);
 		sprintf(dot ? dot + 1 : id, "%d", p + 1);
-		draw(n->c[0], id);
+		draw(n->c[n->typ], id);
 		if( n->wdiv ) {
 			mvwvline(n->wdiv, 0, 0, ACS_VLINE,
 				n->typ ? n->d.h : n->m.h + 1);
@@ -398,9 +398,6 @@ create(struct canvas *n, const char *args[])
 {
 	assert( n != NULL );
 	int dir = *args && **args == 'C' ? 1 : 0;
-	if( n->c[!dir] == NULL ) {
-		n->typ = dir;
-	}
 	/* Always split last window in a chain */
 	while( n->c[dir] != NULL ) {
 		n = n->c[dir];
