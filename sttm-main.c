@@ -312,15 +312,9 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		y = n->d.y + n->m.h + 1;
 		x = n->d.x + n->m.w + have_div;
 		w = n->d.w - n->m.w - have_div;
-		if( n->typ ) {
-			/* c[1] is full height, c[0] truncated width */
-			reshape(n->c[0], y, n->d.x, n->d.h - n->m.h - 1, n->m.w);
-			reshape(n->c[1], n->d.y, x, n->d.h, w);
-		} else {
-			/* c[0] is full width, c[1] truncated height */
-			reshape(n->c[0], y, n->d.x, n->d.h - n->m.h - 1, n->d.w);
-			reshape(n->c[1], n->d.y, x, n->m.h + 1, w);
-		}
+		h = n->d.h - n->m.h - 1;
+		reshape(n->c[0], y, n->d.x, h, n->typ ? n->m.w : n->d.w);
+		reshape(n->c[1], n->d.y, x, n->typ ? n->d.h : n->m.h + 1, w);
 		reshape_window(n, d);
 	}
 }
