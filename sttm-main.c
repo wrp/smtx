@@ -231,11 +231,13 @@ prune(struct canvas *x)
 		o->c[d] = n;
 		*(n ? &n->parent : &dummy) = o;
 		equalize(o, NULL);
+		o->d = x->d;
 		freecanvas(x);
 	} else {
 		assert( o == NULL );
 		*(n ? &n->parent : &dummy) = p;
 		*(p ? &p->c[d] : &root) = n;
+		n->d = x->d;
 		freecanvas(x);
 	}
 	if( view_root == x ) {
