@@ -44,6 +44,7 @@ int scrollback_history = 1024;
 static struct canvas * balance(struct canvas *n);
 static void freecanvas(struct canvas *n);
 static void draw_window(struct screen *s, struct position *d);
+static void reshape(struct canvas *n, int y, int x, int h, int w);
 
 const char *term = NULL;
 
@@ -110,17 +111,26 @@ resize_pad(WINDOW **p, int h, int w)
 }
 
 static void
+free_proc(struct proc *p)
+{
+	if( p != NULL ) {
+		if( p->pt >= 0 ) {
+			close(p->pt);
+			FD_CLR(p->pt, &fds);
+		}
+		p->pt = -1;
+		delwinnul(&p->pri.win);
+		delwinnul(&p->alt.win);
+	}
+}
+
+static void
 freecanvas(struct canvas *n)
 {
 	if( n ) {
-		delwinnul(&n->p.pri.win);
-		delwinnul(&n->p.alt.win);
 		delwinnul(&n->wtit);
 		delwinnul(&n->wdiv);
-		if( n->p.pt >= 0 ) {
-			close(n->p.pt);
-			FD_CLR(n->p.pt, &fds);
-		}
+		free_proc(&n->p);
 		free(n->p.tabs);
 		free(n);
 	}
@@ -217,6 +227,8 @@ prune(struct canvas *x)
 		assert( o->parent == x );
 		if( p ) {
 			p->c[d] = o;
+		} else {
+			view_root = root = o;
 		}
 		o->parent = p;
 		o->c[d] = n;
@@ -234,6 +246,8 @@ prune(struct canvas *x)
 		if( p ) {
 			p->c[d] = n;
 			equalize(p, NULL);
+		} else {
+			view_root = root = n;
 		}
 		freecanvas(x);
 	}
@@ -241,39 +255,40 @@ prune(struct canvas *x)
 		view_root = root;
 	}
 	if( x == focused ) {
-		focus(p ? p->c[d] : NULL);
+		focus(p);
 	}
+	x = root;
+	reshape(x, 0, 0, LINES, COLS);
 }
 
 static void
 reshape_window(struct canvas *N, int d)
 {
-	int h = N->m.h ? N->m.h : 24;
-	int w = N->m.w ? N->m.w : 80;
-	int oy, ox;
 	struct proc *n = &N->p;
-	n->ws = (struct winsize) {.ws_row = h, .ws_col = w};
-
-	getyx(n->s->win, oy, ox);
-
-	resize_pad(&n->pri.win, MAX(h, scrollback_history), w);
-	resize_pad(&n->alt.win, h, w);
-
-	n->pri.tos = n->pri.off = MAX(0, scrollback_history - h);
-	n->alt.tos = n->alt.off = 0;
-	wsetscrreg(n->pri.win, 0, MAX(scrollback_history, h) - 1);
-	wsetscrreg(n->alt.win, 0, h - 1);
-	if( d != 0 ) {
-		wmove(n->s->win, oy + d, ox);
-		wscrl(n->s->win, -d);
-	}
-	wrefresh(n->s->win);
-	if( ioctl(n->pt, TIOCSWINSZ, &n->ws) ) {
-		perror("ioctl");
-	}
-	extend_tabs(n, n->tabstop);
-	if( kill(n->pid, SIGWINCH) ) {
-		perror("kill");
+	if( n->pt >= 0 ) {
+		int h = N->m.h ? N->m.h : 24;
+		int w = N->m.w ? N->m.w : 80;
+		int oy, ox;
+		n->ws = (struct winsize) {.ws_row = h, .ws_col = w};
+		getyx(n->s->win, oy, ox);
+		resize_pad(&n->pri.win, MAX(h, scrollback_history), w);
+		resize_pad(&n->alt.win, h, w);
+		n->pri.tos = n->pri.off = MAX(0, scrollback_history - h);
+		n->alt.tos = n->alt.off = 0;
+		wsetscrreg(n->pri.win, 0, MAX(scrollback_history, h) - 1);
+		wsetscrreg(n->alt.win, 0, h - 1);
+		if( d != 0 ) {
+			wmove(n->s->win, oy + d, ox);
+			wscrl(n->s->win, -d);
+		}
+		wrefresh(n->s->win);
+		if( ioctl(n->pt, TIOCSWINSZ, &n->ws) ) {
+			perror("ioctl");
+		}
+		extend_tabs(n, n->tabstop);
+		if( kill(n->pid, SIGWINCH) ) {
+			perror("kill");
+		}
 	}
 }
 
@@ -428,6 +443,7 @@ getinput(struct canvas *n, fd_set *f) /* check all ptty's for input. */
 		if( r > 0 ) {
 			vtwrite(&n->p.vp, iobuf, r);
 		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
+			free_proc(&n->p);
 			prune(n);
 			status = false;
 		}
