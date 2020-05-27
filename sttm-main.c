@@ -683,14 +683,16 @@ build_bindings()
 	add_key(cmd_keys, L'h', mov, "h", NULL);
 	add_key(cmd_keys, L'p', mov, "p", NULL);
 	add_key(cmd_keys, L't', new_tabstop, NULL);
-	for( int i=0; i < 10; i++ ) {
-		char *buf = calloc(2, 1);
-		if( buf == NULL ) {
-			err(EXIT_FAILURE, "out of memory");
-		}
-		buf[0] = '0' + i;
-		add_key(cmd_keys, '0' + i, digit, buf, NULL);
-	}
+	add_key(cmd_keys, L'0', digit, "0", NULL);
+	add_key(cmd_keys, L'1', digit, "1", NULL);
+	add_key(cmd_keys, L'2', digit, "2", NULL);
+	add_key(cmd_keys, L'3', digit, "3", NULL);
+	add_key(cmd_keys, L'4', digit, "4", NULL);
+	add_key(cmd_keys, L'5', digit, "5", NULL);
+	add_key(cmd_keys, L'6', digit, "6", NULL);
+	add_key(cmd_keys, L'7', digit, "7", NULL);
+	add_key(cmd_keys, L'8', digit, "8", NULL);
+	add_key(cmd_keys, L'9', digit, "9", NULL);
 	add_key(code_keys, KEY_RESIZE, reshape_root, NULL);
 	add_key(code_keys, KEY_F(1), send, "\033OP", NULL);
 	add_key(code_keys, KEY_F(2), send, "\033OQ", NULL);
