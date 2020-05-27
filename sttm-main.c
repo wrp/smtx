@@ -377,21 +377,6 @@ draw(struct canvas *n) /* Draw a canvas. */
 	}
 }
 
-#if 0
-int
-reorient(struct canvas *n, const char *args[])
-{
-	if( n && n->split == '\0' ) {
-		reorient(n->parent, args);
-	} else if( n ) {
-		n->split = n->split == '|' ? '-' : '|';
-		reshape(n);
-		draw(n);
-	}
-	return 0;
-}
-#endif
-
 int
 create(struct canvas *n, const char *args[])
 {
