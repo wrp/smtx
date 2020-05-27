@@ -581,6 +581,9 @@ balance(struct canvas *n)
 	}
 	for(int count = 1; n; n = n->parent ) {
 		n->split_point[dir] = 1.0 / count++;
+		if( n->parent && n->parent->c[dir] != n ) {
+			break;
+		}
 		if( n->typ != dir ) {
 			break;
 		}
