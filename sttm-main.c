@@ -389,9 +389,8 @@ create(struct canvas *n, const char *args[])
 		n = n->c[dir];
 	}
 	assert( n->c[dir] == NULL );
-	/* TODO */
-	int y = ( dir == 0 ) ? n->origin.y + n->siz.y / 2 : n->origin.y;
-	int x = ( dir == 1 ) ? n->origin.x + n->siz.x / 2 : n->origin.x;
+	int y = n->origin.y + ( dir == 0 ) ? n->siz.y / 2 : 0;
+	int x = n->origin.x + ( dir == 1 ) ? n->siz.x / 2 : 0;
 	n->split_point[dir] = 0.5;
 	struct canvas *v = n->c[dir] = newcanvas(y, x);
 	if( v != NULL ) {
