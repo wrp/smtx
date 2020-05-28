@@ -201,10 +201,10 @@ new_pty(struct proc *p)
 }
 
 void
-focus(struct canvas *n)
+focus(struct canvas *n, int reset)
 {
 	if( n && n->p.s && n->p.s->win ) {
-		if( n != focused ) {
+		if( n != focused && reset ) {
 			lastfocused = focused;
 		}
 		focused = n;
@@ -233,20 +233,23 @@ prune(struct canvas *x)
 		equalize(o, NULL);
 		o->d = x->d;
 		freecanvas(x);
-	} else {
-		assert( o == NULL );
-		if( n ) {
-			n->parent = p;
-			n->d = x->d;
-		}
+	} else if( n ) {
+		n->parent = p;
+		n->d = x->d;
 		*(p ? &p->c[d] : &root) = n;
 		freecanvas(x);
+	} else if( p ) {
+		p->split_point[d] = 1.0;
+		p->c[d] = NULL;
+		freecanvas(x);
+	} else {
+		root = NULL;
 	}
 	if( view_root == x ) {
 		view_root = root;
 	}
 	if( x == focused ) {
-		focus(p);
+		focus(p, 0);
 	}
 	reshape(root, 0, 0, LINES, COLS);
 }
@@ -532,7 +535,7 @@ mov(struct canvas *n, const char **args)
 			break;
 		}
 	}
-	focus(n);
+	focus(n, 1);
 	return 0;
 }
 
@@ -859,7 +862,7 @@ sttm_main(int argc, char *const*argv)
 	if( r == NULL || !new_screens(&r->p) || !new_pty(&r->p) ) {
 		err(EXIT_FAILURE, "Unable to create root window");
 	}
-	focus(view_root);
+	focus(view_root, 0);
 	reshape(view_root, 0, 0, LINES, COLS);
 	main_loop();
 	endwin();
