@@ -59,19 +59,18 @@ struct proc {
 	VTPARSER vp;
 };
 
-struct position {
-	int y, x, h, w;
-};
+struct point { int y, x; };
 
 struct canvas {
-	struct position d; /* position of full canvas */
-	struct position m; /* position of p.s->win */
-	int typ;
+	struct point origin; /* position of upper left corner */
+	struct point siz; /* relative position of lower right corner */
+	struct point win; /* relative position of corner of p.s->win */
+	int typ; /* 0: c[0] is full width, 1: c[1] is full height */
 	struct proc p;
 	struct canvas *parent;
 	/*
 	A canvas contains both c[0] and c[1], and shows only the upper
-	left corner.  eg: d.h=8, d.w=42, m.w=13, m.h=3, typ=0
+	left corner.  eg: siz.y=8, siz.x=42, win.y=3, win.x=13, typ=0
 	    split_point = { 0.5, 0.333 }
 
 	             |<-wdiv
@@ -84,7 +83,7 @@ struct canvas {
 	-------------c0->wtit---------------------
 	c[0] is the window below this, c[1] is the window to the right
 	(in a typ==1 window, c1 is full height and c0 is partial width)
-	(Note that m.w + c1->d.w == d.w - 1, subtracting 1 for wdiv)
+	(Note that win.x + c1->win.x == siz.x - 1, subtracting 1 for wdiv)
 	*/
 	struct canvas *c[2];
 	double split_point[2]; /* percent of window dedicated to p.s->win */
