@@ -20,20 +20,6 @@
 #include <wctype.h>
 
 #include "vtparser.h"
-/* mtm by default will advertise itself as a "screen-bce" terminal.
- * This is the terminal type advertised by such programs as
- * screen(1) and tmux(1) and is a widely-supported terminal type.
- * mtm supports emulating the "screen-bce" terminal very well, and this
- * is a reasonable default.
- *
- * However, you can change the default terminal that mtm will
- * advertise itself as. There's the "mtm" terminal type that is
- * recommended for use if you know it will be available in all the
- * environments in which mtm will be used. It advertises a few
- * features that mtm has that the default "screen-bce" terminfo doesn't
- * list, meaning that terminfo-aware programs may get a small
- * speed boost.
- */
 #define DEFAULT_TERMINAL "screen-bce"
 #define DEFAULT_COLOR_TERMINAL "screen-256color-bce"
 
