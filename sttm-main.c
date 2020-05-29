@@ -81,6 +81,7 @@ extend_tabs(struct proc *p, int tabstop)
 	}
 }
 
+/* TODO, should take size, not origin */
 static struct canvas *
 newcanvas(int y, int x)
 {
@@ -145,10 +146,10 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	assert( p && p->s );
 	int y, x;
 	int show = binding != &cmd_keys && p->s->vis;
-	draw_window(f->p.s, &f->origin, &f->win);
+	draw_window(f->p.s, &f->origin, &f->x);
 	curs_set(p->s->off != p->s->tos ? 0 : show);
 	getyx(p->s->win, y, x);
-	y = MIN(MAX(y, p->s->tos), p->s->tos + focused->win.y);
+	y = MIN(MAX(y, p->s->tos), p->s->tos + focused->x.y);
 	wmove(p->s->win, y, x);
 }
 
@@ -262,8 +263,8 @@ reshape_window(struct canvas *N, int d)
 {
 	struct proc *n = &N->p;
 	if( n->pt >= 0 ) {
-		int h = N->win.y ? N->win.y : 24;
-		int w = N->win.x ? N->win.x : 80;
+		int h = N->x.y > 1 ? N->x.y - 1 : 24;
+		int w = N->x.x > 0 ? N->x.x - 0 : 80;
 		int oy, ox;
 		n->ws = (struct winsize) {.ws_row = h, .ws_col = w};
 		getyx(n->s->win, oy, ox);
@@ -292,37 +293,33 @@ static void
 reshape(struct canvas *n, int y, int x, int h, int w)
 {
 	if( n ) {
-		int d = n->win.y - h * n->split_point[0] - 1;
+		int d = n->x.y - h * n->split_point[0] - 1; /* TODO */
 		n->origin.y = y;
 		n->origin.x = x;
 		n->siz.y = h;
 		n->siz.x = w;
-		n->win.y = h * n->split_point[0];
-		n->win.x = w * n->split_point[1];
-		int have_title = n->win.y && n->win.x;
-		if( have_title ) {
-			n->win.y -= 1;
-		}
-		int have_div = n->win.y && n->win.x && n->c[1];
+		n->x.y = h * n->split_point[0];
+		n->x.x = w * n->split_point[1];
+		int have_title = n->x.y && n->x.x;
+		int have_div = n->siz.y && n->siz.x && n->c[1];
 
 		if( have_div ) {
-			n->win.x -= 1;
-			resize_pad(&n->wdiv, n->typ ? n->siz.y : n->win.y + 1, 1);
+			resize_pad(&n->wdiv, n->typ ? n->siz.y : n->x.y, 1);
 		} else {
 			delwinnul(&n->wdiv);
 		}
 		if( have_title ) {
-			resize_pad(&n->wtit, 1, n->win.x);
+			resize_pad(&n->wtit, 1, n->x.x);
 		} else {
 			delwinnul(&n->wtit);
 		}
 
-		y = n->origin.y + n->win.y + 1;
-		x = n->origin.x + n->win.x + have_div;
-		w = n->siz.x - n->win.x - have_div;
-		h = n->siz.y - n->win.y - 1;
-		reshape(n->c[0], y, n->origin.x, h, n->typ ? n->win.x : n->siz.x);
-		reshape(n->c[1], n->origin.y, x, n->typ ? n->siz.y : n->win.y + 1, w);
+		y = n->origin.y + n->x.y;
+		x = n->origin.x + n->x.x + have_div;
+		h = n->siz.y - n->x.y;
+		w = n->siz.x - n->x.x - have_div;
+		reshape(n->c[0], y, n->origin.x, h, n->typ ? n->x.x : n->siz.x);
+		reshape(n->c[1], n->origin.y, x, n->typ ? n->siz.y : n->x.y, w);
 		reshape_window(n, d);
 	}
 }
@@ -332,29 +329,34 @@ draw_title(struct canvas *n)
 {
 	if( n->wtit ) {
 		char t[128];
-		int x = 0;
-		size_t s = MAX(n->win.x - 2, (int)sizeof t);
+		size_t s = MAX(n->x.x - 1, (int)sizeof t);
 		if( binding == &cmd_keys && n == focused ) {
 			wattron(n->wtit, A_REVERSE);
 		} else {
 			wattroff(n->wtit, A_REVERSE);
 		}
-		snprintf(t, s, "%d: %s ", (int)n->p.pid, n->title);
-		x += strlen(t);
+/*		snprintf(t, s, "%d: %d,%d ", (int)n->p.pid, n->title);*/
+		snprintf(t, s, "%d: %d,%d %d,%d %d,%d", (int)n->p.pid,
+			n->origin.y, n->origin.x,
+			n->x.y, n->x.x, n->siz.y, n->siz.x);
 		int glyph = ACS_HLINE;
 		mvwprintw(n->wtit, 0, 0, "%s", t);
-		mvwhline(n->wtit, 0, x, glyph, n->win.x - x);
-		pnoutrefresh(n->wtit, 0, 0, n->origin.y + n->win.y, n->origin.x,
-			n->origin.y + n->win.y, n->origin.x + n->win.x - 1);
+		int len = strlen(t);
+		if( n->x.x - len > 0 ) {
+			mvwhline(n->wtit, 0, len, glyph, n->x.x - len);
+		}
+		pnoutrefresh(n->wtit, 0, 0,
+			n->origin.y + n->x.y - 1, n->origin.x,
+			n->origin.y + n->x.y - 1, n->origin.x + n->x.x);
 	}
 }
 
 static void
 draw_window(struct screen *s, const struct point *a, const struct point *b)
 {
-	if( b->y && b->x ) {
+	if( b->y > 1 && b->x > 0 ) {
 		pnoutrefresh(s->win, s->off, 0, a->y, a->x,
-			a->y + b->y - 1, a->x + b->x - 1);
+			a->y + b->y - 2, a->x + b->x - 1);
 	}
 }
 
@@ -362,20 +364,20 @@ static void
 draw(struct canvas *n) /* Draw a canvas. */
 {
 	if( n != NULL ) {
-		draw_title(n);
 		draw(n->c[0]);
 		draw(n->c[1]);
 		if( n->wdiv ) {
-			mvwvline(n->wdiv, 0, 0, ACS_VLINE,
-				n->typ ? n->siz.y : n->win.y + 1);
-			pnoutrefresh(n->wdiv, 0, 0, n->origin.y,
-				n->origin.x + n->win.x,
-				n->origin.y + (n->typ ? n->siz.y-1 : n->win.y),
-				n->origin.x + n->win.x);
+			int y = n->typ ? n->siz.y : n->x.y;
+			mvwvline(n->wdiv, 0, 0, ACS_VLINE, y);
+			pnoutrefresh(n->wdiv, 0, 0,
+				n->origin.y,
+				n->origin.x + n->x.x,
+				n->origin.y + y - 1,
+				n->origin.x + n->x.x
+			);
 		}
-		const struct point a = { n->origin.y, n->origin.x };
-		const struct point b = { n->win.y, n->win.x };
-		draw_window(n->p.s, &a, &b);
+		draw_title(n);
+		draw_window(n->p.s, &n->origin, &n->x);
 	}
 }
 
@@ -389,6 +391,7 @@ create(struct canvas *n, const char *args[])
 		n = n->c[dir];
 	}
 	assert( n->c[dir] == NULL );
+	/* TODO: y,x should be irrelevant here */
 	int y = n->origin.y + ( dir == 0 ) ? n->siz.y / 2 : 0;
 	int x = n->origin.x + ( dir == 1 ) ? n->siz.x / 2 : 0;
 	n->split_point[dir] = 0.5;
@@ -493,8 +496,8 @@ int
 contains(struct canvas *n, int y, int x)
 {
 	return
-		y >= n->origin.y && y <= n->origin.y + n->win.y &&
-		x >= n->origin.x && x <= n->origin.x + n->win.x;
+		y >= n->origin.y && y <= n->origin.y + n->x.y &&
+		x >= n->origin.x && x <= n->origin.x + n->x.x;
 }
 
 struct canvas *
@@ -515,8 +518,8 @@ mov(struct canvas *n, const char **args)
 	assert( n == focused && n != NULL );
 	char cmd = args[0][0];
 	int count = cmd_count < 1 ? 1 : cmd_count;
-	int startx = n->origin.x + n->win.x / 2;
-	int starty = n->origin.y + n->win.y;
+	int startx = n->origin.x;
+	int starty = n->origin.y + n->x.y - 1;
 	struct canvas *t = n;
 	switch( cmd ) {
 	case 'p':
@@ -528,12 +531,12 @@ mov(struct canvas *n, const char **args)
 			t = find_window(view_root, t->origin.y - 1, startx);
 			break;
 		case 'j': /* move down */
-			t = find_window(view_root, t->origin.y + t->win.y + 1,
+			t = find_window(view_root, t->origin.y + t->x.y + 1,
 				startx);
 			break;
 		case 'l': /* move right */
 			t = find_window(view_root, starty,
-				t->origin.x + t->win.x + 1);
+				t->origin.x + t->x.x + 1);
 			break;
 		case 'h': /* move left */
 			t = find_window(view_root, starty, t->origin.x - 1);
