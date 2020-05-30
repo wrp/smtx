@@ -356,6 +356,10 @@ draw_title(struct canvas *n)
 static void
 draw_window(struct screen *s, const struct point *a, const struct point *b)
 {
+	int y, x;
+	getmaxyx(s->win, y, x);
+	assert(y - s->tos == b->y - 1);
+	assert(x == b->x);
 	if( b->y > 1 && b->x > 0 ) {
 		pnoutrefresh(s->win, s->off, 0, a->y, a->x,
 			a->y + b->y - 2, a->x + b->x - 1);
