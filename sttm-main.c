@@ -344,6 +344,17 @@ draw_title(struct canvas *n)
 		int glyph = ACS_HLINE;
 		mvwprintw(n->wtit, 0, 0, "%s", t);
 		int len = strlen(t);
+
+		{
+			int y, x;
+			getmaxyx(n->wtit, y, x);
+			assert( y == 1 );
+			assert( x == n->x.x );
+			getmaxyx(n->p.s->win, y, x);
+			assert( y - n->p.s->tos == n->x.y - 1 );
+			assert( x == n->x.x );
+		}
+
 		if( n->x.x - len > 0 ) {
 			mvwhline(n->wtit, 0, len, glyph, n->x.x - len);
 		}
