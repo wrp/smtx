@@ -82,14 +82,11 @@ extend_tabs(struct proc *p, int tabstop)
 	}
 }
 
-/* TODO, should take size, not origin */
 static struct canvas *
-newcanvas(int y, int x)
+newcanvas()
 {
 	struct canvas *n = calloc(1, sizeof *n);
 	if( n != NULL ) {
-		n->origin.y = y;
-		n->origin.x = x;
 		n->split_point[0] = 1.0;
 		n->split_point[1] = 1.0;
 		n->p.pt = -1;
@@ -392,11 +389,8 @@ create(struct canvas *n, const char *args[])
 		n = n->c[dir];
 	}
 	assert( n->c[dir] == NULL );
-	/* TODO: y,x should be irrelevant here */
-	int y = n->origin.y + ( dir == 0 ) ? n->siz.y / 2 : 0;
-	int x = n->origin.x + ( dir == 1 ) ? n->siz.x / 2 : 0;
 	n->split_point[dir] = 0.5;
-	struct canvas *v = n->c[dir] = newcanvas(y, x);
+	struct canvas *v = n->c[dir] = newcanvas();
 	if( v != NULL ) {
 		v->typ = dir;
 		v->parent = n;
@@ -865,14 +859,12 @@ sttm_main(int argc, char *const*argv)
 	start_color();
 	use_default_colors();
 
-	r = view_root = root = newcanvas(0, 0);
-	r->siz.y = LINES;
-	r->siz.x = COLS;
+	r = view_root = root = newcanvas();
+	reshape(view_root, 0, 0, LINES, COLS);
 	if( r == NULL || !new_screens(&r->p) || !new_pty(&r->p) ) {
 		err(EXIT_FAILURE, "Unable to create root window");
 	}
 	focus(view_root, 0);
-	reshape(view_root, 0, 0, LINES, COLS);
 	main_loop();
 	endwin();
 	return EXIT_SUCCESS;
