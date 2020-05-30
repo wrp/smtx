@@ -1,11 +1,23 @@
 #include "config.h"
 #include <assert.h>
 #include <ctype.h>
+#if HAVE_CURSES_H
+# include <curses.h>
+#elif HAVE_NCURSESW_CURSES_H
+# include <ncursesw/curses.h>
+#endif
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
 #include <locale.h>
+#if HAVE_PTY_H
+# include <pty.h>
+#elif HAVE_LIBUTIL_H
+# include <libutil.h>
+#elif HAVE_UTIL_H
+# include <util.h>
+#endif
 #include <pwd.h>
 #include <signal.h>
 #include <stdarg.h>
@@ -22,19 +34,6 @@
 #include "vtparser.h"
 #define DEFAULT_TERMINAL "screen-bce"
 #define DEFAULT_COLOR_TERMINAL "screen-256color-bce"
-
-#if HAVE_CURSES_H
-# include <curses.h>
-#elif HAVE_NCURSESW_CURSES_H
-# include <ncursesw/curses.h>
-#endif
-#if HAVE_PTY_H
-# include <pty.h>
-#elif HAVE_LIBUTIL_H
-# include <libutil.h>
-#elif HAVE_UTIL_H
-# include <util.h>
-#endif
 
 #define MIN(x, y) ((x) < (y)? (x) : (y))
 #define MAX(x, y) ((x) > (y)? (x) : (y))
