@@ -344,6 +344,14 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 }
 
 static void
+draw_pane(WINDOW *w, int y, int x)
+{
+	int rows, cols;
+	getmaxyx(w, rows, cols);
+	pnoutrefresh(w, 0, 0, y, x, y + rows - 1, x + cols - 1);
+}
+
+static void
 draw_title(struct canvas *n)
 {
 	if( n->wtit ) {
@@ -375,9 +383,7 @@ draw_title(struct canvas *n)
 		if( n->x.x - len > 0 ) {
 			mvwhline(n->wtit, 0, len, glyph, n->x.x - len);
 		}
-		pnoutrefresh(n->wtit, 0, 0,
-			n->origin.y + n->x.y - 1, n->origin.x,
-			n->origin.y + n->x.y - 1, n->origin.x + n->x.x);
+		draw_pane(n->wtit, n->origin.y + n->x.y - 1, n->origin.x);
 	}
 }
 
