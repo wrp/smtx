@@ -362,10 +362,12 @@ draw_title(struct canvas *n)
 		} else {
 			wattroff(n->wtit, A_REVERSE);
 		}
-/*		snprintf(t, s, "%d: %d,%d ", (int)n->p.pid, n->title);*/
+		snprintf(t, s, "%d: %s ", (int)n->p.pid, n->title);
+		/*
 		snprintf(t, s, "%d: %d,%d %d,%d %d,%d", (int)n->p.pid,
 			n->origin.y, n->origin.x,
 			n->x.y, n->x.x, n->siz.y, n->siz.x);
+		*/
 		int glyph = ACS_HLINE;
 		mvwprintw(n->wtit, 0, 0, "%s", t);
 		int len = strlen(t);
