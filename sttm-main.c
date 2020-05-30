@@ -599,6 +599,15 @@ equalize(struct canvas *n, const char **args)
 {
 	(void) args;
 	assert( n != NULL );
+	int y, x;
+	{
+	getmaxyx(n->p.s->win, y, x);
+	if( n->c[0] == NULL ) {
+		assert( y - n->p.s->tos == n->x.y - 1 );
+		assert( x == n->x.x );
+	}
+	}
+
 	n = balance(n);
 	reshape(n, n->origin.y, n->origin.x, n->siz.y, n->siz.x);
 	return 0;
