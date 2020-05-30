@@ -138,19 +138,16 @@ freecanvas(struct canvas *n)
 static void
 fixcursor(void) /* Move the terminal cursor to the active window. */
 {
-	struct canvas *f = focused;
 	struct proc *p = &focused->p;
 	assert( p && p->s );
-	int y, x;
 	int show = binding != &cmd_keys && p->s->vis;
-	getmaxyx(p->s->win, y, x);
-	assert(y - p->s->tos == f->x.y - 1);
-	assert(x == f->x.x);
-	draw_window(f->p.s, &f->origin);
+	draw_window(p->s, &focused->origin);
 	curs_set(p->s->off != p->s->tos ? 0 : show);
 
+	int maxy, x, y;
+	getmaxyx(p->s->win, maxy, x);
 	getyx(p->s->win, y, x);
-	y = MIN(MAX(y, p->s->tos), p->s->tos + focused->x.y);
+	y = MIN(MAX(y, p->s->tos), maxy + 1);
 	wmove(p->s->win, y, x);
 }
 
