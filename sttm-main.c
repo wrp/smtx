@@ -667,8 +667,8 @@ build_bindings()
 
 	add_key(cmd_keys, commandkey, transition, &commandkey, "1", NULL);
 	add_key(cmd_keys, L'\r', transition, NULL);
-	add_key(cmd_keys, L',', scrolln, "-", NULL);
-	add_key(cmd_keys, L'm', scrolln, "+", NULL);
+	add_key(cmd_keys, L'b', scrolln, "-", NULL);
+	add_key(cmd_keys, L'f', scrolln, "+", NULL);
 	add_key(cmd_keys, L'=', equalize, NULL);
 	add_key(cmd_keys, L'c', create, NULL);
 	add_key(cmd_keys, L'C', create, "C", NULL);
