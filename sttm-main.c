@@ -217,6 +217,23 @@ focus(struct canvas *n, int reset)
 	}
 }
 
+static void
+canvas_yx(const struct canvas *n, int *rows, int *cols)
+{
+	int y, x;
+	getmaxyx(n->p.s->win, y, x);
+	*rows = y - n->p.s->tos + 1;
+	*cols = x;
+	for( const struct canvas *c = n->c[0]; c; c = c->c[0] ) {
+		getmaxyx(c->p.s->win, y, x);
+		*rows += y - c->p.s->tos + 1;
+	}
+	for( const struct canvas *c = n->c[1]; c; c = c->c[1] ) {
+		getmaxyx(c->p.s->win, y, x);
+		*cols += 1 + x;
+	}
+}
+
 void
 prune(struct canvas *x)
 {
@@ -606,6 +623,9 @@ equalize(struct canvas *n, const char **args)
 		assert( y - n->p.s->tos == n->x.y - 1 );
 		assert( x == n->x.x );
 	}
+	canvas_yx(n, &y, &x);
+	assert( n->siz.y == y );
+	assert( n->siz.x == x );
 	}
 
 	n = balance(n);
