@@ -144,8 +144,12 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	assert( p && p->s );
 	int y, x;
 	int show = binding != &cmd_keys && p->s->vis;
+	getmaxyx(p->s->win, y, x);
+	assert(y - p->s->tos == f->x.y - 1);
+	assert(x == f->x.x);
 	draw_window(f->p.s, &f->origin, &f->x);
 	curs_set(p->s->off != p->s->tos ? 0 : show);
+
 	getyx(p->s->win, y, x);
 	y = MIN(MAX(y, p->s->tos), p->s->tos + focused->x.y);
 	wmove(p->s->win, y, x);
@@ -860,10 +864,10 @@ sttm_main(int argc, char *const*argv)
 	use_default_colors();
 
 	r = view_root = root = newcanvas();
-	reshape(view_root, 0, 0, LINES, COLS);
 	if( r == NULL || !new_screens(&r->p) || !new_pty(&r->p) ) {
 		err(EXIT_FAILURE, "Unable to create root window");
 	}
+	reshape(view_root, 0, 0, LINES, COLS);
 	focus(view_root, 0);
 	main_loop();
 	endwin();
