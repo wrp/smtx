@@ -409,12 +409,7 @@ draw(struct canvas *n) /* Draw a canvas. */
 		if( n->wdiv ) {
 			int y = n->typ ? n->siz.y : n->x.y;
 			mvwvline(n->wdiv, 0, 0, ACS_VLINE, y);
-			pnoutrefresh(n->wdiv, 0, 0,
-				n->origin.y,
-				n->origin.x + n->x.x,
-				n->origin.y + y - 1,
-				n->origin.x + n->x.x
-			);
+			draw_pane(n->wdiv, n->origin.y, n->origin.x + n->x.x);
 		}
 		draw_title(n);
 		draw_window(n->p.s, &n->origin, &n->x);
