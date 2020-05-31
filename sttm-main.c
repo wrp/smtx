@@ -326,11 +326,8 @@ static void
 reshape(struct canvas *n, int y, int x, int h, int w)
 {
 	if( n ) {
-		int oy, ox;
-		getmaxyx(n->p.s->win, oy, ox);
-		(void)ox;
-		assert( oy == winsiz(n->p.s->win, 0) );
-		int d = oy - n->p.s->tos - h * n->split_point[0]; /* TODO */
+		int k = winsiz(n->wpty, 0);
+		int d = k - h * n->split_point[0]; /* TODO */
 
 		n->origin.y = y;
 		n->origin.x = x;
