@@ -154,11 +154,9 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	draw_window(p->s, &focused->origin);
 	curs_set(p->s->off != p->s->tos ? 0 : show);
 
-	int maxy, x, y;
-	getmaxyx(p->s->win, maxy, x);
+	int x, y;
 	getyx(p->s->win, y, x);
-	assert( maxy == winsiz(p->s->win, 0) );
-	y = MIN(MAX(y, p->s->tos), maxy + 1);
+	y = MIN(MAX(y, p->s->tos), winsiz(p->s->win, 0) + 1);
 	wmove(p->s->win, y, x);
 }
 
@@ -228,15 +226,19 @@ static void
 canvas_yx(const struct canvas *n, int *rows, int *cols)
 {
 	int y, x;
-	getmaxyx(n->p.s->win, y, x);
-	*rows = y - n->p.s->tos + 1;
-	*cols = x;
+	*rows = winsiz(n->p.s->win, 0) - n->p.s->tos + 1;
+	*cols = winsiz(n->p.s->win, 1);;
 	for( int i = 0; i < 2; i++ ) {
 		for( const struct canvas *c = n->c[i]; c; c = c->c[i] ) {
 			if( c->p.s && c->p.s->win ) {
+				/* int k = winsiz(n->wpty, 0 ); */
 				getmaxyx(c->p.s->win, y, x);
 				assert( y == winsiz(c->p.s->win, 0 ));
 				assert( x == winsiz(c->p.s->win, 1 ));
+				/* Sometimes this is off by one.
+				this needs to be tracked down, and is
+				probably the cause of much confusion.*/
+				/* assert( y - c->p.s->tos == k ); */
 				if( i == 0 ) {
 					*rows += y - c->p.s->tos + 1;
 				} else {
