@@ -300,6 +300,7 @@ reshape_window(struct canvas *N, int h, int w, int d)
 		getyx(n->s->win, oy, ox);
 		resize_pad(&n->pri.win, MAX(h, scrollback_history), w);
 		resize_pad(&n->alt.win, h, w);
+		resize_pad(&N->wpty, h, w);
 		n->pri.tos = n->pri.off = MAX(0, scrollback_history - h);
 		n->alt.tos = n->alt.off = 0;
 		wsetscrreg(n->pri.win, 0, MAX(scrollback_history, h) - 1);
