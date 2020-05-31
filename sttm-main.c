@@ -352,7 +352,9 @@ draw_title(struct canvas *n)
 {
 	if( n->wtit ) {
 		char t[128];
-		size_t s = MAX(n->x.x - 1, (int)sizeof t);
+		int y, x;
+		getmaxyx(n->p.s->win, y, x);
+		size_t s = MAX(x - 1, (int)sizeof t);
 		if( binding == &cmd_keys && n == focused ) {
 			wattron(n->wtit, A_REVERSE);
 		} else {
@@ -367,21 +369,11 @@ draw_title(struct canvas *n)
 		int glyph = ACS_HLINE;
 		mvwprintw(n->wtit, 0, 0, "%s", t);
 		int len = strlen(t);
-
-		{
-			int y, x;
-			getmaxyx(n->wtit, y, x);
-			assert( y == 1 );
-			assert( x == n->x.x );
-			getmaxyx(n->p.s->win, y, x);
-			assert( y - n->p.s->tos == n->x.y - 1 );
-			assert( x == n->x.x );
+		if( x - len > 0 ) {
+			mvwhline(n->wtit, 0, len, glyph, x - len);
 		}
-
-		if( n->x.x - len > 0 ) {
-			mvwhline(n->wtit, 0, len, glyph, n->x.x - len);
-		}
-		draw_pane(n->wtit, n->origin.y + n->x.y - 1, n->origin.x, 0, 0);
+		draw_pane(n->wtit, n->origin.y + y - n->p.s->tos,
+			n->origin.x, 0, 0);
 	}
 }
 
