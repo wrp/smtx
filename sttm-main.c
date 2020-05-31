@@ -252,13 +252,11 @@ prune(struct canvas *x)
 		o->c[d] = n;
 		*(n ? &n->parent : &dummy) = o;
 		o->origin = x->origin;
-		o->siz = x->siz;
 		equalize(o, NULL);
 		freecanvas(x);
 	} else if( n ) {
 		n->parent = p;
 		n->origin = x->origin;
-		n->siz = x->siz;
 		*(p ? &p->c[d] : &root) = n;
 		freecanvas(x);
 	} else if( p ) {
@@ -278,12 +276,12 @@ prune(struct canvas *x)
 }
 
 static void
-reshape_window(struct canvas *N, int d)
+reshape_window(struct canvas *N, int h, int w, int d)
 {
 	struct proc *n = &N->p;
 	if( n->pt >= 0 ) {
-		int h = N->x.y > 1 ? N->x.y - 1 : 24;
-		int w = N->x.x > 0 ? N->x.x - 0 : 80;
+		h = h > 1 ? h - 1 : 24;
+		w = w > 0 ? w : 80;
 		int oy, ox;
 		n->ws = (struct winsize) {.ws_row = h, .ws_col = w};
 		getyx(n->s->win, oy, ox);
@@ -315,36 +313,30 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		int oy, ox;
 		getmaxyx(n->p.s->win, oy, ox);
 		(void)ox;
-		assert( n->x.y == 0 || oy - n->p.s->tos == n->x.y - 1 );
 		int d = oy - n->p.s->tos - h * n->split_point[0]; /* TODO */
 
 		n->origin.y = y;
 		n->origin.x = x;
-		n->siz.y = h;
-		n->siz.x = w;
-		n->x.y = h * n->split_point[0];
-		n->x.x = w * n->split_point[1];
-		int have_title = n->x.y && n->x.x;
-		int have_div = n->siz.y && n->siz.x && n->c[1];
+		int h1 = h * n->split_point[0];
+		int w1 = w * n->split_point[1];
+		int have_title = h1 && w1;
+		int have_div = h && w && n->c[1];
 
 		if( have_div ) {
-			resize_pad(&n->wdiv, n->typ ? n->siz.y : n->x.y, 1);
+			resize_pad(&n->wdiv, n->typ ? h : h1, 1);
 		} else {
 			delwinnul(&n->wdiv);
 		}
 		if( have_title ) {
-			resize_pad(&n->wtit, 1, n->x.x);
+			resize_pad(&n->wtit, 1, w1);
 		} else {
 			delwinnul(&n->wtit);
 		}
 
-		y = n->origin.y + n->x.y;
-		x = n->origin.x + n->x.x + have_div;
-		h = n->siz.y - n->x.y;
-		w = n->siz.x - n->x.x - have_div;
-		reshape(n->c[0], y, n->origin.x, h, n->typ ? n->x.x : n->siz.x);
-		reshape(n->c[1], n->origin.y, x, n->typ ? n->siz.y : n->x.y, w);
-		reshape_window(n, d);
+		reshape(n->c[0], y + h1, x, h - h1, n->typ ? w1 : w);
+		reshape(n->c[1], y, x + w1 + have_div,
+			n->typ ? h : h1, w - w1 - have_div);
+		reshape_window(n, h1, w1, d);
 	}
 }
 
