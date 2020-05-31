@@ -220,13 +220,17 @@ canvas_yx(const struct canvas *n, int *rows, int *cols)
 	getmaxyx(n->p.s->win, y, x);
 	*rows = y - n->p.s->tos + 1;
 	*cols = x;
-	for( const struct canvas *c = n->c[0]; c; c = c->c[0] ) {
-		getmaxyx(c->p.s->win, y, x);
-		*rows += y - c->p.s->tos + 1;
-	}
-	for( const struct canvas *c = n->c[1]; c; c = c->c[1] ) {
-		getmaxyx(c->p.s->win, y, x);
-		*cols += 1 + x;
+	for( int i = 0; i < 2; i++ ) {
+		for( const struct canvas *c = n->c[i]; c; c = c->c[i] ) {
+			if( c->p.s && c->p.s->win ) {
+				getmaxyx(c->p.s->win, y, x);
+				if( i == 0 ) {
+					*rows += y - c->p.s->tos + 1;
+				} else {
+					*cols += 1 + x;
+				}
+			}
+		}
 	}
 }
 
@@ -409,21 +413,24 @@ create(struct canvas *n, const char *args[])
 {
 	assert( n != NULL );
 	int dir = *args && **args == 'C' ? 1 : 0;
+	int y, x;
 	/* Always split last window in a chain */
 	while( n->c[dir] != NULL ) {
 		n = n->c[dir];
 	}
 	assert( n->c[dir] == NULL );
-	n->split_point[dir] = 0.5;
 	struct canvas *v = n->c[dir] = newcanvas();
 	if( v != NULL ) {
 		v->typ = dir;
 		v->parent = n;
+		n = balance(v);
+		canvas_yx(n, &y, &x);
 		new_screens(&v->p);
 		new_pty(&v->p);
 	}
-	n = balance(v);
-	reshape(n, n->origin.y, n->origin.x, n->siz.y, n->siz.x);
+	assert( y == n->siz.y );
+	assert( x == n->siz.x );
+	reshape(n, n->origin.y, n->origin.x, y, x);
 	return 0;
 }
 
