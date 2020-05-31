@@ -555,33 +555,29 @@ mov(struct canvas *n, const char **args)
 	int startx = n->origin.x;
 	int starty = n->origin.y + y - n->p.s->tos;
 	struct canvas *t = n;
-	switch( cmd ) {
-	case 'p':
+	if( cmd == 'p' ) {
 		n = lastfocused;
-		break;
-	default:
-		for( ; t && count--; n = t ? t : n ) {
-			int y, x;
-			getmaxyx(t->p.s->win, y, x);
-			switch( cmd ) {
-			case 'k': /* move up */
-				t = find_window(view_root, t->origin.y - 1,
+	} else for( ; t && count--; n = t ? t : n ) {
+		int y, x;
+		getmaxyx(t->p.s->win, y, x);
+		switch( cmd ) {
+		case 'k': /* move up */
+			t = find_window(view_root, t->origin.y - 1,
+				startx);
+			break;
+		case 'j': /* move down */
+			t = find_window(view_root,
+				t->origin.y + y - t->p.s->tos + 2,
 					startx);
-				break;
-			case 'j': /* move down */
-				t = find_window(view_root,
-					t->origin.y + y - t->p.s->tos + 2,
-						startx);
-				break;
-			case 'l': /* move right */
-				t = find_window(view_root, starty,
-					t->origin.x + x + 1);
-				break;
-			case 'h': /* move left */
-				t = find_window(view_root, starty,
-					t->origin.x - 1);
-				break;
-			}
+			break;
+		case 'l': /* move right */
+			t = find_window(view_root, starty,
+				t->origin.x + x + 1);
+			break;
+		case 'h': /* move left */
+			t = find_window(view_root, starty,
+				t->origin.x - 1);
+			break;
 		}
 	}
 	focus(n, 1);
