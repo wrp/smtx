@@ -135,6 +135,16 @@ freecanvas(struct canvas *n)
 	}
 }
 
+static int
+winsiz(WINDOW *w, int dir)
+{
+	int y = 0, x = 0;
+	if( w ) {
+		getmaxyx(w, y, x);
+	}
+	return dir ? x : y;
+}
+
 static void
 fixcursor(void) /* Move the terminal cursor to the active window. */
 {
@@ -147,6 +157,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	int maxy, x, y;
 	getmaxyx(p->s->win, maxy, x);
 	getyx(p->s->win, y, x);
+	assert( maxy == winsiz(p->s->win, 0) );
 	y = MIN(MAX(y, p->s->tos), maxy + 1);
 	wmove(p->s->win, y, x);
 }
@@ -224,6 +235,8 @@ canvas_yx(const struct canvas *n, int *rows, int *cols)
 		for( const struct canvas *c = n->c[i]; c; c = c->c[i] ) {
 			if( c->p.s && c->p.s->win ) {
 				getmaxyx(c->p.s->win, y, x);
+				assert( y == winsiz(c->p.s->win, 0 ));
+				assert( x == winsiz(c->p.s->win, 1 ));
 				if( i == 0 ) {
 					*rows += y - c->p.s->tos + 1;
 				} else {
@@ -313,6 +326,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		int oy, ox;
 		getmaxyx(n->p.s->win, oy, ox);
 		(void)ox;
+		assert( oy == winsiz(n->p.s->win, 0) );
 		int d = oy - n->p.s->tos - h * n->split_point[0]; /* TODO */
 
 		n->origin.y = y;
@@ -345,6 +359,8 @@ draw_pane(WINDOW *w, int y, int x, int offset, int r)
 {
 	int rows, cols;
 	getmaxyx(w, rows, cols);
+	assert( rows == winsiz(w, 0) );
+	assert( cols == winsiz(w, 1) );
 	pnoutrefresh(w, offset, 0, y, x, y + (r ? r : rows) - 1, x + cols - 1);
 }
 
