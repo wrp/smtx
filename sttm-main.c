@@ -473,11 +473,17 @@ digit(struct canvas *n, const char **args)
 static int
 scrolln(struct canvas *n, const char **args)
 {
-	int count = cmd_count == -1 ? n->siz.y / 2 : cmd_count;
-	if(args[0][0] == '-') {
-		n->p.s->off = MAX(0, n->p.s->off - count);
-	} else {
-		n->p.s->off = MIN(n->p.s->tos, n->p.s->off + count);
+	/* TODO: enable srolling left/right */
+	if( n && n->p.s && n->p.s->win ) {
+		int y, x;
+		getmaxyx(n->p.s->win, y, x);
+		(void) x;
+		int count = cmd_count == -1 ? (y - n->p.s->tos) - 1 : cmd_count;
+		if( args[0][0] == '-' ) {
+			n->p.s->off = MAX(0, n->p.s->off - count);
+		} else {
+			n->p.s->off = MIN(n->p.s->tos, n->p.s->off + count);
+		}
 	}
 	return 0;
 }
