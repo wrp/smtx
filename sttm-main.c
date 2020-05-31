@@ -526,9 +526,11 @@ find_canvas(struct canvas *b, int id)
 int
 contains(struct canvas *n, int y, int x)
 {
+	int y1, x1;
+	getmaxyx(n->p.s->win, y1, x1);
 	return
-		y >= n->origin.y && y <= n->origin.y + n->x.y &&
-		x >= n->origin.x && x <= n->origin.x + n->x.x;
+		y >= n->origin.y && y <= n->origin.y + y1 - n->p.s->tos + 1 &&
+		x >= n->origin.x && x <= n->origin.x + x1;
 }
 
 struct canvas *
