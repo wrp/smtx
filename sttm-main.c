@@ -357,11 +357,9 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 static void
 draw_pane(WINDOW *w, int y, int x, int offset, int r)
 {
-	int rows, cols;
-	getmaxyx(w, rows, cols);
-	assert( rows == winsiz(w, 0) );
-	assert( cols == winsiz(w, 1) );
-	pnoutrefresh(w, offset, 0, y, x, y + (r ? r : rows) - 1, x + cols - 1);
+	int rows = r ? r : winsiz(w, 0);
+	int cols = winsiz(w, 1);
+	pnoutrefresh(w, offset, 0, y, x, y + rows - 1, x + cols - 1);
 }
 
 static void
