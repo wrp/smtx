@@ -428,8 +428,6 @@ create(struct canvas *n, const char *args[])
 		new_screens(&v->p);
 		new_pty(&v->p);
 	}
-	assert( y == n->siz.y );
-	assert( x == n->siz.x );
 	reshape(n, n->origin.y, n->origin.x, y, x);
 	return 0;
 }
