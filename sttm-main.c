@@ -367,8 +367,7 @@ draw_title(struct canvas *n)
 {
 	if( n->wtit ) {
 		char t[128];
-		int y, x;
-		getmaxyx(n->p.s->win, y, x);
+		int x = winsiz(n->wpty, 1);
 		size_t s = MAX(x - 1, (int)sizeof t);
 		if( binding == &cmd_keys && n == focused ) {
 			wattron(n->wtit, A_REVERSE);
@@ -387,7 +386,7 @@ draw_title(struct canvas *n)
 		if( x - len > 0 ) {
 			mvwhline(n->wtit, 0, len, glyph, x - len);
 		}
-		draw_pane(n->wtit, n->origin.y + y - n->p.s->tos,
+		draw_pane(n->wtit, n->origin.y + winsiz(n->wpty, 0),
 			n->origin.x, 0, 0);
 	}
 }
