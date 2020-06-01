@@ -271,6 +271,8 @@ prune(struct canvas *x)
 	} else if( o ) {
 		assert( o->c[d] == NULL );
 		assert( o->parent == x );
+		assert( o->typ != d );
+		o->typ = d;
 		o->parent = p;
 		*(p ? &p->c[d] : &root) = o;
 		o->c[d] = n;
