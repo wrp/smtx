@@ -148,12 +148,10 @@ winsiz(WINDOW *w, int dir)
 static void
 draw_window(struct canvas *n)
 {
-	int y, x;
 	struct point *a = &n->origin;
 	struct screen * s = n->p.s;
-	getmaxyx(s->win, y, x);
-	if( y > s->tos && x > 0 ) {
-		draw_pane(s->win, a->y, a->x, s->off, y - s->tos);
+	if( n->wpty ) {
+		draw_pane(s->win, a->y, a->x, s->off, winsiz(n->wpty,0));
 	}
 }
 
