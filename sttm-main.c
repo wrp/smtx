@@ -156,6 +156,9 @@ draw_window(struct canvas *n)
 		pnoutrefresh(s->win, s->off, 0, y, x,
 			s->off + winsiz(n->wpty, 0) - 1,
 			x + winsiz(n->wpty, 1) - 1);
+
+		assert( n->p.ws.ws_row == winsiz(n->wpty, 0) );
+		assert( n->p.ws.ws_col == winsiz(n->wpty, 1) );
 	}
 }
 
@@ -170,6 +173,9 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	int x, y;
 	getyx(p->s->win, y, x);
 	y = MIN(MAX(y, p->s->tos), winsiz(p->s->win, 0) + 1);
+
+	assert( p->ws.ws_row == winsiz(p->s->win, 0) - p->s->tos );
+
 	wmove(p->s->win, y, x);
 }
 
@@ -241,6 +247,8 @@ canvas_yx(const struct canvas *n, int *rows, int *cols)
 	int y, x;
 	*rows = winsiz(n->p.s->win, 0) - n->p.s->tos + 1;
 	*cols = winsiz(n->p.s->win, 1);;
+	assert( n->p.ws.ws_row == *rows - 1 );
+	assert( n->p.ws.ws_col == *cols );
 	for( int i = 0; i < 2; i++ ) {
 		for( const struct canvas *c = n->c[i]; c; c = c->c[i] ) {
 			if( c->p.s && c->p.s->win ) {
@@ -391,6 +399,7 @@ draw_title(struct canvas *n)
 		if( x - len > 0 ) {
 			mvwhline(n->wtit, 0, len, ACS_HLINE, x - len);
 		}
+		assert( n->p.ws.ws_row == winsiz(n->wpty, 0) );
 		draw_pane(n->wtit, n->origin.y + winsiz(n->wpty, 0),
 			n->origin.x);
 	}
