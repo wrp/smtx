@@ -246,6 +246,8 @@ canvas_yx(const struct canvas *n, int *rows, int *cols)
 			if( c->p.s && c->p.s->win ) {
 				/* int k = winsiz(n->wpty, 0 ); */
 				getmaxyx(c->p.s->win, y, x);
+				assert( x == c->p.ws.ws_col );
+				assert( y - c->p.s->tos == c->p.ws.ws_row );
 				assert( y == winsiz(c->p.s->win, 0 ));
 				assert( x == winsiz(c->p.s->win, 1 ));
 				/* Sometimes this is off by one.
