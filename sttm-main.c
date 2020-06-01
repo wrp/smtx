@@ -366,11 +366,9 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 }
 
 static void
-draw_pane(WINDOW *w, int y, int x, int offset, int r)
+draw_pane(WINDOW *w, int y, int x)
 {
-	int rows = r ? r : winsiz(w, 0);
-	int cols = winsiz(w, 1);
-	pnoutrefresh(w, offset, 0, y, x, y + rows - 1, x + cols - 1);
+	pnoutrefresh(w, 0, 0, y, x, y + winsiz(w, 0) - 1, x + winsiz(w, 1) - 1);
 }
 
 static void
@@ -398,7 +396,7 @@ draw_title(struct canvas *n)
 			mvwhline(n->wtit, 0, len, glyph, x - len);
 		}
 		draw_pane(n->wtit, n->origin.y + winsiz(n->wpty, 0),
-			n->origin.x, 0, 0);
+			n->origin.x);
 	}
 }
 
@@ -412,7 +410,7 @@ draw(struct canvas *n) /* Draw a canvas. */
 			int y, x;
 			getmaxyx(n->p.s->win, y, x);
 			mvwvline(n->wdiv, 0, 0, ACS_VLINE, y);
-			draw_pane(n->wdiv, n->origin.y, n->origin.x + x, 0, 0);
+			draw_pane(n->wdiv, n->origin.y, n->origin.x + x);
 		}
 		draw_title(n);
 		draw_window(n);
