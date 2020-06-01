@@ -335,8 +335,7 @@ static void
 reshape(struct canvas *n, int y, int x, int h, int w)
 {
 	if( n ) {
-		int k = winsiz(n->wpty, 0);
-		int d = k - h * n->split_point[0]; /* TODO */
+		int d = winsiz(n->wpty, 0) - h * n->split_point[0]; /* TODO */
 
 		n->origin.y = y;
 		n->origin.x = x;
@@ -891,7 +890,6 @@ parse_args(int argc, char *const*argv)
 int
 sttm_main(int argc, char *const*argv)
 {
-	struct canvas *r;
 	char buf[32];
 	FD_SET(maxfd, &fds);
 	snprintf(buf, sizeof buf - 1, "%lu", (unsigned long)getpid());
@@ -915,8 +913,8 @@ sttm_main(int argc, char *const*argv)
 	start_color();
 	use_default_colors();
 
-	r = view_root = root = newcanvas();
-	if( r == NULL || !new_screens(&r->p) || !new_pty(&r->p) ) {
+	view_root = root = newcanvas();
+	if( !root || !new_screens(&root->p) || !new_pty(&root->p) ) {
 		err(EXIT_FAILURE, "Unable to create root window");
 	}
 	reshape(view_root, 0, 0, LINES, COLS);
