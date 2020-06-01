@@ -2,4 +2,5 @@
 
 export SHELL=/bin/sh
 echo '{ echo foo; exit; }' | ./smtx -c l || exit
-echo '{ printf bnananananana; tput cub 10; tput ich 10; exit; }' | ./smtx || exit
+echo '{ tput cub 10; tput ich 10; exit; }' | ./smtx || exit
+echo '{ tput cbt 10; exit; }' | ./smtx || exit
