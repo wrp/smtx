@@ -45,7 +45,6 @@ int scrollback_history = 1024;
 static struct canvas * balance(struct canvas *n);
 static void freecanvas(struct canvas *n);
 static void reshape(struct canvas *n, int y, int x, int h, int w);
-static void draw_pane(WINDOW *w, int y, int x, int offset, int r);
 
 const char *term = NULL;
 
@@ -148,10 +147,12 @@ winsiz(WINDOW *w, int dir)
 static void
 draw_window(struct canvas *n)
 {
-	struct point *a = &n->origin;
-	struct screen * s = n->p.s;
 	if( n->wpty ) {
-		draw_pane(s->win, a->y, a->x, s->off, winsiz(n->wpty,0));
+		int y = n->origin.y, x = n->origin.x;
+		struct screen *s = n->p.s;
+		pnoutrefresh(s->win, s->off, 0, y, x,
+			s->off + winsiz(n->wpty, 0) - 1,
+			x + winsiz(n->wpty, 1) - 1);
 	}
 }
 
