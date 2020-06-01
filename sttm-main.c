@@ -44,8 +44,8 @@ int scrollback_history = 1024;
 
 static struct canvas * balance(struct canvas *n);
 static void freecanvas(struct canvas *n);
-static void draw_window(struct screen *s, const struct point *);
 static void reshape(struct canvas *n, int y, int x, int h, int w);
+static void draw_pane(WINDOW *w, int y, int x, int offset, int r);
 
 const char *term = NULL;
 
@@ -146,12 +146,23 @@ winsiz(WINDOW *w, int dir)
 }
 
 static void
+draw_window(struct canvas *n)
+{
+	int y, x;
+	struct point *a = &n->origin;
+	struct screen * s = n->p.s;
+	getmaxyx(s->win, y, x);
+	if( y > s->tos && x > 0 ) {
+		draw_pane(s->win, a->y, a->x, s->off, y - s->tos);
+	}
+}
+
+static void
 fixcursor(void) /* Move the terminal cursor to the active window. */
 {
 	struct proc *p = &focused->p;
 	assert( p && p->s );
 	int show = binding != &cmd_keys && p->s->vis;
-	draw_window(p->s, &focused->origin);
 	curs_set(p->s->off != p->s->tos ? 0 : show);
 
 	int x, y;
@@ -392,16 +403,6 @@ draw_title(struct canvas *n)
 }
 
 static void
-draw_window(struct screen *s, const struct point *a)
-{
-	int y, x;
-	getmaxyx(s->win, y, x);
-	if( y > s->tos && x > 0 ) {
-		draw_pane(s->win, a->y, a->x, s->off, y - s->tos);
-	}
-}
-
-static void
 draw(struct canvas *n) /* Draw a canvas. */
 {
 	if( n != NULL ) {
@@ -414,7 +415,7 @@ draw(struct canvas *n) /* Draw a canvas. */
 			draw_pane(n->wdiv, n->origin.y, n->origin.x + x, 0, 0);
 		}
 		draw_title(n);
-		draw_window(n->p.s, &n->origin);
+		draw_window(n);
 	}
 }
 
@@ -845,6 +846,7 @@ main_loop(void)
 		fd_set sfds = fds;
 
 		draw(view_root);
+		draw_window(focused);
 		fixcursor();
 		doupdate();
 		if( select(maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
