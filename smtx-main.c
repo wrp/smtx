@@ -17,7 +17,6 @@
  */
 /*
    TODO:
-     name change? smtx (simple modal terminal multi-plexor)
      Copy-mode, with stack of registers and ability to edit.
      Ability to set titles.
      Needs to be easier to navigate in full screen mode.   Perhaps
