@@ -389,11 +389,10 @@ draw_title(struct canvas *n)
 			n->origin.y, n->origin.x,
 			n->x.y, n->x.x, n->siz.y, n->siz.x);
 		*/
-		int glyph = ACS_HLINE;
 		mvwprintw(n->wtit, 0, 0, "%s", t);
 		int len = strlen(t);
 		if( x - len > 0 ) {
-			mvwhline(n->wtit, 0, len, glyph, x - len);
+			mvwhline(n->wtit, 0, len, ACS_HLINE, x - len);
 		}
 		draw_pane(n->wtit, n->origin.y + winsiz(n->wpty, 0),
 			n->origin.x);
