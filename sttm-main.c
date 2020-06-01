@@ -639,8 +639,8 @@ equalize(struct canvas *n, const char **args)
 	(void) args;
 	assert( n != NULL );
 	int y, x;
-	canvas_yx(n, &y, &x);
 	n = balance(n);
+	canvas_yx(n, &y, &x);
 	reshape(n, n->origin.y, n->origin.x, y, x);
 	return 0;
 }
