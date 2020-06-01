@@ -520,22 +520,6 @@ reshape_root(struct canvas *n, const char **args)
 	return 0;
 }
 
-#if 0
-struct canvas *
-find_canvas(struct canvas *b, int id)
-{
-	struct canvas *r = id ? NULL : root;
-	if( id && b != NULL ) {
-		if( b->id == id ) {
-			r = b;
-		} else if( ( r = find_canvas(b->c[0], id)) == NULL ) {
-			r = find_canvas(b->c[1], id);
-		}
-	}
-	return r;
-}
-#endif
-
 int
 contains(struct canvas *n, int y, int x)
 {

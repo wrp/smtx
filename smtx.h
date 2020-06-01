@@ -112,7 +112,6 @@ extern struct canvas *focused;
 
 extern void setupevents(struct proc *);
 extern void safewrite(int fd, const char *b, size_t n);
-extern struct canvas * find_canvas(struct canvas *b, int id);
 extern void main_loop(void);
 extern void build_bindings(void);
 extern int smtx_main(int, char *const*);
