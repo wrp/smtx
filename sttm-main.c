@@ -26,6 +26,11 @@
        screen mode while going between them.
      Register signal handlers for TERM and HUP.  Need to ensure
        that endwin is called.
+     List all windows with titles, with ability to navigate.
+     Be able to attach a pty to multiple windows.
+     Pass master fd of a pty through a socket.
+     Configure bindings.
+     Multi-key bindings (?)
  */
 
 #include "sttm.h"
