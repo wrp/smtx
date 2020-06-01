@@ -303,15 +303,13 @@ prune(struct canvas *x)
 }
 
 static void
-reshape_window(struct canvas *N, int h, int w, int d)
+reshape_window(struct canvas *N, int h, int w)
 {
 	struct proc *n = &N->p;
 	if( n->pt >= 0 ) {
 		h = h > 1 ? h - 1 : 24;
 		w = w > 0 ? w : 80;
-		int oy, ox;
 		n->ws = (struct winsize) {.ws_row = h, .ws_col = w};
-		getyx(n->s->win, oy, ox);
 		resize_pad(&n->pri.win, MAX(h, scrollback_history), w);
 		resize_pad(&n->alt.win, h, w);
 		resize_pad(&N->wpty, h, w);
@@ -319,10 +317,6 @@ reshape_window(struct canvas *N, int h, int w, int d)
 		n->alt.tos = n->alt.off = 0;
 		wsetscrreg(n->pri.win, 0, MAX(scrollback_history, h) - 1);
 		wsetscrreg(n->alt.win, 0, h - 1);
-		if( d != 0 ) {
-			wmove(n->s->win, oy + d, ox);
-			wscrl(n->s->win, -d);
-		}
 		wrefresh(n->s->win);
 		if( ioctl(n->pt, TIOCSWINSZ, &n->ws) ) {
 			perror("ioctl");
@@ -338,8 +332,6 @@ static void
 reshape(struct canvas *n, int y, int x, int h, int w)
 {
 	if( n ) {
-		int d = winsiz(n->wpty, 0) - h * n->split_point[0]; /* TODO */
-
 		n->origin.y = y;
 		n->origin.x = x;
 		int h1 = h * n->split_point[0];
@@ -361,7 +353,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		reshape(n->c[0], y + h1, x, h - h1, n->typ ? w1 : w);
 		reshape(n->c[1], y, x + w1 + have_div,
 			n->typ ? h : h1, w - w1 - have_div);
-		reshape_window(n, h1, w1, d);
+		reshape_window(n, h1, w1);
 	}
 }
 
