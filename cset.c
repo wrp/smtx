@@ -1,4 +1,4 @@
-#include "sttm.h"
+#include "smtx.h"
 
 wchar_t CSET_US[MAXMAP]; /* "USASCII" */
 

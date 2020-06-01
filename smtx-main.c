@@ -33,7 +33,7 @@
      Multi-key bindings (?)
  */
 
-#include "sttm.h"
+#include "smtx.h"
 
 static struct handler keys[128];
 static struct handler cmd_keys[128];
@@ -894,14 +894,14 @@ parse_args(int argc, char *const*argv)
 }
 
 int
-sttm_main(int argc, char *const*argv)
+smtx_main(int argc, char *const*argv)
 {
 	char buf[32];
 	FD_SET(maxfd, &fds);
 	snprintf(buf, sizeof buf - 1, "%lu", (unsigned long)getpid());
-	setenv("STTM", buf, 1);
+	setenv("SMTX", buf, 1);
 	setenv("TERM", getterm(), 1);
-	setenv("STTM_VERSION", VERSION, 1);
+	setenv("SMTX_VERSION", VERSION, 1);
 	unsetenv("COLUMNS");
 	unsetenv("LINES");
 	setlocale(LC_ALL, "");

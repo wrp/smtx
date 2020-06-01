@@ -1,14 +1,14 @@
 Introduction
 ============
 
-sttm is the Simple Terminal Manager
+smtx is the Simple Modal Terminal Multiplexer
 
 Quickstart
 ==========
 
-sttm is a window manager.  When first started, sttm creates a single
+smtx is a window manager.  When first started, smtx creates a single
 window with a pty running the program specified in SHELL.  Entering
-the `MOD` keysequence (default is `CTRL+g`) will put sttm in `command`
+the `MOD` keysequence (default is `CTRL+g`) will put smtx in `command`
 mode, in which key sequences are interpreted to manipulate the
 windows.  To transition back to `keypress` mode, you may press
 `RETURN`, `MOD`, or `ESC`.  Pressing `ESC` or `RETURN` transitions
@@ -27,26 +27,26 @@ Usage
 
 Usage is simple::
 
-    sttm [-T NAME] [-t NAME] [-c KEY]
+    smtx [-T NAME] [-t NAME] [-c KEY]
 
-The `-T` flag tells sttm to assume a different kind of host terminal.
+The `-T` flag tells smtx to assume a different kind of host terminal.
 
-The `-t` flag tells sttm what terminal type to advertise itself as.
-Note that this doesn't change how sttm interprets control sequences; it
+The `-t` flag tells smtx what terminal type to advertise itself as.
+Note that this doesn't change how smtx interprets control sequences; it
 simply controls what the `TERM` environment variable is set to.
 
 The `-c` flag lets you specify a keyboard character to use as the "command
-prefix" for sttm when modified with *control* (see below).  By default,
+prefix" for smtx when modified with *control* (see below).  By default,
 this is `g`.
 
-Once inside sttm, things pretty much work like any other terminal.  However,
-sttm lets you split up the terminal into multiple virtual terminals.
+Once inside smtx, things pretty much work like any other terminal.  However,
+smtx lets you split up the terminal into multiple virtual terminals.
 
 At any given moment, exactly one virtual terminal is *focused*.  It is
 to this terminal that keyboad input is sent.  The focused terminal is
 indicated by the location of the cursor.
 
-The following commands are recognized in sttm, when preceded by the command
+The following commands are recognized in smtx, when preceded by the command
 prefix (by default *ctrl-g*):
 
 Up/Down/Left/Right Arrow
@@ -63,7 +63,7 @@ h / v
 
 w
     Delete the focused virtual terminal.  Some other nearby virtual
-    terminal will become focused if there are any left.  sttm will exit
+    terminal will become focused if there are any left.  smtx will exit
     once all virtual terminals are closed.  Virtual terminals will also
     close if the program started inside them exits.
 
@@ -82,15 +82,15 @@ nothing else to learn.
 Compatibility
 =============
 
-The `sttm` Terminal Types
+The `smtx` Terminal Types
 ------------------------
-sttm comes with a terminfo description file called sttm.ti.  This file
-describes all of the features supported by sttm.
+smtx comes with a terminfo description file called smtx.ti.  This file
+describes all of the features supported by smtx.
 
 If you want to install this terminal type, use the `tic` compiler that
 comes with ncurses::
 
-    tic -s -x sttm.ti
+    tic -s -x smtx.ti
 
 or simply::
 
@@ -98,31 +98,31 @@ or simply::
 
 This will install the following terminal types:
 
-sttm
-    This terminal type supports all of the features of sttm, but with
+smtx
+    This terminal type supports all of the features of smtx, but with
     the default 8 "ANSI" colors only.
 
-sttm-256color
-    Note that sttm is not magic and cannot actually display more colors
+smtx-256color
+    Note that smtx is not magic and cannot actually display more colors
     than the host terminal supports.
 
-sttm-noutf
-    This terminal type supports everything the sttm terminal type does,
+smtx-noutf
+    This terminal type supports everything the smtx terminal type does,
     but does not advertise UTF8 capability.
 
 That command will compile and install the terminfo entry.  After doing so,
-calling sttm with `-t sttm`::
+calling smtx with `-t smtx`::
 
-    sttm -t sttm
+    smtx -t smtx
 
 will instruct programs to use that terminfo entry.
-You can, of course, replace `sttm` with any of the other above terminal
+You can, of course, replace `smtx` with any of the other above terminal
 types.
 
-Using these terminfo entries allows programs to use the full power of sttm's
+Using these terminfo entries allows programs to use the full power of smtx's
 terminal emulation, but it is entirely optional. A primary design goal
-of sttm was for it to be completely usable on systems that didn't have the
-sttm terminfo entry installed. By default, sttm advertises itself as the
+of smtx was for it to be completely usable on systems that didn't have the
+smtx terminfo entry installed. By default, smtx advertises itself as the
 widely-available `screen-bce` terminal type.
 
 Copyright and License

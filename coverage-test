@@ -14,8 +14,8 @@ for name in \
 	find-canvas-test \
 	handler \
 	main \
-	sttm-test \
-	sttm \
+	smtx-test \
+	smtx \
 	vtparser \
 	;
 do

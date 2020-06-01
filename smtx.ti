@@ -1,4 +1,4 @@
-sttm|Simple Terminal Manager,
+smtx|Simple Modal Terminal Multiplexer,
 	am, bce, xenl, mir, msgr, cols#80, lines#25, it#8, colors#8, pairs#64, U8#1,
 	acsc=++\,\,--..00``aaffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz{{||}}~~,
 	bel=\007, blink=\E[5m, bold=\E[1m, cbt=\E[Z, civis=\E[25l,
@@ -23,12 +23,12 @@ sttm|Simple Terminal Manager,
 	smul=\E[4m, tbc=\E[3g, vpa=\E[%i%p1%dd, E3=\E[3J, u8=\006, u9=\005,
 
 
-sttm-256color|Simple Terminal Manager with 256 colors,
+smtx-256color|Simple Terminal Manager with 256 colors,
 	colors#0x100, pairs#0x10000,
 	setab=\E[%?%p1%{8}%<%t4%p1%d%e%p1%{16}%<%t10%p1%{8}%-%d%e48;5;%p1%d%;m,
 	setaf=\E[%?%p1%{8}%<%t3%p1%d%e%p1%{16}%<%t9%p1%{8}%-%d%e38;5;%p1%d%;m,
-	use=sttm,
+	use=smtx,
 
-sttm-noutf|Simple Terminal Manager with no UTF8,
+smtx-noutf|Simple Terminal Manager with no UTF8,
     @U8,
-    use=sttm,
+    use=smtx,

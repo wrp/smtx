@@ -1,4 +1,4 @@
-#include "sttm.h"
+#include "smtx.h"
 #include <sys/wait.h>
 
 const char *args[10];
@@ -10,7 +10,7 @@ test1() {
 	case -1:
 		err(1, "forkpty");
 	case 0:
-		sttm_main(1, (char *const[]) { "sttm-test", NULL });
+		smtx_main(1, (char *const[]) { "smtx-test", NULL });
 		exit(0);
 	default: {
 		char *cmds[] = {

@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([sttm],
+AC_INIT([smtx],
 	m4_esyscmd([./build-aux/package-version]),
 	[william.r.pursell@gmail.com])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])

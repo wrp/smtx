@@ -1,4 +1,4 @@
 #!/bin/sh
 
 export SHELL=/bin/sh
-echo '{ echo foo; exit; }' | ./sttm -c l || exit
+echo '{ echo foo; exit; }' | ./smtx -c l || exit
