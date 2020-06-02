@@ -745,15 +745,23 @@ build_bindings()
 static int
 is_command(const char *k)
 {
+	int rv = 0;
+	while( isspace(*k) ) {
+		k += 1;
+	}
 	const char *space = strchr(k, ' ');
 	char *c, *path = getenv("PATH");
 	char name[PATH_MAX];
 	size_t len = space ? (size_t)(space - k) : strlen(k);
-	if( (c = strchr(k, '/' )) && c < k + len ) {
+	if( len == 0 ) {
+		;
+	} else if( !strncmp(k, "cd", 2) || !strncmp(k, "exec", 4) ) {
+		rv = 1;
+	} else if( (c = strchr(k, '/' )) && c < k + len ) {
 		memcpy(name, k, len);
 		name[len] = '\0';
-		return access(k, X_OK) == 0;
-	} else for( c = strchr(path, ':'); c; c = strchr(path, ':') ) {
+		rv = access(k, X_OK) == 0;
+	} else for( c = strchr(path, ':'); c && !rv; c = strchr(path, ':') ) {
 		size_t n = c - path;
 		if( n > sizeof name - 2 - len ) {
 			/* horribly ill-formed PATH */
@@ -763,12 +771,10 @@ is_command(const char *k)
 		name[n] = '/';
 		memcpy(name + n + 1, k, len);
 		name[n + len + 1] = '\0';
-		if( access(name, X_OK) == 0 ) {
-			return 1;
-		}
 		path = c + 1;
+		rv = !access(name, X_OK);
 	}
-	return 0;
+	return rv;
 }
 
 static void
