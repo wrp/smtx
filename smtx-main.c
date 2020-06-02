@@ -47,7 +47,6 @@ int cmd_count = -1;
 int scrollback_history = 1024;
 
 static struct canvas * balance(struct canvas *n);
-static void freecanvas(struct canvas *n);
 static void reshape(struct canvas *n, int y, int x, int h, int w);
 
 const char *term = NULL;
@@ -119,8 +118,19 @@ free_proc(struct proc *p)
 			FD_CLR(p->pt, &fds);
 		}
 		p->pt = -1;
-		delwinnul(&p->pri.win);
-		delwinnul(&p->alt.win);
+	}
+}
+
+void
+focus(struct canvas *n, int reset)
+{
+	if( n && n->p.s && n->p.s->win ) {
+		if( n != focused && reset ) {
+			lastfocused = focused;
+		}
+		focused = n;
+	} else {
+		focused = root;
 	}
 }
 
@@ -128,9 +138,17 @@ static void
 freecanvas(struct canvas *n)
 {
 	if( n ) {
+		if( n == focused ) {
+			focus(n->parent, 0);
+		}
 		delwinnul(&n->wtit);
 		delwinnul(&n->wdiv);
+		delwinnul(&n->wpty);
 		free_proc(&n->p);
+		/* Clearly, the windows should not be part of n->p, and
+		we do not want to delete them in free_proc */
+		delwinnul(&n->p.pri.win);
+		delwinnul(&n->p.alt.win);
 		free(n->p.tabs);
 		free(n);
 	}
@@ -227,19 +245,6 @@ new_pty(struct proc *p)
 	return p->pt;
 }
 
-void
-focus(struct canvas *n, int reset)
-{
-	if( n && n->p.s && n->p.s->win ) {
-		if( n != focused && reset ) {
-			lastfocused = focused;
-		}
-		focused = n;
-	} else {
-		focused = root;
-	}
-}
-
 static void
 canvas_yx(const struct canvas *n, int *rows, int *cols)
 {
@@ -271,14 +276,18 @@ canvas_yx(const struct canvas *n, int *rows, int *cols)
 	}
 }
 
-void
-prune(struct canvas *x)
+static int
+prune(struct canvas *x, const char **args)
 {
+	(void) args;
 	struct canvas *p = x->parent;
 	struct canvas *dummy;
 	int d = x->typ;
 	struct canvas *n = x->c[d];
 	struct canvas *o = x->c[!d];
+	if( x->p.pt != -1 ) {
+		return 1;
+	}
 	if( o && o->c[d] ) {
 		x->split_point[!d] = 0.0;
 	} else if( o ) {
@@ -308,10 +317,8 @@ prune(struct canvas *x)
 	if( view_root == x ) {
 		view_root = root;
 	}
-	if( x == focused ) {
-		focus(p, 0);
-	}
 	reshape(root, 0, 0, LINES, COLS);
+	return 0;
 }
 
 static void
@@ -445,10 +452,29 @@ create(struct canvas *n, const char *args[])
 	return 0;
 }
 
+static void
+report_child_status(struct canvas *n)
+{
+	int status, k;
+	const char *fmt;
+	if( waitpid(n->p.pid, &status, WNOHANG) == n->p.pid ) {
+		if( WIFEXITED(status) ) {
+			fmt = "exited %d";
+			k = WEXITSTATUS(status);
+		} else if( WIFSIGNALED(status) ) {
+			fmt = "signal %d";
+			k = WTERMSIG(status);
+		}
+		snprintf(n->title, sizeof n->title, fmt, k);
+		wprintw(n->p.s->win, "%s", n->title);
+		free_proc(&n->p);
+	}
+}
+
 static bool
 getinput(struct canvas *n, fd_set *f) /* check all ptty's for input. */
 {
-	bool status = true;;
+	bool status = true;
 	if( n && n->c[0] && !getinput(n->c[0], f) ) {
 		status = false;
 	} else if( n && n->c[1] && !getinput(n->c[1], f) ) {
@@ -459,8 +485,7 @@ getinput(struct canvas *n, fd_set *f) /* check all ptty's for input. */
 		if( r > 0 ) {
 			vtwrite(&n->p.vp, iobuf, r);
 		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
-			free_proc(&n->p);
-			prune(n);
+			report_child_status(n);
 			status = false;
 		}
 	}
@@ -713,6 +738,7 @@ build_bindings()
 	add_key(cmd_keys, L'h', mov, "h", NULL);
 	add_key(cmd_keys, L'p', mov, "p", NULL);
 	add_key(cmd_keys, L't', new_tabstop, NULL);
+	add_key(cmd_keys, L'x', prune, NULL);
 	add_key(cmd_keys, L'0', digit, "0", NULL);
 	add_key(cmd_keys, L'1', digit, "1", NULL);
 	add_key(cmd_keys, L'2', digit, "2", NULL);
@@ -791,7 +817,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 	if( r == OK && k > 0 && k < (int)sizeof *binding ) {
 		unsigned len = strlen(n->putative_cmd);
 		if( k == '\r' ) {
-			if( is_command(n->putative_cmd) ) {
+			if( n->p.pt > -1 && is_command(n->putative_cmd) ) {
 				strcpy(n->title, n->putative_cmd);
 			}
 			len = 0;
@@ -888,7 +914,6 @@ smtx_main(int argc, char *const*argv)
 	unsetenv("COLUMNS");
 	unsetenv("LINES");
 	setlocale(LC_ALL, "");
-	signal(SIGCHLD, SIG_IGN); /* automatically reap children */
 	parse_args(argc, argv);
 	build_bindings();
 

@@ -27,6 +27,7 @@
 #include <sys/ioctl.h>
 #include <sys/select.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <wchar.h>
 #include <wctype.h>
@@ -84,8 +85,8 @@ struct canvas {
 	*/
 	struct canvas *c[2];
 	double split_point[2]; /* percent of window dedicated to p.s->win */
-	char title[32];
-	char putative_cmd[32];
+	char title[64];
+	char putative_cmd[64];
 	WINDOW *wpty;  /* Window to display p.s->win */
 	WINDOW *wtit;  /* Window for title */
 	WINDOW *wdiv;  /* Window for divider */
@@ -115,7 +116,6 @@ extern void safewrite(int fd, const char *b, size_t n);
 extern void main_loop(void);
 extern void build_bindings(void);
 extern int smtx_main(int, char *const*);
-extern void prune(struct canvas *c);
 extern action transition;
 extern action create;
 extern action digit;
