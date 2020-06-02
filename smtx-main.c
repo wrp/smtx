@@ -250,7 +250,7 @@ canvas_yx(const struct canvas *n, int *rows, int *cols)
 {
 	int y, x;
 	*rows = winsiz(n->p.s->win, 0) - n->p.s->tos + 1;
-	*cols = winsiz(n->p.s->win, 1);;
+	*cols = winsiz(n->p.s->win, 1);
 	assert( n->p.ws.ws_row == *rows - 1 );
 	assert( n->p.ws.ws_col == *cols );
 	for( int i = 0; i < 2; i++ ) {
