@@ -138,9 +138,6 @@ static void
 freecanvas(struct canvas *n)
 {
 	if( n ) {
-		if( n == focused ) {
-			focus(n->parent, 0);
-		}
 		delwinnul(&n->wtit);
 		delwinnul(&n->wdiv);
 		delwinnul(&n->wpty);
@@ -279,6 +276,9 @@ prune(struct canvas *x, const char **args)
 		freecanvas(x);
 	} else {
 		root = NULL;
+	}
+	if( x == focused ) {
+		focus(o ? o : n ? n : p, 0);
 	}
 	if( view_root == x ) {
 		view_root = root;
