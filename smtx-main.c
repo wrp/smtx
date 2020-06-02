@@ -545,6 +545,7 @@ mov(struct canvas *n, const char **args)
 	int count = cmd_count < 1 ? 1 : cmd_count;
 	int startx = n->origin.x;
 	int starty = n->origin.y + y - n->p.s->tos;
+	assert( y == winsiz(n->p.s->win, 0) );
 	struct canvas *t = n;
 	if( cmd == 'p' ) {
 		n = lastfocused;
