@@ -466,7 +466,6 @@ wait_child(struct canvas *n)
 			k = WTERMSIG(status);
 		}
 		snprintf(n->title, sizeof n->title, fmt, k);
-		wprintw(n->p.s->win, "%s", n->title);
 		free_proc(&n->p);
 	}
 }
