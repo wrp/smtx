@@ -245,37 +245,6 @@ new_pty(struct proc *p)
 	return p->pt;
 }
 
-static void
-canvas_yx(const struct canvas *n, int *rows, int *cols)
-{
-	int y, x;
-	*rows = winsiz(n->p.s->win, 0) - n->p.s->tos + 1;
-	*cols = winsiz(n->p.s->win, 1);
-	assert( n->p.ws.ws_row == *rows - 1 );
-	assert( n->p.ws.ws_col == *cols );
-	for( int i = 0; i < 2; i++ ) {
-		for( const struct canvas *c = n->c[i]; c; c = c->c[i] ) {
-			if( c->p.s && c->p.s->win ) {
-				/* int k = winsiz(n->wpty, 0 ); */
-				getmaxyx(c->p.s->win, y, x);
-				assert( x == c->p.ws.ws_col );
-				assert( y - c->p.s->tos == c->p.ws.ws_row );
-				assert( y == winsiz(c->p.s->win, 0 ));
-				assert( x == winsiz(c->p.s->win, 1 ));
-				/* Sometimes this is off by one.
-				this needs to be tracked down, and is
-				probably the cause of much confusion.*/
-				/* assert( y - c->p.s->tos == k ); */
-				if( i == 0 ) {
-					*rows += y - c->p.s->tos + 1;
-				} else {
-					*cols += 1 + x;
-				}
-			}
-		}
-	}
-}
-
 static int
 prune(struct canvas *x, const char **args)
 {
@@ -433,7 +402,6 @@ create(struct canvas *n, const char *args[])
 {
 	assert( n != NULL );
 	int dir = *args && **args == 'C' ? 1 : 0;
-	int y, x;
 	/* Always split last window in a chain */
 	while( n->c[dir] != NULL ) {
 		n = n->c[dir];
@@ -444,11 +412,10 @@ create(struct canvas *n, const char *args[])
 		v->typ = dir;
 		v->parent = n;
 		n = balance(v);
-		canvas_yx(n, &y, &x);
 		new_screens(&v->p);
 		new_pty(&v->p);
 	}
-	reshape(n, n->origin.y, n->origin.x, y, x);
+	reshape(view_root, 0, 0, LINES, COLS);
 	return 0;
 }
 
@@ -645,10 +612,8 @@ equalize(struct canvas *n, const char **args)
 {
 	(void) args;
 	assert( n != NULL );
-	int y, x;
 	n = balance(n);
-	canvas_yx(n, &y, &x);
-	reshape(n, n->origin.y, n->origin.x, y, x);
+	reshape(view_root, 0, 0, LINES, COLS);
 	return 0;
 }
 
