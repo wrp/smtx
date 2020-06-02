@@ -130,7 +130,7 @@ focus(struct canvas *n, int reset)
 		}
 		focused = n;
 	} else {
-		focused = root;
+		focused = view_root;
 	}
 }
 
@@ -286,7 +286,7 @@ prune(struct canvas *x, const char **args)
 	if( view_root == x ) {
 		view_root = root;
 	}
-	reshape(root, 0, 0, LINES, COLS);
+	reshape(view_root, 0, 0, LINES, COLS);
 	return 0;
 }
 
