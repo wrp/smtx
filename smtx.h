@@ -86,6 +86,7 @@ struct canvas {
 	struct canvas *c[2];
 	double split_point[2]; /* percent of window dedicated to p.s->win */
 	char title[64];
+	int no_prune;
 	char putative_cmd[64];
 	WINDOW *wpty;  /* Window to display p.s->win */
 	WINDOW *wtit;  /* Window for title */

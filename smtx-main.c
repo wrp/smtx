@@ -254,9 +254,6 @@ prune(struct canvas *x, const char **args)
 	int d = x->typ;
 	struct canvas *n = x->c[d];
 	struct canvas *o = x->c[!d];
-	if( x->p.pt != -1 ) {
-		return 1;
-	}
 	if( o && o->c[d] ) {
 		x->split_point[!d] = 0.0;
 	} else if( o ) {
@@ -451,7 +448,11 @@ getinput(struct canvas *n, fd_set *f) /* check all ptty's for input. */
 		if( r > 0 ) {
 			vtwrite(&n->p.vp, iobuf, r);
 		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
-			wait_child(n);
+			if( n->no_prune ) {
+				wait_child(n);
+			} else {
+				prune(n, NULL);
+			}
 			status = false;
 		}
 	}
