@@ -325,26 +325,26 @@ static void
 reshape_window(struct canvas *N, int h, int w)
 {
 	struct proc *n = &N->p;
+	h = h > 1 ? h - 1 : 24;
+	w = w > 0 ? w : 80;
+	n->ws = (struct winsize) {.ws_row = h, .ws_col = w};
+	resize_pad(&n->pri.win, MAX(h, scrollback_history), w);
+	resize_pad(&n->alt.win, h, w);
+	resize_pad(&N->wpty, h, w);
+	n->pri.tos = n->pri.off = MAX(0, scrollback_history - h);
+	n->alt.tos = n->alt.off = 0;
+	wsetscrreg(n->pri.win, 0, MAX(scrollback_history, h) - 1);
+	wsetscrreg(n->alt.win, 0, h - 1);
+	wrefresh(n->s->win);
 	if( n->pt >= 0 ) {
-		h = h > 1 ? h - 1 : 24;
-		w = w > 0 ? w : 80;
-		n->ws = (struct winsize) {.ws_row = h, .ws_col = w};
-		resize_pad(&n->pri.win, MAX(h, scrollback_history), w);
-		resize_pad(&n->alt.win, h, w);
-		resize_pad(&N->wpty, h, w);
-		n->pri.tos = n->pri.off = MAX(0, scrollback_history - h);
-		n->alt.tos = n->alt.off = 0;
-		wsetscrreg(n->pri.win, 0, MAX(scrollback_history, h) - 1);
-		wsetscrreg(n->alt.win, 0, h - 1);
-		wrefresh(n->s->win);
 		if( ioctl(n->pt, TIOCSWINSZ, &n->ws) ) {
 			perror("ioctl");
 		}
-		extend_tabs(n, n->tabstop);
 		if( kill(n->pid, SIGWINCH) ) {
 			perror("kill");
 		}
 	}
+	extend_tabs(n, n->tabstop);
 }
 
 static void
@@ -453,7 +453,7 @@ create(struct canvas *n, const char *args[])
 }
 
 static void
-report_child_status(struct canvas *n)
+wait_child(struct canvas *n)
 {
 	int status, k;
 	const char *fmt;
@@ -485,7 +485,7 @@ getinput(struct canvas *n, fd_set *f) /* check all ptty's for input. */
 		if( r > 0 ) {
 			vtwrite(&n->p.vp, iobuf, r);
 		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
-			report_child_status(n);
+			wait_child(n);
 			status = false;
 		}
 	}
