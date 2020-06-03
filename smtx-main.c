@@ -18,6 +18,10 @@
 /*
    TODO:
      Copy-mode, with stack of registers and ability to edit.
+       Or, maybe just have a binding (s) that dumps the current content
+       of the scrollback region to a file like ~/.smtx-pid-timestamp
+       Perhaps use (e) to edit the file (eg, spawn $EDITOR), then (p)
+       to paste it.
      Ability to set titles.
      Needs to be easier to navigate in full screen mode.   Perhaps
        title bar would show title of windows above, below, to the
