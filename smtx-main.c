@@ -252,11 +252,13 @@ prune(struct canvas *x, const char **args)
 	(void) args;
 	struct canvas *p = x->parent;
 	struct canvas *dummy;
+	struct canvas *del = x;
 	int d = x->typ;
 	struct canvas *n = x->c[d];
 	struct canvas *o = x->c[!d];
 	if( o && o->c[d] ) {
 		x->split_point[!d] = 0.0;
+		del = NULL;
 	} else if( o ) {
 		assert( o->c[d] == NULL );
 		assert( o->parent == x );
@@ -267,24 +269,22 @@ prune(struct canvas *x, const char **args)
 		o->c[d] = n;
 		*(n ? &n->parent : &dummy) = o;
 		o->origin = x->origin;
-		equalize(o, NULL);
-		freecanvas(x);
+		o->split_point[d] = x->split_point[d];
 	} else if( n ) {
 		n->parent = p;
 		n->origin = x->origin;
 		*(p ? &p->c[d] : &root) = n;
-		freecanvas(x);
 	} else if( p ) {
 		p->split_point[d] = 1.0;
 		p->c[d] = NULL;
-		freecanvas(x);
 	} else {
 		root = NULL;
 	}
+	freecanvas(del);
 	if( x == focused ) {
 		focus(o ? o : n ? n : p, 0);
 	}
-	if( view_root == x ) {
+	if( view_root == x && del != NULL ) {
 		view_root = o ? o : n ? n : p;
 	}
 	reshape(view_root, 0, 0, LINES, COLS);
