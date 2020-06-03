@@ -121,6 +121,8 @@ free_proc(struct proc *p)
 			close(p->pt);
 			FD_CLR(p->pt, &fds);
 		}
+		delwinnul(&p->pri.win);
+		delwinnul(&p->alt.win);
 		p->pt = -1;
 	}
 }
@@ -146,10 +148,6 @@ freecanvas(struct canvas *n)
 		delwinnul(&n->wdiv);
 		delwinnul(&n->wpty);
 		free_proc(&n->p);
-		/* Clearly, the windows should not be part of n->p, and
-		we do not want to delete them in free_proc */
-		delwinnul(&n->p.pri.win);
-		delwinnul(&n->p.alt.win);
 		free(n->p.tabs);
 		free(n);
 	}
