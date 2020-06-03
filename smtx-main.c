@@ -167,14 +167,11 @@ static void
 draw_window(struct canvas *n)
 {
 	if( n->wpty ) {
-		int y = n->origin.y, x = n->origin.x;
 		struct screen *s = n->p.s;
-		pnoutrefresh(s->win, s->off, 0, y, x,
+		pnoutrefresh(s->win, s->off, 0, n->origin.y, n->origin.x,
 			s->off + winsiz(n->wpty, 0) - 1,
-			x + winsiz(n->wpty, 1) - 1);
-
-		assert( n->p.ws.ws_row == winsiz(n->wpty, 0) );
-		assert( n->p.ws.ws_col == winsiz(n->wpty, 1) );
+			n->origin.x + winsiz(n->wpty, 1) - 1
+		);
 	}
 }
 
