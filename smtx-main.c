@@ -292,15 +292,20 @@ prune(struct canvas *x, const char **args)
 }
 
 static void
-reshape_window(struct canvas *N, int h, int w)
+reshape_window(struct canvas *N, int oh, int ow)
 {
 	struct proc *n = &N->p;
-	h = h > 1 ? h - 1 : 24;
-	w = w > 0 ? w : 80;
+
+	int h = oh > 1 ? oh - 1 : 24;
+	int w = ow > 0 ? ow : 80;
 	n->ws = (struct winsize) {.ws_row = h, .ws_col = w};
 	resize_pad(&n->pri.win, MAX(h, scrollback_history), w);
 	resize_pad(&n->alt.win, h, w);
-	resize_pad(&N->wpty, h, w);
+	if( oh > 1 && ow > 0 ) {
+		resize_pad(&N->wpty, h, w);
+	} else {
+		delwinnul(&N->wpty);
+	}
 	n->pri.tos = n->pri.off = MAX(0, scrollback_history - h);
 	n->alt.tos = n->alt.off = 0;
 	wsetscrreg(n->pri.win, 0, MAX(scrollback_history, h) - 1);
