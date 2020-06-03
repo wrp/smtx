@@ -281,7 +281,7 @@ prune(struct canvas *x, const char **args)
 		focus(o ? o : n ? n : p, 0);
 	}
 	if( view_root == x ) {
-		view_root = root;
+		view_root = o ? o : n ? n : p;
 	}
 	reshape(view_root, 0, 0, LINES, COLS);
 	return 0;
