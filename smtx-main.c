@@ -60,16 +60,12 @@ const char *term = NULL;
 void
 safewrite(int fd, const char *b, size_t n)
 {
-	ssize_t s;
+	ssize_t s = 0;
 	const char *e = b + n;
-	while( b < e ) {
-		s = write(fd, b, e - b);
-		if( s == -1 && errno != EINTR ) {
-			fprintf(stderr, "write to fd %d: %s", fd,
-				strerror(errno));
-			return;
-		} else if( s > 0 ) {
-			b += s;
+	while( s != -1 && (b += s) < e ) {
+		if( (s = write(fd, b, e - b)) == -1 && errno != EINTR ) {
+			warn("write to fd %d", fd); /* uncovered */
+			s = 0;                      /* uncovered */
 		}
 	}
 }
