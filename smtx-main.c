@@ -24,6 +24,12 @@
        Perhaps use (e) to edit the file (eg, spawn $EDITOR), then (p)
        to paste it.
      Ability to set titles.
+     Be able to set tty screen width. Eg, perhaps 'w' to set width of the
+       focused window, and `W` to change the tty.  Then +/- to adjust
+       width of window, and maybe </> to adjust width of tty.  Or </>
+       should scroll the window.  But +/- should also change number
+       of rows in a type 0 canvas.  Need to think about this, but defintely
+       want ability to change tty width.
      Needs to be easier to navigate in full screen mode.   Perhaps
        title bar would show title of windows above, below, to the
        left, and right.  Then hjkl navigation would stay in full
