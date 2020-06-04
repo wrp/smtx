@@ -17,6 +17,7 @@
  */
 /*
    TODO:
+     Use current cursor position to set bottom of screen when splitting
      Copy-mode, with stack of registers and ability to edit.
        Or, maybe just have a binding (s) that dumps the current content
        of the scrollback region to a file like ~/.smtx-pid-timestamp
