@@ -124,7 +124,6 @@ free_proc(struct proc *p)
 		}
 		delwinnul(&p->pri.win);
 		delwinnul(&p->alt.win);
-		p->pt = -1;
 		free(p);
 	}
 }
