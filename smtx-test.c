@@ -14,8 +14,10 @@ test1() {
 		exit(0);
 	default: {
 		char *cmds[] = {
-			"tput cud 2; tput cuu 2; tput cuf 1 ",
+			"tput cud 2; tput cuu 2; tput cuf 1",
+			"tput ed; tput bel",
 			"tput cub 1; tput dch 1; tput ack",
+			"tput civis; tput cvvis; tput ack",
 			"tabs -5",
 			"exit",
 			NULL
