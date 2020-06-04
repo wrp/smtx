@@ -190,6 +190,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	assert( p->ws.ws_row == winsiz(p->s->win, 0) - p->s->tos );
 
 	wmove(p->s->win, y, x);
+	wmove(focused->wpty, y, x);
 }
 
 static const char *
