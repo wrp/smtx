@@ -62,8 +62,15 @@ safewrite(int fd, const char *b, size_t n)
 {
 	ssize_t s;
 	const char *e = b + n;
-	while( b < e && ((s = write(fd, b, e - b)) >= 0 || errno == EINTR) ) {
-		b += s > 0 ? s : 0;
+	while( b < e ) {
+		s = write(fd, b, e - b);
+		if( s == -1 && errno != EINTR ) {
+			fprintf(stderr, "write to fd %d: %s", fd,
+				strerror(errno));
+			return;
+		} else if( s > 0 ) {
+			b += s;
+		}
 	}
 }
 

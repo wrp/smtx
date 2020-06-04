@@ -15,6 +15,7 @@ for name in \
 	main \
 	smtx-test \
 	smtx \
+	smtx-main \
 	vtparser \
 ; do
 	if test -f .libs/$name.gcno; then
