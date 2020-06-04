@@ -35,6 +35,7 @@
      Pass master fd of a pty through a socket.
      Configure bindings.
      Multi-key bindings (?)
+     Handle memory allocation errors.  Implement decent error reporting.
  */
 
 #include "smtx.h"
