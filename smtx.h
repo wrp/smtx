@@ -64,7 +64,7 @@ struct point { int y, x; };
 struct canvas {
 	struct point origin; /* position of upper left corner */
 	int typ; /* 0: c[0] is full width, 1: c[1] is full height */
-	struct proc p;
+	struct proc *p;
 	struct canvas *parent;
 	/*
 	A canvas contains both c[0] and c[1], and shows only the upper
