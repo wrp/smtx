@@ -260,7 +260,7 @@ new_pty()
 		p->ws = (struct winsize) {.ws_row = 24, .ws_col = 80};
 		p->pid = forkpty(&p->pt, NULL, NULL, &p->ws);
 		if( p->pid < 0 ) {
-			perror("forkpty");
+			show_error("forkpty");
 			free(p);
 			p = NULL;
 		} else if( p->pid == 0 ) {
