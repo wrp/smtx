@@ -93,10 +93,10 @@ struct canvas {
 	WINDOW *wdiv;  /* Window for divider */
 };
 
-typedef int(action)(struct canvas *n, const char **args);
+typedef int(action)(struct canvas *n, const char *arg);
 struct handler {
 	action *act;
-	const char *args[7];
+	const char *arg;
 };
 
 #define MAXMAP 0x7f

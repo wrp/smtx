@@ -262,9 +262,9 @@ new_pty()
 }
 
 static int
-prune(struct canvas *x, const char **args)
+prune(struct canvas *x, const char *arg)
 {
-	(void) args;
+	(void) arg;
 	struct canvas *p = x->parent;
 	struct canvas *dummy;
 	struct canvas *del = x;
@@ -419,10 +419,10 @@ draw(struct canvas *n) /* Draw a canvas. */
 }
 
 int
-create(struct canvas *n, const char *args[])
+create(struct canvas *n, const char *arg)
 {
 	assert( n != NULL );
-	int dir = *args && **args == 'C' ? 1 : 0;
+	int dir = arg && *arg == 'C' ? 1 : 0;
 	/* Always split last window in a chain */
 	while( n->c[dir] != NULL ) {
 		n = n->c[dir];
@@ -491,15 +491,15 @@ scrollbottom(struct canvas *n)
 }
 
 int
-digit(struct canvas *n, const char **args)
+digit(struct canvas *n, const char *arg)
 {
 	(void)n;
-	cmd_count = 10 * (cmd_count == -1 ? 0 : cmd_count) + args[0][0] - '0';
+	cmd_count = 10 * (cmd_count == -1 ? 0 : cmd_count) + *arg - '0';
 	return 0;
 }
 
 static int
-scrolln(struct canvas *n, const char **args)
+scrolln(struct canvas *n, const char *arg)
 {
 	/* TODO: enable srolling left/right */
 	if( n && n->p->s && n->p->s->win ) {
@@ -507,7 +507,7 @@ scrolln(struct canvas *n, const char **args)
 		getmaxyx(n->p->s->win, y, x);
 		(void) x;
 		int count = cmd_count == -1 ? (y - n->p->s->tos) - 1 : cmd_count;
-		if( args[0][0] == '-' ) {
+		if( *arg == '-' ) {
 			n->p->s->off = MAX(0, n->p->s->off - count);
 		} else {
 			n->p->s->off = MIN(n->p->s->tos, n->p->s->off + count);
@@ -517,9 +517,8 @@ scrolln(struct canvas *n, const char **args)
 }
 
 static int
-sendarrow(struct canvas *n, const char **args)
+sendarrow(struct canvas *n, const char *k)
 {
-	const char *k = args[0];
     char buf[100] = {0};
     snprintf(buf, sizeof(buf) - 1, "\033%s%s", n->p->pnm? "O" : "[", k);
     safewrite(n->p->pt, buf, strlen(buf));
@@ -527,9 +526,9 @@ sendarrow(struct canvas *n, const char **args)
 }
 
 int
-reshape_root(struct canvas *n, const char **args)
+reshape_root(struct canvas *n, const char *arg)
 {
-	(void)args;
+	(void)arg;
 	reshape(view_root, 0, 0, LINES, COLS);
 	scrollbottom(n);
 	return 0;
@@ -558,16 +557,18 @@ find_window(struct canvas *n, int y, int x)
 }
 
 int
-resize(struct canvas *n, const char **args)
+resize(struct canvas *n, const char *arg)
 {
-	;
+	(void) n;
+	(void) arg;
+	return 0;
 }
 
 int
-mov(struct canvas *n, const char **args)
+mov(struct canvas *n, const char *arg)
 {
 	assert( n == focused && n != NULL );
-	char cmd = args[0][0];
+	char cmd = *arg;
 	int count = cmd_count < 1 ? 1 : cmd_count;
 	int startx = n->origin.x;
 	int starty = n->origin.y + winsiz(n->p->s->win, 0) - n->p->s->tos;
@@ -602,23 +603,22 @@ mov(struct canvas *n, const char **args)
 }
 
 int
-send_nul(struct canvas *n, const char **args)
+send_nul(struct canvas *n, const char *arg)
 {
-	(void) args;
+	(void) arg;
 	safewrite(n->p->pt, "\x00", 1);
 	scrollbottom(n);
+	return 0;
 }
 
 int
-send(struct canvas *n, const char **args)
+send(struct canvas *n, const char *arg)
 {
-	assert(args[1] == NULL );
-	if( n->p->lnm && args[0][0] == '\r' ) {
-		assert( args[0][1] == '\0' );
-		args[0] = "\r\n";
+	if( n->p->lnm && *arg == '\r' ) {
+		assert( arg[1] == '\0' );
+		arg = "\r\n";
 	}
-	size_t len = strlen(args[0]);
-	safewrite(n->p->pt, args[0], len);
+	safewrite(n->p->pt, arg, strlen(arg));
 	scrollbottom(n);
 	return 0;
 }
@@ -643,9 +643,9 @@ balance(struct canvas *n)
 }
 
 int
-equalize(struct canvas *n, const char **args)
+equalize(struct canvas *n, const char *arg)
 {
-	(void) args;
+	(void) arg;
 	assert( n != NULL );
 	n = balance(n);
 	reshape(view_root, 0, 0, LINES, COLS);
@@ -653,11 +653,11 @@ equalize(struct canvas *n, const char **args)
 }
 
 int
-transition(struct canvas *n, const char **args)
+transition(struct canvas *n, const char *arg)
 {
 	binding = binding == &keys ? &cmd_keys : &keys;
-	if( args && args[0] ) {
-		send(n, args);
+	if( arg ) {
+		send(n, arg);
 	}
 	if( binding == &keys ) {
 		scrollbottom(n);
@@ -672,19 +672,21 @@ add_key(struct handler *b, wchar_t k, action act, ...)
 		assert( k >= KEY_MIN && k <= KEY_MAX );
 		k -= KEY_MIN;
 	}
-	int i = 0;
 	b[k].act = act;
 	va_list ap;
 	va_start(ap, act);
-	do b[k].args[i] = va_arg(ap, const char *);
-	while( b[k].args[i++] != NULL );
+	b[k].arg = va_arg(ap, const char *);
+	if( b[k].arg != NULL ) {
+		const char *n = va_arg(ap, const char *);
+		assert( n == NULL );
+	}
 	va_end(ap);
 }
 
 int
-new_tabstop(struct canvas *n, const char **args)
+new_tabstop(struct canvas *n, const char *arg)
 {
-	(void) args;
+	(void) arg;
 	n->p->ntabs = 0;
 	extend_tabs(n->p, n->p->tabstop = cmd_count > -1 ? cmd_count : 8);
 	return 0;
@@ -724,7 +726,7 @@ build_bindings()
 	add_key(keys, L'\n', send, "\n", NULL);
 	add_key(keys, 0, send_nul, NULL);
 
-	add_key(cmd_keys, commandkey, transition, &commandkey, "1", NULL);
+	add_key(cmd_keys, commandkey, transition, &commandkey, NULL);
 	add_key(cmd_keys, L'\r', transition, NULL);
 	add_key(cmd_keys, L'b', scrolln, "-", NULL);
 	add_key(cmd_keys, L'f', scrolln, "+", NULL);
@@ -842,7 +844,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 	}
 
 	if( b && b->act ) {
-		b->act(n, b->args);
+		b->act(n, b->arg);
 	} else {
 		char c[MB_LEN_MAX + 1] = {0};
 		if( wctomb(c, k) > 0 ) {
