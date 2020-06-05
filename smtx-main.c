@@ -218,6 +218,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 
 	assert( p->ws.ws_row == winsiz(p->s->win, 0) - p->s->tos );
 
+	draw_window(focused);
 	wmove(p->s->win, y, x);
 	wmove(focused->wpty, y, x);
 }
@@ -917,7 +918,6 @@ main_loop(void)
 			mvwprintw(werr, 0, 0, "%s", errmsg);
 			pnoutrefresh(werr, 0, 0, y, 0, y, x);
 		}
-		draw_window(focused);
 		fixcursor();
 		doupdate();
 		if( select(maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
