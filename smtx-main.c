@@ -602,14 +602,22 @@ mov(struct canvas *n, const char **args)
 }
 
 int
+send_nul(struct canvas *n, const char **args)
+{
+	(void) args;
+	safewrite(n->p->pt, "\x00", 1);
+	scrollbottom(n);
+}
+
+int
 send(struct canvas *n, const char **args)
 {
+	assert(args[1] == NULL );
 	if( n->p->lnm && args[0][0] == '\r' ) {
 		assert( args[0][1] == '\0' );
-		assert( args[1] == NULL );
 		args[0] = "\r\n";
 	}
-	size_t len = args[1] ? strtoul(args[1], NULL, 10 ) : strlen(args[0]);
+	size_t len = strlen(args[0]);
 	safewrite(n->p->pt, args[0], len);
 	scrollbottom(n);
 	return 0;
@@ -714,7 +722,7 @@ build_bindings()
 	add_key(keys, commandkey, transition, NULL);
 	add_key(keys, L'\r', send, "\r",  NULL);
 	add_key(keys, L'\n', send, "\n", NULL);
-	add_key(keys, 0, send, "\000", "1", NULL);
+	add_key(keys, 0, send_nul, NULL);
 
 	add_key(cmd_keys, commandkey, transition, &commandkey, "1", NULL);
 	add_key(cmd_keys, L'\r', transition, NULL);
