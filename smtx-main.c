@@ -117,7 +117,9 @@ static struct canvas *
 newcanvas()
 {
 	struct canvas *n = calloc(1, sizeof *n);
-	if( n != NULL ) {
+	if( !n ) {
+		show_error("newcanvas");
+	} else {
 		n->split_point[0] = 1.0;
 		n->split_point[1] = 1.0;
 		strncpy(n->title, getshell(), sizeof n->title);
