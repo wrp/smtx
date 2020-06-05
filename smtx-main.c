@@ -63,6 +63,21 @@ static struct canvas * balance(struct canvas *n);
 static void reshape(struct canvas *n, int y, int x, int h, int w);
 
 const char *term = NULL;
+static WINDOW *werr;
+char errmsg[80];
+
+static void
+show_error(int e, const char *fmt, ...)
+{
+	int k;
+	va_list ap;
+	va_start(ap, fmt);
+	k = vsnprintf(errmsg, sizeof errmsg, fmt, ap);
+	va_end(ap);
+	if( e && k < (int)sizeof errmsg ) {
+		snprintf(errmsg + k, sizeof errmsg - k, ": %s", strerror(e));
+	}
+}
 
 void
 safewrite(int fd, const char *b, size_t n)
@@ -71,8 +86,8 @@ safewrite(int fd, const char *b, size_t n)
 	const char *e = b + n;
 	while( s != -1 && (b += s) < e ) {
 		if( (s = write(fd, b, e - b)) == -1 && errno != EINTR ) {
-			warn("write to fd %d", fd); /* uncovered */
-			s = 0;                      /* uncovered */
+			show_error(errno, "write to fd %d", fd); /* uncovered */
+			s = 0; /* uncovered */
 		}
 	}
 }
@@ -893,6 +908,11 @@ main_loop(void)
 
 		draw(view_root);
 		draw_window(focused);
+		if( errmsg[0] ) {
+			int y = LINES - 1, x = winsiz(werr, 1);
+			mvwprintw(werr, 0, 0, "%s", errmsg);
+			pnoutrefresh(werr, 0, 0, y, 0, y, x);
+		}
 		fixcursor();
 		doupdate();
 		if( select(maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
@@ -950,7 +970,6 @@ smtx_main(int argc, char *const*argv)
 	setlocale(LC_ALL, "");
 	parse_args(argc, argv);
 	build_bindings();
-
 	if( initscr() == NULL ) {
 		exit(EXIT_FAILURE);
 	}
@@ -960,7 +979,9 @@ smtx_main(int argc, char *const*argv)
 	intrflush(NULL, FALSE);
 	start_color();
 	use_default_colors();
-
+	if( !resize_pad(&werr, 1, sizeof errmsg) ) {
+		err(EXIT_FAILURE, "Unable to create error window");
+	}
 	view_root = root = newcanvas();
 	if( !root || !new_screens(root->p = new_pty()) ) {
 		err(EXIT_FAILURE, "Unable to create root window");
