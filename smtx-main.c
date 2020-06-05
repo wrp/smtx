@@ -396,6 +396,7 @@ draw_title(struct canvas *n)
 {
 	if( n->wtit ) {
 		char t[128];
+		struct point *o = &n->origin;
 		int x = winsiz(n->wpty, 1);
 		size_t s = MAX(x - 1, (int)sizeof t);
 		if( binding == &cmd_keys && n == focused ) {
@@ -410,8 +411,7 @@ draw_title(struct canvas *n)
 			mvwhline(n->wtit, 0, len, ACS_HLINE, x - len);
 		}
 		assert( n->p->ws.ws_row == winsiz(n->wpty, 0) );
-		draw_pane(n->wtit, n->origin.y + winsiz(n->wpty, 0),
-			n->origin.x);
+		draw_pane(n->wtit, o->y + winsiz(n->wpty, 0), o->x);
 	}
 }
 
