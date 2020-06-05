@@ -67,8 +67,9 @@ static WINDOW *werr;
 char errmsg[80];
 
 static void
-show_error(int e, const char *fmt, ...)
+show_error(const char *fmt, ...)
 {
+	int e = errno;
 	int k;
 	va_list ap;
 	va_start(ap, fmt);
@@ -86,7 +87,7 @@ safewrite(int fd, const char *b, size_t n)
 	const char *e = b + n;
 	while( s != -1 && (b += s) < e ) {
 		if( (s = write(fd, b, e - b)) == -1 && errno != EINTR ) {
-			show_error(errno, "write to fd %d", fd); /* uncovered */
+			show_error("write to fd %d", fd); /* uncovered */
 			s = 0; /* uncovered */
 		}
 	}
@@ -264,7 +265,7 @@ new_pty()
 			setsid();
 			signal(SIGCHLD, SIG_DFL);
 			execl(sh, sh, NULL);
-			perror("execl");
+			show_error("execl");
 			_exit(EXIT_FAILURE);
 		} else if( p->pid > 0 ) {
 			FD_SET(p->pt, &fds);
@@ -344,10 +345,10 @@ reshape_window(struct canvas *N, int h, int w)
 		wrefresh(n->s->win);
 		extend_tabs(n, n->tabstop);
 		if( ioctl(n->pt, TIOCSWINSZ, &n->ws) ) {
-			perror("ioctl");
+			show_error("ioctl");
 		}
 		if( kill(n->pid, SIGWINCH) ) {
-			perror("kill");
+			show_error("kill");
 		}
 	}
 }
@@ -699,6 +700,8 @@ transition(struct canvas *n, const char *arg)
 	}
 	if( binding == &keys ) {
 		scrollbottom(n);
+	} else {
+		errmsg[0] = 0;
 	}
 	return 0;
 }
@@ -907,12 +910,12 @@ main_loop(void)
 		fd_set sfds = fds;
 
 		draw(view_root);
-		draw_window(focused);
 		if( errmsg[0] ) {
 			int y = LINES - 1, x = winsiz(werr, 1);
 			mvwprintw(werr, 0, 0, "%s", errmsg);
 			pnoutrefresh(werr, 0, 0, y, 0, y, x);
 		}
+		draw_window(focused);
 		fixcursor();
 		doupdate();
 		if( select(maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
@@ -982,6 +985,7 @@ smtx_main(int argc, char *const*argv)
 	if( !resize_pad(&werr, 1, sizeof errmsg) ) {
 		err(EXIT_FAILURE, "Unable to create error window");
 	}
+	wattron(werr, A_REVERSE);
 	view_root = root = newcanvas();
 	if( !root || !new_screens(root->p = new_pty()) ) {
 		err(EXIT_FAILURE, "Unable to create root window");
