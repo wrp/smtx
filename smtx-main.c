@@ -559,8 +559,31 @@ find_window(struct canvas *n, int y, int x)
 int
 resize(struct canvas *n, const char *arg)
 {
-	(void) n;
-	(void) arg;
+	int y, x;
+	int typ = strchr("JK", *arg) ? 0 : 1;
+	enum { down, up } dir = strchr("JL", *arg) ? down : up;
+	if( dir == down ) while( n && n->c[dir] == NULL ) {
+		n = n->parent;
+	}
+	if( n == NULL ) {
+		return 0;
+	}
+	getmaxyx(n->wpty, y, x);
+	(void)x;
+	if( n->c[typ] == NULL ) {
+		return 0;
+	} else if( *arg == 'J' && y + n->origin.y == 0 ) {
+		return 0;
+	}
+	switch(*arg) {
+	case 'K': case 'J': {
+		int full = y / n->split_point[0];
+		int count = cmd_count < 1 ? 1 : cmd_count;
+		double new = y + count * ( *arg == 'K' ? -1 : 1 );
+		n->split_point[0] = MAX( 0, MIN(new / full, 1.0) );
+		} break;
+	}
+	reshape(view_root, 0, 0, LINES, COLS);
 	return 0;
 }
 
