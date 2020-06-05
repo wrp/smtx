@@ -17,6 +17,7 @@
  */
 /*
    TODO:
+     Test Suite!!
      Use current cursor position to set bottom of screen when splitting
      Copy-mode, with stack of registers and ability to edit.
        Or, maybe just have a binding (s) that dumps the current content
@@ -557,6 +558,12 @@ find_window(struct canvas *n, int y, int x)
 }
 
 int
+resize(struct canvas *n, const char **args)
+{
+	;
+}
+
+int
 mov(struct canvas *n, const char **args)
 {
 	assert( n == focused && n != NULL );
@@ -720,6 +727,10 @@ build_bindings()
 	add_key(cmd_keys, L'k', mov, "k", NULL);
 	add_key(cmd_keys, L'l', mov, "l", NULL);
 	add_key(cmd_keys, L'h', mov, "h", NULL);
+	add_key(cmd_keys, L'J', resize, "J", NULL);
+	add_key(cmd_keys, L'K', resize, "K", NULL);
+	add_key(cmd_keys, L'L', resize, "L", NULL);
+	add_key(cmd_keys, L'H', resize, "H", NULL);
 	add_key(cmd_keys, L'p', mov, "p", NULL);
 	add_key(cmd_keys, L't', new_tabstop, NULL);
 	add_key(cmd_keys, L'x', prune, NULL);
