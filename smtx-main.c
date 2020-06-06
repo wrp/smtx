@@ -143,8 +143,9 @@ resize_pad(WINDOW **p, int h, int w)
 }
 
 static void
-free_proc(struct proc *p)
+free_proc(struct proc **pv)
 {
+	struct proc *p = *pv;
 	if( p != NULL ) {
 		free(p->tabs);
 		if( p->pt >= 0 ) {
@@ -155,6 +156,7 @@ free_proc(struct proc *p)
 		delwinnul(&p->alt.win);
 		free(p);
 	}
+	*pv = NULL;
 }
 
 void
@@ -177,7 +179,7 @@ freecanvas(struct canvas *n)
 		delwinnul(&n->wtit);
 		delwinnul(&n->wdiv);
 		delwinnul(&n->wpty);
-		free_proc(n->p);
+		free_proc(&n->p);
 		free(n);
 	}
 }
@@ -467,7 +469,7 @@ wait_child(struct canvas *n)
 			k = WTERMSIG(status);
 		}
 		snprintf(n->title, sizeof n->title, fmt, k);
-		free_proc(n->p);
+		free_proc(&n->p);
 	}
 }
 
