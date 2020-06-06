@@ -162,7 +162,7 @@ free_proc(struct proc **pv)
 void
 focus(struct canvas *n, int reset)
 {
-	if( n && n->p && n->p->s && n->p->s->win ) {
+	if( n ) {
 		if( n != focused && reset ) {
 			lastfocused = focused;
 		}
@@ -208,19 +208,23 @@ static void
 fixcursor(void) /* Move the terminal cursor to the active window. */
 {
 	struct proc *p = focused->p;
-	assert( p && p->s );
-	int show = binding != &cmd_keys && p->s->vis;
-	curs_set(p->s->off != p->s->tos ? 0 : show);
+	if( p ) {
+		assert( p->s );
+		int show = binding != &cmd_keys && p->s->vis;
+		focused->input = p->s->win;
+		curs_set(p->s->off != p->s->tos ? 0 : show);
 
-	int x, y;
-	getyx(p->s->win, y, x);
-	y = MIN(MAX(y, p->s->tos), winsiz(p->s->win, 0));
-
-	assert( focused->extent.y == winsiz(p->s->win, 0) - p->s->tos );
-	assert( y >= p->s->tos && y < p->s->tos + focused->extent.y );
-
-	draw_window(focused);
-	wmove(p->s->win, y, x);
+		int x, y;
+		getyx(p->s->win, y, x);
+		y = MIN(MAX(y, p->s->tos), winsiz(p->s->win, 0));
+		assert( focused->extent.y == winsiz(p->s->win, 0) - p->s->tos );
+		assert( y >= p->s->tos && y < p->s->tos + focused->extent.y );
+		draw_window(focused);
+		wmove(p->s->win, y, x);
+	} else {
+		focused->input = focused->wtit ? focused->wtit : focused->wdiv;;
+	}
+	assert(focused->input);
 }
 
 static const char *
@@ -901,7 +905,7 @@ main_loop(void)
 		if( select(maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
 			FD_ZERO(&sfds);
 		}
-		while( (r = wget_wch(focused->p->s->win, &w)) != ERR ) {
+		while( (r = wget_wch(focused->input, &w)) != ERR ) {
 			handlechar(r, w);
 		}
 		getinput(root, &sfds);

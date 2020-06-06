@@ -89,6 +89,7 @@ struct canvas {
 	char title[64];
 	int no_prune;
 	char putative_cmd[64];
+	WINDOW *input;
 	WINDOW *wtit;  /* Window for title */
 	WINDOW *wdiv;  /* Window for divider */
 };
