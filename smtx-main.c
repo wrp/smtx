@@ -196,7 +196,7 @@ winsiz(WINDOW *w, int dir)
 static void
 draw_window(struct canvas *n)
 {
-	if( n->extent.y > 0 && n->extent.x > 0 ) {
+	if( n->extent.y > 0 && n->extent.x > 0 && n->p ) {
 		struct screen *s = n->p->s;
 		pnoutrefresh(s->win, s->off, 0, n->origin.y, n->origin.x,
 			s->off + n->extent.y - 1, n->origin.x + n->extent.x - 1
@@ -222,7 +222,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 		draw_window(focused);
 		wmove(p->s->win, y, x);
 	} else {
-		focused->input = focused->wtit ? focused->wtit : focused->wdiv;;
+		focused->input = focused->wtit ? focused->wtit : focused->wdiv;
 	}
 	assert(focused->input);
 }
@@ -639,12 +639,14 @@ send_nul(struct canvas *n, const char *arg)
 int
 send(struct canvas *n, const char *arg)
 {
-	if( n->p->lnm && *arg == '\r' ) {
-		assert( arg[1] == '\0' );
-		arg = "\r\n";
+	if( n->p ) {
+		if( n->p->lnm && *arg == '\r' ) {
+			assert( arg[1] == '\0' );
+			arg = "\r\n";
+		}
+		safewrite(n->p->pt, arg, strlen(arg));
+		scrollbottom(n);
 	}
-	safewrite(n->p->pt, arg, strlen(arg));
-	scrollbottom(n);
 	return 0;
 }
 
@@ -910,7 +912,9 @@ main_loop(void)
 		}
 		while( (r = wget_wch(focused->input, &w)) != ERR ) {
 			handlechar(r, w);
+			fixcursor();
 		}
+		fixcursor();
 		getinput(root, &sfds);
 	}
 }
