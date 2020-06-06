@@ -516,7 +516,7 @@ static int
 scrolln(struct canvas *n, const char *arg)
 {
 	/* TODO: enable srolling left/right */
-	if( n && n->p->s && n->p->s->win ) {
+	if( n && n->p && n->p->s && n->p->s->win ) {
 		int y, x;
 		getmaxyx(n->p->s->win, y, x);
 		(void) x;
@@ -854,7 +854,9 @@ handlechar(int r, int k) /* Handle a single input character. */
 	assert( r != ERR );
 	if( r == OK && k > 0 && k < (int)sizeof *binding ) {
 		unsigned len = strlen(n->putative_cmd);
-		if( k == '\r' ) {
+		if( n->p == NULL ) {
+			;
+		} else if( k == '\r' ) {
 			if( n->p->pt > -1 && is_command(n->putative_cmd) ) {
 				strcpy(n->title, n->putative_cmd);
 			}
@@ -864,17 +866,17 @@ handlechar(int r, int k) /* Handle a single input character. */
 		}
 		n->putative_cmd[len] = '\0';
 		b = &(*binding)[k];
-
 	} else if( r == KEY_CODE_YES ) {
-		assert( k >= KEY_MIN && k <= KEY_MAX );
-		b = &code_keys[k - KEY_MIN];
+		if( k >= KEY_MIN && k <= KEY_MAX ) {
+			b = &code_keys[k - KEY_MIN];
+		}
 	}
 
 	if( b && b->act ) {
 		b->act(n, b->arg);
 	} else {
 		char c[MB_LEN_MAX + 1] = {0};
-		if( wctomb(c, k) > 0 ) {
+		if( wctomb(c, k) > 0 && n->p ) {
 			scrollbottom(n);
 			safewrite(n->p->pt, c, strlen(c));
 		}
