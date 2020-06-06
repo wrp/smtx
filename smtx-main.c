@@ -292,6 +292,7 @@ prune(struct canvas *x, const char *arg)
 	struct canvas *o = x->c[!d];
 	if( o && o->c[d] ) {
 		x->split_point[!d] = 0.0;
+		free_proc(&x->p);
 		del = NULL;
 	} else if( o ) {
 		assert( o->c[d] == NULL );
@@ -326,28 +327,28 @@ prune(struct canvas *x, const char *arg)
 }
 
 static void
-reshape_window(struct canvas *N, int h, int w)
+reshape_window(struct canvas *n, int h, int w)
 {
-	struct proc *n = N->p;
-	N->extent.y = h - 1; /* Subtract one for title line */
-	N->extent.x = w;
+	struct proc *p = n->p;
+	n->extent.y = h - 1; /* Subtract one for title line */
+	n->extent.x = w;
 
-	if( n->pt >= 0 ) {
+	if( p && p->pt >= 0 ) {
 		h = h > 1 ? h - 1 : 24;
 		w = w > 0 ? w : 80;
-		n->ws = (struct winsize) {.ws_row = h, .ws_col = w};
-		resize_pad(&n->pri.win, MAX(h, scrollback_history), w);
-		resize_pad(&n->alt.win, h, w);
-		n->pri.tos = n->pri.off = MAX(0, scrollback_history - h);
-		n->alt.tos = n->alt.off = 0;
-		wsetscrreg(n->pri.win, 0, MAX(scrollback_history, h) - 1);
-		wsetscrreg(n->alt.win, 0, h - 1);
-		wrefresh(n->s->win);
-		extend_tabs(n, n->tabstop);
-		if( ioctl(n->pt, TIOCSWINSZ, &n->ws) ) {
+		p->ws = (struct winsize) {.ws_row = h, .ws_col = w};
+		resize_pad(&p->pri.win, MAX(h, scrollback_history), w);
+		resize_pad(&p->alt.win, h, w);
+		p->pri.tos = p->pri.off = MAX(0, scrollback_history - h);
+		p->alt.tos = p->alt.off = 0;
+		wsetscrreg(p->pri.win, 0, MAX(scrollback_history, h) - 1);
+		wsetscrreg(p->alt.win, 0, h - 1);
+		wrefresh(p->s->win);
+		extend_tabs(p, p->tabstop);
+		if( ioctl(p->pt, TIOCSWINSZ, &p->ws) ) {
 			show_error("ioctl");
 		}
-		if( kill(n->pid, SIGWINCH) ) {
+		if( kill(p->pid, SIGWINCH) ) {
 			show_error("kill");
 		}
 	}
@@ -400,7 +401,7 @@ draw_title(struct canvas *n)
 		} else {
 			wattroff(n->wtit, A_REVERSE);
 		}
-		snprintf(t, s, "%d: %s ", (int)n->p->pid, n->title);
+		snprintf(t, s, "%d: %s ", n->p ? (int)n->p->pid : -1, n->title);
 		mvwprintw(n->wtit, 0, 0, "%s", t);
 		int len = strlen(t);
 		if( n->extent.x - len > 0 ) {
@@ -473,7 +474,7 @@ getinput(struct canvas *n, fd_set *f) /* check all ptty's for input. */
 		status = false;
 	} else if( n && n->c[1] && !getinput(n->c[1], f) ) {
 		status = false;
-	} else if( n && n->p->pt > 0 && FD_ISSET(n->p->pt, f) ) {
+	} else if( n && n->p && n->p->pt > 0 && FD_ISSET(n->p->pt, f) ) {
 		char iobuf[BUFSIZ];
 		ssize_t r = read(n->p->pt, iobuf, sizeof(iobuf));
 		if( r > 0 ) {
