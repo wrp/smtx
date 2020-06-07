@@ -207,24 +207,24 @@ draw_window(struct canvas *n)
 static void
 fixcursor(void) /* Move the terminal cursor to the active window. */
 {
-	struct proc *p = focused->p;
-	if( p ) {
-		assert( p->s );
-		int show = binding != &cmd_keys && p->s->vis;
-		focused->input = p->s->win;
-		curs_set(p->s->off != p->s->tos ? 0 : show);
+	struct canvas *f = focused;
+	if( f->p ) {
+		assert( f->p->s );
+		f->input = f->p->s->win;
+		int show = binding != &cmd_keys && f->p->s->vis;
+		curs_set(f->p->s->off != f->p->s->tos ? 0 : show);
 
 		int x, y;
-		getyx(p->s->win, y, x);
-		y = MIN(MAX(y, p->s->tos), winsiz(p->s->win, 0));
-		assert( focused->extent.y == winsiz(p->s->win, 0) - p->s->tos );
-		assert( y >= p->s->tos && y < p->s->tos + focused->extent.y );
-		draw_window(focused);
-		wmove(p->s->win, y, x);
+		getyx(f->input, y, x);
+		y = MIN(MAX(y, f->p->s->tos), winsiz(f->input, 0));
+		assert( f->extent.y == winsiz(f->input, 0) - f->p->s->tos );
+		assert( y >= f->p->s->tos && y < f->p->s->tos + f->extent.y );
+		draw_window(f);
+		wmove(f->input, y, x);
 	} else {
-		focused->input = focused->wtit ? focused->wtit : focused->wdiv;
+		f->input = f->wtit ? f->wtit : f->wdiv;
 	}
-	assert(focused->input);
+	assert(f->input);
 }
 
 static const char *
