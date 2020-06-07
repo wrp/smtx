@@ -216,8 +216,8 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	getyx(p->s->win, y, x);
 	y = MIN(MAX(y, p->s->tos), winsiz(p->s->win, 0));
 
-	assert( p->ws.ws_row == winsiz(p->s->win, 0) - p->s->tos );
-	assert( y >= p->s->tos && y < p->s->tos + p->ws.ws_row );
+	assert( focused->extent.y == winsiz(p->s->win, 0) - p->s->tos );
+	assert( y >= p->s->tos && y < p->s->tos + focused->extent.y );
 
 	draw_window(focused);
 	wmove(p->s->win, y, x);
@@ -406,7 +406,6 @@ draw_title(struct canvas *n)
 		if( n->extent.x - len > 0 ) {
 			mvwhline(n->wtit, 0, len, ACS_HLINE, n->extent.x - len);
 		}
-		assert( n->p->ws.ws_row == n->extent.y );
 		draw_pane(n->wtit, o->y + n->extent.y, o->x);
 	}
 }
@@ -419,7 +418,7 @@ draw(struct canvas *n) /* Draw a canvas. */
 		draw(n->c[1]);
 		if( n->wdiv ) {
 			struct point *e = &n->extent;
-			mvwvline(n->wdiv, 0, 0, ACS_VLINE, e->y);
+			mvwvline(n->wdiv, 0, 0, ACS_VLINE, e->y + 1);
 			draw_pane(n->wdiv, n->origin.y, n->origin.x + e->x);
 		}
 		draw_title(n);
@@ -546,8 +545,6 @@ reshape_root(struct canvas *n, const char *arg)
 int
 contains(struct canvas *n, int y, int x)
 {
-	int y1, x1;
-	getmaxyx(n->p->s->win, y1, x1);
 	return
 		y >= n->origin.y && y <= n->origin.y + n->extent.y &&
 		x >= n->origin.x && x <= n->origin.x + n->extent.x;
@@ -598,30 +595,25 @@ mov(struct canvas *n, const char *arg)
 	char cmd = *arg;
 	int count = cmd_count < 1 ? 1 : cmd_count;
 	int startx = n->origin.x;
-	int starty = n->origin.y + winsiz(n->p->s->win, 0) - n->p->s->tos;
+	int starty = n->origin.y + n->extent.y;
 	struct canvas *t = n;
 	if( cmd == 'p' ) {
 		n = lastfocused;
 	} else for( ; t && count--; n = t ? t : n ) {
-		int y, x;
-		getmaxyx(t->p->s->win, y, x);
 		switch( cmd ) {
 		case 'k': /* move up */
-			t = find_window(view_root, t->origin.y - 1,
-				startx);
+			t = find_window(view_root, t->origin.y - 1, startx);
 			break;
 		case 'j': /* move down */
 			t = find_window(view_root,
-				t->origin.y + y - t->p->s->tos + 2,
-					startx);
+				t->origin.y + t->extent.y + 1, startx);
 			break;
 		case 'l': /* move right */
 			t = find_window(view_root, starty,
-				t->origin.x + x + 1);
+				t->origin.x + t->extent.x + 1);
 			break;
 		case 'h': /* move left */
-			t = find_window(view_root, starty,
-				t->origin.x - 1);
+			t = find_window(view_root, starty, t->origin.x - 1);
 			break;
 		}
 	}
