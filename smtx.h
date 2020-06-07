@@ -73,23 +73,24 @@ struct canvas {
 	    split_point = { 0.5, 0.333 }
 
 	             |<-wdiv
-	  p.s->win   |              c1
+	    win      |              c[1]
 	             |
-	----wtit-----x-------c1->wtit-------------
+	----wtit-----x-------c[1]->wtit-----------
 
-	               c0
+	               c[0]
 
-	-------------c0->wtit---------------------
+	-------------c[0]->wtit-------------------
 	c[0] is the window below this, c[1] is the window to the right
 	(in a typ==1 window, c1 is full height and c0 is partial width)
 	(Note that win.x + c1->win.x == siz.x - 1, subtracting 1 for wdiv)
 	*/
 	struct canvas *c[2];
-	double split_point[2]; /* percent of window dedicated to p.s->win */
+	double split_point[2]; /* percent of window dedicated to win */
 	char title[64];
 	int no_prune;
 	char putative_cmd[64];
-	WINDOW *input;
+	WINDOW *input; /* one of win, wtit, wdiv, or p->s.win */
+	WINDOW *win;
 	WINDOW *wtit;  /* Window for title */
 	WINDOW *wdiv;  /* Window for divider */
 };

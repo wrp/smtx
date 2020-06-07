@@ -178,6 +178,7 @@ freecanvas(struct canvas *n)
 	if( n ) {
 		delwinnul(&n->wtit);
 		delwinnul(&n->wdiv);
+		delwinnul(&n->win);
 		free_proc(&n->p);
 		free(n);
 	}
@@ -196,11 +197,21 @@ winsiz(WINDOW *w, int dir)
 static void
 draw_window(struct canvas *n)
 {
-	if( n->extent.y > 0 && n->extent.x > 0 && n->p ) {
-		struct screen *s = n->p->s;
-		pnoutrefresh(s->win, s->off, 0, n->origin.y, n->origin.x,
-			s->off + n->extent.y - 1, n->origin.x + n->extent.x - 1
-		);
+	struct point o = n->origin;
+	struct point e = n->extent;
+	if( e.y > 0 && e.x > 0 ) {
+		WINDOW *w;
+		int offset;
+		if( n->p ) {
+			w = n->p->s->win;
+			offset = n->p->s->off;
+		} else {
+			w = n->win;
+			offset = 0;
+			mvwprintw(w, 0, 0, "%s", "This window is empty");
+		}
+		pnoutrefresh(w, offset, 0, o.y, o.x,
+			o.y + e.y - 1, o.x + e.x - 1);
 	}
 }
 
@@ -222,7 +233,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 		draw_window(f);
 		wmove(f->input, y, x);
 	} else {
-		f->input = f->wtit ? f->wtit : f->wdiv;
+		f->input = f->win ? f->win : f->wtit ? f->wtit : f->wdiv;
 	}
 	assert(f->input);
 }
@@ -355,6 +366,8 @@ reshape_window(struct canvas *n, int h, int w)
 		if( kill(p->pid, SIGWINCH) ) {
 			show_error("kill");
 		}
+	} else if( n->extent.y > 0 && n->extent.x > 0 ) {
+		resize_pad(&n->win, n->extent.y, n->extent.x);
 	}
 }
 
