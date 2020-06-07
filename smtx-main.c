@@ -219,23 +219,23 @@ static void
 fixcursor(void) /* Move the terminal cursor to the active window. */
 {
 	struct canvas *f = focused;
+	int x = 0, y = 0;
 	if( f->p ) {
 		assert( f->p->s );
 		f->input = f->p->s->win;
 		int show = binding != &cmd_keys && f->p->s->vis;
 		curs_set(f->p->s->off != f->p->s->tos ? 0 : show);
 
-		int x, y;
 		getyx(f->input, y, x);
 		y = MIN(MAX(y, f->p->s->tos), winsiz(f->input, 0));
 		assert( f->extent.y == winsiz(f->input, 0) - f->p->s->tos );
 		assert( y >= f->p->s->tos && y < f->p->s->tos + f->extent.y );
 		draw_window(f);
-		wmove(f->input, y, x);
 	} else {
 		f->input = f->win ? f->win : f->wtit ? f->wtit : f->wdiv;
 	}
 	assert(f->input);
+	wmove(f->input, y, x);
 }
 
 static const char *
