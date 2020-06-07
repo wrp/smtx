@@ -63,6 +63,7 @@ struct point { int y, x; };
 
 struct canvas {
 	struct point origin; /* position of upper left corner */
+	struct point extent; /* relative position of lower right corner */
 	int typ; /* 0: c[0] is full width, 1: c[1] is full height */
 	struct proc *p;
 	struct canvas *parent;
@@ -88,7 +89,6 @@ struct canvas {
 	char title[64];
 	int no_prune;
 	char putative_cmd[64];
-	WINDOW *wpty;  /* Window to display p.s->win */
 	WINDOW *wtit;  /* Window for title */
 	WINDOW *wdiv;  /* Window for divider */
 };
