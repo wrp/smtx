@@ -139,7 +139,17 @@ delwinnul(WINDOW **w)
 static int
 resize_pad(WINDOW **p, int h, int w)
 {
-	return *p ? wresize(*p, h, w ) == OK : (*p = newpad(h, w)) != NULL;
+	if( *p ) {
+		if( wresize(*p, h, w ) != OK ) {
+			*p = NULL;
+		}
+	} else {
+		if( (*p = newpad(h, w)) != NULL ) {
+			nodelay(*p, TRUE);
+		}
+	}
+
+	return *p != NULL;
 }
 
 static void
@@ -253,7 +263,6 @@ new_screens(struct proc *n)
 			return 0;
 		}
 		s->tos = s->off = 0;
-		nodelay(s->win, TRUE);
 		scrollok(s->win, TRUE);
 		keypad(s->win, TRUE);
 	}
@@ -363,7 +372,6 @@ reshape_window(struct canvas *n, int h, int w)
 		}
 	} else if( n->extent.y > 0 && n->extent.x > 0 ) {
 		resize_pad(&n->win, n->extent.y, n->extent.x);
-		nodelay(n->win, TRUE);
 		wbkgd(n->win, ACS_CKBOARD);
 	}
 }
