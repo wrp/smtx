@@ -430,18 +430,23 @@ draw_title(struct canvas *n, int r)
 }
 
 static void
+draw_div(struct canvas *n, int rev)
+{
+	if( n->wdiv ) {
+		( rev ? &wattron : &wattroff )(n->wdiv, A_REVERSE);
+		mvwvline(n->wdiv, 0, 0, ACS_VLINE, INT_MAX);
+		draw_pane(n->wdiv, n->origin.y, n->origin.x + n->extent.x);
+	}
+}
+
+static void
 draw(struct canvas *n) /* Draw a canvas. */
 {
 	if( n != NULL ) {
 		int rev = binding == &cmd_keys && n == focused;
 		draw(n->c[0]);
 		draw(n->c[1]);
-		if( n->wdiv ) {
-			struct point *e = &n->extent;
-			( rev ? &wattron : &wattroff )(n->wdiv, A_REVERSE);
-			mvwvline(n->wdiv, 0, 0, ACS_VLINE, INT_MAX);
-			draw_pane(n->wdiv, n->origin.y, n->origin.x + e->x);
-		}
+		draw_div(n, rev && !n->extent.x);
 		draw_title(n, rev);
 		draw_window(n);
 	}
