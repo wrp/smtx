@@ -208,7 +208,6 @@ draw_window(struct canvas *n)
 		} else {
 			w = n->win;
 			offset = 0;
-			mvwprintw(w, 0, 0, "%s", "This window is empty");
 		}
 		pnoutrefresh(w, offset, 0, o.y, o.x,
 			o.y + e.y - 1, o.x + e.x - 1);
@@ -368,6 +367,7 @@ reshape_window(struct canvas *n, int h, int w)
 		}
 	} else if( n->extent.y > 0 && n->extent.x > 0 ) {
 		resize_pad(&n->win, n->extent.y, n->extent.x);
+		wbkgd(n->win, ACS_CKBOARD);
 	}
 }
 
