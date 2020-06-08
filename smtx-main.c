@@ -367,6 +367,7 @@ reshape_window(struct canvas *n, int h, int w)
 		}
 	} else if( n->extent.y > 0 && n->extent.x > 0 ) {
 		resize_pad(&n->win, n->extent.y, n->extent.x);
+		nodelay(n->win, TRUE);
 		wbkgd(n->win, ACS_CKBOARD);
 	}
 }
