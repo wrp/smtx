@@ -200,17 +200,13 @@ draw_window(struct canvas *n)
 	struct point o = n->origin;
 	struct point e = n->extent;
 	if( e.y > 0 && e.x > 0 ) {
-		WINDOW *w;
-		int offset;
+		WINDOW *w = n->win;
+		int off = 0;
 		if( n->p ) {
 			w = n->p->s->win;
-			offset = n->p->s->off;
-		} else {
-			w = n->win;
-			offset = 0;
+			off = n->p->s->off;
 		}
-		pnoutrefresh(w, offset, 0, o.y, o.x,
-			o.y + e.y - 1, o.x + e.x - 1);
+		pnoutrefresh(w, off, 0, o.y, o.x, o.y + e.y - 1, o.x + e.x - 1);
 	}
 }
 
