@@ -226,7 +226,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 		assert( f->extent.y == winsiz(f->input, 0) - f->p->s->tos );
 		assert( y >= f->p->s->tos && y < f->p->s->tos + f->extent.y );
 	} else {
-		f->input = f->win ? f->win : f->wtit ? f->wtit : f->wdiv;
+		f->input = f->win;
 	}
 	assert(f->input);
 	draw_window(f);
