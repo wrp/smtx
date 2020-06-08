@@ -238,7 +238,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	} else {
 		f->input = f->win ? f->win : f->wtit ? f->wtit : f->wdiv;
 	}
-	assert(f->input);
+	assert(f->input || root == NULL);
 	draw_window(f);
 	wmove(f->input, y, x);
 }
