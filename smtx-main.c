@@ -922,7 +922,7 @@ main_loop(void)
 
 		draw(view_root);
 		if( errmsg[0] ) {
-			int y = LINES - 1, x = winsiz(werr, 1);
+			int y = LINES - 1, x = MIN(winsiz(werr, 1), COLS);
 			mvwprintw(werr, 0, 0, "%s", errmsg);
 			pnoutrefresh(werr, 0, 0, y, 0, y, x);
 		}
