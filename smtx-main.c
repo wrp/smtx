@@ -229,11 +229,11 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 		y = MIN(MAX(y, f->p->s->tos), winsiz(f->input, 0));
 		assert( f->extent.y == winsiz(f->input, 0) - f->p->s->tos );
 		assert( y >= f->p->s->tos && y < f->p->s->tos + f->extent.y );
-		draw_window(f);
 	} else {
 		f->input = f->win ? f->win : f->wtit ? f->wtit : f->wdiv;
 	}
 	assert(f->input);
+	draw_window(f);
 	wmove(f->input, y, x);
 }
 
