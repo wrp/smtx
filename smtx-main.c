@@ -439,7 +439,7 @@ draw(struct canvas *n) /* Draw a canvas. */
 		if( n->wdiv ) {
 			struct point *e = &n->extent;
 			( rev ? &wattron : &wattroff )(n->wdiv, A_REVERSE);
-			mvwvline(n->wdiv, 0, 0, ACS_VLINE, e->y + 1);
+			mvwvline(n->wdiv, 0, 0, ACS_VLINE, INT_MAX);
 			draw_pane(n->wdiv, n->origin.y, n->origin.x + e->x);
 		}
 		draw_title(n, rev);
