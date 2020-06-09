@@ -24,14 +24,14 @@
 #define PD(x, d) (argc < (x) || !argv? (d) : argv[(x)])
 #define P0(x) PD(x, 0)
 #define P1(x) (!P0(x)? 1 : P0(x))
-#define CALL(x) (x)(v, n, 0, 0, 0, NULL, NULL)
+#define CALL(x) (x)(v, n, 0, 0, 0, NULL)
 #define COMMONVARS                                                      \
     struct proc *n = p;       \
     struct screen *s = n->s;                                            \
     WINDOW *win = s->win;                                               \
     int py, px, y, x, my, mx, top = 0, bot = 0, tos = s->tos;           \
     (void)v; (void)p; (void)w; (void)iw; (void)argc; (void)argv;        \
-    (void)win; (void)y; (void)x; (void)my; (void)mx; (void)osc;         \
+    (void)win; (void)y; (void)x; (void)my; (void)mx;                    \
     (void)tos;                                                          \
     getyx(win, py, px); y = py - s->tos; x = px;                        \
     getmaxyx(win, my, mx); my -= s->tos;                                \
@@ -42,7 +42,7 @@
 #define HANDLER(name)                                   \
     static void                                         \
     name (VTPARSER *v, void *p, wchar_t w, wchar_t iw,  \
-          int argc, int *argv, const wchar_t *osc)      \
+          int argc, int *argv)                          \
     { COMMONVARS
 #define ENDHANDLER n->repc = 0; } /* control sequences aren't repeated */
 
@@ -245,7 +245,7 @@ HANDLER(ed) /* ED - Erase in Display */
                 wclrtoeol(win);
             }
             wmove(win, py, x);
-            el(v, p, w, iw, 1, &o, NULL);
+            el(v, p, w, iw, 1, &o);
             break;
     }
     wmove(win, py, px);
@@ -471,7 +471,7 @@ HANDLER(print) /* Print a character to the terminal */
 
 HANDLER(rep) /* REP - Repeat Character */
     for (int i = 0; i < P1(0) && n->repc; i++)
-        print(v, p, n->repc, 0, 0, NULL, NULL);
+        print(v, p, n->repc, 0, 0, NULL);
 ENDHANDLER
 
 HANDLER(scs) /* Select Character Set */
@@ -577,5 +577,5 @@ setupevents(struct proc *n)
     vtonevent(&n->vp, VTPARSER_ESCAPE,  L'=', numkp);
     vtonevent(&n->vp, VTPARSER_ESCAPE,  L'>', numkp);
     vtonevent(&n->vp, VTPARSER_PRINT,   0,    print);
-    ris(&n->vp, n, L'c', 0, 0, NULL, NULL);
+    ris(&n->vp, n, L'c', 0, 0, NULL);
 }

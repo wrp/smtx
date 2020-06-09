@@ -56,8 +56,7 @@ typedef void (*VTCALLBACK)(
 	wchar_t w,
 	wchar_t iw,
 	int argc,
-	int *argv,
-	const wchar_t *osc
+	int *argv
 );
 
 struct VTPARSER {

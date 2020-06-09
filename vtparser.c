@@ -91,7 +91,7 @@ param(VTPARSER *v, wchar_t w)
     do ## k (VTPARSER *v, wchar_t w)                    \
     {                                                   \
         if (t)                                          \
-            f (v, v->p, w, v->inter, n, a, v->oscbuf);  \
+            f (v, v->p, w, v->inter, n, a);             \
     }
 
 DO(control, w < MAXCALLBACK && v->cons[w], v->cons[w], 0, NULL)
