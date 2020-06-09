@@ -1,24 +1,11 @@
 #include "smtx.h"
 
-/*** TERMINAL EMULATION HANDLERS
- * These functions implement the various terminal commands activated by
- * escape sequences and printing to the terminal. Large amounts of boilerplate
- * code is shared among all these functions, and is factored out into the
- * macros below:
+/*
  *      PD(n, d)       - Parameter n, with default d.
  *      P0(n)          - Parameter n, default 0.
  *      P1(n)          - Parameter n, default 1.
  *      CALL(h)        - Call handler h with no arguments.
  *      (END)HANDLER   - Declare/end a handler function
- *      COMMONVARS     - All of the common variables for a handler.
- *                       x, y     - cursor position
- *                       mx, my   - max possible values for x and y
- *                       px, py   - physical cursor position in scrollback
- *                       n        - the current proc
- *                       win      - the current window
- *                       top, bot - the scrolling region
- *                       tos      - top of the screen in the pad
- *                       s        - the current SCRN buffer
  * The funny names for handlers are from their ANSI/ECMA/DEC mnemonics.
  */
 #define PD(x, d) (argc < (x) || !argv? (d) : argv[(x)])
@@ -40,11 +27,16 @@ void
 handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 	int argc, int *argv, enum cmd c)
 {
+
 	int noclear_repc = 0;
-	struct proc *n = p;
-	struct screen *s = n->s;
-	WINDOW *win = s->win;
-	int py, px, y, x, my, mx, top = 0, bot = 0, tos = s->tos;
+	struct proc *n = p; /* the current proc */
+	struct screen *s = n->s; /* the current SCRN buffer */
+	WINDOW *win = s->win; /* the current window */
+	int y, x; /* cursor position */
+	int my, mx; /* max possible values for x and y */
+	int py, px; /* physical cursor position in scrollback */
+	int top = 0, bot = 0; /* the scrolling region */
+	int tos = s->tos;  /* top of screen in the pad */
 	(void)v; (void)p; (void)w; (void)iw; (void)argc; (void)argv;
 	(void)win; (void)y; (void)x; (void)my; (void)mx;
 	(void)tos;
