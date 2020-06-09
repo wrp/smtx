@@ -231,7 +231,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 
 		getyx(f->input, y, x);
 		y = MIN(MAX(y, f->p->s->tos), winsiz(f->input, 0));
-		assert( f->extent.y == winsiz(f->input, 0) - f->p->s->tos );
+		assert( f->extent.y == winsiz(f->input, 0) - f->p->s->tos - 1);
 		assert( y >= f->p->s->tos && y < f->p->s->tos + f->extent.y );
 	} else {
 		f->input = f->win ? f->win : f->wtit ? f->wtit : f->wdiv;
@@ -356,7 +356,7 @@ reshape_window(struct canvas *n, int h, int w)
 		p->ws = (struct winsize) {.ws_row = h, .ws_col = w};
 		resize_pad(&p->pri.win, MAX(h, scrollback_history), w);
 		resize_pad(&p->alt.win, h, w);
-		p->pri.tos = p->pri.off = MAX(0, scrollback_history - h);
+		p->pri.tos = p->pri.off = MAX(0, scrollback_history - h - 1);
 		p->alt.tos = p->alt.off = 0;
 		wsetscrreg(p->pri.win, 0, MAX(scrollback_history, h) - 1);
 		wsetscrreg(p->alt.win, 0, h - 1);
