@@ -25,19 +25,6 @@
 #define P0(x) PD(x, 0)
 #define P1(x) (!P0(x)? 1 : P0(x))
 #define CALL(x) handle_terminal_cmd(v, n, 0, 0, 0, NULL, x)
-#define COMMONVARS                                                      \
-    struct proc *n = p;       \
-    struct screen *s = n->s;                                            \
-    WINDOW *win = s->win;                                               \
-    int py, px, y, x, my, mx, top = 0, bot = 0, tos = s->tos;           \
-    (void)v; (void)p; (void)w; (void)iw; (void)argc; (void)argv;        \
-    (void)win; (void)y; (void)x; (void)my; (void)mx;                    \
-    (void)tos;                                                          \
-    getyx(win, py, px); y = py - s->tos; x = px;                        \
-    getmaxyx(win, my, mx); my -= s->tos;                                \
-    wgetscrreg(win, &top, &bot);                                        \
-    bot++; bot -= s->tos;                                               \
-    top = top <= tos? 0 : top - tos;                                    \
 
 #define HANDLER(name) case name: {
 #define ENDHANDLER    } break;
