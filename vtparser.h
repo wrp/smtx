@@ -83,6 +83,6 @@ typedef enum {
 	VTPARSER_PRINT
 } VtEvent;
 
-VTCALLBACK vtonevent(VTPARSER *vp, VtEvent t, wchar_t w, VTCALLBACK cb);
+VTCALLBACK vtonevent(VTPARSER *vp, VtEvent t, wchar_t w,  int);
 void vtwrite(VTPARSER *vp, const char *s, size_t n);
 #endif

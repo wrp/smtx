@@ -86,12 +86,15 @@ param(VTPARSER *v, wchar_t w)
         v->args[v->narg - 1] = v->args[v->narg - 1] * 10 + (w - 0x30);
 }
 
+extern void
+handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
+	int argc, int *argv, int);
 #define DO(k, t, f, n, a)                               \
     static void                                         \
     do ## k (VTPARSER *v, wchar_t w)                    \
     {                                                   \
         if (t)                                          \
-            f (v, v->p, w, v->inter, n, a);             \
+            handle_terminal_cmd (v, v->p, w, v->inter, n, a, f);  \
     }
 
 DO(control, w < MAXCALLBACK && v->cons[w], v->cons[w], 0, NULL)
@@ -102,7 +105,7 @@ DO(osc,     v->osc, v->osc, v->nosc, NULL)
 
 /**** PUBLIC FUNCTIONS */
 VTCALLBACK
-vtonevent(VTPARSER *vp, VtEvent t, wchar_t w, VTCALLBACK cb)
+vtonevent(VTPARSER *vp, VtEvent t, wchar_t w, int cb)
 {
     VTCALLBACK o = NULL;
     if (w < MAXCALLBACK) switch (t){

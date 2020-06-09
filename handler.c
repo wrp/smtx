@@ -24,7 +24,7 @@
 #define PD(x, d) (argc < (x) || !argv? (d) : argv[(x)])
 #define P0(x) PD(x, 0)
 #define P1(x) (!P0(x)? 1 : P0(x))
-#define CALL(x) (x)(v, n, 0, 0, 0, NULL)
+#define CALL(x) handle_terminal_cmd(v, n, 0, 0, 0, NULL, x)
 #define COMMONVARS                                                      \
     struct proc *n = p;       \
     struct screen *s = n->s;                                            \
@@ -39,12 +39,36 @@
     bot++; bot -= s->tos;                                               \
     top = top <= tos? 0 : top - tos;                                    \
 
-#define HANDLER(name)                                   \
-    static void                                         \
-    name (VTPARSER *v, void *p, wchar_t w, wchar_t iw,  \
-          int argc, int *argv)                          \
-    { COMMONVARS
-#define ENDHANDLER n->repc = 0; } /* control sequences aren't repeated */
+#define HANDLER(name) case name: {
+#define ENDHANDLER    } break;
+
+enum cmd {
+	nul, ack, bell, cbt, cls, cnl, cpl, cr, csr, cub, cud, cuf, cup,
+	cuu, dch, decaln, decid, decreqtparm, dsr, ech, ed, el, hpa, hpr, ht,
+	hts, ich, idl, ind, mode, nel, numkp, pnl, print, rc, rep,
+	ri, ris, sc, scs, sgr, sgr0, so, su, tab, tbc, vis, vpa, vpr
+};
+
+void
+handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
+	int argc, int *argv, enum cmd c)
+{
+	int noclear_repc = 0;
+	struct proc *n = p;
+	struct screen *s = n->s;
+	WINDOW *win = s->win;
+	int py, px, y, x, my, mx, top = 0, bot = 0, tos = s->tos;
+	(void)v; (void)p; (void)w; (void)iw; (void)argc; (void)argv;
+	(void)win; (void)y; (void)x; (void)my; (void)mx;
+	(void)tos;
+	getyx(win, py, px); y = py - s->tos; x = px;
+	getmaxyx(win, my, mx); my -= s->tos;
+	wgetscrreg(win, &top, &bot);
+	bot++; bot -= s->tos;
+	top = top <= tos? 0 : top - tos;
+switch(c) {
+	case nul:
+		break;
 
 HANDLER(bell) /* Terminal bell. */
     beep();
@@ -245,7 +269,7 @@ HANDLER(ed) /* ED - Erase in Display */
                 wclrtoeol(win);
             }
             wmove(win, py, x);
-            el(v, p, w, iw, 1, &o);
+            handle_terminal_cmd(v, p, w, iw, 1, &o, el);
             break;
     }
     wmove(win, py, px);
@@ -415,7 +439,8 @@ HANDLER(sgr) /* SGR - Select Graphic Rendition */
         wbkgrndset(win, &c);
    }
 #endif
-}
+	noclear_repc = 1;
+	} break;
 
 HANDLER(cr) /* CR - Carriage Return */
     s->xenl = false;
@@ -467,11 +492,12 @@ HANDLER(print) /* Print a character to the terminal */
     } else
         waddnwstr(win, &w, 1);
     n->gc = n->gs;
-} /* no ENDHANDLER because we don't want to reset repc */
+	noclear_repc = 1;
+	} break;
 
 HANDLER(rep) /* REP - Repeat Character */
     for (int i = 0; i < P1(0) && n->repc; i++)
-        print(v, p, n->repc, 0, 0, NULL);
+        handle_terminal_cmd(v, p, n->repc, 0, 0, NULL, print);
 ENDHANDLER
 
 HANDLER(scs) /* Select Character Set */
@@ -509,6 +535,12 @@ HANDLER(so) /* Switch Out/In Character Set */
         n->gc = n->g3;
     }
 ENDHANDLER
+}
+
+	if( !noclear_repc ) {
+		n->repc = 0;
+	}
+}
 
 void
 setupevents(struct proc *n)
@@ -577,5 +609,5 @@ setupevents(struct proc *n)
     vtonevent(&n->vp, VTPARSER_ESCAPE,  L'=', numkp);
     vtonevent(&n->vp, VTPARSER_ESCAPE,  L'>', numkp);
     vtonevent(&n->vp, VTPARSER_PRINT,   0,    print);
-    ris(&n->vp, n, L'c', 0, 0, NULL);
+    handle_terminal_cmd(&n->vp, n, L'c', 0, 0, NULL, ris);
 }
