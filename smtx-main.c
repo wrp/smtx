@@ -249,12 +249,12 @@ getterm(void)
 }
 
 static int
-new_screens(struct proc *n)
+new_screens(struct proc *p)
 {
-	if( !n ) {
+	if( !p ) {
 		return 0;
 	}
-	struct screen *ss[] = { &n->pri, &n->alt, NULL };
+	struct screen *ss[] = { &p->pri, &p->alt, NULL };
 	for( struct screen **t = ss; *t; t += 1 ) {
 		struct screen *s = *t;
 		if( ! resize_pad(&s->win, 24, 80) ) {
@@ -264,8 +264,8 @@ new_screens(struct proc *n)
 		scrollok(s->win, TRUE);
 		keypad(s->win, TRUE);
 	}
-	n->s = &n->pri;
-	setupevents(n);
+	p->s = &p->pri;
+	setupevents(p);
 	return 1;
 }
 
