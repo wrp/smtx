@@ -41,7 +41,7 @@
 #define CTL(x) ((x) & 0x1f)
 
 struct screen {
-	int sy, sx, vis, tos, off;
+	int sy, sx, vis, tos;
 	short fg, bg, sfg, sbg, sp;
 	bool insert, oxenl, xenl, saved;
 	attr_t sattr;
@@ -65,6 +65,7 @@ struct canvas {
 	struct point origin; /* position of upper left corner */
 	struct point extent; /* relative position of lower right corner */
 	int typ; /* 0: c[0] is full width, 1: c[1] is full height */
+	int offset; /* How much window is scrolled back */
 	struct proc *p;
 	struct canvas *parent;
 	/*

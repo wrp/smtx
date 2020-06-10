@@ -212,7 +212,7 @@ draw_window(struct canvas *n)
 		int off = 0;
 		if( n->p ) {
 			w = n->p->s->win;
-			off = n->p->s->off;
+			off = n->offset;
 		}
 		pnoutrefresh(w, off, 0, o.y, o.x, o.y + e.y - 1, o.x + e.x - 1);
 	}
@@ -227,7 +227,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 		assert( f->p->s );
 		f->input = f->p->s->win;
 		int show = binding != &cmd_keys && f->p->s->vis;
-		curs_set(f->p->s->off != f->p->s->tos ? 0 : show);
+		curs_set(f->offset != f->p->s->tos ? 0 : show);
 
 		getyx(f->input, y, x);
 		y = MIN(MAX(y, f->p->s->tos), winsiz(f->input, 0));
@@ -260,7 +260,7 @@ new_screens(struct proc *p)
 		if( ! resize_pad(&s->win, 24, 80) ) {
 			return 0;
 		}
-		s->tos = s->off = 0;
+		s->tos = 0;
 		scrollok(s->win, TRUE);
 		keypad(s->win, TRUE);
 	}
@@ -356,8 +356,8 @@ reshape_window(struct canvas *n, int h, int w)
 		p->ws = (struct winsize) {.ws_row = h, .ws_col = w};
 		resize_pad(&p->pri.win, MAX(h, scrollback_history), w);
 		resize_pad(&p->alt.win, h, w);
-		p->pri.tos = p->pri.off = MAX(0, scrollback_history - h);
-		p->alt.tos = p->alt.off = 0;
+		p->pri.tos = n->offset = MAX(0, scrollback_history - h);
+		p->alt.tos = 0;
 		wsetscrreg(p->pri.win, 0, MAX(scrollback_history, h) - 1);
 		wsetscrreg(p->alt.win, 0, h - 1);
 		wrefresh(p->s->win);
@@ -519,7 +519,7 @@ scrollbottom(struct canvas *n)
 {
 	assert(n);
 	if( n->p && n->p->s ) {
-		n->p->s->off = n->p->s->tos;
+		n->offset = n->p->s->tos;
 	}
 }
 
@@ -541,9 +541,9 @@ scrolln(struct canvas *n, const char *arg)
 		(void) x;
 		int count = cmd_count == -1 ? (y - n->p->s->tos) - 1 : cmd_count;
 		if( *arg == '-' ) {
-			n->p->s->off = MAX(0, n->p->s->off - count);
+			n->offset = MAX(0, n->offset - count);
 		} else {
-			n->p->s->off = MIN(n->p->s->tos, n->p->s->off + count);
+			n->offset = MIN(n->p->s->tos, n->offset + count);
 		}
 	}
 	return 0;
