@@ -260,7 +260,6 @@ new_screens(struct proc *p)
 		if( ! resize_pad(&s->win, 24, 80) ) {
 			return 0;
 		}
-		s->tos = 0;
 		scrollok(s->win, TRUE);
 		keypad(s->win, TRUE);
 	}
@@ -357,7 +356,7 @@ reshape_window(struct canvas *n, int h, int w)
 		resize_pad(&p->pri.win, MAX(h, scrollback_history), w);
 		resize_pad(&p->alt.win, h, w);
 		p->pri.tos = n->offset = MAX(0, scrollback_history - h);
-		p->alt.tos = 0;
+		assert( p->alt.tos == 0 );
 		wsetscrreg(p->pri.win, 0, MAX(scrollback_history, h) - 1);
 		wsetscrreg(p->alt.win, 0, h - 1);
 		wrefresh(p->s->win);
