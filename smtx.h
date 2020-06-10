@@ -65,7 +65,7 @@ struct canvas {
 	struct point origin; /* position of upper left corner */
 	struct point extent; /* relative position of lower right corner */
 	int typ; /* 0: c[0] is full width, 1: c[1] is full height */
-	int offset; /* How much window is scrolled back */
+	struct point offset; /* Number of lines window is scrolled */
 	struct proc *p;
 	struct canvas *parent;
 	/*

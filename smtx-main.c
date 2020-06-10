@@ -218,7 +218,7 @@ draw_window(struct canvas *n)
 		int off = 0;
 		if( n->p ) {
 			w = n->p->s->win;
-			off = n->offset;
+			off = n->offset.y;
 		}
 		pnoutrefresh(w, off, 0, o.y, o.x, o.y + e.y - 1, o.x + e.x - 1);
 	}
@@ -233,7 +233,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 		assert( f->p->s );
 		f->input = f->p->s->win;
 		int show = binding != &cmd_keys && f->p->s->vis;
-		curs_set(f->offset != f->p->s->tos ? 0 : show);
+		curs_set(f->offset.y != f->p->s->tos ? 0 : show);
 
 		getyx(f->input, y, x);
 		y = MIN(MAX(y, f->p->s->tos), winsiz(f->input, 0));
@@ -361,7 +361,7 @@ reshape_window(struct canvas *n, int h, int w)
 		p->ws = (struct winsize) {.ws_row = h, .ws_col = w};
 		resize_pad(&p->pri.win, MAX(h, scrollback_history), w);
 		resize_pad(&p->alt.win, h, w);
-		p->pri.tos = n->offset = MAX(0, scrollback_history - h);
+		p->pri.tos = n->offset.y = MAX(0, scrollback_history - h);
 		assert( p->alt.tos == 0 );
 		wsetscrreg(p->pri.win, 0, MAX(scrollback_history, h) - 1);
 		wsetscrreg(p->alt.win, 0, h - 1);
@@ -524,7 +524,7 @@ scrollbottom(struct canvas *n)
 {
 	assert(n);
 	if( n->p && n->p->s ) {
-		n->offset = n->p->s->tos;
+		n->offset.y = n->p->s->tos;
 	}
 }
 
@@ -545,11 +545,8 @@ scrolln(struct canvas *n, const char *arg)
 		getmaxyx(n->p->s->win, y, x);
 		(void) x;
 		int count = cmd_count == -1 ? (y - n->p->s->tos) - 1 : cmd_count;
-		if( *arg == '-' ) {
-			n->offset = MAX(0, n->offset - count);
-		} else {
-			n->offset = MIN(n->p->s->tos, n->offset + count);
-		}
+		n->offset.y += *arg == '-' ? -count : count;
+		n->offset.y = MIN(MAX(0, n->offset.y), n->p->s->tos);
 	}
 	return 0;
 }
