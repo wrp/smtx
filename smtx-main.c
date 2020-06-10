@@ -18,7 +18,13 @@
 /*
    TODO:
      Test Suite!!
-     Use current cursor position to set bottom of screen when splitting
+     Use current cursor position to set bottom of screen when splitting (?)
+     In full-screen mode, make hjkl scroll the screen.
+     Make it easy to swap bindings.  eg, so that hjkl could be used for
+       scrolling in non-full screen mode.  Maybe have labelled bindings,
+       so perhaps 'a or 'b would select binding a or b.  Would be simpler
+       to use numbers, so 1B or 2B could select bindings 1 or 2.  It seems
+       hjkl would be better for scrolling than <> and fb
      Copy-mode, with stack of registers and ability to edit.
        Or, maybe just have a binding (s) that dumps the current content
        of the scrollback region to a file like ~/.smtx-pid-timestamp
