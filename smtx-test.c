@@ -2,10 +2,36 @@
 #include <err.h>
 #include <sys/wait.h>
 
+
+static void
+send_cmd(struct proc *p, char *cmd)
+{
+	/* vtwrite(&p->vp, cmd, strlen(cmd)); */
+	safewrite(p->pt, cmd, strlen(cmd));
+}
+
 static int
 test_cuu(int fd)
 {
-	(void) fd;
+	(void)fd;
+	struct canvas *root = init(24, 80);
+	int y, x;
+	getyx(root->p->pri.win, y, x);
+	if( y || x ) {
+		errx(1, "Cursor position in root window is (%d,%d)\n", y, x);
+	}
+	send_cmd(root->p, "tput cud 5\r");
+	char iobuf[BUFSIZ];
+	sleep(1);  /* TODO: synchronize reasonably */
+	ssize_t r = read(root->p->pt, iobuf, sizeof iobuf);
+	if( r > 0 ) {
+		vtwrite(&root->p->vp, iobuf, r);
+	}
+	getyx(root->p->pri.win, y, x);
+	if( y != 6 ) {
+		errx(1, "Cursor position after cud 5 is (%d, %d)\n", y, x);
+		return 1;
+	}
 	return 0;
 }
 
@@ -36,8 +62,8 @@ int
 main(int argc, char **argv)
 {
 	int rv = EXIT_SUCCESS;
-	char *const args[] = { "smtx-test", "test_cuu", NULL };
-	char *defaults[] = { "test1", NULL };
+	char *const args[] = { "smtx-test", NULL };
+	char *defaults[] = { "test1", "test_cuu", NULL };
 	struct { char *name; test *f; int main; } tab[] = {
 		F(test1, 1),
 		F(test_cuu, 0),
@@ -52,8 +78,7 @@ main(int argc, char **argv)
 
 			switch( forkpty(&fd, NULL, NULL, NULL) ) {
 			case -1:
-				fprintf(stderr, "forkpty: %s", strerror(errno));
-				rv = EXIT_FAILURE;
+				err(1, "forkpty");
 				break;
 			case 0:
 				if( v->main ) {
