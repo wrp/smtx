@@ -85,6 +85,7 @@ main(int argc, char **argv)
 		F(test_cuu, 0),
 		{ NULL, NULL, 0 }
 	}, *v;
+	setenv("SHELL", "/bin/sh", 1);
 	for( argv = argc < 2 ? defaults : argv + 1; *argv; argv++ ) {
 		for( v = tab; v->name && strcmp(v->name, *argv); v++ )
 			;
