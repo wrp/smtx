@@ -10,7 +10,6 @@ fi
 RV=0
 
 for name in \
-	cset \
 	handler \
 	main \
 	smtx-test \
@@ -33,4 +32,4 @@ for name in \
 		RV=77  # Skip this until such time as we actually have coverage
 	fi >&2
 done
-	exit $RV
+exit $RV
