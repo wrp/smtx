@@ -199,16 +199,6 @@ freecanvas(struct canvas *n)
 }
 
 static int
-winloc(WINDOW *w, int dir)
-{
-	int y = 0, x = 0;
-	if( w ) {
-		getyx(w, y, x);
-	}
-	return dir ? x : y;
-}
-
-static int
 winsiz(WINDOW *w, int dir)
 {
 	int y = 0, x = 0;
