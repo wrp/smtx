@@ -4,16 +4,17 @@
 
 const char *args[10];
 
-static void
+static int
 test1() {
 	int fd;
+	int status;
 
 	switch( forkpty(&fd, NULL, NULL, NULL) ) {
 	case -1:
 		err(1, "forkpty");
 	case 0:
-		smtx_main(1, (char *const[]) { "smtx-test", NULL });
-		exit(0);
+		status = smtx_main(1, (char *const[]) { "smtx-test", NULL });
+		exit(status);
 	}
 	char *cmds[] = {
 		"echo err >&2;",
@@ -26,20 +27,34 @@ test1() {
 		"exit",
 		NULL
 	};
-	int status;
 	for( char **cmd = cmds; *cmd; cmd++ ) {
 		write(fd, *cmd, strlen(*cmd));
 		write(fd, "\r", 1);
 	}
 	wait(&status);
-	assert( WIFEXITED(status) && WEXITSTATUS(status) == 0 );
+	return WIFEXITED(status) && WEXITSTATUS(status) == 0;
 }
 
+typedef int test(void);
+#define F(x) { .name = #x, .f = (x) }
 int
 main(int argc, char **argv)
 {
-	(void) argc;
-	(void) argv;
-	test1();
+	char *defaults[] = { "test1", NULL };
+	struct { char *name; test *f; } tab[] = {
+		F(test1),
+		{ NULL, NULL }
+	}, *v;
+	for( argv = argc < 2 ? defaults : argv + 1; *argv; argv++ ) {
+		for( v = tab; v->name && strcmp(v->name, *argv); v++ )
+			;
+		if( v->f ) {
+			if( !v->f()) {
+				errx(EXIT_FAILURE, "test %s FAILED", *argv);
+			}
+		} else {
+			errx(EXIT_FAILURE, "unknown function: %s", *argv);
+		}
+	}
 	return EXIT_SUCCESS;
 }
