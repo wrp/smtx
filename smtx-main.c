@@ -1005,12 +1005,12 @@ init(int lines, int columns)
 	start_color();
 	use_default_colors();
 	if( !resize_pad(&werr, 1, sizeof errmsg) ) {
-		warn(EXIT_FAILURE, "Unable to create error window");
+		warnx("Unable to create error window");
 	} else {
 		wattron(werr, A_REVERSE);
 		b = newcanvas();
 		if( !b || !new_screens(b->p = new_pty()) ) {
-			warn(EXIT_FAILURE, "Unable to create root window");
+			warnx("Unable to create root window");
 		}
 		reshape(b, 0, 0, LINES, COLS);
 		focus(b, 0);
