@@ -59,11 +59,11 @@ static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 static struct handler (*binding)[128] = &keys;
 struct canvas *focused, *lastfocused = NULL;
 struct canvas *root, *view_root;
-char commandkey = CTL('g'); /* Change with -c flag */
+char commandkey = CTL('g'); /* Change at runtime with -c */
 static int maxfd = STDIN_FILENO;
 fd_set fds;
 int cmd_count = -1;
-int scrollback_history = 1024;
+int scrollback_history = 1024; /* Change at runtime with -s */
 
 static struct canvas * balance(struct canvas *n);
 static void reshape(struct canvas *n, int y, int x, int h, int w);
