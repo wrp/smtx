@@ -504,7 +504,7 @@ getinput(struct canvas *n, fd_set *f) /* check all ptty's for input. */
 		status = false;
 	} else if( n && n->p && n->p->pt > 0 && FD_ISSET(n->p->pt, f) ) {
 		char iobuf[BUFSIZ];
-		ssize_t r = read(n->p->pt, iobuf, sizeof(iobuf));
+		ssize_t r = read(n->p->pt, iobuf, sizeof iobuf);
 		if( r > 0 ) {
 			vtwrite(&n->p->vp, iobuf, r);
 		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
