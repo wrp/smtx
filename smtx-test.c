@@ -4,32 +4,48 @@
 
 
 static void
-send_cmd(struct proc *p, char *cmd)
+send_cmd(int fd, char *cmd)
 {
-	/* vtwrite(&p->vp, cmd, strlen(cmd)); */
-	safewrite(p->pt, cmd, strlen(cmd));
+	safewrite(fd, cmd, strlen(cmd));
 }
 
 static int
 test_cuu(int fd)
 {
-	(void)fd;
 	struct canvas *root = init(24, 80);
 	int y, x;
-	getyx(root->p->pri.win, y, x);
+	FILE *ofp = fdopen(fd = root->p->pt, "r");
+
+	if( ofp == NULL ) {
+		err(1, "Unable to fdopen master pty\n");
+	}
+	getyx(root->p->s->win, y, x);
 	if( y || x ) {
 		errx(1, "Cursor position in root window is (%d,%d)\n", y, x);
 	}
-	send_cmd(root->p, "tput cud 5\r");
-	char iobuf[BUFSIZ];
+	send_cmd(fd, "PS1='X'; tput cud 5\r");
 	sleep(1);  /* TODO: synchronize reasonably */
-	ssize_t r = read(root->p->pt, iobuf, sizeof iobuf);
-	if( r > 0 ) {
-		vtwrite(&root->p->vp, iobuf, r);
+	int c;
+	while( ( c = fgetc(ofp)) != 'X' && c != EOF ) {
+		; /* discard first line */
+	}
+	while( ( c = fgetc(ofp)) != 'X' && c != EOF ) {
+		vtwrite(&root->p->vp, (char *)&c, 1);
 	}
 	getyx(root->p->pri.win, y, x);
 	if( y != 6 ) {
 		errx(1, "Cursor position after cud 5 is (%d, %d)\n", y, x);
+		return 1;
+	}
+
+	send_cmd(fd, "printf '012345678'; tput cub 4\r");
+	sleep(1);  /* TODO: synchronize reasonably */
+	while( ( c = fgetc(ofp)) != 'X' && c != EOF ) {
+		vtwrite(&root->p->vp, (char *)&c, 1);
+	}
+	getyx(root->p->pri.win, y, x);
+	if( x != 5 ) {
+		errx(1, "Cursor position after cub 4 is (%d, %d)\n", y, x);
 		return 1;
 	}
 	return 0;
