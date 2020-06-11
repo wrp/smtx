@@ -971,10 +971,11 @@ parse_args(int argc, char *const*argv)
 	}
 }
 
-void
+struct canvas *
 init(void)
 {
 	char buf[32];
+	struct canvas *b = NULL;
 	FD_SET(maxfd, &fds);
 	snprintf(buf, sizeof buf - 1, "%lu", (unsigned long)getpid());
 	setenv("SMTX", buf, 1);
@@ -994,22 +995,24 @@ init(void)
 	start_color();
 	use_default_colors();
 	if( !resize_pad(&werr, 1, sizeof errmsg) ) {
-		err(EXIT_FAILURE, "Unable to create error window");
+		warn(EXIT_FAILURE, "Unable to create error window");
+	} else {
+		wattron(werr, A_REVERSE);
+		b = newcanvas();
+		if( !b || !new_screens(b->p = new_pty()) ) {
+			warn(EXIT_FAILURE, "Unable to create root window");
+		}
+		reshape(b, 0, 0, LINES, COLS);
+		focus(b, 0);
 	}
-	wattron(werr, A_REVERSE);
-	view_root = root = newcanvas();
-	if( !root || !new_screens(root->p = new_pty()) ) {
-		err(EXIT_FAILURE, "Unable to create root window");
-	}
-	reshape(view_root, 0, 0, LINES, COLS);
-	focus(view_root, 0);
+	return b;
 }
 
 int
 smtx_main(int argc, char *const argv[])
 {
 	parse_args(argc, argv);
-	init();
+	view_root = root = init();
 	main_loop();
 	endwin();
 	return EXIT_SUCCESS;
