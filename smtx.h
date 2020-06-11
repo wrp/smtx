@@ -115,7 +115,7 @@ extern char commandkey;
 extern const char *term;
 extern struct canvas *focused;
 
-extern struct canvas * init(void);
+extern struct canvas * init(int, int);
 extern void setupevents(struct proc *);
 extern void safewrite(int fd, const char *b, size_t n);
 extern void main_loop(void);

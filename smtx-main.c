@@ -972,7 +972,7 @@ parse_args(int argc, char *const*argv)
 }
 
 struct canvas *
-init(void)
+init(int lines, int columns)
 {
 	char buf[32];
 	struct canvas *b = NULL;
@@ -981,8 +981,18 @@ init(void)
 	setenv("SMTX", buf, 1);
 	setenv("TERM", getterm(), 1);
 	setenv("SMTX_VERSION", VERSION, 1);
-	unsetenv("COLUMNS");
-	unsetenv("LINES");
+	if( columns != 0 ) {
+		snprintf(buf, sizeof buf - 1, "%d", columns);
+		setenv("COLUMNS", buf, 1);
+	} else {
+		unsetenv("COLUMNS");
+	}
+	if( lines != 0 ) {
+		snprintf(buf, sizeof buf - 1, "%d", lines);
+		setenv("LINES", buf, 1);
+	} else {
+		unsetenv("LINES");
+	}
 	setlocale(LC_ALL, "");
 	build_bindings();
 	if( initscr() == NULL ) {
@@ -1012,7 +1022,7 @@ int
 smtx_main(int argc, char *const argv[])
 {
 	parse_args(argc, argv);
-	view_root = root = init();
+	view_root = root = init(LINES, COLS);
 	main_loop();
 	endwin();
 	return EXIT_SUCCESS;

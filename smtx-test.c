@@ -10,7 +10,7 @@ endwin_wrap(void)
 
 static int
 test_cuu() {
-	init();
+	init(24, 80);
 	return 0;
 }
 
