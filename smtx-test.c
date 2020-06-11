@@ -93,11 +93,18 @@ main(int argc, char **argv)
 				wait(&status);
 			}
 			if( ! WIFEXITED(status) || WEXITSTATUS(status) != 0 ) {
+				char iobuf[BUFSIZ], *s;
 				rv = EXIT_FAILURE;
-				fprintf(stderr, "test %s FAILED", *argv);
+				fprintf(stderr, "test %s FAILED\n", *argv);
+				ssize_t r = read(fd, s = iobuf, sizeof iobuf);
+				if( r > 0 ) for( ; *s; s++ ) {
+					if( isprint(*s) || *s == '\n' ) {
+						fputc(*s, stderr);
+					}
+				}
 			}
 		} else {
-			fprintf(stderr, "unknown function: %s", *argv);
+			fprintf(stderr, "unknown function: %s\n", *argv);
 			rv = EXIT_FAILURE;
 		}
 	}
