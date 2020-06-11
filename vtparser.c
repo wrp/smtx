@@ -104,19 +104,16 @@ DO(print,   v->print, v->print, 0, NULL)
 DO(osc,     v->osc, v->osc, v->nosc, NULL)
 
 /**** PUBLIC FUNCTIONS */
-VTCALLBACK
+void
 vtonevent(VTPARSER *vp, VtEvent t, wchar_t w, int cb)
 {
-    VTCALLBACK o = NULL;
     if (w < MAXCALLBACK) switch (t){
-        case VTPARSER_CONTROL: o = vp->cons[w]; vp->cons[w] = cb; break;
-        case VTPARSER_ESCAPE:  o = vp->escs[w]; vp->escs[w] = cb; break;
-        case VTPARSER_CSI:     o = vp->csis[w]; vp->csis[w] = cb; break;
-        case VTPARSER_PRINT:   o = vp->print;   vp->print   = cb; break;
-        case VTPARSER_OSC:     o = vp->osc;     vp->osc     = cb; break;
+        case VTPARSER_CONTROL: vp->cons[w] = cb; break;
+        case VTPARSER_ESCAPE:  vp->escs[w] = cb; break;
+        case VTPARSER_CSI:     vp->csis[w] = cb; break;
+        case VTPARSER_PRINT:   vp->print   = cb; break;
+        case VTPARSER_OSC:     vp->osc     = cb; break;
     }
-
-    return o;
 }
 
 static void

@@ -68,11 +68,11 @@ struct VTPARSER {
 	int oscbuf[MAXOSC + 1];
 	mbstate_t ms;
 	void *p;
-	VTCALLBACK print;
-	VTCALLBACK osc;
-	VTCALLBACK cons[MAXCALLBACK];
-	VTCALLBACK escs[MAXCALLBACK];
-	VTCALLBACK csis[MAXCALLBACK];
+	int print;
+	int osc;
+	int cons[MAXCALLBACK];
+	int escs[MAXCALLBACK];
+	int csis[MAXCALLBACK];
 };
 
 typedef enum {
@@ -83,6 +83,6 @@ typedef enum {
 	VTPARSER_PRINT
 } VtEvent;
 
-VTCALLBACK vtonevent(VTPARSER *vp, VtEvent t, wchar_t w,  int);
+void vtonevent(VTPARSER *vp, VtEvent t, wchar_t w,  int);
 void vtwrite(VTPARSER *vp, const char *s, size_t n);
 #endif
