@@ -971,8 +971,8 @@ parse_args(int argc, char *const*argv)
 	}
 }
 
-int
-smtx_main(int argc, char *const*argv)
+void
+init(void)
 {
 	char buf[32];
 	FD_SET(maxfd, &fds);
@@ -983,7 +983,6 @@ smtx_main(int argc, char *const*argv)
 	unsetenv("COLUMNS");
 	unsetenv("LINES");
 	setlocale(LC_ALL, "");
-	parse_args(argc, argv);
 	build_bindings();
 	if( initscr() == NULL ) {
 		exit(EXIT_FAILURE);
@@ -1004,6 +1003,13 @@ smtx_main(int argc, char *const*argv)
 	}
 	reshape(view_root, 0, 0, LINES, COLS);
 	focus(view_root, 0);
+}
+
+int
+smtx_main(int argc, char *const argv[])
+{
+	parse_args(argc, argv);
+	init();
 	main_loop();
 	endwin();
 	return EXIT_SUCCESS;
