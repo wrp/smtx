@@ -974,28 +974,28 @@ parse_args(int argc, char *const*argv)
 	}
 }
 
+static void
+intenv(const char *name, int v)
+{
+	if( v ) {
+		char buf[256];
+		snprintf(buf, sizeof buf - 1, "%d", v);
+		setenv(name, buf, 1);
+	} else {
+		unsetenv(name);
+	}
+}
+
 struct canvas *
 init(int lines, int columns)
 {
-	char buf[32];
 	struct canvas *b = NULL;
 	FD_SET(maxfd, &fds);
-	snprintf(buf, sizeof buf - 1, "%lu", (unsigned long)getpid());
-	setenv("SMTX", buf, 1);
+	intenv("SMTX", (int)getpid());
 	setenv("TERM", getterm(), 1);
 	setenv("SMTX_VERSION", VERSION, 1);
-	if( columns != 0 ) {
-		snprintf(buf, sizeof buf - 1, "%d", columns);
-		setenv("COLUMNS", buf, 1);
-	} else {
-		unsetenv("COLUMNS");
-	}
-	if( lines != 0 ) {
-		snprintf(buf, sizeof buf - 1, "%d", lines);
-		setenv("LINES", buf, 1);
-	} else {
-		unsetenv("LINES");
-	}
+	intenv("COLUMNS", columns);
+	intenv("LINES", lines);
 	setlocale(LC_ALL, "");
 	build_bindings();
 	if( initscr() == NULL ) {
@@ -1025,7 +1025,7 @@ int
 smtx_main(int argc, char *const argv[])
 {
 	parse_args(argc, argv);
-	view_root = root = init(LINES, COLS);
+	view_root = root = init(0, 0);
 	main_loop();
 	endwin();
 	return EXIT_SUCCESS;
