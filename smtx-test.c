@@ -24,12 +24,11 @@ test_cuu(int fd)
 		errx(1, "Cursor position in root window is (%d,%d)\n", y, x);
 	}
 	send_cmd(fd, "PS1='X'; tput cud 5\r");
-	sleep(1);  /* TODO: synchronize reasonably */
 	int c;
-	while( ( c = fgetc(ofp)) != 'X' && c != EOF ) {
+	while( ( c = fgetc(ofp)) != 'X' ) {
 		; /* discard first line */
 	}
-	while( ( c = fgetc(ofp)) != 'X' && c != EOF ) {
+	while( ( c = fgetc(ofp)) != 'X' ) {
 		vtwrite(&root->p->vp, (char *)&c, 1);
 	}
 	getyx(root->p->pri.win, y, x);
@@ -39,8 +38,7 @@ test_cuu(int fd)
 	}
 
 	send_cmd(fd, "printf '012345678'; tput cub 4\r");
-	sleep(1);  /* TODO: synchronize reasonably */
-	while( ( c = fgetc(ofp)) != 'X' && c != EOF ) {
+	while( ( c = fgetc(ofp)) != 'X' ) {
 		vtwrite(&root->p->vp, (char *)&c, 1);
 	}
 	getyx(root->p->pri.win, y, x);
