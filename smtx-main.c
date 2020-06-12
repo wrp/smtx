@@ -71,7 +71,6 @@ int scrollback_history = 1024; /* Change at runtime with -s */
 static struct canvas * balance(struct canvas *n);
 static void reshape(struct canvas *n, int y, int x, int h, int w);
 
-const char *term = NULL;
 static WINDOW *werr;
 char errmsg[80];
 
@@ -253,7 +252,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 static const char *
 getterm(void)
 {
-	const char *t = term ? term : getenv("TERM");
+	const char *t = getenv("TERM");
 	return t ? t : COLORS > 255 ? DEFAULT_COLOR_TERMINAL : DEFAULT_TERMINAL;
 }
 
@@ -962,10 +961,8 @@ parse_args(int argc, char *const*argv)
 			scrollback_history = strtol(optarg, NULL, 10);
 			break;
 		case 'T':
-			setenv("TERM", optarg, 1);
-			break;
 		case 't':
-			term = optarg;
+			setenv("TERM", optarg, 1);
 			break;
 		default:
 			fprintf(stderr, "Unkown option: %c\n", optopt);
