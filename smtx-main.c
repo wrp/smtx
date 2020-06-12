@@ -226,6 +226,27 @@ draw_window(struct canvas *n)
 	}
 }
 
+unsigned
+describe_layout(char *desc, size_t siz, struct canvas *c)
+{
+	int y = 0, x = 0;
+	if( c->p->s ) {
+		getyx(c->p->s->win, y, x);
+	}
+	unsigned len = snprintf(desc, siz, "%s%dx%d@%d,%d(%d,%d)",
+		c == focused ? "*" : "",
+		c->extent.y, c->extent.x, c->origin.y, c->origin.x, y, x
+	);
+	for( int i = 0; i < 2; i ++ ) {
+		if( len + 1 < siz && c->c[i] ) {
+			desc[len++] = ';';
+			desc[len++] = ' ';
+			len += describe_layout(desc + len, siz - len, c->c[i]);
+		}
+	}
+	return len;
+}
+
 static void
 fixcursor(void) /* Move the terminal cursor to the active window. */
 {
@@ -1015,14 +1036,14 @@ init(int lines, int columns)
 		reshape(b, 0, 0, LINES, COLS);
 		focus(b, 0);
 	}
-	return b;
+	return view_root = root = b;
 }
 
 int
 smtx_main(int argc, char *const argv[])
 {
 	parse_args(argc, argv);
-	view_root = root = init(0, 0);
+	init(0, 0);
 	main_loop();
 	endwin();
 	return EXIT_SUCCESS;

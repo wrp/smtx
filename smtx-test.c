@@ -10,6 +10,24 @@ send_cmd(int fd, char *cmd)
 }
 
 static int
+test_description(int fd)
+{
+	(void)fd;
+	struct canvas *root = init(24, 80);
+	char buf[1024];
+	describe_layout(buf, sizeof buf, root);
+	if( strcmp(buf, "*23x80@0,0(0,0)") ) {
+		errx(1, "Unexpected description: %s", buf);
+	}
+	create(root, "c");
+	describe_layout(buf, sizeof buf, root);
+	if( strcmp(buf, "*11x80@0,0(0,0); 11x80@12,0(0,0)") ) {
+		errx(1, "Unexpected description: %s", buf);
+	}
+	return 0;
+}
+
+static int
 test_cuu(int fd)
 {
 	struct canvas *root = init(24, 80);
@@ -77,10 +95,14 @@ main(int argc, char **argv)
 {
 	int rv = EXIT_SUCCESS;
 	char *const args[] = { "smtx-test", NULL };
-	char *defaults[] = { "test1", "test_cuu", NULL };
+	char *defaults[] = {
+		"test1", "test_cuu", "test_description",
+		NULL
+	};
 	struct { char *name; test *f; int main; } tab[] = {
 		F(test1, 1),
 		F(test_cuu, 0),
+		F(test_description, 0),
 		{ NULL, NULL, 0 }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);

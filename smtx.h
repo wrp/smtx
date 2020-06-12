@@ -114,6 +114,7 @@ extern fd_set fds;
 extern char commandkey;
 extern const char *term;
 extern struct canvas *focused;
+extern unsigned describe_layout(char *desc, size_t siz, struct canvas *c);
 
 extern struct canvas * init(int, int);
 extern void setupevents(struct proc *);
