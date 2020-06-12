@@ -119,16 +119,19 @@ vtonevent(VTPARSER *vp, VtEvent t, wchar_t w, int cb)
 static void
 handlechar(VTPARSER *vp, wchar_t w)
 {
-    vp->s = vp->s? vp->s : &ground;
-    for (ACTION *a = vp->s->actions; a->cb; a++) if (w >= a->lo && w <= a->hi){
-        a->cb(vp, w);
-        if (a->next){
-            vp->s = a->next;
-            if (a->next->entry)
-                a->next->entry(vp);
-        }
-        return;
-    }
+	vp->s = vp->s ? vp->s : &ground;
+	for( ACTION *a = vp->s->actions; a->cb; a++ ) {
+		if( w >= a->lo && w <= a->hi ) {
+			a->cb(vp, w);
+			if( a->next ) {
+				vp->s = a->next;
+				if( a->next->entry ) {
+					a->next->entry(vp);
+				}
+			}
+			return;
+		}
+	}
 }
 
 void
