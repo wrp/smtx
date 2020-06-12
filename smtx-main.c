@@ -18,6 +18,9 @@
 /*
    TODO:
      Test Suite!!
+       Write a screen dump function.  Capability to write text description
+       of the layout.  This could be also be used for non-testing purposes
+       if the description can be used to construct a new layout.
      Use current cursor position to set bottom of screen when splitting (?)
      In full-screen mode, make hjkl scroll the screen.
      Make it easy to swap bindings.  eg, so that hjkl could be used for
