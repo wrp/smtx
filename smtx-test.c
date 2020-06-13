@@ -31,6 +31,9 @@ test_description(int fd)
 	mov(root, "j");
 	describe_layout(buf, sizeof buf, root);
 	expect_str(buf, "11x80@0,0(0,0); *11x80@12,0(0,0)");
+	create(root->c[0], "C");
+	describe_layout(buf, sizeof buf, root);
+	expect_str(buf, "11x80@0,0(0,0); *11x40@12,0(0,0); 11x39@12,41(0,0)");
 	return 0;
 }
 
