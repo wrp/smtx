@@ -10,8 +10,10 @@ send_cmd(int fd, char *cmd)
 }
 
 static void
-expect_str(const char *actual, const char *expect)
+expect_layout(const struct canvas *c, const char *expect)
 {
+	char actual[1024];
+	describe_layout(actual, sizeof actual, c);
 	if( strcmp(actual, expect) ) {
 		errx(1, "\nExpected \"%s\", but got \"%s\"\n", expect, actual);
 	}
@@ -22,18 +24,13 @@ test_description(int fd)
 {
 	(void)fd;
 	struct canvas *root = init(24, 80);
-	char buf[1024];
-	describe_layout(buf, sizeof buf, root);
-	expect_str(buf, "*23x80@0,0(0,0)");
+	expect_layout(root, "*23x80@0,0(0,0)");
 	create(root, "c");
-	describe_layout(buf, sizeof buf, root);
-	expect_str(buf, "*11x80@0,0(0,0); 11x80@12,0(0,0)");
+	expect_layout(root, "*11x80@0,0(0,0); 11x80@12,0(0,0)");
 	mov(root, "j");
-	describe_layout(buf, sizeof buf, root);
-	expect_str(buf, "11x80@0,0(0,0); *11x80@12,0(0,0)");
+	expect_layout(root, "11x80@0,0(0,0); *11x80@12,0(0,0)");
 	create(root->c[0], "C");
-	describe_layout(buf, sizeof buf, root);
-	expect_str(buf, "11x80@0,0(0,0); *11x40@12,0(0,0); 11x39@12,41(0,0)");
+	expect_layout(root, "11x80@0,0(0,0); *11x40@12,0(0,0); 11x39@12,41(0,0)");
 	return 0;
 }
 

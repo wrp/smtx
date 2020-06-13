@@ -228,7 +228,7 @@ draw_window(struct canvas *n)
 }
 
 unsigned
-describe_layout(char *desc, size_t siz, struct canvas *c)
+describe_layout(char *desc, size_t siz, const struct canvas *c)
 {
 	int y = 0, x = 0;
 	if( c->p->s ) {
