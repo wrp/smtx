@@ -23,14 +23,14 @@ static int
 test_description(int fd)
 {
 	(void)fd;
-	struct canvas *root = init(24, 80);
-	expect_layout(root, "*23x80@0,0(0,0)");
-	create(root, "c");
-	expect_layout(root, "*11x80@0,0(0,0); 11x80@12,0(0,0)");
-	mov(root, "j");
-	expect_layout(root, "11x80@0,0(0,0); *11x80@12,0(0,0)");
-	create(root->c[0], "C");
-	expect_layout(root, "11x80@0,0(0,0); *11x40@12,0(0,0); 11x39@12,41(0,0)");
+	struct canvas *r = init(24, 80);
+	expect_layout(r, "*23x80@0,0(0,0)");
+	create(r, "c");
+	expect_layout(r, "*11x80@0,0(0,0); 11x80@12,0(0,0)");
+	mov(r, "j");
+	expect_layout(r, "11x80@0,0(0,0); *11x80@12,0(0,0)");
+	create(r->c[0], "C");
+	expect_layout(r, "11x80@0,0(0,0); *11x40@12,0(0,0); 11x39@12,41(0,0)");
 	return 0;
 }
 
