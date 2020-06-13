@@ -144,7 +144,7 @@ main(int argc, char *const argv[])
 			if( ! WIFEXITED(status) || WEXITSTATUS(status) != 0 ) {
 				char iobuf[BUFSIZ], *s;
 				rv = EXIT_FAILURE;
-				fprintf(stderr, "test %s FAILED\n", name);
+				fprintf(stderr, "test %s FAILED\n", v->name);
 				ssize_t r = read(fd, s = iobuf, sizeof iobuf);
 				if( r > 0 ) for( ; *s; s++ ) {
 					if( isprint(*s) || *s == '\n' ) {
