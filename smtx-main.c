@@ -17,12 +17,13 @@
  */
 /*
    TODO:
+     Full-screen mode.
+     In full-screen mode, make hjkl scroll the screen.
      Test Suite!!
        Write a screen dump function.  Capability to write text description
        of the layout.  This could be also be used for non-testing purposes
        if the description can be used to construct a new layout.
      Use current cursor position to set bottom of screen when splitting (?)
-     In full-screen mode, make hjkl scroll the screen.
      Make it easy to swap bindings.  eg, so that hjkl could be used for
        scrolling in non-full screen mode.  Maybe have labelled bindings,
        so perhaps 'a or 'b would select binding a or b.  Would be simpler
@@ -56,13 +57,13 @@
 
 #include "smtx.h"
 
+struct state S;
 static struct handler keys[128];
 static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 static struct handler (*binding)[128] = &keys;
 struct canvas *focused, *lastfocused = NULL;
 struct canvas *root, *view_root;
-char commandkey = CTL('g'); /* Change at runtime with -c */
 static int maxfd = STDIN_FILENO;
 fd_set fds;
 int cmd_count = -1;
@@ -794,12 +795,12 @@ build_bindings()
 {
 	assert( KEY_MAX - KEY_MIN < 2048 ); /* Avoid overly large luts */
 
-	add_key(keys, commandkey, transition, NULL);
+	add_key(keys, S.commandkey, transition, NULL);
 	add_key(keys, L'\r', send, "\r",  NULL);
 	add_key(keys, L'\n', send, "\n", NULL);
 	add_key(keys, 0, send_nul, NULL);
 
-	add_key(cmd_keys, commandkey, transition, &commandkey, NULL);
+	add_key(cmd_keys, S.commandkey, transition, &S.commandkey, NULL);
 	add_key(cmd_keys, L'\r', transition, NULL);
 	add_key(cmd_keys, L'b', scrolln, "-", NULL);
 	add_key(cmd_keys, L'f', scrolln, "+", NULL);
@@ -976,7 +977,7 @@ parse_args(int argc, char *const*argv)
 				name ? name + 1 : argv[0]);
 			exit(0);
 		case 'c':
-			commandkey = CTL(optarg[0]);
+			S.commandkey = CTL(optarg[0]);
 			break;
 		case 's':
 			scrollback_history = strtol(optarg, NULL, 10);
@@ -1042,6 +1043,7 @@ init(int lines, int columns)
 int
 smtx_main(int argc, char *const argv[])
 {
+	S.commandkey = CTL('g'); /* Change at runtime with -c */
 	parse_args(argc, argv);
 	init(0, 0);
 	main_loop();

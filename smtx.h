@@ -40,6 +40,10 @@
 #define MAX(x, y) ((x) > (y)? (x) : (y))
 #define CTL(x) ((x) & 0x1f)
 
+struct state {
+	char commandkey;
+};
+
 struct screen {
 	int sy, sx, vis, tos;
 	short fg, bg, sfg, sbg, sp;
@@ -111,7 +115,6 @@ extern int tabstop;
 extern int id;
 extern int cmd_count;
 extern fd_set fds;
-extern char commandkey;
 extern const char *term;
 extern struct canvas *focused;
 extern unsigned describe_layout(char *desc, size_t siz, struct canvas *c);
