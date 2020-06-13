@@ -105,14 +105,10 @@ test1(int fd)
 typedef int test(int);
 #define F(x, y) { .name = #x, .f = (x), .main = y }
 int
-main(int argc, char **argv)
+main(int argc, char *const argv[])
 {
 	int rv = EXIT_SUCCESS;
 	char *const args[] = { "smtx-test", NULL };
-	char *defaults[] = {
-		"test1", "test_cuu", "test_description",
-		NULL
-	};
 	struct { char *name; test *f; int main; } tab[] = {
 		F(test1, 1),
 		F(test_cuu, 0),
@@ -120,9 +116,12 @@ main(int argc, char **argv)
 		{ NULL, NULL, 0 }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
-	for( argv = argc < 2 ? defaults : argv + 1; *argv; argv++ ) {
-		for( v = tab; v->name && strcmp(v->name, *argv); v++ )
-			;
+	for( v = tab; ( v->f && argc < 2 ) || *++argv; v += 1 ) {
+		const char *name = *argv;
+		if( argc > 1 ) {
+			for( v = tab; v->name && strcmp(v->name, name); v++ )
+				;
+		}
 		if( v->f ) {
 			int fd;
 			int status;
@@ -146,7 +145,7 @@ main(int argc, char **argv)
 			if( ! WIFEXITED(status) || WEXITSTATUS(status) != 0 ) {
 				char iobuf[BUFSIZ], *s;
 				rv = EXIT_FAILURE;
-				fprintf(stderr, "test %s FAILED\n", *argv);
+				fprintf(stderr, "test %s FAILED\n", name);
 				ssize_t r = read(fd, s = iobuf, sizeof iobuf);
 				if( r > 0 ) for( ; *s; s++ ) {
 					if( isprint(*s) || *s == '\n' ) {
@@ -155,7 +154,7 @@ main(int argc, char **argv)
 				}
 			}
 		} else {
-			fprintf(stderr, "unknown function: %s\n", *argv);
+			fprintf(stderr, "unknown function: %s\n", name);
 			rv = EXIT_FAILURE;
 		}
 	}
