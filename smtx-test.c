@@ -9,21 +9,16 @@ send_cmd(int fd, char *cmd)
 	safewrite(fd, cmd, strlen(cmd));
 }
 
-static int
-fuzzystrcmp(const char *a, const char *b)
-{
-	while( *b && ( *a++ == *b || *b == '?' ) ) {
-		b += 1;
-	}
-	return *b != 0 || *a != 0;
-}
-
 static void
 expect_layout(const struct canvas *c, const char *expect)
 {
 	char actual[1024];
+	const char *a = actual, *b = expect;
 	describe_layout(actual, sizeof actual, c);
-	if( fuzzystrcmp(actual, expect) ) {
+	while( *a && ( *a++ == *b || *b == '\0' ) ) {
+		b += 1;
+	}
+	if( *b || *a ) {
 		errx(1, "\nExpected \"%s\", but got \"%s\"\n", expect, actual);
 	}
 }
@@ -69,8 +64,9 @@ test_cuu(int fd)
 	send_cmd(fd, "PS1='X'; tput cud 5\r");
 	read_until(ofp, "X", &root->p->vp); /* discard first line */
 	read_until(ofp, "X", &root->p->vp);
-	/* ??? I believe x should be 1, but it keeps coming back 3 */
-	expect_layout(root, "*23x80@0,0(6,?)");
+	/* ??? I believe x should be 1, but it keeps coming back 3,
+	 * but this is testing y, so ignore the x value. */
+	expect_layout(root, "*23x80@0,0(6,\0)");
 	send_cmd(fd, "printf '0123456789ab'; tput cub 4\r");
 	read_until(ofp, "X", &root->p->vp);
 	expect_layout(root, "*23x80@0,0(7,9)");
