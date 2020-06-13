@@ -9,6 +9,14 @@ send_cmd(int fd, char *cmd)
 	safewrite(fd, cmd, strlen(cmd));
 }
 
+static void
+expect_str(const char *actual, const char *expect)
+{
+	if( strcmp(actual, expect) ) {
+		errx(1, "\nExpected \"%s\", but got \"%s\"\n", expect, actual);
+	}
+}
+
 static int
 test_description(int fd)
 {
@@ -16,14 +24,13 @@ test_description(int fd)
 	struct canvas *root = init(24, 80);
 	char buf[1024];
 	describe_layout(buf, sizeof buf, root);
-	if( strcmp(buf, "*23x80@0,0(0,0)") ) {
-		errx(1, "Unexpected description: %s", buf);
-	}
+	expect_str(buf, "*23x80@0,0(0,0)");
 	create(root, "c");
 	describe_layout(buf, sizeof buf, root);
-	if( strcmp(buf, "*11x80@0,0(0,0); 11x80@12,0(0,0)") ) {
-		errx(1, "Unexpected description: %s", buf);
-	}
+	expect_str(buf, "*11x80@0,0(0,0); 11x80@12,0(0,0)");
+	mov(root, "j");
+	describe_layout(buf, sizeof buf, root);
+	expect_str(buf, "11x80@0,0(0,0); *11x80@12,0(0,0)");
 	return 0;
 }
 
