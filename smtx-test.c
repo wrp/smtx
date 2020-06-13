@@ -34,6 +34,17 @@ test_description(int fd)
 	return 0;
 }
 
+static void
+read_until(FILE *fp, const char *s, VTPARSER *vp)
+{
+	const char *t = s;
+	while( *t ) {
+		int c = fgetc(fp);
+		vtwrite(vp, (char *)&c, 1);
+		t = (c == *t) ? t + 1 : s;
+	}
+}
+
 static int
 test_cuu(int fd)
 {
@@ -49,13 +60,8 @@ test_cuu(int fd)
 		errx(1, "Cursor position in root window is (%d,%d)\n", y, x);
 	}
 	send_cmd(fd, "PS1='X'; tput cud 5\r");
-	int c;
-	while( ( c = fgetc(ofp)) != 'X' ) {
-		; /* discard first line */
-	}
-	while( ( c = fgetc(ofp)) != 'X' ) {
-		vtwrite(&root->p->vp, (char *)&c, 1);
-	}
+	read_until(ofp, "X", &root->p->vp); /* discard first line */
+	read_until(ofp, "X", &root->p->vp);
 	getyx(root->p->pri.win, y, x);
 	if( y != 6 ) {
 		errx(1, "Cursor position after cud 5 is (%d, %d)\n", y, x);
@@ -63,11 +69,9 @@ test_cuu(int fd)
 	}
 
 	send_cmd(fd, "printf '012345678'; tput cub 4\r");
-	while( ( c = fgetc(ofp)) != 'X' ) {
-		vtwrite(&root->p->vp, (char *)&c, 1);
-	}
+	read_until(ofp, "X", &root->p->vp);
 	getyx(root->p->pri.win, y, x);
-	if( x != 5 ) {
+	if( x != 6 ) {
 		errx(1, "Cursor position after cub 4 is (%d, %d)\n", y, x);
 		return 1;
 	}
