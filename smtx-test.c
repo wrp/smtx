@@ -73,7 +73,10 @@ test_cursor(int fd)
 	send_cmd(fd, "PS1='%s'; tput cud 5", ps1);
 	read_until(ofp, ps1, &root->p->vp); /* discard first line */
 	read_until(ofp, ps1, &root->p->vp);
-	/* expect_layout(root, "*23x80@0,0(6,?)"); (1) */
+#if 0
+	/* (1) */
+	expect_layout(root, "*23x80@0,0(6,?)");
+#endif
 	send_cmd(fd, "printf '0123456789ab'; tput cub 4");
 	read_until(ofp, ps1, &root->p->vp);
 	expect_layout(root, "*23x80@0,0(7,14)");
