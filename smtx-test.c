@@ -7,6 +7,7 @@ static void
 send_cmd(int fd, char *cmd)
 {
 	safewrite(fd, cmd, strlen(cmd));
+	safewrite(fd, "\r", 1);
 }
 
 static void
@@ -15,7 +16,7 @@ expect_layout(const struct canvas *c, const char *expect)
 	char actual[1024];
 	const char *a = actual, *b = expect;
 	describe_layout(actual, sizeof actual, c);
-	while( *a && ( *a++ == *b || *b == '\0' ) ) {
+	while( *a && ( *a++ == *b || *b == '?' ) ) {
 		b += 1;
 	}
 	if( *b || *a ) {
@@ -61,17 +62,20 @@ test_cuu(int fd)
 		err(1, "Unable to fdopen master pty\n");
 	}
 	expect_layout(root, "*23x80@0,0(0,0)");
-	send_cmd(fd, "PS1='X'; tput cud 5\r");
-	read_until(ofp, "X", &root->p->vp); /* discard first line */
-	read_until(ofp, "X", &root->p->vp);
-	/* ??? I believe x should be 1, but it keeps coming back 3,
-	 * but this is testing y, so ignore the x value. */
-	expect_layout(root, "*23x80@0,0(6,\0)");
-	send_cmd(fd, "printf '0123456789ab'; tput cub 4\r");
-	read_until(ofp, "X", &root->p->vp);
-	expect_layout(root, "*23x80@0,0(7,9)");
+	send_cmd(fd, "PS1='uniq> '; tput cud 5");
+	read_until(ofp, "uniq> ", &root->p->vp); /* discard first line */
+	read_until(ofp, "uniq> ", &root->p->vp);
+	expect_layout(root, "*23x80@0,0(6,?)"); /* (1) */
+	send_cmd(fd, "printf '0123456789ab'; tput cub 4");
+	read_until(ofp, "uniq> ", &root->p->vp);
+	expect_layout(root, "*23x80@0,0(7,14)");
 	return 0;
 }
+/* (1) I expect the x coordinate of this test to be 6 (the length
+of the prompt, but it consistently comes back 8.  Need to understand
+where the extra 2 characters come from.  This same behavior was
+observed when the prompt was only one character long.
+*/
 
 static int
 test1(int fd)
