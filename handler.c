@@ -24,7 +24,6 @@ void
 handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 	int argc, int *argv, enum cmd c)
 {
-
 	int noclear_repc = 0;
 	struct proc *n = p; /* the current proc */
 	struct screen *s = n->s; /* the current SCRN buffer */
@@ -42,101 +41,88 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 	wgetscrreg(win, &top, &bot);
 	bot++; bot -= s->tos;
 	top = top <= tos? 0 : top - tos;
-switch(c) {
+	switch(c) {
 	case nul:
 		break;
-
-case bell: { /* Terminal bell. */
-    beep();
-	} break;
-
-case numkp: { /* Application/Numeric Keypad Mode */
-    n->pnm = (w == L'=');
-	} break;
-
-case vis: { /* Cursor visibility */
-    s->vis = iw == L'6'? 0 : 1;
-	} break;
-
-case cup: { /* CUP - Cursor Position */
-    s->xenl = false;
-    wmove(win, tos + (n->decom? top : 0) + P1(0) - 1, P1(1) - 1);
-	} break;
-
-case dch: { /* DCH - Delete Character */
-    for (int i = 0; i < P1(0); i++)
-        wdelch(win);
-	} break;
-
-case ich: { /* ICH - Insert Character */
-    for (int i = 0; i < P1(0); i++)
-        wins_nwstr(win, L" ", 1);
-	} break;
-
-case cuu: { /* CUU - Cursor Up */
-    wmove(win, MAX(py - P1(0), tos + top), x);
-	} break;
-
-case cud: { /* CUD - Cursor Down */
-    wmove(win, MIN(py + P1(0), tos + bot - 1), x);
-	} break;
-
-case cuf: { /* CUF - Cursor Forward */
-    wmove(win, py, MIN(x + P1(0), mx - 1));
-	} break;
-
-case ack: { /* ACK - Acknowledge Enquiry */
-	safewrite(n->pt, "\006", 1);
-	} break;
-
-case hts: { /* HTS - Horizontal Tab Set */
-    if (x < n->ntabs && x > 0)
-        n->tabs[x] = true;
-	} break;
-
-case ri: { /* RI - Reverse Index */
-    int otop = 0, obot = 0;
-    wgetscrreg(win, &otop, &obot);
-    wsetscrreg(win, otop >= tos? otop : tos, obot);
-    y == top? wscrl(win, -1) : wmove(win, MAX(tos, py - 1), x);
-    wsetscrreg(win, otop, obot);
-	} break;
-
-case decid: { /* DECID - Send Terminal Identification */
-	if( w == L'c' ) {
-		if( iw == L'>' ) {
-			safewrite(n->pt, "\033[>1;10;0c", 10);
-		} else {
-			safewrite(n->pt, "\033[?1;2c", 7);
+	case bell: /* Terminal bell. */
+		beep();
+		break;
+	case numkp: /* Application/Numeric Keypad Mode */
+		n->pnm = (w == L'=');
+		break;
+	case vis: /* Cursor visibility */
+		s->vis = iw == L'6'? 0 : 1;
+		break;
+	case cup: /* CUP - Cursor Position */
+		s->xenl = false;
+		wmove(win, tos + (n->decom? top : 0) + P1(0) - 1, P1(1) - 1);
+		break;
+	case dch: /* DCH - Delete Character */
+		for( int i = 0; i < P1(0); i++ ) {
+			wdelch(win);
 		}
-	} else if( w == L'Z' ) {
-		safewrite(n->pt, "\033[?6c", 5);
-	}
-	} break;
-
-case hpa: { /* HPA - Cursor Horizontal Absolute */
-    wmove(win, py, MIN(P1(0) - 1, mx - 1));
-	} break;
-
-case hpr: { /* HPR - Cursor Horizontal Relative */
-    wmove(win, py, MIN(px + P1(0), mx - 1));
-	} break;
-
-case vpa: { /* VPA - Cursor Vertical Absolute */
-    wmove(win, MIN(tos + bot - 1, MAX(tos + top, tos + P1(0) - 1)), x);
-	} break;
-
-case vpr: { /* VPR - Cursor Vertical Relative */
-    wmove(win, MIN(tos + bot - 1, MAX(tos + top, py + P1(0))), x);
-	} break;
-
-case cbt: { /* CBT - Cursor Backwards Tab */
-    for (int i = x - 1; i < n->ntabs && i >= 0; i--) if (n->tabs[i]){
-        wmove(win, py, i);
-        return;
-    }
-    wmove(win, py, 0);
-	} break;
+		break;
+	case ich: /* ICH - Insert Character */
+		for( int i = 0; i < P1(0); i++ ) {
+			wins_nwstr(win, L" ", 1);
+		}
+		break;
+	case cuu: /* CUU - Cursor Up */
+		wmove(win, MAX(py - P1(0), tos + top), x);
+		break;
+	case cud: /* CUD - Cursor Down */
+		wmove(win, MIN(py + P1(0), tos + bot - 1), x);
+		break;
+	case cuf: /* CUF - Cursor Forward */
+		wmove(win, py, MIN(x + P1(0), mx - 1));
+		break;
+	case ack: /* ACK - Acknowledge Enquiry */
+		safewrite(n->pt, "\006", 1);
+		break;
+	case hts: /* HTS - Horizontal Tab Set */
+		if( x < n->ntabs && x > 0 ) {
+			n->tabs[x] = true;
+		}
+		break;
+	case ri: { /* RI - Reverse Index (scroll back) */
+		int otop = 0, obot = 0;
+		wgetscrreg(win, &otop, &obot);
+		wsetscrreg(win, otop >= tos ? otop : tos, obot);
+		y == top ? wscrl(win, -1) : wmove(win, MAX(tos, py - 1), x);
+		wsetscrreg(win, otop, obot);
+		} break;
+	case decid: /* DECID - Send Terminal Identification */
+		if( w == L'c' ) {
+			if( iw == L'>' ) {
+				safewrite(n->pt, "\033[>1;10;0c", 10);
+			} else {
+				safewrite(n->pt, "\033[?1;2c", 7);
+			}
+		} else if( w == L'Z' ) {
+			safewrite(n->pt, "\033[?6c", 5);
+		}
+		break;
+	case hpa: /* HPA - Cursor Horizontal Absolute */
+		wmove(win, py, MIN(P1(0) - 1, mx - 1));
+		break;
+	case hpr: /* HPR - Cursor Horizontal Relative */
+		wmove(win, py, MIN(px + P1(0), mx - 1));
+		break;
+	case vpa: /* VPA - Cursor Vertical Absolute */
+		wmove(win, MIN(tos + bot - 1, MAX(tos + top, tos + P1(0) - 1)), x);
+		break;
+	case vpr: /* VPR - Cursor Vertical Relative */
+		wmove(win, MIN(tos + bot - 1, MAX(tos + top, py + P1(0))), x);
+		break;
+	case cbt: /* CBT - Cursor Backwards Tab */
+		for( int i = x - 1; i < n->ntabs && i >= 0; i-- ) {
+			if( n->tabs[i] ){
+				wmove(win, py, i);
+				return;
+			}
+		}
+		wmove(win, py, 0);
+		break;
 
 case ht: { /* HT - Horizontal Tab */
     for (int i = x + 1; i < n->ws.ws_col && i < n->ntabs; i++) if (n->tabs[i]){
