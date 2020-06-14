@@ -116,6 +116,7 @@ test_cursor(int fd)
 	check_cmd(&T, "*23x80@0,0(1016,56)", "tput cup 15 50;");
 	check_cmd(&T, "*23x80@0,0(1001,6)", "tput clear");
 	check_cmd(&T, "*23x80@0,0(1002,14)", "tput ht");
+	check_cmd(&T, "*23x80@0,0(1003,22)", "printf '\\t\\t\\t'; tput cbt");
 
 	return 0;
 }
