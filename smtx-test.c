@@ -109,24 +109,14 @@ test_cursor(int fd)
 	expect_layout(root, "*23x80@0,0(6,?)");
 #endif
 	check_cmd(&T, "*23x80@0,0(7,14)", "printf '0123456789ab'; tput cub 4");
-
-	send_cmd(fd, "tput sc");
-	read_until(T.fp, T.ps1, T.vp);
-	expect_layout(T.c, "*23x80@0,0(8,6)");
-	send_cmd(fd, "echo; tput rc");
-	read_until(T.fp, T.ps1, T.vp);
-	expect_layout(T.c, "*23x80@0,0(8,6)");
-	send_cmd(fd, "tput cup 15 50; tput sc; echo foo; tput rc");
-	read_until(T.fp, T.ps1, T.vp);
+	check_cmd(&T, "*23x80@0,0(8,6)", "tput sc");
+	check_cmd(&T, "*23x80@0,0(8,6)", "tput rc");
 	/* Hmmm. It seems weird that we start at y == 0 but after
 	tput cup 15 we jump down to y = scroll_back_buffer - size + 15 */
-	expect_layout(T.c, "*23x80@0,0(1016,56)");
-	send_cmd(fd, "tput clear");
-	read_until(T.fp, T.ps1, T.vp);
-	expect_layout(T.c, "*23x80@0,0(1001,6)");
-	send_cmd(fd, "tput ht");
-	read_until(T.fp, T.ps1, T.vp);
-	expect_layout(T.c, "*23x80@0,0(1002,14)");
+	check_cmd(&T, "*23x80@0,0(1016,56)", "tput cup 15 50;");
+	check_cmd(&T, "*23x80@0,0(1001,6)", "tput clear");
+	check_cmd(&T, "*23x80@0,0(1002,14)", "tput ht");
+
 	return 0;
 }
 /* (1) I expect the x coordinate of this test to be 6 (the length
