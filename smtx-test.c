@@ -77,6 +77,15 @@ test_cuu(int fd)
 	send_cmd(fd, "printf '0123456789ab'; tput cub 4");
 	read_until(ofp, ps1, &root->p->vp);
 	expect_layout(root, "*23x80@0,0(7,14)");
+	send_cmd(fd, "tput sc");
+	read_until(ofp, ps1, &root->p->vp);
+	expect_layout(root, "*23x80@0,0(8,6)");
+	send_cmd(fd, "echo; tput rc");
+	read_until(ofp, ps1, &root->p->vp);
+	expect_layout(root, "*23x80@0,0(8,6)");
+	send_cmd(fd, "tput cup 15 50; tput sc; echo foo; tput rc");
+	read_until(ofp, ps1, &root->p->vp);
+	expect_layout(root, "*23x80@0,0(1016,56)");
 	return 0;
 }
 /* (1) I expect the x coordinate of this test to be 6 (the length
