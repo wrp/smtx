@@ -4,9 +4,16 @@
 
 
 static void
-send_cmd(int fd, char *cmd)
+send_cmd(int fd, char *fmt, ...)
 {
-	safewrite(fd, cmd, strlen(cmd));
+	char cmd[1024];
+	size_t n;
+	va_list ap;
+	va_start(ap, fmt);
+	n = vsnprintf(cmd, sizeof cmd, fmt, ap);
+	va_end(ap);
+	assert( n < sizeof cmd );
+	safewrite(fd, cmd, n);
 	safewrite(fd, "\r", 1);
 }
 
@@ -57,17 +64,18 @@ test_cuu(int fd)
 {
 	struct canvas *root = init(24, 80);
 	FILE *ofp = fdopen(fd = root->p->pt, "r");
+	const char ps1[] = "uniq> ";
 
 	if( ofp == NULL ) {
 		err(1, "Unable to fdopen master pty\n");
 	}
 	expect_layout(root, "*23x80@0,0(0,0)");
-	send_cmd(fd, "PS1='uniq> '; tput cud 5");
-	read_until(ofp, "uniq> ", &root->p->vp); /* discard first line */
-	read_until(ofp, "uniq> ", &root->p->vp);
+	send_cmd(fd, "PS1='%s'; tput cud 5", ps1);
+	read_until(ofp, ps1, &root->p->vp); /* discard first line */
+	read_until(ofp, ps1, &root->p->vp);
 	expect_layout(root, "*23x80@0,0(6,?)"); /* (1) */
 	send_cmd(fd, "printf '0123456789ab'; tput cub 4");
-	read_until(ofp, "uniq> ", &root->p->vp);
+	read_until(ofp, ps1, &root->p->vp);
 	expect_layout(root, "*23x80@0,0(7,14)");
 	return 0;
 }
