@@ -5,7 +5,6 @@
  *      P0(n)          - Parameter n, default 0.
  *      P1(n)          - Parameter n, default 1.
  *      CALL(h)        - Call handler h with no arguments.
- *      (END)HANDLER   - Declare/end a handler function
  * The funny names for handlers are from their ANSI/ECMA/DEC mnemonics.
  */
 #define PD(x, d) (argc < (x) || !argv? (d) : argv[(x)])
@@ -13,8 +12,6 @@
 #define P1(x) (!P0(x)? 1 : P0(x))
 #define CALL(x) handle_terminal_cmd(v, n, 0, 0, 0, NULL, x)
 
-#define HANDLER(name) case name: {
-#define ENDHANDLER    } break;
 
 enum cmd {
 	nul, ack, bell, cbt, cls, cnl, cpl, cr, csr, cub, cud, cuf, cup,
@@ -49,63 +46,63 @@ switch(c) {
 	case nul:
 		break;
 
-HANDLER(bell) /* Terminal bell. */
+case bell: { /* Terminal bell. */
     beep();
-ENDHANDLER
+	} break;
 
-HANDLER(numkp) /* Application/Numeric Keypad Mode */
+case numkp: { /* Application/Numeric Keypad Mode */
     n->pnm = (w == L'=');
-ENDHANDLER
+	} break;
 
-HANDLER(vis) /* Cursor visibility */
+case vis: { /* Cursor visibility */
     s->vis = iw == L'6'? 0 : 1;
-ENDHANDLER
+	} break;
 
-HANDLER(cup) /* CUP - Cursor Position */
+case cup: { /* CUP - Cursor Position */
     s->xenl = false;
     wmove(win, tos + (n->decom? top : 0) + P1(0) - 1, P1(1) - 1);
-ENDHANDLER
+	} break;
 
-HANDLER(dch) /* DCH - Delete Character */
+case dch: { /* DCH - Delete Character */
     for (int i = 0; i < P1(0); i++)
         wdelch(win);
-ENDHANDLER
+	} break;
 
-HANDLER(ich) /* ICH - Insert Character */
+case ich: { /* ICH - Insert Character */
     for (int i = 0; i < P1(0); i++)
         wins_nwstr(win, L" ", 1);
-ENDHANDLER
+	} break;
 
-HANDLER(cuu) /* CUU - Cursor Up */
+case cuu: { /* CUU - Cursor Up */
     wmove(win, MAX(py - P1(0), tos + top), x);
-ENDHANDLER
+	} break;
 
-HANDLER(cud) /* CUD - Cursor Down */
+case cud: { /* CUD - Cursor Down */
     wmove(win, MIN(py + P1(0), tos + bot - 1), x);
-ENDHANDLER
+	} break;
 
-HANDLER(cuf) /* CUF - Cursor Forward */
+case cuf: { /* CUF - Cursor Forward */
     wmove(win, py, MIN(x + P1(0), mx - 1));
-ENDHANDLER
+	} break;
 
-HANDLER(ack) /* ACK - Acknowledge Enquiry */
+case ack: { /* ACK - Acknowledge Enquiry */
 	safewrite(n->pt, "\006", 1);
-ENDHANDLER
+	} break;
 
-HANDLER(hts) /* HTS - Horizontal Tab Set */
+case hts: { /* HTS - Horizontal Tab Set */
     if (x < n->ntabs && x > 0)
         n->tabs[x] = true;
-ENDHANDLER
+	} break;
 
-HANDLER(ri) /* RI - Reverse Index */
+case ri: { /* RI - Reverse Index */
     int otop = 0, obot = 0;
     wgetscrreg(win, &otop, &obot);
     wsetscrreg(win, otop >= tos? otop : tos, obot);
     y == top? wscrl(win, -1) : wmove(win, MAX(tos, py - 1), x);
     wsetscrreg(win, otop, obot);
-ENDHANDLER
+	} break;
 
-HANDLER(decid) /* DECID - Send Terminal Identification */
+case decid: { /* DECID - Send Terminal Identification */
 	if( w == L'c' ) {
 		if( iw == L'>' ) {
 			safewrite(n->pt, "\033[>1;10;0c", 10);
@@ -115,62 +112,62 @@ HANDLER(decid) /* DECID - Send Terminal Identification */
 	} else if( w == L'Z' ) {
 		safewrite(n->pt, "\033[?6c", 5);
 	}
-ENDHANDLER
+	} break;
 
-HANDLER(hpa) /* HPA - Cursor Horizontal Absolute */
+case hpa: { /* HPA - Cursor Horizontal Absolute */
     wmove(win, py, MIN(P1(0) - 1, mx - 1));
-ENDHANDLER
+	} break;
 
-HANDLER(hpr) /* HPR - Cursor Horizontal Relative */
+case hpr: { /* HPR - Cursor Horizontal Relative */
     wmove(win, py, MIN(px + P1(0), mx - 1));
-ENDHANDLER
+	} break;
 
-HANDLER(vpa) /* VPA - Cursor Vertical Absolute */
+case vpa: { /* VPA - Cursor Vertical Absolute */
     wmove(win, MIN(tos + bot - 1, MAX(tos + top, tos + P1(0) - 1)), x);
-ENDHANDLER
+	} break;
 
-HANDLER(vpr) /* VPR - Cursor Vertical Relative */
+case vpr: { /* VPR - Cursor Vertical Relative */
     wmove(win, MIN(tos + bot - 1, MAX(tos + top, py + P1(0))), x);
-ENDHANDLER
+	} break;
 
-HANDLER(cbt) /* CBT - Cursor Backwards Tab */
+case cbt: { /* CBT - Cursor Backwards Tab */
     for (int i = x - 1; i < n->ntabs && i >= 0; i--) if (n->tabs[i]){
         wmove(win, py, i);
         return;
     }
     wmove(win, py, 0);
-ENDHANDLER
+	} break;
 
-HANDLER(ht) /* HT - Horizontal Tab */
+case ht: { /* HT - Horizontal Tab */
     for (int i = x + 1; i < n->ws.ws_col && i < n->ntabs; i++) if (n->tabs[i]){
         wmove(win, py, i);
         return;
     }
     wmove(win, py, mx - 1);
-ENDHANDLER
+	} break;
 
-HANDLER(tab) /* Tab forwards or backwards */
+case tab: { /* Tab forwards or backwards */
     for (int i = 0; i < P1(0); i++) switch (w){
         case L'I':  CALL(ht);  break;
         case L'\t': CALL(ht);  break;
         case L'Z':  CALL(cbt); break;
     }
-ENDHANDLER
+	} break;
 
-HANDLER(decaln) /* DECALN - Screen Alignment Test */
+case decaln: { /* DECALN - Screen Alignment Test */
     chtype e[] = {COLOR_PAIR(0) | 'E', 0};
     for (int r = 0; r < my; r++){
         for (int c = 0; c <= mx; c++)
             mvwaddchnstr(win, tos + r, c, e, 1);
     }
     wmove(win, py, px);
-ENDHANDLER
+	} break;
 
-HANDLER(su) /* SU - Scroll Up/Down */
+case su: { /* SU - Scroll Up/Down */
     wscrl(win, (w == L'T' || w == L'^')? -P1(0) : P1(0));
-ENDHANDLER
+	} break;
 
-HANDLER(sc) /* SC - Save Cursor */
+case sc: { /* SC - Save Cursor */
     s->sx = px;                              /* save X position            */
     s->sy = py;                              /* save Y position            */
     wattr_get(win, &s->sattr, &s->sp, NULL); /* save attrs and color pair  */
@@ -179,9 +176,9 @@ HANDLER(sc) /* SC - Save Cursor */
     s->oxenl = s->xenl;                      /* save xenl state            */
     s->saved = true;                         /* save data is valid         */
     n->sgc = n->gc; n->sgs = n->gs;          /* save character sets        */
-ENDHANDLER
+	} break;
 
-HANDLER(rc) /* RC - Restore Cursor */
+case rc: { /* RC - Restore Cursor */
     if (iw == L'#'){
         CALL(decaln);
         return;
@@ -203,9 +200,9 @@ HANDLER(rc) /* RC - Restore Cursor */
     setcchar(&c, L" ", A_NORMAL, cp, NULL);
     wbkgrndset(win, &c);
 #endif
-ENDHANDLER
+	} break;
 
-HANDLER(tbc) /* TBC - Tabulation Clear */
+case tbc: { /* TBC - Tabulation Clear */
 	if( n->tabs != NULL ) {
 		switch( P0(0) ) {
 		case 0:
@@ -216,14 +213,14 @@ HANDLER(tbc) /* TBC - Tabulation Clear */
 			break;
 		}
 	}
-ENDHANDLER
+	} break;
 
-HANDLER(cub) /* CUB - Cursor Backward */
+case cub: { /* CUB - Cursor Backward */
     s->xenl = false;
     wmove(win, py, MAX(x - P1(0), 0));
-ENDHANDLER
+	} break;
 
-HANDLER(el) /* EL - Erase in Line */
+case el: { /* EL - Erase in Line */
     cchar_t b;
 #if HAVE_ALLOC_PAIR
     setcchar(&b, L" ", A_NORMAL, alloc_pair(s->fg, s->bg), NULL);
@@ -234,9 +231,9 @@ HANDLER(el) /* EL - Erase in Line */
         case 2: wmove(win, py, 0); wclrtoeol(win);                              break;
     }
     wmove(win, py, x);
-ENDHANDLER
+	} break;
 
-HANDLER(ed) /* ED - Erase in Display */
+case ed: { /* ED - Erase in Display */
     int o = 1;
     switch (P0(0)){
         case 0: wclrtobot(win);                     break;
@@ -252,9 +249,9 @@ HANDLER(ed) /* ED - Erase in Display */
             break;
     }
     wmove(win, py, px);
-ENDHANDLER
+	} break;
 
-HANDLER(ech) /* ECH - Erase Character */
+case ech: { /* ECH - Erase Character */
     cchar_t c;
 #if HAVE_ALLOC_PAIR
     setcchar(&c, L" ", A_NORMAL, alloc_pair(s->fg, s->bg), NULL);
@@ -262,9 +259,9 @@ HANDLER(ech) /* ECH - Erase Character */
     for (int i = 0; i < P1(0); i++)
         mvwadd_wchnstr(win, py, x + i, &c, 1);
     wmove(win, py, px);
-ENDHANDLER
+	} break;
 
-HANDLER(dsr) /* DSR - Device Status Report */
+case dsr: { /* DSR - Device Status Report */
 	char buf[100] = {0};
 	if( P0(0) == 6 ) {
 		snprintf(buf, sizeof(buf) - 1, "\033[%d;%dR",
@@ -273,9 +270,9 @@ HANDLER(dsr) /* DSR - Device Status Report */
 		snprintf(buf, sizeof(buf) - 1, "\033[0n");
 	}
 	safewrite(n->pt, buf, strlen(buf));
-ENDHANDLER
+	} break;
 
-HANDLER(idl) /* IL or DL - Insert/Delete Line */
+case idl: { /* IL or DL - Insert/Delete Line */
     /* we don't use insdelln here because it inserts above and not below,
      * and has a few other edge cases... */
     int otop = 0, obot = 0, p1 = MIN(P1(0), (my - 1) - y);
@@ -284,35 +281,35 @@ HANDLER(idl) /* IL or DL - Insert/Delete Line */
     wscrl(win, w == L'L'? -p1 : p1);
     wsetscrreg(win, otop, obot);
     wmove(win, py, 0);
-ENDHANDLER
+	} break;
 
-HANDLER(csr) /* CSR - Change Scrolling Region */
+case csr: { /* CSR - Change Scrolling Region */
     if (wsetscrreg(win, tos + P1(0) - 1, tos + PD(1, my) - 1) == OK)
         CALL(cup);
-ENDHANDLER
+	} break;
 
-HANDLER(decreqtparm) /* DECREQTPARM - Request Device Parameters */
+case decreqtparm: { /* DECREQTPARM - Request Device Parameters */
 	if( P0(0) ) {
 		safewrite(n->pt, "\033[3;1;2;120;1;0x", 16);
 	} else {
 		safewrite(n->pt, "\033[2;1;2;120;128;1;0x", 20);
 	}
-ENDHANDLER
+	} break;
 
-HANDLER(sgr0) /* Reset SGR to default */
+case sgr0: { /* Reset SGR to default */
     wattrset(win, A_NORMAL);
     wcolor_set(win, 0, NULL);
     s->fg = s->bg = -1;
     wbkgdset(win, COLOR_PAIR(0) | ' ');
-ENDHANDLER
+	} break;
 
-HANDLER(cls) /* Clear screen */
+case cls: { /* Clear screen */
     CALL(cup);
     wclrtobot(win);
     CALL(cup);
-ENDHANDLER
+	} break;
 
-HANDLER(ris) /* RIS - Reset to Initial State */
+case ris: { /* RIS - Reset to Initial State */
     n->gs = n->gc = n->g0 = CSET_US; n->g1 = CSET_GRAPH;
     n->g2 = CSET_US; n->g3 = CSET_GRAPH;
     n->decom = s->insert = s->oxenl = s->xenl = n->lnm = false;
@@ -325,9 +322,9 @@ HANDLER(ris) /* RIS - Reset to Initial State */
     wsetscrreg(n->alt.win, 0, n->ws.ws_row);
     for (int i = 0; i < n->ntabs; i++)
         n->tabs[i] = (i % n->tabstop == 0);
-ENDHANDLER
+	} break;
 
-HANDLER(mode) /* Set or Reset Mode */
+case mode: { /* Set or Reset Mode */
     bool set = (w == L'h');
     for (int i = 0; i < argc; i++) switch (P0(i)){
         case  1: n->pnm = set;              break;
@@ -348,9 +345,9 @@ HANDLER(mode) /* Set or Reset Mode */
                 n->s = &n->pri;
             break;
     }
-ENDHANDLER
+	} break;
 
-HANDLER(sgr) /* SGR - Select Graphic Rendition */
+case sgr: { /* SGR - Select Graphic Rendition */
     bool doc = false, do8 = COLORS >= 8, do16 = COLORS >= 16, do256 = COLORS >= 256;
     if (!argc)
         CALL(sgr0);
@@ -421,32 +418,32 @@ HANDLER(sgr) /* SGR - Select Graphic Rendition */
 	noclear_repc = 1;
 	} break;
 
-HANDLER(cr) /* CR - Carriage Return */
+case cr: { /* CR - Carriage Return */
     s->xenl = false;
     wmove(win, py, 0);
-ENDHANDLER
+	} break;
 
-HANDLER(ind) /* IND - Index */
+case ind: { /* IND - Index */
     y == (bot - 1)? scroll(win) : wmove(win, py + 1, x);
-ENDHANDLER
+	} break;
 
-HANDLER(nel) /* NEL - Next Line */
+case nel: { /* NEL - Next Line */
     CALL(cr); CALL(ind);
-ENDHANDLER
+	} break;
 
-HANDLER(pnl) /* NL - Newline */
+case pnl: { /* NL - Newline */
     CALL((n->lnm? nel : ind));
-ENDHANDLER
+	} break;
 
-HANDLER(cpl) /* CPL - Cursor Previous Line */
+case cpl: { /* CPL - Cursor Previous Line */
     wmove(win, MAX(tos + top, py - P1(0)), 0);
-ENDHANDLER
+	} break;
 
-HANDLER(cnl) /* CNL - Cursor Next Line */
+case cnl: { /* CNL - Cursor Next Line */
     wmove(win, MIN(tos + bot - 1, py + P1(0)), 0);
-ENDHANDLER
+	} break;
 
-HANDLER(print) /* Print a character to the terminal */
+case print: { /* Print a character to the terminal */
     if (wcwidth(w) < 0)
         return;
 
@@ -474,12 +471,12 @@ HANDLER(print) /* Print a character to the terminal */
 	noclear_repc = 1;
 	} break;
 
-HANDLER(rep) /* REP - Repeat Character */
+case rep: { /* REP - Repeat Character */
     for (int i = 0; i < P1(0) && n->repc; i++)
         handle_terminal_cmd(v, p, n->repc, 0, 0, NULL, print);
-ENDHANDLER
+	} break;
 
-HANDLER(scs) /* Select Character Set */
+case scs: { /* Select Character Set */
     wchar_t **t = NULL;
     switch (iw){
         case L'(': t = &n->g0;  break;
@@ -495,9 +492,9 @@ HANDLER(scs) /* Select Character Set */
         case L'1': *t = CSET_US;    break;
         case L'2': *t = CSET_GRAPH; break;
     }
-ENDHANDLER
+	} break;
 
-HANDLER(so) /* Switch Out/In Character Set */
+case so: { /* Switch Out/In Character Set */
     if (w == 0x0e)
         n->gs = n->gc = n->g1; /* locking shift */
     else if (w == 0xf)
@@ -513,7 +510,7 @@ HANDLER(so) /* Switch Out/In Character Set */
         n->gs = n->gc; /* non-locking shift */
         n->gc = n->g3;
     }
-ENDHANDLER
+	} break;
 }
 
 	if( !noclear_repc ) {
