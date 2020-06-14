@@ -60,7 +60,7 @@ read_until(FILE *fp, const char *s, VTPARSER *vp)
 }
 
 static int
-test_cuu(int fd)
+test_cursor(int fd)
 {
 	struct canvas *root = init(24, 80);
 	FILE *ofp = fdopen(fd = root->p->pt, "r");
@@ -85,7 +85,12 @@ test_cuu(int fd)
 	expect_layout(root, "*23x80@0,0(8,6)");
 	send_cmd(fd, "tput cup 15 50; tput sc; echo foo; tput rc");
 	read_until(ofp, ps1, &root->p->vp);
+	/* Hmmm. It seems weird that we start at y == 0 but after
+	tput cup 15 we jump down to y = scroll_back_buffer - size + 15 */
 	expect_layout(root, "*23x80@0,0(1016,56)");
+	send_cmd(fd, "tput clear");
+	read_until(ofp, ps1, &root->p->vp);
+	expect_layout(root, "*23x80@0,0(1001,6)");
 	return 0;
 }
 /* (1) I expect the x coordinate of this test to be 6 (the length
@@ -124,7 +129,7 @@ main(int argc, char *const argv[])
 	char *const args[] = { "smtx-test", NULL };
 	struct { char *name; test *f; int main; } tab[] = {
 		F(test1, 1),
-		F(test_cuu, 0),
+		F(test_cursor, 0),
 		F(test_description, 0),
 		{ NULL, NULL, 0 }
 	}, *v;
