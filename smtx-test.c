@@ -59,6 +59,15 @@ read_until(FILE *fp, const char *s, VTPARSER *vp)
 	}
 }
 
+static void
+validate_cmd(FILE *fp, const char *ps1, const char *cmd, const char *expect,
+	struct canvas *c)
+{
+	send_cmd(fileno(fp), cmd);
+	read_until(fp, ps1, &c->p->vp);
+	expect_layout(c, expect);
+}
+
 static int
 test_cursor(int fd)
 {
@@ -77,9 +86,9 @@ test_cursor(int fd)
 	/* (1) */
 	expect_layout(root, "*23x80@0,0(6,?)");
 #endif
-	send_cmd(fd, "printf '0123456789ab'; tput cub 4");
-	read_until(ofp, ps1, &root->p->vp);
-	expect_layout(root, "*23x80@0,0(7,14)");
+	validate_cmd(ofp, ps1, "printf '0123456789ab'; tput cub 4",
+		"*23x80@0,0(7,14)", root);
+
 	send_cmd(fd, "tput sc");
 	read_until(ofp, ps1, &root->p->vp);
 	expect_layout(root, "*23x80@0,0(8,6)");
