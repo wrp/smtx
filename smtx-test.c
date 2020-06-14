@@ -4,7 +4,7 @@
 
 
 static void
-send_cmd(int fd, char *fmt, ...)
+send_cmd(int fd, const char *fmt, ...)
 {
 	char cmd[1024];
 	size_t n;
@@ -59,6 +59,13 @@ read_until(FILE *fp, const char *s, VTPARSER *vp)
 	}
 }
 
+struct test_canvas {
+	struct canvas *c;
+	const char *ps1;
+	FILE *fp;
+	VTPARSER *vp;
+};
+
 static void
 validate_cmd(FILE *fp, const char *ps1, const char *cmd, const char *expect,
 	struct canvas *c)
@@ -71,41 +78,43 @@ validate_cmd(FILE *fp, const char *ps1, const char *cmd, const char *expect,
 static int
 test_cursor(int fd)
 {
-	struct canvas *root = init(24, 80);
-	FILE *ofp = fdopen(fd = root->p->pt, "r");
-	const char ps1[] = "uniq> ";
+	struct test_canvas T;
+	T.c = init(24, 80);
+	T.fp = fdopen(fd = T.c->p->pt, "r");
+	T.ps1 = "uniq> ";
+	T.vp = &T.c->p->vp;
 
-	if( ofp == NULL ) {
+	if( T.fp == NULL ) {
 		err(1, "Unable to fdopen master pty\n");
 	}
-	expect_layout(root, "*23x80@0,0(0,0)");
-	send_cmd(fd, "PS1='%s'; tput cud 5", ps1);
-	read_until(ofp, ps1, &root->p->vp); /* discard first line */
-	read_until(ofp, ps1, &root->p->vp);
+	expect_layout(T.c, "*23x80@0,0(0,0)");
+	send_cmd(fd, "PS1='%s'; tput cud 5", T.ps1);
+	read_until(T.fp, T.ps1, T.vp); /* discard first line */
+	read_until(T.fp, T.ps1, T.vp);
 #if 0
 	/* (1) */
 	expect_layout(root, "*23x80@0,0(6,?)");
 #endif
-	validate_cmd(ofp, ps1, "printf '0123456789ab'; tput cub 4",
-		"*23x80@0,0(7,14)", root);
+	validate_cmd(T.fp, T.ps1, "printf '0123456789ab'; tput cub 4",
+		"*23x80@0,0(7,14)", T.c);
 
 	send_cmd(fd, "tput sc");
-	read_until(ofp, ps1, &root->p->vp);
-	expect_layout(root, "*23x80@0,0(8,6)");
+	read_until(T.fp, T.ps1, T.vp);
+	expect_layout(T.c, "*23x80@0,0(8,6)");
 	send_cmd(fd, "echo; tput rc");
-	read_until(ofp, ps1, &root->p->vp);
-	expect_layout(root, "*23x80@0,0(8,6)");
+	read_until(T.fp, T.ps1, T.vp);
+	expect_layout(T.c, "*23x80@0,0(8,6)");
 	send_cmd(fd, "tput cup 15 50; tput sc; echo foo; tput rc");
-	read_until(ofp, ps1, &root->p->vp);
+	read_until(T.fp, T.ps1, T.vp);
 	/* Hmmm. It seems weird that we start at y == 0 but after
 	tput cup 15 we jump down to y = scroll_back_buffer - size + 15 */
-	expect_layout(root, "*23x80@0,0(1016,56)");
+	expect_layout(T.c, "*23x80@0,0(1016,56)");
 	send_cmd(fd, "tput clear");
-	read_until(ofp, ps1, &root->p->vp);
-	expect_layout(root, "*23x80@0,0(1001,6)");
+	read_until(T.fp, T.ps1, T.vp);
+	expect_layout(T.c, "*23x80@0,0(1001,6)");
 	send_cmd(fd, "tput ht");
-	read_until(ofp, ps1, &root->p->vp);
-	expect_layout(root, "*23x80@0,0(1002,14)");
+	read_until(T.fp, T.ps1, T.vp);
+	expect_layout(T.c, "*23x80@0,0(1002,14)");
 	return 0;
 }
 /* (1) I expect the x coordinate of this test to be 6 (the length
