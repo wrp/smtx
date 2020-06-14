@@ -18,6 +18,17 @@ send_cmd(int fd, const char *fmt, ...)
 }
 
 static void
+vsend_cmd(int fd, const char *fmt, va_list ap)
+{
+	char cmd[1024];
+	size_t n;
+	n = vsnprintf(cmd, sizeof cmd, fmt, ap);
+	assert( n < sizeof cmd );
+	safewrite(fd, cmd, n);
+	safewrite(fd, "\r", 1);
+}
+
+static void
 expect_layout(const struct canvas *c, const char *expect)
 {
 	char actual[1024];
@@ -67,12 +78,14 @@ struct test_canvas {
 };
 
 static void
-validate_cmd(FILE *fp, const char *ps1, const char *cmd, const char *expect,
-	struct canvas *c)
+check_cmd(struct test_canvas *T, const char *expect, const char *cmd, ...)
 {
-	send_cmd(fileno(fp), cmd);
-	read_until(fp, ps1, &c->p->vp);
-	expect_layout(c, expect);
+	va_list ap;
+	va_start(ap, cmd);
+	vsend_cmd(fileno(T->fp), cmd, ap);
+	va_end(ap);
+	read_until(T->fp, T->ps1, T->vp);
+	expect_layout(T->c, expect);
 }
 
 static int
@@ -95,8 +108,7 @@ test_cursor(int fd)
 	/* (1) */
 	expect_layout(root, "*23x80@0,0(6,?)");
 #endif
-	validate_cmd(T.fp, T.ps1, "printf '0123456789ab'; tput cub 4",
-		"*23x80@0,0(7,14)", T.c);
+	check_cmd(&T, "*23x80@0,0(7,14)", "printf '0123456789ab'; tput cub 4");
 
 	send_cmd(fd, "tput sc");
 	read_until(T.fp, T.ps1, T.vp);
