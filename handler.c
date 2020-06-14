@@ -123,14 +123,15 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 		}
 		wmove(win, py, 0);
 		break;
-
-case ht: { /* HT - Horizontal Tab */
-    for (int i = x + 1; i < n->ws.ws_col && i < n->ntabs; i++) if (n->tabs[i]){
-        wmove(win, py, i);
-        return;
-    }
-    wmove(win, py, mx - 1);
-	} break;
+	case ht: /* HT - Horizontal Tab */
+		for( int i = x + 1; i < n->ws.ws_col && i < n->ntabs; i++ ) {
+			if( n->tabs[i] ) {
+				wmove(win, py, i);
+				return;
+			}
+		}
+		wmove(win, py, mx - 1);
+		break;
 
 case tab: { /* Tab forwards or backwards */
     for (int i = 0; i < P1(0); i++) switch (w){
