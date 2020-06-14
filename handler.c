@@ -136,8 +136,6 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 		for( int i = 0; i < P1(0); i++ ) {
 			switch( w ) {
 			case L'I':
-				CALL(ht);
-				break;
 			case L'\t':
 				CALL(ht);
 				break;
