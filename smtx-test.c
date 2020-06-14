@@ -94,6 +94,9 @@ test_cursor(int fd)
 	send_cmd(fd, "tput clear");
 	read_until(ofp, ps1, &root->p->vp);
 	expect_layout(root, "*23x80@0,0(1001,6)");
+	send_cmd(fd, "tput ht");
+	read_until(ofp, ps1, &root->p->vp);
+	expect_layout(root, "*23x80@0,0(1002,14)");
 	return 0;
 }
 /* (1) I expect the x coordinate of this test to be 6 (the length
