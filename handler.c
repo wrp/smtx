@@ -242,16 +242,15 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 		}
 		wmove(win, py, px);
 		} break;
-
-case ech: { /* ECH - Erase Character */
-    cchar_t c;
-#if HAVE_ALLOC_PAIR
-    setcchar(&c, L" ", A_NORMAL, alloc_pair(s->fg, s->bg), NULL);
-#endif
-    for (int i = 0; i < P1(0); i++)
-        mvwadd_wchnstr(win, py, x + i, &c, 1);
-    wmove(win, py, px);
-	} break;
+	case ech: { /* Erase Character */
+		cchar_t c;
+		#if HAVE_ALLOC_PAIR
+		setcchar(&c, L" ", A_NORMAL, alloc_pair(s->fg, s->bg), NULL);
+		#endif
+		for( int i = 0; i < P1(0); i++ )
+			mvwadd_wchnstr(win, py, x + i, &c, 1);
+		wmove(win, py, px);
+		} break;
 
 case dsr: { /* DSR - Device Status Report */
 	char buf[100] = {0};
