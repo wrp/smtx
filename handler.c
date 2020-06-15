@@ -36,7 +36,7 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 	getyx(win, py, px); y = py - s->tos; x = px;
 	getmaxyx(win, my, mx); my -= s->tos;
 	wgetscrreg(win, &top, &bot);
-	bot++; bot -= s->tos;
+	bot += 1 - s->tos;
 	top = top <= tos? 0 : top - tos;
 	switch(c) {
 	case nul:
