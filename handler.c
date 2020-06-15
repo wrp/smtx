@@ -193,12 +193,10 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 			}
 		}
 		break;
-
-case cub: { /* CUB - Cursor Backward */
-    s->xenl = false;
-    wmove(win, py, MAX(x - P1(0), 0));
-	} break;
-
+	case cub: /* Cursor Backward */
+		s->xenl = false;
+		wmove(win, py, MAX(x - P1(0), 0));
+		break;
 case el: { /* EL - Erase in Line */
     cchar_t b;
 #if HAVE_ALLOC_PAIR
