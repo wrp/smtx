@@ -181,19 +181,18 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 		wbkgrndset(win, &c);
 		#endif
 		break;
-
-case tbc: { /* TBC - Tabulation Clear */
-	if( n->tabs != NULL ) {
-		switch( argc >= 0 && argv ? argv[0] : 0 ) {
-		case 0:
-			n->tabs[x < n->ntabs ? x : 0] = false;
-			break;
-		case 3:
-			memset(n->tabs, 0, n->ntabs * sizeof *n->tabs);
-			break;
+	case tbc: /* Tabulation Clear */
+		if( n->tabs != NULL ) {
+			switch( argc >= 0 && argv ? argv[0] : 0 ) {
+			case 0:
+				n->tabs[x < n->ntabs ? x : 0] = false;
+				break;
+			case 3:
+				memset(n->tabs, 0, n->ntabs * sizeof *n->tabs);
+				break;
+			}
 		}
-	}
-	} break;
+		break;
 
 case cub: { /* CUB - Cursor Backward */
     s->xenl = false;
