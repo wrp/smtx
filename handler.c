@@ -132,19 +132,12 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 		}
 		wmove(win, py, mx - 1);
 		break;
-	case tab: /* Tab forwards or backwards */
+	case tab: { /* Tab forwards or backwards */
+		enum cmd k = w == L'Z' ? cbt : ht;
 		for( int i = 0; i < P1(0); i++ ) {
-			switch( w ) {
-			case L'I':
-			case L'\t':
-				CALL(ht);
-				break;
-			case L'Z':
-				CALL(cbt);
-				break;
-			}
+			handle_terminal_cmd(v, n, 0, 0, 0, NULL, k);
 		}
-		break;
+	} break;
 
 case decaln: { /* DECALN - Screen Alignment Test */
     chtype e[] = {COLOR_PAIR(0) | 'E', 0};
