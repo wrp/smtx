@@ -146,41 +146,41 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 	} break;
 	case su: /* SU - Scroll Up/Down */
 		wscrl(win, (w == L'T' || w == L'^') ? -P1(0) : P1(0));
-	break;
+		break;
 	case sc: /* SC - Save Cursor */
 		s->sx = px;                              /* X position */
 		s->sy = py;                              /* Y position */
-		wattr_get(win, &s->sattr, &s->sp, NULL); /* attrs/ color pair */
+		wattr_get(win, &s->sattr, &s->sp, NULL); /* attrs/color pair */
 		s->sfg = s->fg;                          /* foreground color */
 		s->sbg = s->bg;                          /* background color */
 		s->oxenl = s->xenl;                      /* xenl state */
 		s->saved = true;                         /* data is valid */
 		n->sgc = n->gc; n->sgs = n->gs;          /* character sets */
-	break;
+		break;
+	case rc: /* Restore Cursor */
+		if( iw == L'#' ) {
+			CALL(decaln);
+			return;
+		}
+		if( !s->saved ) {
+			return;
+		}
+		wmove(win, s->sy, s->sx);              /* old position */
+		wattr_set(win, s->sattr, s->sp, NULL); /* attrs/color pair */
+		s->fg = s->sfg;                        /* foreground color */
+		s->bg = s->sbg;                        /* background color */
+		s->xenl = s->oxenl;                    /* xenl state */
+		n->gc = n->sgc; n->gs = n->sgs;        /* save character sets */
 
-case rc: { /* RC - Restore Cursor */
-    if (iw == L'#'){
-        CALL(decaln);
-        return;
-    }
-    if (!s->saved)
-        return;
-    wmove(win, s->sy, s->sx);                /* get old position          */
-    wattr_set(win, s->sattr, s->sp, NULL);   /* get attrs and color pair  */
-    s->fg = s->sfg;                          /* get foreground color      */
-    s->bg = s->sbg;                          /* get background color      */
-    s->xenl = s->oxenl;                      /* get xenl state            */
-    n->gc = n->sgc; n->gs = n->sgs;          /* save character sets        */
-
-    /* restore colors */
-#if HAVE_ALLOC_PAIR
-    int cp = alloc_pair(s->fg, s->bg);
-    wcolor_set(win, cp, NULL);
-    cchar_t c;
-    setcchar(&c, L" ", A_NORMAL, cp, NULL);
-    wbkgrndset(win, &c);
-#endif
-	} break;
+		/* restore colors */
+		#if HAVE_ALLOC_PAIR
+		int cp = alloc_pair(s->fg, s->bg);
+		wcolor_set(win, cp, NULL);
+		cchar_t c;
+		setcchar(&c, L" ", A_NORMAL, cp, NULL);
+		wbkgrndset(win, &c);
+		#endif
+		break;
 
 case tbc: { /* TBC - Tabulation Clear */
 	if( n->tabs != NULL ) {
