@@ -135,30 +135,28 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 			handle_terminal_cmd(v, n, 0, 0, 0, NULL, k);
 		}
 	} break;
-
-case decaln: { /* DECALN - Screen Alignment Test */
-    chtype e[] = {COLOR_PAIR(0) | 'E', 0};
-    for (int r = 0; r < my; r++){
-        for (int c = 0; c <= mx; c++)
-            mvwaddchnstr(win, tos + r, c, e, 1);
-    }
-    wmove(win, py, px);
+	case decaln: { /* DECALN - Screen Alignment Test */
+		chtype e[] = { COLOR_PAIR(0) | 'E', 0 };
+		for( int r = 0; r < my; r++ ) {
+			for( int c = 0; c <= mx; c++ ) {
+				mvwaddchnstr(win, tos + r, c, e, 1);
+			}
+		}
+		wmove(win, py, px);
 	} break;
-
-case su: { /* SU - Scroll Up/Down */
-    wscrl(win, (w == L'T' || w == L'^')? -P1(0) : P1(0));
-	} break;
-
-case sc: { /* SC - Save Cursor */
-    s->sx = px;                              /* save X position            */
-    s->sy = py;                              /* save Y position            */
-    wattr_get(win, &s->sattr, &s->sp, NULL); /* save attrs and color pair  */
-    s->sfg = s->fg;                          /* save foreground color      */
-    s->sbg = s->bg;                          /* save background color      */
-    s->oxenl = s->xenl;                      /* save xenl state            */
-    s->saved = true;                         /* save data is valid         */
-    n->sgc = n->gc; n->sgs = n->gs;          /* save character sets        */
-	} break;
+	case su: /* SU - Scroll Up/Down */
+		wscrl(win, (w == L'T' || w == L'^') ? -P1(0) : P1(0));
+	break;
+	case sc: /* SC - Save Cursor */
+		s->sx = px;                              /* X position */
+		s->sy = py;                              /* Y position */
+		wattr_get(win, &s->sattr, &s->sp, NULL); /* attrs/ color pair */
+		s->sfg = s->fg;                          /* foreground color */
+		s->sbg = s->bg;                          /* background color */
+		s->oxenl = s->xenl;                      /* xenl state */
+		s->saved = true;                         /* data is valid */
+		n->sgc = n->gc; n->sgs = n->gs;          /* character sets */
+	break;
 
 case rc: { /* RC - Restore Cursor */
     if (iw == L'#'){
@@ -186,12 +184,12 @@ case rc: { /* RC - Restore Cursor */
 
 case tbc: { /* TBC - Tabulation Clear */
 	if( n->tabs != NULL ) {
-		switch( P0(0) ) {
+		switch( argc >= 0 && argv ? argv[0] : 0 ) {
 		case 0:
-			n->tabs[x < n->ntabs? x : 0] = false;
+			n->tabs[x < n->ntabs ? x : 0] = false;
 			break;
 		case 3:
-			memset(n->tabs, 0, sizeof(bool) * (n->ntabs));
+			memset(n->tabs, 0, n->ntabs * sizeof *n->tabs);
 			break;
 		}
 	}
