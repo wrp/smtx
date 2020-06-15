@@ -218,24 +218,30 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 		}
 		wmove(win, py, x);
 		} break;
-
-case ed: { /* ED - Erase in Display */
-    int o = 1;
-    switch (P0(0)){
-        case 0: wclrtobot(win);                     break;
-        case 3: werase(win);                        break;
-        case 2: wmove(win, tos, 0); wclrtobot(win); break;
-        case 1:
-            for (int i = tos; i < py; i++){
-                wmove(win, i, 0);
-                wclrtoeol(win);
-            }
-            wmove(win, py, x);
-            handle_terminal_cmd(v, p, w, iw, 1, &o, el);
-            break;
-    }
-    wmove(win, py, px);
-	} break;
+	case ed: { /* Erase in Display */
+		int o = 1;
+		switch( P0(0) ) {
+		case 0:
+			wclrtobot(win);
+			break;
+		case 3:
+			werase(win);
+			break;
+		case 2:
+			wmove(win, tos, 0);
+			wclrtobot(win);
+			break;
+		case 1:
+			for( int i = tos; i < py; i++ ) {
+				wmove(win, i, 0);
+				wclrtoeol(win);
+			}
+			wmove(win, py, x);
+			handle_terminal_cmd(v, p, w, iw, 1, &o, el);
+			break;
+		}
+		wmove(win, py, px);
+		} break;
 
 case ech: { /* ECH - Erase Character */
     cchar_t c;
