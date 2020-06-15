@@ -197,18 +197,27 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 		s->xenl = false;
 		wmove(win, py, MAX(x - P1(0), 0));
 		break;
-case el: { /* EL - Erase in Line */
-    cchar_t b;
+	case el: { /* Erase in Line */
+		cchar_t b;
 #if HAVE_ALLOC_PAIR
-    setcchar(&b, L" ", A_NORMAL, alloc_pair(s->fg, s->bg), NULL);
+		setcchar(&b, L" ", A_NORMAL, alloc_pair(s->fg, s->bg), NULL);
 #endif
-    switch (P0(0)){
-        case 0: wclrtoeol(win);                                                 break;
-        case 1: for (int i = 0; i <= x; i++) mvwadd_wchnstr(win, py, i, &b, 1); break;
-        case 2: wmove(win, py, 0); wclrtoeol(win);                              break;
-    }
-    wmove(win, py, x);
-	} break;
+		switch( P0(0) ) {
+		case 0:
+			wclrtoeol(win);
+			break;
+		case 1:
+			for( int i = 0; i <= x; i++ ) {
+				mvwadd_wchnstr(win, py, i, &b, 1);
+			}
+			break;
+		case 2:
+			wmove(win, py, 0);
+			wclrtoeol(win);
+			break;
+		}
+		wmove(win, py, x);
+		} break;
 
 case ed: { /* ED - Erase in Display */
     int o = 1;
