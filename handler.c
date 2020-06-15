@@ -33,9 +33,6 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 	int py, px; /* physical cursor position in scrollback */
 	int top = 0, bot = 0; /* the scrolling region */
 	int tos = s->tos;  /* top of screen in the pad */
-	(void)v; (void)p; (void)w; (void)iw; (void)argc; (void)argv;
-	(void)win; (void)y; (void)x; (void)my; (void)mx;
-	(void)tos;
 	getyx(win, py, px); y = py - s->tos; x = px;
 	getmaxyx(win, my, mx); my -= s->tos;
 	wgetscrreg(win, &top, &bot);
