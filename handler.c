@@ -26,16 +26,19 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 {
 	int noclear_repc = 0;
 	int otop = 0, obot = 0;
-	struct proc *n = p; /* the current proc */
+	struct proc *n = p;      /* the current proc */
 	struct screen *s = n->s; /* the current SCRN buffer */
-	WINDOW *win = s->win; /* the current window */
-	int y, x; /* cursor position */
-	int my, mx; /* max possible values for x and y */
-	int py, px; /* physical cursor position in scrollback */
-	int top = 0, bot = 0; /* the scrolling region */
-	int tos = s->tos;  /* top of screen in the pad */
-	getyx(win, py, px); y = py - s->tos; x = px;
-	getmaxyx(win, my, mx); my -= s->tos;
+	WINDOW *win = s->win;    /* the current window */
+	int y, x;                /* cursor position */
+	int my, mx;              /* max possible values for x and y */
+	int py, px;              /* physical cursor position in scrollback */
+	int top = 0, bot = 0;    /* the scrolling region */
+	int tos = s->tos;        /* top of screen in the pad */
+	getyx(win, py, px);
+	y = py - s->tos;
+	x = px;
+	getmaxyx(win, my, mx);
+	my -= s->tos;
 	wgetscrreg(win, &top, &bot);
 	bot += 1 - s->tos;
 	top = top <= tos? 0 : top - tos;
@@ -51,33 +54,33 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 	case vis: /* Cursor visibility */
 		s->vis = iw == L'6'? 0 : 1;
 		break;
-	case cup: /* CUP - Cursor Position */
+	case cup: /* Cursor Position */
 		s->xenl = false;
 		wmove(win, tos + (n->decom? top : 0) + P1(0) - 1, P1(1) - 1);
 		break;
-	case dch: /* DCH - Delete Character */
+	case dch: /* Delete Character */
 		for( int i = 0; i < P1(0); i++ ) {
 			wdelch(win);
 		}
 		break;
-	case ich: /* ICH - Insert Character */
+	case ich: /* Insert Character */
 		for( int i = 0; i < P1(0); i++ ) {
 			wins_nwstr(win, L" ", 1);
 		}
 		break;
-	case cuu: /* CUU - Cursor Up */
+	case cuu: /* Cursor Up */
 		wmove(win, MAX(py - P1(0), tos + top), x);
 		break;
-	case cud: /* CUD - Cursor Down */
+	case cud: /* Cursor Down */
 		wmove(win, MIN(py + P1(0), tos + bot - 1), x);
 		break;
-	case cuf: /* CUF - Cursor Forward */
+	case cuf: /* Cursor Forward */
 		wmove(win, py, MIN(x + P1(0), mx - 1));
 		break;
-	case ack: /* ACK - Acknowledge Enquiry */
+	case ack: /* Acknowledge Enquiry */
 		safewrite(n->pt, "\006", 1);
 		break;
-	case hts: /* HTS - Horizontal Tab Set */
+	case hts: /* Horizontal Tab Set */
 		if( x < n->ntabs && x > 0 ) {
 			n->tabs[x] = true;
 		}
@@ -88,7 +91,7 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 		y == top ? wscrl(win, -1) : wmove(win, MAX(tos, py - 1), x);
 		wsetscrreg(win, otop, obot);
 		break;
-	case decid: /* DECID - Send Terminal Identification */
+	case decid: /* Send Terminal Identification */
 		if( w == L'c' ) {
 			if( iw == L'>' ) {
 				safewrite(n->pt, "\033[>1;10;0c", 10);
@@ -99,19 +102,19 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 			safewrite(n->pt, "\033[?6c", 5);
 		}
 		break;
-	case hpa: /* HPA - Cursor Horizontal Absolute */
+	case hpa: /* Cursor Horizontal Absolute */
 		wmove(win, py, MIN(P1(0) - 1, mx - 1));
 		break;
-	case hpr: /* HPR - Cursor Horizontal Relative */
+	case hpr: /* Cursor Horizontal Relative */
 		wmove(win, py, MIN(px + P1(0), mx - 1));
 		break;
-	case vpa: /* VPA - Cursor Vertical Absolute */
+	case vpa: /* Cursor Vertical Absolute */
 		wmove(win, MIN(tos + bot - 1, MAX(tos + top, tos + P1(0) - 1)), x);
 		break;
-	case vpr: /* VPR - Cursor Vertical Relative */
+	case vpr: /* Cursor Vertical Relative */
 		wmove(win, MIN(tos + bot - 1, MAX(tos + top, py + P1(0))), x);
 		break;
-	case cbt: /* CBT - Cursor Backwards Tab */
+	case cbt: /* Cursor Backwards Tab */
 		for( int i = x - 1; i < n->ntabs && i >= 0; i-- ) {
 			if( n->tabs[i] ){
 				wmove(win, py, i);
@@ -120,7 +123,7 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 		}
 		wmove(win, py, 0);
 		break;
-	case ht: /* HT - Horizontal Tab */
+	case ht: /* Horizontal Tab */
 		for( int i = x + 1; i < n->ws.ws_col && i < n->ntabs; i++ ) {
 			if( n->tabs[i] ) {
 				wmove(win, py, i);
@@ -134,7 +137,7 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 			CALL(w == L'Z' ? cbt : ht);
 		}
 		break;
-	case decaln: { /* DECALN - Screen Alignment Test */
+	case decaln: { /* Screen Alignment Test */
 		chtype e[] = { COLOR_PAIR(0) | 'E', 0 };
 		for( int r = 0; r < my; r++ ) {
 			for( int c = 0; c <= mx; c++ ) {
@@ -143,10 +146,10 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 		}
 		wmove(win, py, px);
 	} break;
-	case su: /* SU - Scroll Up/Down */
+	case su: /* Scroll Up/Down */
 		wscrl(win, (w == L'T' || w == L'^') ? -P1(0) : P1(0));
 		break;
-	case sc: /* SC - Save Cursor */
+	case sc: /* Save Cursor */
 		s->sx = px;                              /* X position */
 		s->sy = py;                              /* Y position */
 		wattr_get(win, &s->sattr, &s->sp, NULL); /* attrs/color pair */
