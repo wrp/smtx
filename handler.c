@@ -25,6 +25,7 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 	int argc, int *argv, enum cmd c)
 {
 	int noclear_repc = 0;
+	int otop = 0, obot = 0;
 	struct proc *n = p; /* the current proc */
 	struct screen *s = n->s; /* the current SCRN buffer */
 	WINDOW *win = s->win; /* the current window */
@@ -81,13 +82,12 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 			n->tabs[x] = true;
 		}
 		break;
-	case ri: { /* RI - Reverse Index (scroll back) */
-		int otop = 0, obot = 0;
+	case ri: /* Reverse Index (scroll back) */
 		wgetscrreg(win, &otop, &obot);
 		wsetscrreg(win, otop >= tos ? otop : tos, obot);
 		y == top ? wscrl(win, -1) : wmove(win, MAX(tos, py - 1), x);
 		wsetscrreg(win, otop, obot);
-		} break;
+		break;
 	case decid: /* DECID - Send Terminal Identification */
 		if( w == L'c' ) {
 			if( iw == L'>' ) {
@@ -266,7 +266,7 @@ case dsr: { /* DSR - Device Status Report */
 case idl: { /* IL or DL - Insert/Delete Line */
     /* we don't use insdelln here because it inserts above and not below,
      * and has a few other edge cases... */
-    int otop = 0, obot = 0, p1 = MIN(P1(0), (my - 1) - y);
+    int p1 = MIN(P1(0), (my - 1) - y);
     wgetscrreg(win, &otop, &obot);
     wsetscrreg(win, py, obot);
     wscrl(win, w == L'L'? -p1 : p1);
