@@ -161,11 +161,12 @@ test1(int fd)
 
 typedef int test(int);
 struct st { char *name; test *f; int main; };
-static void execute_test(struct st *v);
+static int execute_test(struct st *v);
 #define F(x, y) { .name = #x, .f = (x), .main = y }
 int
 main(int argc, char *const argv[])
 {
+	int status = 0;
 	struct st tab[] = {
 		F(test1, 1),
 		F(test_cursor, 0),
@@ -180,16 +181,16 @@ main(int argc, char *const argv[])
 				;
 		}
 		if( v->f ) {
-			execute_test(v);
+			status |= execute_test(v);
 		} else {
 			fprintf(stderr, "unknown function: %s\n", name);
-			rv = EXIT_FAILURE;
+			status = EXIT_FAILURE;
 		}
 	}
-	return rv;
+	return status;
 }
 
-static void
+static int
 execute_test(struct st *v)
 {
 	char *const args[] = { "smtx-test", NULL };
@@ -215,7 +216,6 @@ execute_test(struct st *v)
 	}
 	if( WIFEXITED(status) && WEXITSTATUS(status) != 0 ) {
 		char iobuf[BUFSIZ], *s = iobuf;
-		rv = WEXITSTATUS(status);
 		fprintf(stderr, "test %s FAILED\n", v->name);
 		ssize_t r = read(fd, iobuf, sizeof iobuf - 1);
 		if( r > 0 ) {
@@ -227,8 +227,8 @@ execute_test(struct st *v)
 			}
 		}
 	} else if( WIFSIGNALED(status) ) {
-		rv = EXIT_FAILURE;
 		fprintf(stderr, "test %s caught signal %d\n",
 			v->name, WTERMSIG(status));
 	}
+	return WIFEXITED(status) ? WEXITSTATUS(status) : EXIT_FAILURE;
 }
