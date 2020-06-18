@@ -81,17 +81,18 @@ static void
 check_cmd(struct test_canvas *T, const char *cmd, const char *expect, ...)
 {
 	send_cmd(fileno(T->fp), "%s", cmd);
+	read_until(T->fp, T->ps1, T->vp);
 	va_list ap;
 	va_start(ap, expect);
+	vexpect_layout(T->c, expect, ap);
 	va_end(ap);
-	read_until(T->fp, T->ps1, T->vp);
-	expect_layout(T->c, expect);
 }
 
 static int
 test_cursor(int fd)
 {
 	struct test_canvas T;
+	int x = 0;
 	T.c = init(24, 80);
 	T.fp = fdopen(fd = T.c->p->pt, "r");
 	T.ps1 = "uniq> ";
@@ -101,14 +102,15 @@ test_cursor(int fd)
 		err(1, "Unable to fdopen master pty\n");
 	}
 	expect_layout(T.c, "*23x80@0,0(0,0)");
-	send_cmd(fd, "PS1='%s'; tput cud 5", T.ps1);
+	send_cmd(fd, "PS1='%s'; tput cud %d", T.ps1, x = 5);
 	read_until(T.fp, T.ps1, T.vp); /* discard first line */
 	read_until(T.fp, T.ps1, T.vp);
+	x += 1;
 #if 0
 	/* (1) */
 	expect_layout(root, "*23x80@0,0(6,?)");
 #endif
-	check_cmd(&T, "printf '0123456789ab'; tput cub 4", "*23x80@0,0(7,14)");
+	check_cmd(&T, "printf '0123456'; tput cub 4", "*23x80@0,0(%d,9)", ++x);
 	check_cmd(&T, "tput sc", "*23x80@0,0(8,6)");
 	check_cmd(&T, "tput rc", "*23x80@0,0(8,6)");
 	/* Hmmm. It seems weird that we start at y == 0 but after
