@@ -18,28 +18,28 @@ send_cmd(int fd, const char *fmt, ...)
 }
 
 static void
-vsend_cmd(int fd, const char *fmt, va_list ap)
-{
-	char cmd[1024];
-	size_t n;
-	n = vsnprintf(cmd, sizeof cmd, fmt, ap);
-	assert( n < sizeof cmd );
-	safewrite(fd, cmd, n);
-	safewrite(fd, "\r", 1);
-}
-
-static void
-expect_layout(const struct canvas *c, const char *expect)
+vexpect_layout(const struct canvas *c, const char *fmt, va_list ap)
 {
 	char actual[1024];
+	char expect[1024];
 	const char *a = actual, *b = expect;
 	describe_layout(actual, sizeof actual, c);
+	vsnprintf(expect, sizeof expect, fmt, ap);
 	while( *a && ( *a++ == *b || *b == '?' ) ) {
 		b += 1;
 	}
 	if( *b || *a ) {
 		errx(1, "\nExpected \"%s\", but got \"%s\"\n", expect, actual);
 	}
+}
+
+static void
+expect_layout(const struct canvas *c, const char *expect, ...)
+{
+	va_list ap;
+	va_start(ap, expect);
+	vexpect_layout(c, expect, ap);
+	va_end(ap);
 }
 
 static int
@@ -78,11 +78,11 @@ struct test_canvas {
 };
 
 static void
-check_cmd(struct test_canvas *T, const char *expect, const char *cmd, ...)
+check_cmd(struct test_canvas *T, const char *cmd, const char *expect, ...)
 {
+	send_cmd(fileno(T->fp), "%s", cmd);
 	va_list ap;
-	va_start(ap, cmd);
-	vsend_cmd(fileno(T->fp), cmd, ap);
+	va_start(ap, expect);
 	va_end(ap);
 	read_until(T->fp, T->ps1, T->vp);
 	expect_layout(T->c, expect);
@@ -108,16 +108,16 @@ test_cursor(int fd)
 	/* (1) */
 	expect_layout(root, "*23x80@0,0(6,?)");
 #endif
-	check_cmd(&T, "*23x80@0,0(7,14)", "printf '0123456789ab'; tput cub 4");
-	check_cmd(&T, "*23x80@0,0(8,6)", "tput sc");
-	check_cmd(&T, "*23x80@0,0(8,6)", "tput rc");
+	check_cmd(&T, "printf '0123456789ab'; tput cub 4", "*23x80@0,0(7,14)");
+	check_cmd(&T, "tput sc", "*23x80@0,0(8,6)");
+	check_cmd(&T, "tput rc", "*23x80@0,0(8,6)");
 	/* Hmmm. It seems weird that we start at y == 0 but after
 	tput cup 15 we jump down to y = scroll_back_buffer - size + 15 */
-	check_cmd(&T, "*23x80@0,0(1016,56)", "tput cup 15 50;");
-	check_cmd(&T, "*23x80@0,0(1001,6)", "tput clear");
-	check_cmd(&T, "*23x80@0,0(1002,14)", "tput ht");
-	check_cmd(&T, "*23x80@0,0(1003,22)", "printf '\\t\\t\\t'; tput cbt");
-	check_cmd(&T, "*23x80@0,0(1010,6", "tput cud 6");
+	check_cmd(&T, "tput cup 15 50;", "*23x80@0,0(1016,56)");
+	check_cmd(&T, "tput clear", "*23x80@0,0(1001,6)");
+	check_cmd(&T, "tput ht", "*23x80@0,0(1002,14)");
+	check_cmd(&T, "printf '\\t\\t\\t'; tput cbt", "*23x80@0,0(1003,22)");
+	check_cmd(&T, "tput cud 6", "*23x80@0,0(1010,6");
 
 	return 0;
 }
