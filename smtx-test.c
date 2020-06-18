@@ -127,7 +127,7 @@ test_cursor(int fd)
 	check_cmd(&T, "tput clear", "*23x80@0,0(1001,6)");
 	check_cmd(&T, "tput ht", "*23x80@0,0(1002,14)");
 	check_cmd(&T, "printf '\\t\\t\\t'; tput cbt", "*23x80@0,0(1003,22)");
-	check_cmd(&T, "tput cud 6", "*23x80@0,0(1010,6");
+	check_cmd(&T, "tput cud 6", "*23x80@0,0(1010,6)");
 
 	return rv;
 }
