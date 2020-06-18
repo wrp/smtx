@@ -32,8 +32,11 @@ vexpect_layout(const struct canvas *c, const char *fmt, va_list ap)
 	const char *a = actual, *b = expect;
 	describe_layout(actual, sizeof actual, c);
 	vsnprintf(expect, sizeof expect, fmt, ap);
-	while( *a && ( *a++ == *b || *b == '?' ) ) {
-		b += 1;
+	while( *a && ( *a == *b || *b == '?' ) ) {
+		a += 1;
+		if( *b != '?' || *a == b[1] ) {
+			b += 1;
+		}
 	}
 	if( *b || *a ) {
 		warnx("\nExpected \"%s\", but got \"%s\"\n", expect, actual);
