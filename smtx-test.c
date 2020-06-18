@@ -4,12 +4,6 @@
 
 int rv = EXIT_SUCCESS;
 
-/* The cursor focus tests are not working as desired
-on android.  For now, just skip the test when it fails,
-but I expect it to pass on debian. ("For now".  Ha!
-forever.  Tests never get fixed.) */
-int fail = 77;
-
 static void
 send_cmd(int fd, const char *fmt, ...)
 {
@@ -40,7 +34,11 @@ vexpect_layout(const struct canvas *c, const char *fmt, va_list ap)
 	}
 	if( *b || *a ) {
 		warnx("\nExpected \"%s\", but got \"%s\"\n", expect, actual);
-		rv = fail;
+		/* The cursor focus tests are not working as desired
+		on android.  For now, just skip the test when it fails,
+		but I expect it to pass on debian. ("For now".  Ha!
+		forever.  Tests never get fixed.) */
+		rv = 77;
 	}
 }
 
