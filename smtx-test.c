@@ -187,6 +187,7 @@ main(int argc, char *const argv[])
 				err(1, "forkpty");
 				break;
 			case 0:
+				rv = 0;
 				if( v->main ) {
 					exit(smtx_main(1, args));
 				} else {
@@ -198,16 +199,23 @@ main(int argc, char *const argv[])
 				}
 				wait(&status);
 			}
-			if( ! WIFEXITED(status) || WEXITSTATUS(status) != 0 ) {
-				char iobuf[BUFSIZ], *s;
-				rv = EXIT_FAILURE;
+			if( WIFEXITED(status) && WEXITSTATUS(status) != 0 ) {
+				char iobuf[BUFSIZ], *s = iobuf;
+				rv = WEXITSTATUS(status);
 				fprintf(stderr, "test %s FAILED\n", v->name);
-				ssize_t r = read(fd, s = iobuf, sizeof iobuf);
-				if( r > 0 ) for( ; *s; s++ ) {
-					if( isprint(*s) || *s == '\n' ) {
-						fputc(*s, stderr);
+				ssize_t r = read(fd, iobuf, sizeof iobuf - 1);
+				if( r > 0 ) {
+					iobuf[r] = '\0';
+					for( ; *s; s++ ) {
+						if( isprint(*s) || *s == '\n' ) {
+							fputc(*s, stderr);
+						}
 					}
 				}
+			} else if( WIFSIGNALED(status) ) {
+				rv = EXIT_FAILURE;
+				fprintf(stderr, "test %s caught signal %d\n",
+					v->name, WTERMSIG(status));
 			}
 		} else {
 			fprintf(stderr, "unknown function: %s\n", name);
