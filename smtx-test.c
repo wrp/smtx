@@ -76,7 +76,9 @@ read_until(FILE *fp, const char *s, VTPARSER *vp)
 	const char *t = s;
 	while( *t ) {
 		int c = fgetc(fp);
-		vtwrite(vp, (char *)&c, 1);
+		if( vp != NULL ) {
+			vtwrite(vp, (char *)&c, 1);
+		}
 		t = (c == *t) ? t + 1 : s;
 	}
 }
