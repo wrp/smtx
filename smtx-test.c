@@ -160,12 +160,13 @@ test1(int fd)
 }
 
 typedef int test(int);
+struct st { char *name; test *f; int main; };
+static void execute_test(struct st *v);
 #define F(x, y) { .name = #x, .f = (x), .main = y }
 int
 main(int argc, char *const argv[])
 {
-	char *const args[] = { "smtx-test", NULL };
-	struct { char *name; test *f; int main; } tab[] = {
+	struct st tab[] = {
 		F(test1, 1),
 		F(test_cursor, 0),
 		F(test_description, 0),
@@ -179,48 +180,55 @@ main(int argc, char *const argv[])
 				;
 		}
 		if( v->f ) {
-			int fd;
-			int status;
-
-			switch( forkpty(&fd, NULL, NULL, NULL) ) {
-			case -1:
-				err(1, "forkpty");
-				break;
-			case 0:
-				rv = 0;
-				if( v->main ) {
-					exit(smtx_main(1, args));
-				} else {
-					exit(v->f(fd));
-				}
-			default:
-				if( v->main ) {
-					v->f(fd);
-				}
-				wait(&status);
-			}
-			if( WIFEXITED(status) && WEXITSTATUS(status) != 0 ) {
-				char iobuf[BUFSIZ], *s = iobuf;
-				rv = WEXITSTATUS(status);
-				fprintf(stderr, "test %s FAILED\n", v->name);
-				ssize_t r = read(fd, iobuf, sizeof iobuf - 1);
-				if( r > 0 ) {
-					iobuf[r] = '\0';
-					for( ; *s; s++ ) {
-						if( isprint(*s) || *s == '\n' ) {
-							fputc(*s, stderr);
-						}
-					}
-				}
-			} else if( WIFSIGNALED(status) ) {
-				rv = EXIT_FAILURE;
-				fprintf(stderr, "test %s caught signal %d\n",
-					v->name, WTERMSIG(status));
-			}
+			execute_test(v);
 		} else {
 			fprintf(stderr, "unknown function: %s\n", name);
 			rv = EXIT_FAILURE;
 		}
 	}
 	return rv;
+}
+
+static void
+execute_test(struct st *v)
+{
+	char *const args[] = { "smtx-test", NULL };
+	int fd;
+	int status;
+
+	switch( forkpty(&fd, NULL, NULL, NULL) ) {
+	case -1:
+		err(1, "forkpty");
+		break;
+	case 0:
+		rv = 0;
+		if( v->main ) {
+			exit(smtx_main(1, args));
+		} else {
+			exit(v->f(fd));
+		}
+	default:
+		if( v->main ) {
+			v->f(fd);
+		}
+		wait(&status);
+	}
+	if( WIFEXITED(status) && WEXITSTATUS(status) != 0 ) {
+		char iobuf[BUFSIZ], *s = iobuf;
+		rv = WEXITSTATUS(status);
+		fprintf(stderr, "test %s FAILED\n", v->name);
+		ssize_t r = read(fd, iobuf, sizeof iobuf - 1);
+		if( r > 0 ) {
+			iobuf[r] = '\0';
+			for( ; *s; s++ ) {
+				if( isprint(*s) || *s == '\n' ) {
+					fputc(*s, stderr);
+				}
+			}
+		}
+	} else if( WIFSIGNALED(status) ) {
+		rv = EXIT_FAILURE;
+		fprintf(stderr, "test %s caught signal %d\n",
+			v->name, WTERMSIG(status));
+	}
 }
