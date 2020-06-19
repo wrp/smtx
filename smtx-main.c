@@ -228,6 +228,22 @@ draw_window(struct canvas *n)
 }
 
 unsigned
+describe_row(char *desc, size_t siz, WINDOW *w, int row)
+{
+	int oy, ox;
+	unsigned x, mx = winsiz(w, 1);
+	mx = mx < siz ? mx : siz - 1;
+	getyx(w, oy, ox);
+	for( x = 0; x < mx; x++ ) {
+		chtype c = mvwinch(w, row, x);
+		*desc++ = c & A_CHARTEXT;
+	}
+	desc[x] = '\0';
+	wmove(w, oy, ox);
+	return x;
+}
+
+unsigned
 describe_layout(char *desc, size_t siz, const struct canvas *c)
 {
 	int y = 0, x = 0;

@@ -19,6 +19,24 @@ send_cmd(int fd, const char *fmt, ...)
 }
 
 static void
+vexpect_row(int row, WINDOW *w, const char *fmt, va_list ap)
+{
+	char actual[1024];
+	char expect[1024];
+	const char *a = actual, *b = expect;
+	describe_row(actual, sizeof actual, w, row);
+	vsnprintf(expect, sizeof expect, fmt, ap);
+	while( *a && *a++ == *b ) {
+		b += 1;
+	}
+	if( *b ) {
+		warnx("\nrow %d Expected \"%s\", but got \"%s\"\n",
+			row, expect, actual);
+		rv = EXIT_FAILURE;
+	}
+}
+
+static void
 vexpect_layout(const struct canvas *c, const char *fmt, va_list ap)
 {
 	char actual[1024];
@@ -40,6 +58,15 @@ vexpect_layout(const struct canvas *c, const char *fmt, va_list ap)
 		forever.  Tests never get fixed.) */
 		rv = 77;
 	}
+}
+
+static void
+expect_row(int row, WINDOW *w, const char *expect, ...)
+{
+	va_list ap;
+	va_start(ap, expect);
+	vexpect_row(row, w, expect, ap);
+	va_end(ap);
 }
 
 static void
@@ -120,6 +147,7 @@ test_cursor(int fd)
 	/* (1) */
 	check_cmd(&T, "", "*23x80@0,0(6,?)", ++y);
 	check_cmd(&T, "printf '0123456'; tput cub 4", "*23x80@0,0(%d,9)", ++y);
+	expect_row(y, T.c->p->s->win, "012%-77s", T.ps1);
 	check_cmd(&T, "tput sc", "*23x80@0,0(%d,6)", ++y);
 	check_cmd(&T, "tput rc", "*23x80@0,0(%d,6)", y);
 	/* Hmmm. It seems weird that we start at y == 0 but after
@@ -129,6 +157,11 @@ test_cursor(int fd)
 	check_cmd(&T, "tput ht", "*23x80@0,0(%d,14)", ++y);
 	check_cmd(&T, "printf '\\t\\t'; tput cbt", "*23x80@0,0(%d,14)", ++y);
 	check_cmd(&T, "tput cud 6", "*23x80@0,0(%d,6)", y += 1 + 6);
+
+	check_cmd(&T, "printf foobar; tput cub 3; tput dch 1; echo",
+		"*23x80@0,0(%d,6)", y += 2);
+	expect_row(y - 1, T.c->p->s->win, "fooar%75s", " ");
+	expect_row(y, T.c->p->s->win, "%-80s", T.ps1);
 
 	return rv;
 }

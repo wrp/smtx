@@ -117,7 +117,6 @@ extern int cmd_count;
 extern fd_set fds;
 extern const char *term;
 extern struct canvas *focused;
-extern unsigned describe_layout(char *, size_t, const struct canvas *);
 
 extern struct canvas * init(int, int);
 extern void setupevents(struct proc *);
@@ -136,3 +135,7 @@ extern action reshape_root;
 extern action redrawroot;
 extern action resize;
 extern action swap;
+
+/* debug functions */
+extern unsigned describe_layout(char *, size_t, const struct canvas *);
+extern unsigned describe_row(char *desc, size_t siz, WINDOW *w, int row);
