@@ -105,7 +105,7 @@ static int
 test_cursor(int fd)
 {
 	struct test_canvas T;
-	int x = 0;
+	int y = 0;
 	T.c = init(24, 80);
 	T.fp = fdopen(fd = T.c->p->pt, "r");
 	T.ps1 = "uniq> ";
@@ -115,20 +115,20 @@ test_cursor(int fd)
 		err(1, "Unable to fdopen master pty\n");
 	}
 	expect_layout(T.c, "*23x80@0,0(0,0)");
-	send_cmd(fd, "PS1='%s'; tput cud %d", T.ps1, x = 5);
+	send_cmd(fd, "PS1='%s'; tput cud %d", T.ps1, y = 5);
 	read_until(T.fp, T.ps1, T.vp); /* discard first line */
 	/* (1) */
-	check_cmd(&T, "", "*23x80@0,0(6,?)", ++x);
-	check_cmd(&T, "printf '0123456'; tput cub 4", "*23x80@0,0(%d,9)", ++x);
-	check_cmd(&T, "tput sc", "*23x80@0,0(8,6)");
-	check_cmd(&T, "tput rc", "*23x80@0,0(8,6)");
+	check_cmd(&T, "", "*23x80@0,0(6,?)", ++y);
+	check_cmd(&T, "printf '0123456'; tput cub 4", "*23x80@0,0(%d,9)", ++y);
+	check_cmd(&T, "tput sc", "*23x80@0,0(%d,6)", ++y);
+	check_cmd(&T, "tput rc", "*23x80@0,0(%d,6)", y);
 	/* Hmmm. It seems weird that we start at y == 0 but after
 	tput cup 15 we jump down to y = scroll_back_buffer - size + 15 */
-	check_cmd(&T, "tput cup 15 50;", "*23x80@0,0(1016,56)");
-	check_cmd(&T, "tput clear", "*23x80@0,0(1001,6)");
-	check_cmd(&T, "tput ht", "*23x80@0,0(1002,14)");
-	check_cmd(&T, "printf '\\t\\t\\t'; tput cbt", "*23x80@0,0(1003,22)");
-	check_cmd(&T, "tput cud 6", "*23x80@0,0(1010,6)");
+	check_cmd(&T, "tput cup 15 50;", "*23x80@0,0(%d,56)", y = 1016);
+	check_cmd(&T, "tput clear", "*23x80@0,0(%d,6)", y = 1016 - 15);
+	check_cmd(&T, "tput ht", "*23x80@0,0(%d,14)", ++y);
+	check_cmd(&T, "printf '\\t\\t'; tput cbt", "*23x80@0,0(%d,14)", ++y);
+	check_cmd(&T, "tput cud 6", "*23x80@0,0(%d,6)", y += 1 + 6);
 
 	return rv;
 }
