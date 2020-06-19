@@ -163,6 +163,10 @@ test_cursor(int fd)
 	expect_row(y - 1, T.c->p->s->win, "fooar%75s", " ");
 	expect_row(y, T.c->p->s->win, "%-80s", T.ps1);
 
+	check_cmd(&T, "printf 012; tput cub 2; tput ich 2; echo",
+		"*23x80@0,0(%d,6)", y += 2);
+	expect_row(y - 1, T.c->p->s->win, "0  12%75s", " ");
+
 	return rv;
 }
 /* (1) I expect the x coordinate of this test to be 6 (the length
