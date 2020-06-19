@@ -14,7 +14,7 @@
 
 
 enum cmd {
-	nul, ack, bell, cbt, cls, cnl, cpl, cr, csr, cub, cud, cuf, cup,
+	ack = 1, bell, cbt, cls, cnl, cpl, cr, csr, cub, cud, cuf, cup,
 	cuu, dch, decaln, decid, decreqtparm, dsr, ech, ed, el, hpa, hpr, ht,
 	hts, ich, idl, ind, mode, nel, numkp, pnl, print, rc, rep,
 	ri, ris, sc, scs, sgr, sgr0, so, su, tab, tbc, vis, vpa, vpr
@@ -43,8 +43,6 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 	bot += 1 - s->tos;
 	top = top <= tos? 0 : top - tos;
 	switch(c) {
-	case nul:
-		break;
 	case bell: /* Terminal bell. */
 		beep();
 		break;
