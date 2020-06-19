@@ -29,7 +29,7 @@ vexpect_row(int row, WINDOW *w, const char *fmt, va_list ap)
 	while( *a && *a++ == *b ) {
 		b += 1;
 	}
-	if( *b ) {
+	if( *a || *b ) {
 		warnx("\nrow %d Expected \"%s\", but got \"%s\"\n",
 			row, expect, actual);
 		rv = EXIT_FAILURE;
