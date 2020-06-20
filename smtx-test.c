@@ -119,9 +119,13 @@ struct test_canvas *
 new_test_canvas(int rows, int cols, const char *ps1)
 {
 	struct test_canvas *T = malloc(sizeof *T);
-	T->c = init(rows, cols);
+	if( T == NULL
+		|| (T->c = init(rows, cols)) == NULL
+		|| (T->fp = fdopen(T->c->p->pt, "r")) == NULL
+	) {
+		err(1, "Unable to create test canvas\n");
+	}
 	T->ps1 = ps1 ? ps1 : "uniq> ";
-	T->fp = fdopen(T->c->p->pt, "r");
 	T->vp = &T->c->p->vp;
 	return T;
 }
@@ -149,9 +153,6 @@ test_cursor(int fd)
 	memcpy(&T, t, sizeof T);
 	fd = t->c->p->pt;
 
-	if( T.fp == NULL ) {
-		err(1, "Unable to fdopen master pty\n");
-	}
 	expect_layout(T.c, "*23x80@0,0(0,0)");
 	send_cmd(fd, "PS1='%s'; tput cud %d", T.ps1, y = 5);
 	read_until(T.fp, T.ps1, T.vp); /* discard first line */
