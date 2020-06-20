@@ -164,6 +164,18 @@ test_insert(int fd)
 }
 
 static int
+test_vpa(int fd)
+{
+	int y = 0;
+	(void) fd;
+	struct test_canvas *T = new_test_canvas(24, 80, NULL);
+	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
+	check_cmd(T, "tput vpa 7; tput hpa 18", "*23x80@0,0(%d,%d)",
+		scrollback_history - 23 + 7, 18 + strlen(T->ps1));
+	return rv;
+}
+
+static int
 test_cursor(int fd)
 {
 	int y = 0;
@@ -241,6 +253,7 @@ main(int argc, char *const argv[])
 	struct st tab[] = {
 		F(test1, 1),
 		F(test_cursor, 0),
+		F(test_vpa, 0),
 		F(test_description, 0),
 		F(test_insert, 0),
 		{ NULL, NULL, 0 }
