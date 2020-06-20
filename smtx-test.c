@@ -127,6 +127,10 @@ new_test_canvas(int rows, int cols, const char *ps1)
 	}
 	T->ps1 = ps1 ? ps1 : "uniq> ";
 	T->vp = &T->c->p->vp;
+	int fd = T->c->p->pt;
+	expect_layout(T->c, "*%dx%d@0,0(0,0)", rows - 1, cols);
+	send_cmd(fd, "PS1='%s'", T->ps1);
+	read_until(T->fp, T->ps1, T->vp); /* discard up to assignment */
 	return T;
 }
 
@@ -147,8 +151,6 @@ static int
 test_insert(int fd)
 {
 	(void) fd;
-	struct test_canvas *T = new_test_canvas(24, 80, NULL);
-	expect_layout(T->c, "*23x80@0,0(0,0)");
 	return 0;
 }
 
@@ -158,13 +160,10 @@ test_cursor(int fd)
 	int y = 0;
 	/* many below tests expect ps1 length 6 */
 	struct test_canvas *T = new_test_canvas(24, 80, "uniq> ");
-	fd = T->c->p->pt;
+	(void)fd;
 
-	expect_layout(T->c, "*23x80@0,0(0,0)");
-	send_cmd(fd, "PS1='%s'; tput cud %d", T->ps1, y = 5);
-	read_until(T->fp, T->ps1, T->vp); /* discard first line */
 	/* (1) */
-	check_cmd(T, "", "*23x80@0,0(6,?)", ++y);
+	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
 	check_cmd(T, "printf '0123456'; tput cub 4", "*23x80@0,0(%d,9)", ++y);
 	expect_row(y, T->c->p->s->win, "012%-77s", T->ps1);
 	check_cmd(T, "tput sc", "*23x80@0,0(%d,6)", ++y);
