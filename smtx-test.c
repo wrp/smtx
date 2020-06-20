@@ -157,43 +157,41 @@ test_cursor(int fd)
 {
 	int y = 0;
 	/* many below tests expect ps1 length 6 */
-	struct test_canvas *t = new_test_canvas(24, 80, "uniq> ");
-	struct test_canvas T;
-	memcpy(&T, t, sizeof T);
-	fd = t->c->p->pt;
+	struct test_canvas *T = new_test_canvas(24, 80, "uniq> ");
+	fd = T->c->p->pt;
 
-	expect_layout(T.c, "*23x80@0,0(0,0)");
-	send_cmd(fd, "PS1='%s'; tput cud %d", T.ps1, y = 5);
-	read_until(T.fp, T.ps1, T.vp); /* discard first line */
+	expect_layout(T->c, "*23x80@0,0(0,0)");
+	send_cmd(fd, "PS1='%s'; tput cud %d", T->ps1, y = 5);
+	read_until(T->fp, T->ps1, T->vp); /* discard first line */
 	/* (1) */
-	check_cmd(&T, "", "*23x80@0,0(6,?)", ++y);
-	check_cmd(&T, "printf '0123456'; tput cub 4", "*23x80@0,0(%d,9)", ++y);
-	expect_row(y, T.c->p->s->win, "012%-77s", T.ps1);
-	check_cmd(&T, "tput sc", "*23x80@0,0(%d,6)", ++y);
-	check_cmd(&T, "tput rc", "*23x80@0,0(%d,6)", y);
+	check_cmd(T, "", "*23x80@0,0(6,?)", ++y);
+	check_cmd(T, "printf '0123456'; tput cub 4", "*23x80@0,0(%d,9)", ++y);
+	expect_row(y, T->c->p->s->win, "012%-77s", T->ps1);
+	check_cmd(T, "tput sc", "*23x80@0,0(%d,6)", ++y);
+	check_cmd(T, "tput rc", "*23x80@0,0(%d,6)", y);
 	/* Hmmm. It seems weird that we start at y == 0 but after
 	tput cup 15 we jump down to y = scroll_back_buffer - size + 15 */
 	y = scrollback_history - 24 + 15;
-	check_cmd(&T, "tput cup 15 50;", "*23x80@0,0(%d,56)", ++y);
-	check_cmd(&T, "tput clear", "*23x80@0,0(%d,6)", y -= 15);
-	check_cmd(&T, "tput ht", "*23x80@0,0(%d,14)", ++y);
-	check_cmd(&T, "printf '\\t\\t'; tput cbt", "*23x80@0,0(%d,14)", ++y);
-	check_cmd(&T, "tput cud 6", "*23x80@0,0(%d,6)", y += 1 + 6);
+	check_cmd(T, "tput cup 15 50;", "*23x80@0,0(%d,56)", ++y);
+	check_cmd(T, "tput clear", "*23x80@0,0(%d,6)", y -= 15);
+	check_cmd(T, "tput ht", "*23x80@0,0(%d,14)", ++y);
+	check_cmd(T, "printf '\\t\\t'; tput cbt", "*23x80@0,0(%d,14)", ++y);
+	check_cmd(T, "tput cud 6", "*23x80@0,0(%d,6)", y += 1 + 6);
 
-	check_cmd(&T, "printf foobar; tput cub 3; tput dch 1; echo",
+	check_cmd(T, "printf foobar; tput cub 3; tput dch 1; echo",
 		"*23x80@0,0(%d,6)", y += 2);
-	expect_row(y - 1, T.c->p->s->win, "fooar%75s", " ");
-	expect_row(y, T.c->p->s->win, "%-80s", T.ps1);
+	expect_row(y - 1, T->c->p->s->win, "fooar%75s", " ");
+	expect_row(y, T->c->p->s->win, "%-80s", T->ps1);
 
-	check_cmd(&T, "printf 012; tput cub 2; tput ich 2; echo",
+	check_cmd(T, "printf 012; tput cub 2; tput ich 2; echo",
 		"*23x80@0,0(%d,6)", y += 2);
-	expect_row(y - 1, T.c->p->s->win, "0  12%75s", " ");
+	expect_row(y - 1, T->c->p->s->win, "0  12%75s", " ");
 
-	check_cmd(&T, "tput cud 6", "*23x80@0,0(%d,6)", y += 1 + 6);
-	check_cmd(&T, ":", "*23x80@0,0(%d,6)", ++y);
-	check_cmd(&T, ":", "*23x80@0,0(%d,6)", ++y);
+	check_cmd(T, "tput cud 6", "*23x80@0,0(%d,6)", y += 1 + 6);
+	check_cmd(T, ":", "*23x80@0,0(%d,6)", ++y);
+	check_cmd(T, ":", "*23x80@0,0(%d,6)", ++y);
 	assert( y == 1023 );
-	check_cmd(&T, ":", "*23x80@0,0(%d,6)", y);
+	check_cmd(T, ":", "*23x80@0,0(%d,6)", y);
 
 	return rv;
 }
