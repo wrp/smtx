@@ -135,7 +135,7 @@ test_cursor(int fd)
 	int y = 0;
 	T.c = init(24, 80);
 	T.fp = fdopen(fd = T.c->p->pt, "r");
-	T.ps1 = "uniq> ";
+	T.ps1 = "uniq> "; /* many below tests expect length 6 */
 	T.vp = &T.c->p->vp;
 
 	if( T.fp == NULL ) {
@@ -166,6 +166,12 @@ test_cursor(int fd)
 	check_cmd(&T, "printf 012; tput cub 2; tput ich 2; echo",
 		"*23x80@0,0(%d,6)", y += 2);
 	expect_row(y - 1, T.c->p->s->win, "0  12%75s", " ");
+
+	check_cmd(&T, "tput cud 6", "*23x80@0,0(%d,6)", y += 1 + 6);
+	check_cmd(&T, ":", "*23x80@0,0(%d,6)", ++y);
+	check_cmd(&T, ":", "*23x80@0,0(%d,6)", ++y);
+	assert( y == 1023 );
+	check_cmd(&T, ":", "*23x80@0,0(%d,6)", y);
 
 	return rv;
 }
