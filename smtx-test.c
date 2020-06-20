@@ -112,6 +112,7 @@ struct test_canvas {
 	struct canvas *c;
 	const char *ps1;
 	FILE *fp;
+	WINDOW *w;
 	VTPARSER *vp;
 };
 
@@ -127,6 +128,7 @@ new_test_canvas(int rows, int cols, const char *ps1)
 	}
 	T->ps1 = ps1 ? ps1 : "uniq> ";
 	T->vp = &T->c->p->vp;
+	T->w = T->c->p->s->win;
 	int fd = T->c->p->pt;
 	expect_layout(T->c, "*%dx%d@0,0(0,0)", rows - 1, cols);
 	send_cmd(fd, "PS1='%s'", T->ps1);
@@ -156,8 +158,8 @@ test_insert(int fd)
 	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
 	check_cmd(T, "printf 0123456; tput cub 3; tput smir; "
 		"echo foo; tput rmir", "*23x80@0,0(%d,6)", y += 2);
-	expect_row(y - 1, T->c->p->s->win, "0123foo456%-70s", "");
-	expect_row(y, T->c->p->s->win, "%-80s", T->ps1);
+	expect_row(y - 1, T->w, "0123foo456%-70s", "");
+	expect_row(y, T->w, "%-80s", T->ps1);
 	return rv;
 }
 
@@ -172,7 +174,7 @@ test_cursor(int fd)
 	/* (1) */
 	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
 	check_cmd(T, "printf '0123456'; tput cub 4", "*23x80@0,0(%d,9)", ++y);
-	expect_row(y, T->c->p->s->win, "012%-77s", T->ps1);
+	expect_row(y, T->w, "012%-77s", T->ps1);
 	check_cmd(T, "tput sc", "*23x80@0,0(%d,6)", ++y);
 	check_cmd(T, "tput rc", "*23x80@0,0(%d,6)", y);
 	/* Hmmm. It seems weird that we start at y == 0 but after
@@ -186,12 +188,12 @@ test_cursor(int fd)
 
 	check_cmd(T, "printf foobar; tput cub 3; tput dch 1; echo",
 		"*23x80@0,0(%d,6)", y += 2);
-	expect_row(y - 1, T->c->p->s->win, "fooar%75s", " ");
-	expect_row(y, T->c->p->s->win, "%-80s", T->ps1);
+	expect_row(y - 1, T->w, "fooar%75s", " ");
+	expect_row(y, T->w, "%-80s", T->ps1);
 
 	check_cmd(T, "printf 012; tput cub 2; tput ich 2; echo",
 		"*23x80@0,0(%d,6)", y += 2);
-	expect_row(y - 1, T->c->p->s->win, "0  12%75s", " ");
+	expect_row(y - 1, T->w, "0  12%75s", " ");
 
 	check_cmd(T, "tput cud 6", "*23x80@0,0(%d,6)", y += 1 + 6);
 	check_cmd(T, ":", "*23x80@0,0(%d,6)", ++y);
