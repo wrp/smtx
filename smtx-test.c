@@ -189,6 +189,18 @@ check_cmd(struct test_canvas *T, const char *cmd, const char *expect, ...)
 }
 
 static int
+test_vis(int fd)
+{
+	int y = 0;
+	(void) fd;
+	struct test_canvas *T = new_test_canvas(24, 80, NULL);
+	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
+	check_cmd(T, "tput civis", "*23x80@0,0", ++y);
+	check_cmd(T, "tput cvvis", "*23x80@0,0(%d,%d)", ++y, strlen(T->ps1));
+	return rv;
+}
+
+static int
 test_insert(int fd)
 {
 	int y = 0;
@@ -313,6 +325,7 @@ main(int argc, char *const argv[])
 		F(test_el, 0),
 		F(test_description, 0),
 		F(test_insert, 0),
+		F(test_vis, 0),
 		{ NULL, NULL, 0 }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
