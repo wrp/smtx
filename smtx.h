@@ -135,7 +135,3 @@ extern action reshape_root;
 extern action redrawroot;
 extern action resize;
 extern action swap;
-
-/* debug functions */
-extern unsigned describe_layout(char *, size_t, const struct canvas *);
-extern unsigned describe_row(char *desc, size_t siz, WINDOW *w, int row);
