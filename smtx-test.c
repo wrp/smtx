@@ -150,8 +150,15 @@ check_cmd(struct test_canvas *T, const char *cmd, const char *expect, ...)
 static int
 test_insert(int fd)
 {
+	int y = 0;
 	(void) fd;
-	return 0;
+	struct test_canvas *T = new_test_canvas(24, 80, NULL);
+	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
+	check_cmd(T, "printf 0123456; tput cub 3; tput smir; "
+		"echo foo; tput rmir", "*23x80@0,0(%d,6)", y += 2);
+	expect_row(y - 1, T->c->p->s->win, "0123foo456%-70s", "");
+	expect_row(y, T->c->p->s->win, "%-80s", T->ps1);
+	return rv;
 }
 
 static int
