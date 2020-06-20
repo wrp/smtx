@@ -152,8 +152,9 @@ test_cursor(int fd)
 	check_cmd(&T, "tput rc", "*23x80@0,0(%d,6)", y);
 	/* Hmmm. It seems weird that we start at y == 0 but after
 	tput cup 15 we jump down to y = scroll_back_buffer - size + 15 */
-	check_cmd(&T, "tput cup 15 50;", "*23x80@0,0(%d,56)", y = 1016);
-	check_cmd(&T, "tput clear", "*23x80@0,0(%d,6)", y = 1016 - 15);
+	y = scrollback_history - 24 + 15;
+	check_cmd(&T, "tput cup 15 50;", "*23x80@0,0(%d,56)", ++y);
+	check_cmd(&T, "tput clear", "*23x80@0,0(%d,6)", y -= 15);
 	check_cmd(&T, "tput ht", "*23x80@0,0(%d,14)", ++y);
 	check_cmd(&T, "printf '\\t\\t'; tput cbt", "*23x80@0,0(%d,14)", ++y);
 	check_cmd(&T, "tput cud 6", "*23x80@0,0(%d,6)", y += 1 + 6);
