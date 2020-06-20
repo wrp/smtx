@@ -24,14 +24,15 @@ describe_row(char *desc, size_t siz, WINDOW *w, int row)
 static unsigned
 describe_layout(char *desc, size_t siz, const struct canvas *c)
 {
-	int y = 0, x = 0;
-	if( c->p->s ) {
-		getyx(c->p->s->win, y, x);
-	}
-	unsigned len = snprintf(desc, siz, "%s%dx%d@%d,%d(%d,%d)",
+	unsigned len = snprintf(desc, siz, "%s%dx%d@%d,%d",
 		c == focused ? "*" : "",
-		c->extent.y, c->extent.x, c->origin.y, c->origin.x, y, x
+		c->extent.y, c->extent.x, c->origin.y, c->origin.x
 	);
+	if( c->p->s && c->p->s->vis ) {
+		int y = 0, x = 0;
+		getyx(c->p->s->win, y, x);
+		len += snprintf(desc + len, siz - len, "(%d,%d)", y, x);
+	}
 	for( int i = 0; i < 2; i ++ ) {
 		if( len + 1 < siz && c->c[i] ) {
 			desc[len++] = ';';
