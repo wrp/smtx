@@ -144,6 +144,15 @@ check_cmd(struct test_canvas *T, const char *cmd, const char *expect, ...)
 }
 
 static int
+test_insert(int fd)
+{
+	(void) fd;
+	struct test_canvas *T = new_test_canvas(24, 80, NULL);
+	expect_layout(T->c, "*23x80@0,0(0,0)");
+	return 0;
+}
+
+static int
 test_cursor(int fd)
 {
 	int y = 0;
@@ -227,6 +236,7 @@ main(int argc, char *const argv[])
 		F(test1, 1),
 		F(test_cursor, 0),
 		F(test_description, 0),
+		F(test_insert, 0),
 		{ NULL, NULL, 0 }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
