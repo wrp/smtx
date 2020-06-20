@@ -40,7 +40,10 @@
        width of window, and maybe </> to adjust width of tty.  Or </>
        should scroll the window.  But +/- should also change number
        of rows in a type 0 canvas.  Need to think about this, but defintely
-       want ability to change tty width.
+       want ability to change tty width.  Probably use one binding in which
+       hjkl navigate windows, one in which hjkl grows windows, and one in
+       which hjkl changes scroll in pty.  Also use <tab> to scroll right
+       one tabstop in the pty.
      Needs to be easier to navigate in full screen mode.   Perhaps
        title bar would show title of windows above, below, to the
        left, and right.  Then hjkl navigation would stay in full
