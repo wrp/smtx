@@ -182,10 +182,12 @@ check_cmd(struct test_canvas *T, const char *cmd, const char *expect, ...)
 		send_cmd(fileno(T->fp), "%s", cmd);
 	}
 	read_until(T->fp, T->ps1, T->vp);
-	va_list ap;
-	va_start(ap, expect);
-	vexpect_layout(T->c, expect, ap);
-	va_end(ap);
+	if( expect != NULL ) {
+		va_list ap;
+		va_start(ap, expect);
+		vexpect_layout(T->c, expect, ap);
+		va_end(ap);
+	}
 }
 
 static int
@@ -197,6 +199,17 @@ test_vis(int fd)
 	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
 	check_cmd(T, "tput civis", "*23x80@0,0", ++y);
 	check_cmd(T, "tput cvvis", "*23x80@0,0(%d,%d)", ++y, strlen(T->ps1));
+	return rv;
+}
+
+static int
+test_ech(int fd)
+{
+	(void) fd;
+	struct test_canvas *T = new_test_canvas(24, 80, NULL);
+	check_cmd(T, "", NULL);
+	check_cmd(T, "printf 012345; tput cub 3; tput ech 1; echo", NULL);
+	expect_row(2, T->w, "012 45%-74s", "");
 	return rv;
 }
 
@@ -326,6 +339,7 @@ main(int argc, char *const argv[])
 		F(test_description, 0),
 		F(test_insert, 0),
 		F(test_vis, 0),
+		F(test_ech, 0),
 		{ NULL, NULL, 0 }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
