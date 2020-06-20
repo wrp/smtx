@@ -115,6 +115,17 @@ struct test_canvas {
 	VTPARSER *vp;
 };
 
+struct test_canvas *
+new_test_canvas(int rows, int cols, const char *ps1)
+{
+	struct test_canvas *T = malloc(sizeof *T);
+	T->c = init(rows, cols);
+	T->ps1 = ps1 ? ps1 : "uniq> ";
+	T->fp = fdopen(T->c->p->pt, "r");
+	T->vp = &T->c->p->vp;
+	return T;
+}
+
 static void
 check_cmd(struct test_canvas *T, const char *cmd, const char *expect, ...)
 {
@@ -131,12 +142,12 @@ check_cmd(struct test_canvas *T, const char *cmd, const char *expect, ...)
 static int
 test_cursor(int fd)
 {
-	struct test_canvas T;
 	int y = 0;
-	T.c = init(24, 80);
-	T.fp = fdopen(fd = T.c->p->pt, "r");
-	T.ps1 = "uniq> "; /* many below tests expect length 6 */
-	T.vp = &T.c->p->vp;
+	/* many below tests expect ps1 length 6 */
+	struct test_canvas *t = new_test_canvas(24, 80, "uniq> ");
+	struct test_canvas T;
+	memcpy(&T, t, sizeof T);
+	fd = t->c->p->pt;
 
 	if( T.fp == NULL ) {
 		err(1, "Unable to fdopen master pty\n");
