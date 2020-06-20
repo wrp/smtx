@@ -164,6 +164,23 @@ test_insert(int fd)
 }
 
 static int
+test_el(int fd)
+{
+	int y = 0;
+	(void) fd;
+	struct test_canvas *T = new_test_canvas(24, 80, NULL);
+	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
+	check_cmd(T, "printf 01234; tput cub 3; tput el", "*23x80@0,0(%d,%d)",
+		++y, 2 + strlen(T->ps1));
+	expect_row(y, T->w, "01%-78s", T->ps1);
+
+	check_cmd(T, "printf 01234; tput cub 3; tput el1; echo",
+		"*23x80@0,0(%d,%d)", y += 2, strlen(T->ps1));
+	expect_row(y - 1, T->w, "   34%75s", "");
+	return rv;
+}
+
+static int
 test_vpa(int fd)
 {
 	int y = 0;
@@ -254,6 +271,7 @@ main(int argc, char *const argv[])
 		F(test1, 1),
 		F(test_cursor, 0),
 		F(test_vpa, 0),
+		F(test_el, 0),
 		F(test_description, 0),
 		F(test_insert, 0),
 		{ NULL, NULL, 0 }
