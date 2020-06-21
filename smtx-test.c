@@ -172,6 +172,9 @@ new_test_canvas(int rows, int cols, const char *ps1)
 	expect_layout(T->c, "*%dx%d@0,0(0,0)", rows - 1, cols);
 	send_cmd(fd, "PS1='%s'", T->ps1);
 	read_until(T->fp, T->ps1, T->vp); /* discard up to assignment */
+	draw(T->c);
+	focus(T->c, 1);
+	fixcursor();
 	return T;
 }
 
@@ -198,13 +201,13 @@ test_ich(int fd)
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
 	check_cmd(T, "", NULL);
 	check_cmd(T, cmd, NULL);
-	expect_row(2, T, "abcd     efg%-68s", "");
-	expect_row(3, T, "%-80s", T->ps1);
+	expect_row(1003, T, "abcd     efg%-68s", "");
+	expect_row(1004, T, "%-80s", T->ps1);
 	cmd = "yes | nl | sed 6q; tput cuu 3; tput il 3; tput cud 6";
-	check_cmd(T, cmd, "*23x80@0,0(1007,6)");
-	expect_row(3, T, "%s%-74s", T->ps1, cmd);
+	check_cmd(T, cmd, "*23x80@0,0(1014,6)");
+	expect_row(1004, T, "%s%-74s", T->ps1, cmd);
 	for( int i=1; i < 4; i++ ) {
-		expect_row(3 + i, T, "     %d  y%71s", i, "");
+		expect_row(3 + 1001 + i, T, "     %d  y%71s", i, "");
 	}
 	/*
 	These should work.  Something about the test harness is
@@ -225,7 +228,7 @@ test_ich(int fd)
 static int
 test_vis(int fd)
 {
-	int y = 0;
+	int y = 1001;
 	(void) fd;
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
 	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
@@ -241,14 +244,14 @@ test_ech(int fd)
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
 	check_cmd(T, "", NULL);
 	check_cmd(T, "printf 012345; tput cub 3; tput ech 1; echo", NULL);
-	expect_row(2, T, "012 45%-74s", "");
+	expect_row(1003, T, "012 45%-74s", "");
 	return rv;
 }
 
 static int
 test_insert(int fd)
 {
-	int y = 0;
+	int y = 1001;
 	(void) fd;
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
 	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
@@ -262,7 +265,7 @@ test_insert(int fd)
 static int
 test_el(int fd)
 {
-	int y = 0;
+	int y = 1001;
 	(void) fd;
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
 	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
@@ -279,7 +282,7 @@ test_el(int fd)
 static int
 test_vpa(int fd)
 {
-	int y = 0;
+	int y = 1001;
 	(void) fd;
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
 	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
@@ -291,7 +294,7 @@ test_vpa(int fd)
 static int
 test_cursor(int fd)
 {
-	int y = 0;
+	int y = 1001;
 	/* many below tests expect ps1 length 6 */
 	struct test_canvas *T = new_test_canvas(24, 80, "uniq> ");
 	(void)fd;
@@ -302,8 +305,6 @@ test_cursor(int fd)
 	expect_row(y, T, "012%-77s", T->ps1);
 	check_cmd(T, "tput sc", "*23x80@0,0(%d,6)", ++y);
 	check_cmd(T, "tput rc", "*23x80@0,0(%d,6)", y);
-	/* Hmmm. It seems weird that we start at y == 0 but after
-	tput cup 15 we jump down to y = scroll_back_buffer - size + 15 */
 	y = scrollback_history - 24 + 15;
 	check_cmd(T, "tput cup 15 50;", "*23x80@0,0(%d,56)", ++y);
 	check_cmd(T, "tput clear", "*23x80@0,0(%d,6)", y -= 15);

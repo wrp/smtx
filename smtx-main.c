@@ -233,7 +233,7 @@ draw_window(struct canvas *n)
 	}
 }
 
-static void
+void
 fixcursor(void) /* Move the terminal cursor to the active window. */
 {
 	struct canvas *f = focused;

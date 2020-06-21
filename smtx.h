@@ -118,6 +118,8 @@ extern int cmd_count;
 extern fd_set fds;
 extern const char *term;
 extern struct canvas *focused;
+extern void focus(struct canvas *, int);
+extern void fixcursor(void);
 
 extern struct canvas * init(int, int);
 extern void setupevents(struct proc *);
