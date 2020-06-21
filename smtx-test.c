@@ -193,13 +193,32 @@ check_cmd(struct test_canvas *T, const char *cmd, const char *expect, ...)
 static int
 test_ich(int fd)
 {
-	int y = 0;
 	(void) fd;
-	char *cmd = "printf abcdefg; tput cub 3; tput ich 5; echo";
+	const char *cmd = "printf abcdefg; tput cub 3; tput ich 5; echo";
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
-	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
+	check_cmd(T, "", NULL);
 	check_cmd(T, cmd, NULL);
 	expect_row(2, T->w, "abcd     efg%-68s", "");
+	expect_row(3, T->w, "%-80s", T->ps1);
+	cmd = "yes | nl | sed 6q; tput cuu 3; tput il 3; tput cud 6";
+	check_cmd(T, cmd, "*23x80@0,0(1007,6)");
+	expect_row(3, T->w, "%s%-74s", T->ps1, cmd);
+	for( int i=1; i < 4; i++ ) {
+		expect_row(3 + i, T->w, "     %d  y%71s", i, "");
+	}
+	/*
+	These should work.  Something about the test harness is
+	incorrect, and the window is not updating (I think).
+	Rather than tracking this down, we should be testing the
+	output of the master pty, though.
+
+	for( int i=4; i < 7; i++ ) {
+		expect_row(3 + i, T->w, "%80s", "");
+	}
+	for( int i=7; i < 10; i++ ) {
+		expect_row(3 + i, T->w, "     %d  y%71s", i, "");
+	}
+	*/
 	return rv;
 }
 
@@ -377,7 +396,7 @@ main(int argc, char *const argv[])
 static int
 execute_test(struct st *v)
 {
-	char *const args[] = { "smtx-test", NULL };
+	char *const args[] = { v->name, NULL };
 	int fd;
 	int status;
 
