@@ -76,6 +76,7 @@ int cmd_count = -1;
 int scrollback_history = 1024; /* Change at runtime with -s */
 
 static struct canvas * balance(struct canvas *n);
+static void reshape(struct canvas *n, int y, int x, int h, int w);
 
 static WINDOW *werr;
 char errmsg[80];
@@ -387,7 +388,7 @@ reshape_window(struct canvas *n, int h, int w)
 	}
 }
 
-void
+static void
 reshape(struct canvas *n, int y, int x, int h, int w)
 {
 	if( n ) {
@@ -450,7 +451,7 @@ draw_div(struct canvas *n, int rev)
 	}
 }
 
-static void
+void
 draw(struct canvas *n) /* Draw a canvas. */
 {
 	if( n != NULL ) {
