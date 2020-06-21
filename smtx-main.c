@@ -545,7 +545,7 @@ digit(struct canvas *n, const char *arg)
 	return 0;
 }
 
-static int
+int
 scrolln(struct canvas *n, const char *arg)
 {
 	/* TODO: enable srolling left/right */

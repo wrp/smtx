@@ -194,6 +194,27 @@ check_cmd(struct test_canvas *T, const char *cmd, const char *expect, ...)
 }
 
 static int
+test_scrollback(int fd)
+{
+	(void) fd;
+	const char *cmd = "yes | nl | sed 50q";
+	scrollback_history = 20;
+	struct test_canvas *T = new_test_canvas(10, 80, NULL);
+	check_cmd(T, "", NULL);
+	check_cmd(T, cmd, NULL);
+	expect_row(0, T, "%6d%-74s", 43, "  y");
+	expect_row(7, T, "%6d%-74s", 50, "  y");
+	expect_row(8, T, "%-80s", T->ps1, "  y");
+	cmd_count = 8;
+	scrolln(T->c, "-");
+	draw(T->c);
+	expect_row(0, T, "%6d%-74s", 35, "  y");
+	expect_row(7, T, "%6d%-74s", 42, "  y");
+	expect_row(8, T, "%6d%-74s", 43, "  y");
+	return rv;
+}
+
+static int
 test_ich(int fd)
 {
 	(void) fd;
@@ -375,6 +396,7 @@ main(int argc, char *const argv[])
 		F(test_vis, 0),
 		F(test_ech, 0),
 		F(test_ich, 0),
+		F(test_scrollback, 0),
 		{ NULL, NULL, 0 }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
