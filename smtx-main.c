@@ -941,7 +941,6 @@ main_loop(void)
 			handlechar(r, w);
 			fixcursor();
 		}
-		fixcursor();
 		getinput(root, &sfds);
 	}
 }
