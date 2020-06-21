@@ -23,6 +23,9 @@
        Write a screen dump function.  Capability to write text description
        of the layout.  This could be also be used for non-testing purposes
        if the description can be used to construct a new layout.
+     Make default minimum width (default 80) instead of tying it to the
+       current window width.  Once it is easy to scroll horizontally, this
+       will make more sense.
      Use current cursor position to set bottom of screen when splitting (?)
      Make it easy to swap bindings.  eg, so that hjkl could be used for
        scrolling in non-full screen mode.  Maybe have labelled bindings,
