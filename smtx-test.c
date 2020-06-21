@@ -21,23 +21,23 @@ describe_row(char *desc, size_t siz, WINDOW *w, int row)
 	return x;
 }
 
-static unsigned
-describe_layout(char *desc, size_t siz, const struct canvas *c)
+unsigned
+describe_layout(char *d, size_t siz, const struct canvas *c, int recurse)
 {
-	unsigned len = snprintf(desc, siz, "%s%dx%d@%d,%d",
+	unsigned len = snprintf(d, siz, "%s%dx%d@%d,%d",
 		c == focused ? "*" : "",
 		c->extent.y, c->extent.x, c->origin.y, c->origin.x
 	);
 	if( c->p->s && c->p->s->vis ) {
 		int y = 0, x = 0;
 		getyx(c->p->s->win, y, x);
-		len += snprintf(desc + len, siz - len, "(%d,%d)", y, x);
+		len += snprintf(d + len, siz - len, "(%d,%d)", y, x);
 	}
 	for( int i = 0; i < 2; i ++ ) {
-		if( len + 1 < siz && c->c[i] ) {
-			desc[len++] = ';';
-			desc[len++] = ' ';
-			len += describe_layout(desc + len, siz - len, c->c[i]);
+		if( recurse && len + 3 < siz && c->c[i] ) {
+			d[len++] = ';';
+			d[len++] = ' ';
+			len += describe_layout(d + len, siz - len, c->c[i], 1);
 		}
 	}
 	return len;
@@ -81,7 +81,7 @@ vexpect_layout(const struct canvas *c, const char *fmt, va_list ap)
 	char actual[1024];
 	char expect[1024];
 	const char *a = actual, *b = expect;
-	describe_layout(actual, sizeof actual, c);
+	describe_layout(actual, sizeof actual, c, 1);
 	vsnprintf(expect, sizeof expect, fmt, ap);
 	while( *a && ( *a == *b || *b == '?' ) ) {
 		a += 1;
