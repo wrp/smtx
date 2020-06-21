@@ -191,6 +191,19 @@ check_cmd(struct test_canvas *T, const char *cmd, const char *expect, ...)
 }
 
 static int
+test_ich(int fd)
+{
+	int y = 0;
+	(void) fd;
+	char *cmd = "printf abcdefg; tput cub 3; tput ich 5; echo";
+	struct test_canvas *T = new_test_canvas(24, 80, NULL);
+	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
+	check_cmd(T, cmd, NULL);
+	expect_row(2, T->w, "abcd     efg%-68s", "");
+	return rv;
+}
+
+static int
 test_vis(int fd)
 {
 	int y = 0;
@@ -341,6 +354,7 @@ main(int argc, char *const argv[])
 		F(test_insert, 0),
 		F(test_vis, 0),
 		F(test_ech, 0),
+		F(test_ich, 0),
 		{ NULL, NULL, 0 }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
