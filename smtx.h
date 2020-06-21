@@ -42,6 +42,7 @@
 
 struct state {
 	char commandkey;
+	int width;
 };
 
 struct screen {

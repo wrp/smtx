@@ -953,11 +953,16 @@ parse_args(int argc, char *const*argv)
 {
 	int c;
 	char *name = strrchr(argv[0], '/');
-	while( (c = getopt(argc, argv, ":hc:s:T:t:")) != -1 ) {
-		switch (c) {
+	while( (c = getopt(argc, argv, ":c:hs:T:t:w:")) != -1 ) {
+		switch( c ) {
 		case 'h':
-			printf("usage: %s [-s history-size] [-T NAME]"
-				" [-t NAME] [-c KEY]\n",
+			printf("usage: %s"
+				" [-c ctrl-key]"
+				" [-s history-size]"
+				" [-T NAME]"
+				" [-t NAME]"
+				" [-w width]"
+				"\n",
 				name ? name + 1 : argv[0]);
 			exit(0);
 		case 'c':
@@ -970,8 +975,11 @@ parse_args(int argc, char *const*argv)
 		case 't':
 			setenv("TERM", optarg, 1);
 			break;
+		case 'w':
+			S.width = strtol(optarg, NULL, 10);
+			break;
 		default:
-			fprintf(stderr, "Unkown option: %c\n", optopt);
+			fprintf(stderr, "Unknown option: %c\n", optopt);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -1028,6 +1036,7 @@ int
 smtx_main(int argc, char *const argv[])
 {
 	S.commandkey = CTL('g'); /* Change at runtime with -c */
+	S.width = 80;
 	parse_args(argc, argv);
 	init(0, 0);
 	main_loop();
