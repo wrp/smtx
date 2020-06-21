@@ -99,12 +99,20 @@ vexpect_layout(const struct canvas *c, const char *fmt, va_list ap)
 	}
 }
 
+struct test_canvas {
+	struct canvas *c;
+	const char *ps1;
+	FILE *fp;
+	WINDOW *w;
+	VTPARSER *vp;
+};
+
 static void
-expect_row(int row, WINDOW *w, const char *expect, ...)
+expect_row(int row, struct test_canvas *T, const char *expect, ...)
 {
 	va_list ap;
 	va_start(ap, expect);
-	vexpect_row(row, w, expect, ap);
+	vexpect_row(row, T->w, expect, ap);
 	va_end(ap);
 }
 
@@ -146,14 +154,6 @@ read_until(FILE *fp, const char *s, VTPARSER *vp)
 		t = (c == *t) ? t + 1 : s;
 	}
 }
-
-struct test_canvas {
-	struct canvas *c;
-	const char *ps1;
-	FILE *fp;
-	WINDOW *w;
-	VTPARSER *vp;
-};
 
 struct test_canvas *
 new_test_canvas(int rows, int cols, const char *ps1)
@@ -198,13 +198,13 @@ test_ich(int fd)
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
 	check_cmd(T, "", NULL);
 	check_cmd(T, cmd, NULL);
-	expect_row(2, T->w, "abcd     efg%-68s", "");
-	expect_row(3, T->w, "%-80s", T->ps1);
+	expect_row(2, T, "abcd     efg%-68s", "");
+	expect_row(3, T, "%-80s", T->ps1);
 	cmd = "yes | nl | sed 6q; tput cuu 3; tput il 3; tput cud 6";
 	check_cmd(T, cmd, "*23x80@0,0(1007,6)");
-	expect_row(3, T->w, "%s%-74s", T->ps1, cmd);
+	expect_row(3, T, "%s%-74s", T->ps1, cmd);
 	for( int i=1; i < 4; i++ ) {
-		expect_row(3 + i, T->w, "     %d  y%71s", i, "");
+		expect_row(3 + i, T, "     %d  y%71s", i, "");
 	}
 	/*
 	These should work.  Something about the test harness is
@@ -213,10 +213,10 @@ test_ich(int fd)
 	output of the master pty, though.
 
 	for( int i=4; i < 7; i++ ) {
-		expect_row(3 + i, T->w, "%80s", "");
+		expect_row(3 + i, T, "%80s", "");
 	}
 	for( int i=7; i < 10; i++ ) {
-		expect_row(3 + i, T->w, "     %d  y%71s", i, "");
+		expect_row(3 + i, T, "     %d  y%71s", i, "");
 	}
 	*/
 	return rv;
@@ -241,7 +241,7 @@ test_ech(int fd)
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
 	check_cmd(T, "", NULL);
 	check_cmd(T, "printf 012345; tput cub 3; tput ech 1; echo", NULL);
-	expect_row(2, T->w, "012 45%-74s", "");
+	expect_row(2, T, "012 45%-74s", "");
 	return rv;
 }
 
@@ -254,8 +254,8 @@ test_insert(int fd)
 	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
 	check_cmd(T, "printf 0123456; tput cub 3; tput smir; "
 		"echo foo; tput rmir", "*23x80@0,0(%d,6)", y += 2);
-	expect_row(y - 1, T->w, "0123foo456%-70s", "");
-	expect_row(y, T->w, "%-80s", T->ps1);
+	expect_row(y - 1, T, "0123foo456%-70s", "");
+	expect_row(y, T, "%-80s", T->ps1);
 	return rv;
 }
 
@@ -268,11 +268,11 @@ test_el(int fd)
 	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
 	check_cmd(T, "printf 01234; tput cub 3; tput el", "*23x80@0,0(%d,%d)",
 		++y, 2 + strlen(T->ps1));
-	expect_row(y, T->w, "01%-78s", T->ps1);
+	expect_row(y, T, "01%-78s", T->ps1);
 
 	check_cmd(T, "printf 01234; tput cub 3; tput el1; echo",
 		"*23x80@0,0(%d,%d)", y += 2, strlen(T->ps1));
-	expect_row(y - 1, T->w, "   34%75s", "");
+	expect_row(y - 1, T, "   34%75s", "");
 	return rv;
 }
 
@@ -299,7 +299,7 @@ test_cursor(int fd)
 	/* (1) */
 	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
 	check_cmd(T, "printf '0123456'; tput cub 4", "*23x80@0,0(%d,9)", ++y);
-	expect_row(y, T->w, "012%-77s", T->ps1);
+	expect_row(y, T, "012%-77s", T->ps1);
 	check_cmd(T, "tput sc", "*23x80@0,0(%d,6)", ++y);
 	check_cmd(T, "tput rc", "*23x80@0,0(%d,6)", y);
 	/* Hmmm. It seems weird that we start at y == 0 but after
@@ -313,12 +313,12 @@ test_cursor(int fd)
 
 	check_cmd(T, "printf foobar; tput cub 3; tput dch 1; echo",
 		"*23x80@0,0(%d,6)", y += 2);
-	expect_row(y - 1, T->w, "fooar%75s", " ");
-	expect_row(y, T->w, "%-80s", T->ps1);
+	expect_row(y - 1, T, "fooar%75s", " ");
+	expect_row(y, T, "%-80s", T->ps1);
 
 	check_cmd(T, "printf 012; tput cub 2; tput ich 2; echo",
 		"*23x80@0,0(%d,6)", y += 2);
-	expect_row(y - 1, T->w, "0  12%75s", " ");
+	expect_row(y - 1, T, "0  12%75s", " ");
 
 	check_cmd(T, "tput cud 6", "*23x80@0,0(%d,6)", y += 1 + 6);
 	check_cmd(T, ":", "*23x80@0,0(%d,6)", ++y);
