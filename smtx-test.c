@@ -169,6 +169,7 @@ new_test_canvas(int rows, int cols, const char *ps1)
 	T->vp = &T->c->p->vp;
 	T->w = T->c->p->s->win;
 	int fd = T->c->p->pt;
+	reshape(T->c, 0, 0, 24, 80);
 	expect_layout(T->c, "*%dx%d@0,0(0,0)", rows - 1, cols);
 	send_cmd(fd, "PS1='%s'", T->ps1);
 	read_until(T->fp, T->ps1, T->vp); /* discard up to assignment */

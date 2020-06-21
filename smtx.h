@@ -124,6 +124,7 @@ extern void setupevents(struct proc *);
 extern void safewrite(int fd, const char *b, size_t n);
 extern void main_loop(void);
 extern void build_bindings(void);
+extern void reshape(struct canvas *n, int y, int x, int h, int w);
 extern int smtx_main(int, char *const*);
 extern action transition;
 extern action create;
