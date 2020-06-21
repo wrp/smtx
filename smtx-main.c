@@ -978,7 +978,7 @@ static void
 intenv(const char *name, int v)
 {
 	if( v ) {
-		char buf[256];
+		char buf[16];
 		snprintf(buf, sizeof buf - 1, "%d", v);
 		setenv(name, buf, 1);
 	} else {
