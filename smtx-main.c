@@ -575,10 +575,7 @@ int
 scrolln(struct canvas *n, const char *arg)
 {
 	if( n && n->p && n->p->s && n->p->s->win ) {
-		int y, x;
-		getmaxyx(n->p->s->win, y, x);
-		(void) x;
-		int count = cmd_count == -1 ? (y - n->p->s->tos) - 1 : cmd_count;
+		int count = cmd_count == -1 ? n->extent.y - 1 : cmd_count;
 		n->offset.y += *arg == '-' ? -count : count;
 		n->offset.y = MIN(MAX(0, n->offset.y), n->p->s->tos);
 	}
