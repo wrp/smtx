@@ -265,13 +265,15 @@ getterm(void)
 static int
 new_screens(struct proc *p)
 {
+	int rows = MAX(LINES, scrollback_history);
+	int cols = MAX(COLS, S.width);
 	if( !p ) {
 		return 0;
 	}
 	struct screen *ss[] = { &p->pri, &p->alt, NULL };
 	for( struct screen **t = ss; *t; t += 1 ) {
 		struct screen *s = *t;
-		if( ! resize_pad(&s->win, LINES, COLS) ) {
+		if( ! resize_pad(&s->win, rows, cols) ) {
 			return 0;
 		}
 		scrollok(s->win, TRUE);
@@ -358,6 +360,9 @@ prune(struct canvas *x, const char *arg)
 	return 0;
 }
 
+#if 0
+
+TODO: make this an action
 static void
 reshape_window(struct canvas *n)
 {
@@ -380,6 +385,7 @@ reshape_window(struct canvas *n)
 		show_error("kill");
 	}
 }
+#endif
 
 static void
 reshape(struct canvas *n, int y, int x, int h, int w)
@@ -409,7 +415,8 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		n->extent.y = h1 - 1; /* Subtract one for title line */
 		n->extent.x = w1;
 		if( n->p && n->p->pt >= 0 ) {
-			reshape_window(n);
+			int h = MAX(n->extent.y, scrollback_history);
+			n->p->pri.tos = n->offset.y = h - n->extent.y;
 		} else if( w1 && h1 > 1 ) {
 			resize_pad(&n->win, n->extent.y, n->extent.x);
 			wbkgd(n->win, ACS_CKBOARD);
