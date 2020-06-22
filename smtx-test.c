@@ -234,6 +234,10 @@ test_scrollback(int fd)
 	expect_row(8, T, "%5d  %-72s", 46, string);
 
 	cmd_count = -1;
+	scrollh(T->c, ">");
+	expect_row(0, T, "%-60s", string + 80 - 60 - 8);
+	expect_row(7, T, "%-60s", string + 80 - 60 - 8);
+	expect_row(8, T, "%-60s", string + 80 - 60 - 8);
 	return rv;
 }
 
