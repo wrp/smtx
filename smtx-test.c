@@ -380,12 +380,13 @@ test1(int fd)
 
 typedef int test(int);
 struct st { char *name; test *f; int main; };
-static int execute_test(struct st *v);
+static int execute_test(struct st *v, const char *argv0);
 #define F(x, y) { .name = #x, .f = (x), .main = y }
 int
 main(int argc, char *const argv[])
 {
 	int status = 0;
+	const char *argv0 = argv[0];
 	struct st tab[] = {
 		F(test1, 1),
 		F(test_cursor, 0),
@@ -407,7 +408,7 @@ main(int argc, char *const argv[])
 				;
 		}
 		if( v->f ) {
-			status |= execute_test(v);
+			status |= execute_test(v, argv0);
 		} else {
 			fprintf(stderr, "unknown function: %s\n", name);
 			status = EXIT_FAILURE;
@@ -417,7 +418,7 @@ main(int argc, char *const argv[])
 }
 
 static int
-execute_test(struct st *v)
+execute_test(struct st *v, const char *argv0)
 {
 	char *const args[] = { v->name, NULL };
 	int fd;
@@ -432,6 +433,13 @@ execute_test(struct st *v)
 		if( v->main ) {
 			exit(smtx_main(1, args));
 		} else {
+			if( strcmp(argv0, v->name) ) {
+				char *const argv[] = { v->name, v->name, NULL };
+				fprintf(stderr, "argv0 = %s  %d  %s\n", argv0,
+					strcmp(argv0, v->name), v->name);
+				execv(argv0, argv);
+				perror("execv");
+			}
 			exit(v->f(fd));
 		}
 	default:
