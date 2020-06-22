@@ -553,9 +553,27 @@ digit(struct canvas *n, const char *arg)
 }
 
 int
-scrolln(struct canvas *n, const char *arg)
+scrollh(struct canvas *n, const char *arg)
 {
 	/* TODO: enable srolling left/right */
+	if( n && n->p && n->p->s && n->p->s->win ) {
+		int y, x;
+		getmaxyx(n->p->s->win, y, x);
+		(void) y;
+		int count = cmd_count == -1 ? 1 : cmd_count;
+		n->offset.x += *arg == '<' ? -count : count;
+		if( n->offset.x < 0 ) {
+			n->offset.x = 0;
+		} else if( n->offset.x > x - n->extent.x ) {
+			n->offset.x = x - n->extent.x;
+		}
+	}
+	return 0;
+}
+
+int
+scrolln(struct canvas *n, const char *arg)
+{
 	if( n && n->p && n->p->s && n->p->s->win ) {
 		int y, x;
 		getmaxyx(n->p->s->win, y, x);
@@ -794,8 +812,12 @@ build_bindings()
 
 	add_key(cmd_keys, S.commandkey, transition, &S.commandkey, NULL);
 	add_key(cmd_keys, L'\r', transition, NULL);
+	/* TODO: rebind b,f,<,> to hjkl in different binding */
 	add_key(cmd_keys, L'b', scrolln, "-", NULL);
 	add_key(cmd_keys, L'f', scrolln, "+", NULL);
+	add_key(cmd_keys, L'>', scrollh, ">", NULL);
+	add_key(cmd_keys, L'<', scrollh, "<", NULL);
+
 	add_key(cmd_keys, L'=', equalize, NULL);
 	add_key(cmd_keys, L'c', create, NULL);
 	add_key(cmd_keys, L'C', create, "C", NULL);
