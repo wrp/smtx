@@ -141,3 +141,4 @@ extern action redrawroot;
 extern action resize;
 extern action swap;
 extern action scrolln;
+extern action scrollh;

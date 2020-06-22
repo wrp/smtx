@@ -58,11 +58,11 @@ send_cmd(int fd, const char *fmt, ...)
 }
 
 static void
-vexpect_row(int row, WINDOW *w, const char *fmt, va_list ap)
+vexpect_row(int row, int col, WINDOW *w, const char *fmt, va_list ap)
 {
 	char actual[1024];
 	char expect[1024];
-	const char *a = actual, *b = expect;
+	const char *a = actual + col, *b = expect;
 	describe_row(actual, sizeof actual, w, row);
 	vsnprintf(expect, sizeof expect, fmt, ap);
 	while( *a && *a++ == *b ) {
@@ -70,7 +70,7 @@ vexpect_row(int row, WINDOW *w, const char *fmt, va_list ap)
 	}
 	if( *a || *b ) {
 		warnx("\nrow %d Expected \"%s\", but got \"%s\"\n",
-			row, expect, actual);
+			row, expect, actual + col);
 		rv = EXIT_FAILURE;
 	}
 }
@@ -112,7 +112,7 @@ expect_row(int row, struct test_canvas *T, const char *expect, ...)
 {
 	va_list ap;
 	va_start(ap, expect);
-	vexpect_row(row + T->c->offset.y, T->w, expect, ap);
+	vexpect_row(row + T->c->offset.y, T->c->offset.x, T->w, expect, ap);
 	va_end(ap);
 }
 
@@ -216,6 +216,20 @@ test_scrollback(int fd)
 	expect_row(0, T, "%6d%-74s", 38, "  y");
 	expect_row(7, T, "%6d%-74s", 45, "  y");
 	expect_row(8, T, "%6d%-74s", 46, "  y");
+
+	cmd_count = 2;
+	/* make the window larger so scrollh is not a no-op */
+	T->c->extent.x = 60;
+	scrollh(T->c, ">");
+	expect_row(0, T, "%4d%-74s", 38, "  y");
+	expect_row(7, T, "%4d%-74s", 45, "  y");
+	expect_row(8, T, "%4d%-74s", 46, "  y");
+
+	cmd_count = 1;
+	scrollh(T->c, "<");
+	expect_row(0, T, "%5d%-74s", 38, "  y");
+	expect_row(7, T, "%5d%-74s", 45, "  y");
+	expect_row(8, T, "%5d%-74s", 46, "  y");
 	return rv;
 }
 
