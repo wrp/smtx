@@ -197,39 +197,41 @@ static int
 test_scrollback(int fd)
 {
 	(void) fd;
-	const char *cmd = "yes | nl | sed 50q";
+	char cmd[80] = "yes | nl | sed 50q";
+	const char *string = "This is a relatively long string, dragon!";
+	snprintf(cmd, sizeof cmd, "yes %s | nl | sed 50q", string);
 	scrollback_history = 20;
 	struct test_canvas *T = new_test_canvas(10, 80, NULL);
 	check_cmd(T, "", NULL);
 	check_cmd(T, cmd, NULL);
-	expect_row(0, T, "%6d%-74s", 43, "  y");
-	expect_row(7, T, "%6d%-74s", 50, "  y");
-	expect_row(8, T, "%-80s", T->ps1, "  y");
+	expect_row(0, T, "%6d  %-72s", 43, string);
+	expect_row(7, T, "%6d  %-72s", 50, string);
+	expect_row(8, T, "%-80s", T->ps1, string);
 	cmd_count = 8;
 	scrolln(T->c, "-");
-	expect_row(0, T, "%6d%-74s", 35, "  y");
-	expect_row(7, T, "%6d%-74s", 42, "  y");
-	expect_row(8, T, "%6d%-74s", 43, "  y");
+	expect_row(0, T, "%6d  %-72s", 35, string);
+	expect_row(7, T, "%6d  %-72s", 42, string);
+	expect_row(8, T, "%6d  %-72s", 43, string);
 
 	cmd_count = 3;
 	scrolln(T->c, "+");
-	expect_row(0, T, "%6d%-74s", 38, "  y");
-	expect_row(7, T, "%6d%-74s", 45, "  y");
-	expect_row(8, T, "%6d%-74s", 46, "  y");
+	expect_row(0, T, "%6d  %-72s", 38, string);
+	expect_row(7, T, "%6d  %-72s", 45, string);
+	expect_row(8, T, "%6d  %-72s", 46, string);
 
 	cmd_count = 2;
 	/* make the window larger so scrollh is not a no-op */
 	T->c->extent.x = 60;
 	scrollh(T->c, ">");
-	expect_row(0, T, "%4d%-74s", 38, "  y");
-	expect_row(7, T, "%4d%-74s", 45, "  y");
-	expect_row(8, T, "%4d%-74s", 46, "  y");
+	expect_row(0, T, "%4d  %-72s", 38, string);
+	expect_row(7, T, "%4d  %-72s", 45, string);
+	expect_row(8, T, "%4d  %-72s", 46, string);
 
 	cmd_count = 1;
 	scrollh(T->c, "<");
-	expect_row(0, T, "%5d%-74s", 38, "  y");
-	expect_row(7, T, "%5d%-74s", 45, "  y");
-	expect_row(8, T, "%5d%-74s", 46, "  y");
+	expect_row(0, T, "%5d  %-72s", 38, string);
+	expect_row(7, T, "%5d  %-72s", 45, string);
+	expect_row(8, T, "%5d  %-72s", 46, string);
 
 	cmd_count = -1;
 	return rv;
