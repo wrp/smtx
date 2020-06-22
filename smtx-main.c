@@ -360,32 +360,25 @@ prune(struct canvas *x, const char *arg)
 }
 
 static void
-reshape_window(struct canvas *n, int h, int w)
+reshape_window(struct canvas *n)
 {
 	struct proc *p = n->p;
-	n->extent.y = h - 1; /* Subtract one for title line */
-	n->extent.x = w;
-	if( p && p->pt >= 0 ) {
-		h = MAX(n->extent.y, scrollback_history);
-		w = n->extent.x ? n->extent.x : 80;
-		p->ws = (struct winsize) {.ws_row = h, .ws_col = w};
-		resize_pad(&p->pri.win, h, w);
-		resize_pad(&p->alt.win, h, w);
-		p->pri.tos = n->offset.y = h - n->extent.y;
-		assert( p->alt.tos == 0 );
-		wsetscrreg(p->pri.win, 0, h - 1);
-		wsetscrreg(p->alt.win, 0, h - 1);
-		wrefresh(p->s->win);
-		extend_tabs(p, p->tabstop);
-		if( ioctl(p->pt, TIOCSWINSZ, &p->ws) ) {
-			show_error("ioctl");
-		}
-		if( kill(p->pid, SIGWINCH) ) {
-			show_error("kill");
-		}
-	} else if( n->extent.y > 0 && n->extent.x > 0 ) {
-		resize_pad(&n->win, n->extent.y, n->extent.x);
-		wbkgd(n->win, ACS_CKBOARD);
+	int h = MAX(n->extent.y, scrollback_history);
+	int w = MAX(n->extent.x, S.width);
+	p->ws = (struct winsize) {.ws_row = h, .ws_col = w};
+	resize_pad(&p->pri.win, h, w);
+	resize_pad(&p->alt.win, h, w);
+	p->pri.tos = n->offset.y = h - n->extent.y;
+	assert( p->alt.tos == 0 );
+	wsetscrreg(p->pri.win, 0, h - 1);
+	wsetscrreg(p->alt.win, 0, h - 1);
+	wrefresh(p->s->win);
+	extend_tabs(p, p->tabstop);
+	if( ioctl(p->pt, TIOCSWINSZ, &p->ws) ) {
+		show_error("ioctl");
+	}
+	if( kill(p->pid, SIGWINCH) ) {
+		show_error("kill");
 	}
 }
 
@@ -414,7 +407,14 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		reshape(n->c[0], y + h1, x, h - h1, n->typ ? w1 : w);
 		reshape(n->c[1], y, x + w1 + have_div,
 			n->typ ? h : h1, w - w1 - have_div);
-		reshape_window(n, h1, w1);
+		n->extent.y = h1 - 1; /* Subtract one for title line */
+		n->extent.x = w1;
+		if( n->p && n->p->pt >= 0 ) {
+			reshape_window(n);
+		} else if( w1 && h1 > 1 ) {
+			resize_pad(&n->win, n->extent.y, n->extent.x);
+			wbkgd(n->win, ACS_CKBOARD);
+		}
 	}
 }
 
