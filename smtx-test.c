@@ -207,10 +207,15 @@ test_scrollback(int fd)
 	expect_row(8, T, "%-80s", T->ps1, "  y");
 	cmd_count = 8;
 	scrolln(T->c, "-");
-	draw(T->c);
 	expect_row(0, T, "%6d%-74s", 35, "  y");
 	expect_row(7, T, "%6d%-74s", 42, "  y");
 	expect_row(8, T, "%6d%-74s", 43, "  y");
+
+	cmd_count = 3;
+	scrolln(T->c, "+");
+	expect_row(0, T, "%6d%-74s", 38, "  y");
+	expect_row(7, T, "%6d%-74s", 45, "  y");
+	expect_row(8, T, "%6d%-74s", 46, "  y");
 	return rv;
 }
 
