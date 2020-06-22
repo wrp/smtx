@@ -284,11 +284,13 @@ new_screens(struct proc *p)
 }
 
 static struct proc *
-new_pty()
+new_pty(int rows, int cols)
 {
+	rows = MAX(rows, scrollback_history);
+	cols = MAX(cols, S.width);
 	struct proc *p = calloc(1, sizeof *p);
 	if( p != NULL ) {
-		p->ws = (struct winsize) {.ws_row = 24, .ws_col = 80};
+		p->ws = (struct winsize) {.ws_row = rows, .ws_col = cols};
 		p->pid = forkpty(&p->pt, NULL, NULL, &p->ws);
 		if( p->pid < 0 ) {
 			show_error("forkpty");
@@ -478,7 +480,7 @@ create(struct canvas *n, const char *arg)
 		v->typ = dir;
 		v->parent = n;
 		n = balance(v);
-		new_screens(v->p = new_pty());
+		new_screens(v->p = new_pty(LINES, COLS));
 	}
 	reshape(view_root, 0, 0, LINES, COLS);
 	return 0;
@@ -1022,7 +1024,7 @@ init(int lines, int columns)
 	} else {
 		wattron(werr, A_REVERSE);
 		b = newcanvas();
-		if( !b || !new_screens(b->p = new_pty()) ) {
+		if( !b || !new_screens(b->p = new_pty(LINES, COLS)) ) {
 			warnx("Unable to create root window");
 		}
 		reshape(b, 0, 0, LINES, COLS);
