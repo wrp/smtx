@@ -271,7 +271,7 @@ new_screens(struct proc *p)
 	struct screen *ss[] = { &p->pri, &p->alt, NULL };
 	for( struct screen **t = ss; *t; t += 1 ) {
 		struct screen *s = *t;
-		if( ! resize_pad(&s->win, 24, 80) ) {
+		if( ! resize_pad(&s->win, LINES, COLS) ) {
 			return 0;
 		}
 		scrollok(s->win, TRUE);
