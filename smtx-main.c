@@ -555,12 +555,9 @@ digit(struct canvas *n, const char *arg)
 int
 scrollh(struct canvas *n, const char *arg)
 {
-	/* TODO: enable srolling left/right */
 	if( n && n->p && n->p->s && n->p->s->win ) {
-		int y, x;
-		getmaxyx(n->p->s->win, y, x);
-		(void) y;
-		int count = cmd_count == -1 ? 1 : cmd_count;
+		int x = winsiz(n->p->s->win, 1);
+		int count = cmd_count == -1 ? n->extent.x - 1 : cmd_count;
 		n->offset.x += *arg == '<' ? -count : count;
 		if( n->offset.x < 0 ) {
 			n->offset.x = 0;

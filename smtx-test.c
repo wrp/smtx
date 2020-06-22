@@ -230,6 +230,8 @@ test_scrollback(int fd)
 	expect_row(0, T, "%5d%-74s", 38, "  y");
 	expect_row(7, T, "%5d%-74s", 45, "  y");
 	expect_row(8, T, "%5d%-74s", 46, "  y");
+
+	cmd_count = -1;
 	return rv;
 }
 
