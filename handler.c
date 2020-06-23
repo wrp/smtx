@@ -409,14 +409,13 @@ case sgr: { /* SGR - Select Graphic Rendition */
 	noclear_repc = 1;
 	} break;
 
-case cr: { /* CR - Carriage Return */
-    s->xenl = false;
-    wmove(win, py, 0);
-	} break;
-
-case ind: { /* IND - Index */
-    y == (bot - 1)? scroll(win) : wmove(win, py + 1, x);
-	} break;
+case cr: /* Carriage Return */
+	s->xenl = false;
+	wmove(win, py, 0);
+	break;
+case ind: /* Index */
+	y == (bot - 1) ? scroll(win) : wmove(win, py + 1, x);
+	break;
 
 case nel: { /* NEL - Next Line */
     CALL(cr); CALL(ind);
