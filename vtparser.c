@@ -105,7 +105,17 @@ docontrol(VTPARSER *v, wchar_t w)
 	}
 }
 
-DO(escape,  w < MAXCALLBACK && v->escs[w], v->escs[w], v->inter > 0, &v->inter)
+static void
+doescape(VTPARSER *v, wchar_t w)
+{
+	if( w < MAXCALLBACK && v->escs[w] ) {
+		handle_terminal_cmd( v, v->p, w, v->inter, v->inter > 0,
+			&v->inter, v->escs[w]);
+	}
+}
+
+
+
 DO(csi,     w < MAXCALLBACK && v->csis[w], v->csis[w], v->narg, v->args)
 DO(print,   v->print, v->print, 0, NULL)
 DO(osc,     v->osc, v->osc, v->nosc, NULL)
