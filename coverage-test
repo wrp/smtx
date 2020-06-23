@@ -7,29 +7,47 @@
 if ! test -f smtx-test.gcda; then
 	exit 77
 fi
-RV=0
 
-for name in \
-	handler \
-	main \
-	smtx-test \
-	smtx \
-	smtx-main \
-	vtparser \
-; do
+cat << EOF |
+handler 57.45
+smtx 100
+smtx-main 71.68
+vtparser 80.33
+EOF
+{
+RV=0
+while read name cover; do
 	if test -f .libs/$name.gcno; then
 		arg='-o .libs'
 	else
 		unset arg
 	fi
-	gcov $name $arg
+	output=$(gcov $name $arg)
+	echo "$output"
+	# Fail if coverage falls below the threshold
+	# We expect output to look like:
+#	File '../../../smtx/smtx.c'
+#	Lines executed:100.00% of 2
+#	Creating 'smtx.c.gcov'
+	if ! echo "$output" | awk 'NR==2 && /^Lines executed/ && $2 >= f{ok = 1}
+			END {exit !ok}' f="${cover:-100}" FS='[:%]'; then
+		RV=1
+		echo "FAIL: Coverage for $name below $cover" >&2
+	fi
 	if < "$name".c.gcov sed \
 			-e '\@{ /\* uncovered block \*/@,'"$( :
 				)"'\@} /\* end uncovered \*/@d' \
 			-e '/#####/!d' \
 			-e '\@/\* uncovered \*/@d' | grep .; then
 		echo The above lines were not executed during testing
-		RV=77  # Skip this until such time as we actually have coverage
+		# RV=1  # Skip this until such time as we actually have coverage
 	fi >&2
 done
 exit $RV
+}
+# Careful.  There is some shell "magic" here.  RV is being assigned
+# and returned from a subshell.  We rely on this subshell being the last
+# command executed, so that its value is returned by the main shell.
+# Also note that this relies on a specific output from gcov that happens
+# to work in the version I'm running.  Probably need to skip this test
+# until it is robustified.
