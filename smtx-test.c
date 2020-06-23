@@ -479,8 +479,6 @@ execute_test(struct st *v, const char *argv0)
 		} else {
 			if( strcmp(argv0, v->name) ) {
 				char *const argv[] = { v->name, v->name, NULL };
-				fprintf(stderr, "argv0 = %s  %d  %s\n", argv0,
-					strcmp(argv0, v->name), v->name);
 				execv(argv0, argv);
 				perror("execv");
 			}
