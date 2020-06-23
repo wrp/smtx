@@ -17,6 +17,11 @@
  */
 /*
    TODO:
+     make tput rep work.  eg, tput rep w 5 should write 5 'w' to term,
+       but the parameters do not seem to be getting sent properly.  We get
+       argc == 1 and argv[0] == 5 - 1, but the w is chomped.  Note that this
+       is the only terminfo entry that uses %c, and I suspect there is a bug
+       in vtparser
      Full-screen mode.
      In full-screen mode, make hjkl scroll the screen.
      Test Suite!!
