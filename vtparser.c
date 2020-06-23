@@ -122,8 +122,14 @@ docsi(VTPARSER *v, wchar_t w)
             handle_terminal_cmd (v, v->p, w, v->inter, n, a, f);  \
     }
 
-
-DO(print,   v->print, v->print, 0, NULL)
+static void
+doprint(VTPARSER *v, wchar_t w)
+{
+	if( v->print ) {
+		handle_terminal_cmd (v, v->p, w, v->inter,
+			0, NULL, v->print);
+	}
+}
 DO(osc,     v->osc, v->osc, v->nosc, NULL)
 
 /**** PUBLIC FUNCTIONS */
