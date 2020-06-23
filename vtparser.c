@@ -97,7 +97,14 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
             handle_terminal_cmd (v, v->p, w, v->inter, n, a, f);  \
     }
 
-DO(control, w < MAXCALLBACK && v->cons[w], v->cons[w], 0, NULL)
+static void
+docontrol(VTPARSER *v, wchar_t w)
+{
+	if( w < MAXCALLBACK && v->cons[w] ) {
+		handle_terminal_cmd(v, v->p, w, v->inter, 0, NULL, v->cons[w]);
+	}
+}
+
 DO(escape,  w < MAXCALLBACK && v->escs[w], v->escs[w], v->inter > 0, &v->inter)
 DO(csi,     w < MAXCALLBACK && v->csis[w], v->csis[w], v->narg, v->args)
 DO(print,   v->print, v->print, 0, NULL)
