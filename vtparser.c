@@ -89,14 +89,6 @@ param(VTPARSER *v, wchar_t w)
 extern void
 handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 	int argc, int *argv, int);
-#define DO(k, t, f, n, a)                               \
-    static void                                         \
-    do ## k (VTPARSER *v, wchar_t w)                    \
-    {                                                   \
-        if (t)                                          \
-            handle_terminal_cmd (v, v->p, w, v->inter, n, a, f);  \
-    }
-
 static void
 docontrol(VTPARSER *v, wchar_t w)
 {
@@ -114,9 +106,23 @@ doescape(VTPARSER *v, wchar_t w)
 	}
 }
 
+static void
+docsi(VTPARSER *v, wchar_t w)
+{
+	if( w < MAXCALLBACK && v->csis[w] ) {
+		handle_terminal_cmd(v, v->p, w, v->inter, v->narg, v->args,
+			v->csis[w]);
+	}
+}
+#define DO(k, t, f, n, a)                               \
+    static void                                         \
+    do ## k (VTPARSER *v, wchar_t w)                    \
+    {                                                   \
+        if (t)                                          \
+            handle_terminal_cmd (v, v->p, w, v->inter, n, a, f);  \
+    }
 
 
-DO(csi,     w < MAXCALLBACK && v->csis[w], v->csis[w], v->narg, v->args)
 DO(print,   v->print, v->print, 0, NULL)
 DO(osc,     v->osc, v->osc, v->nosc, NULL)
 
