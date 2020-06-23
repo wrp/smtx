@@ -357,9 +357,11 @@ test_cursor(int fd)
 	check_cmd(T, "tput cup 15 50;", "*23x80@0,0(%d,56)", ++y);
 	check_cmd(T, "tput clear", "*23x80@0,0(%d,6)", y -= 15);
 	check_cmd(T, "tput ht", "*23x80@0,0(%d,14)", ++y);
-	check_cmd(T, "printf '\\t\\t'; tput cbt", "*23x80@0,0(%d,14)", ++y);
-	check_cmd(T, "tput cud 6", "*23x80@0,0(%d,6)", y += 1 + 6);
+	check_cmd(T, "printf 'a\\tb\\tc\\t'; tput cbt; tput cbt; printf foo",
+		"*23x80@0,0(%d,17)", ++y);
+	expect_row(y - 1001, T, "a       foo%-69s", T->ps1);
 
+	check_cmd(T, "tput cud 6", "*23x80@0,0(%d,6)", y += 1 + 6);
 	check_cmd(T, "printf foobar; tput cub 3; tput dch 1; echo",
 		"*23x80@0,0(%d,6)", y += 2);
 	expect_row(y - 1001 - 1, T, "fooar%75s", " ");
