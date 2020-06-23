@@ -625,14 +625,13 @@ resize(struct canvas *n, const char *arg)
 	if( dir == down ) while( n && n->c[dir] == NULL ) {
 		n = n->parent;
 	}
-	if( n == NULL ) {
-		return 0;
-	}
-	if( n->c[typ] == NULL ) {
-		return 0;
+	if( !n || !n->c[typ] ) {
+		return 1;
 	}
 	switch(*arg) {
-	case 'K': case 'J': {
+	case 'K':
+	case 'J':
+	{
 		int full = (n->extent.y + 1) / n->split_point[0];
 		int count = cmd_count < 1 ? 1 : cmd_count;
 		double new = (n->extent.y + 1) + count * ( *arg == 'K' ? -1 : 1 );
