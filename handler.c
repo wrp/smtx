@@ -311,8 +311,9 @@ case ris: /* Reset to Initial State */
 	n->s = &n->pri;
 	wsetscrreg(n->pri.win, 0, MAX(scrollback_history, n->ws.ws_row));
 	wsetscrreg(n->alt.win, 0, n->ws.ws_row);
-	for( i = 0; i < n->ntabs; i++ ) {
-		n->tabs[i] = (i % n->tabstop == 0);
+	memset(n->tabs, 0, n->ntabs * sizeof *n->tabs);
+	for( i = 0; i < n->ntabs; i += n->tabstop ) {
+		n->tabs[i] = true;
 	}
 	break;
 
