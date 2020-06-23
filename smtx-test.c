@@ -194,6 +194,20 @@ check_cmd(struct test_canvas *T, const char *cmd, const char *expect, ...)
 }
 
 static int
+test_nel(int fd)
+{
+	(void) fd;
+	setenv("TERM", "smtx", 1);
+	const char *cmd = "tput cud 3; printf foo; tput nel; echo blah";
+	struct test_canvas *T = new_test_canvas(10, 80, NULL);
+	check_cmd(T, "", NULL);
+	check_cmd(T, cmd, NULL);
+	expect_row(5, T, "%-80s", "foo");
+	expect_row(6, T, "%-80s", "blah");
+	return rv;
+}
+
+static int
 test_scrollback(int fd)
 {
 	(void) fd;
@@ -427,6 +441,7 @@ main(int argc, char *const argv[])
 		F(test_ech, 0),
 		F(test_ich, 0),
 		F(test_scrollback, 0),
+		F(test_nel, 0),
 		{ NULL, NULL, 0 }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
