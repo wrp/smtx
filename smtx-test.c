@@ -155,6 +155,21 @@ read_until(FILE *fp, const char *s, VTPARSER *vp)
 	}
 }
 
+static void
+check_cmd(struct test_canvas *T, const char *cmd, const char *expect, ...)
+{
+	if( *cmd ) {
+		send_cmd(fileno(T->fp), "%s", cmd);
+	}
+	read_until(T->fp, T->ps1, T->vp);
+	if( expect != NULL ) {
+		va_list ap;
+		va_start(ap, expect);
+		vexpect_layout(T->c, expect, ap);
+		va_end(ap);
+	}
+}
+
 struct test_canvas *
 new_test_canvas(int rows, int cols, const char *ps1)
 {
@@ -175,22 +190,8 @@ new_test_canvas(int rows, int cols, const char *ps1)
 	draw(T->c);
 	focus(T->c, 1);
 	fixcursor();
+	check_cmd(T, "", NULL);
 	return T;
-}
-
-static void
-check_cmd(struct test_canvas *T, const char *cmd, const char *expect, ...)
-{
-	if( *cmd ) {
-		send_cmd(fileno(T->fp), "%s", cmd);
-	}
-	read_until(T->fp, T->ps1, T->vp);
-	if( expect != NULL ) {
-		va_list ap;
-		va_start(ap, expect);
-		vexpect_layout(T->c, expect, ap);
-		va_end(ap);
-	}
 }
 
 static int
@@ -200,7 +201,6 @@ test_nel(int fd)
 	setenv("TERM", "smtx", 1);
 	const char *cmd = "tput cud 3; printf foo; tput nel; echo blah";
 	struct test_canvas *T = new_test_canvas(10, 80, NULL);
-	check_cmd(T, "", NULL);
 	check_cmd(T, cmd, NULL);
 	expect_row(5, T, "%-80s", "foo");
 	expect_row(6, T, "%-80s", "blah");
@@ -216,7 +216,6 @@ test_scrollback(int fd)
 	snprintf(cmd, sizeof cmd, "yes %s | nl | sed 50q", string);
 	scrollback_history = 20;
 	struct test_canvas *T = new_test_canvas(10, 80, NULL);
-	check_cmd(T, "", NULL);
 	check_cmd(T, cmd, NULL);
 	expect_row(0, T, "%6d  %-72s", 43, string);
 	expect_row(7, T, "%6d  %-72s", 50, string);
@@ -261,7 +260,6 @@ test_ich(int fd)
 	(void) fd;
 	const char *cmd = "printf abcdefg; tput cub 3; tput ich 5; echo";
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
-	check_cmd(T, "", NULL);
 	check_cmd(T, cmd, NULL);
 	expect_row(2, T, "abcd     efg%-68s", "");
 	expect_row(3, T, "%-80s", T->ps1);
@@ -290,10 +288,9 @@ test_ich(int fd)
 static int
 test_vis(int fd)
 {
-	int y = 1001;
+	int y = 1002;
 	(void) fd;
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
-	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
 	check_cmd(T, "tput civis", "*23x80@0,0", ++y);
 	check_cmd(T, "tput cvvis", "*23x80@0,0(%d,%d)", ++y, strlen(T->ps1));
 	return rv;
@@ -304,7 +301,6 @@ test_ech(int fd)
 {
 	(void) fd;
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
-	check_cmd(T, "", NULL);
 	check_cmd(T, "printf 012345; tput cub 3; tput ech 1; echo", NULL);
 	expect_row(2, T, "012 45%-74s", "");
 	return rv;
@@ -313,10 +309,9 @@ test_ech(int fd)
 static int
 test_insert(int fd)
 {
-	int y = 1001;
+	int y = 1002;
 	(void) fd;
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
-	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
 	check_cmd(T, "printf 0123456; tput cub 3; tput smir; "
 		"echo foo; tput rmir", "*23x80@0,0(%d,6)", y += 2);
 	expect_row(y - 1001 - 1, T, "0123foo456%-70s", "");
@@ -327,10 +322,9 @@ test_insert(int fd)
 static int
 test_el(int fd)
 {
-	int y = 1001;
+	int y = 1002;
 	(void) fd;
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
-	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
 	check_cmd(T, "printf 01234; tput cub 3; tput el", "*23x80@0,0(%d,%d)",
 		++y, 2 + strlen(T->ps1));
 	expect_row(y - 1001, T, "01%-78s", T->ps1);
@@ -344,10 +338,8 @@ test_el(int fd)
 static int
 test_vpa(int fd)
 {
-	int y = 1001;
 	(void) fd;
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
-	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
 	check_cmd(T, "tput vpa 7; tput hpa 18", "*23x80@0,0(%d,%d)",
 		scrollback_history - 23 + 7, 18 + strlen(T->ps1));
 	return rv;
@@ -356,13 +348,12 @@ test_vpa(int fd)
 static int
 test_cursor(int fd)
 {
-	int y = 1001;
+	int y = 1002;
 	/* many below tests expect ps1 length 6 */
 	struct test_canvas *T = new_test_canvas(24, 80, "uniq> ");
 	(void)fd;
 
 	/* (1) */
-	check_cmd(T, "", "*23x80@0,0(%d,?)", ++y);
 	check_cmd(T, "printf '0123456'; tput cub 4", "*23x80@0,0(%d,9)", ++y);
 	expect_row(y - 1001, T, "012%-77s", T->ps1);
 	check_cmd(T, "tput sc", "*23x80@0,0(%d,6)", ++y);
