@@ -114,13 +114,6 @@ docsi(VTPARSER *v, wchar_t w)
 			v->csis[w]);
 	}
 }
-#define DO(k, t, f, n, a)                               \
-    static void                                         \
-    do ## k (VTPARSER *v, wchar_t w)                    \
-    {                                                   \
-        if (t)                                          \
-            handle_terminal_cmd (v, v->p, w, v->inter, n, a, f);  \
-    }
 
 static void
 doprint(VTPARSER *v, wchar_t w)
@@ -130,7 +123,15 @@ doprint(VTPARSER *v, wchar_t w)
 			0, NULL, v->print);
 	}
 }
-DO(osc,     v->osc, v->osc, v->nosc, NULL)
+
+static void
+doosc(VTPARSER *v, wchar_t w)
+{
+	if( v->osc ) {
+		handle_terminal_cmd (v, v->p, w, v->inter,
+			v->nosc, NULL, v->osc);
+	}
+}
 
 /**** PUBLIC FUNCTIONS */
 void

@@ -12,7 +12,7 @@ cat << EOF |
 handler 59.15
 smtx 100
 smtx-main 71.68
-vtparser 80.33
+vtparser 80.26
 EOF
 {
 RV=0
