@@ -37,6 +37,7 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 	int py, px;              /* physical cursor position in scrollback */
 	int top = 0, bot = 0;    /* the scrolling region */
 	int tos = s->tos;        /* top of screen in the pad */
+	int i;
 	getyx(win, py, px);
 	y = py - s->tos;
 	x = px;
@@ -60,12 +61,12 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 		wmove(win, tos + (n->decom? top : 0) + P1(0) - 1, P1(1) - 1);
 		break;
 	case dch: /* Delete Character */
-		for( int i = 0; i < P1(0); i++ ) {
+		for( i = 0; i < P1(0); i++ ) {
 			wdelch(win);
 		}
 		break;
 	case ich: /* Insert Character */
-		for( int i = 0; i < P1(0); i++ ) {
+		for( i = 0; i < P1(0); i++ ) {
 			wins_nwstr(win, L" ", 1);
 		}
 		break;
@@ -118,16 +119,15 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 		wmove(win, MIN(tos + bot - 1, MAX(tos + top, tos + P1(0) - 1)), x);
 		break;
 	case cbt: /* Cursor Backwards Tab */
-		for( int i = x - 1; i < n->ntabs && i >= 0; i-- ) {
-			if( n->tabs[i] ){
-				wmove(win, py, i);
-				return;
+		for( i = x - 1; i >= 0; i-- ) {
+			if( i < n->ntabs && n->tabs[i] ){
+				break;
 			}
 		}
-		wmove(win, py, 0);
+		wmove(win, py, i);
 		break;
 	case ht: /* Horizontal Tab */
-		for( int i = x + 1; i < n->ws.ws_col && i < n->ntabs; i++ ) {
+		for( i = x + 1; i < n->ws.ws_col && i < n->ntabs; i++ ) {
 			if( n->tabs[i] ) {
 				wmove(win, py, i);
 				return;
@@ -136,7 +136,7 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 		wmove(win, py, mx - 1);
 		break;
 	case tab: /* Tab forwards or backwards */
-		for( int i = 0; i < P1(0); i++ ) {
+		for( i = 0; i < P1(0); i++ ) {
 			CALL(w == L'Z' ? cbt : ht);
 		}
 		break;
@@ -212,7 +212,7 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 			wclrtoeol(win);
 			break;
 		case 1:
-			for( int i = 0; i <= x; i++ ) {
+			for( i = 0; i <= x; i++ ) {
 				mvwadd_wchnstr(win, py, i, &b, 1);
 			}
 			break;
@@ -237,7 +237,7 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 			wclrtobot(win);
 			break;
 		case 1:
-			for( int i = tos; i < py; i++ ) {
+			for( i = tos; i < py; i++ ) {
 				wmove(win, i, 0);
 				wclrtoeol(win);
 			}
@@ -252,7 +252,7 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 		#if HAVE_ALLOC_PAIR
 		setcchar(&c, L" ", A_NORMAL, alloc_pair(s->fg, s->bg), NULL);
 		#endif
-		for( int i = 0; i < P1(0); i++ )
+		for( i = 0; i < P1(0); i++ )
 			mvwadd_wchnstr(win, py, x + i, &c, 1);
 		wmove(win, py, px);
 		} break;
@@ -316,13 +316,13 @@ case ris: { /* RIS - Reset to Initial State */
     n->s = &n->pri;
     wsetscrreg(n->pri.win, 0, MAX(scrollback_history, n->ws.ws_row));
     wsetscrreg(n->alt.win, 0, n->ws.ws_row);
-    for (int i = 0; i < n->ntabs; i++)
+    for (i = 0; i < n->ntabs; i++)
         n->tabs[i] = (i % n->tabstop == 0);
 	} break;
 
 case mode: { /* Set or Reset Mode */
     bool set = (w == L'h');
-    for (int i = 0; i < argc; i++) switch (P0(i)){
+    for (i = 0; i < argc; i++) switch (P0(i)){
         case  1: n->pnm = set;              break;
         case  3: CALL(cls);                 break;
         case  4: s->insert = set;           break;
@@ -349,7 +349,7 @@ case sgr: { /* SGR - Select Graphic Rendition */
         CALL(sgr0);
 
     short bg = s->bg, fg = s->fg;
-    for (int i = 0; i < argc; i++) switch (P0(i)){
+    for (i = 0; i < argc; i++) switch (P0(i)){
         case  0:  CALL(sgr0);                                              break;
         case  1:  wattron(win,  A_BOLD);                                   break;
         case  2:  wattron(win,  A_DIM);                                    break;
@@ -468,7 +468,7 @@ case print: { /* Print a character to the terminal */
 	} break;
 
 case rep: { /* REP - Repeat Character */
-    for (int i = 0; i < P1(0) && n->repc; i++)
+    for (i = 0; i < P1(0) && n->repc; i++)
         handle_terminal_cmd(v, p, n->repc, 0, 0, NULL, print);
 	} break;
 
