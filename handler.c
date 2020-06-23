@@ -416,15 +416,13 @@ case cr: /* Carriage Return */
 case ind: /* Index */
 	y == (bot - 1) ? scroll(win) : wmove(win, py + 1, x);
 	break;
-
-case nel: { /* NEL - Next Line */
-    CALL(cr); CALL(ind);
-	} break;
-
-case pnl: { /* NL - Newline */
-    CALL((n->lnm? nel : ind));
-	} break;
-
+case nel: /* Next Line */
+	CALL(cr);
+	CALL(ind);
+	break;
+case pnl: /* Newline */
+	CALL((n->lnm? nel : ind));
+	break;
 case cpl: { /* CPL - Cursor Previous Line */
     wmove(win, MAX(tos + top, py - P1(0)), 0);
 	} break;
