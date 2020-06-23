@@ -287,33 +287,34 @@ case decreqtparm: { /* DECREQTPARM - Request Device Parameters */
 	}
 	} break;
 
-case sgr0: { /* Reset SGR to default */
-    wattrset(win, A_NORMAL);
-    wcolor_set(win, 0, NULL);
-    s->fg = s->bg = -1;
-    wbkgdset(win, COLOR_PAIR(0) | ' ');
-	} break;
-
-case cls: { /* Clear screen */
-    CALL(cup);
-    wclrtobot(win);
-    CALL(cup);
-	} break;
-
-case ris: { /* RIS - Reset to Initial State */
-    n->gs = n->gc = n->g0 = CSET_US; n->g1 = CSET_GRAPH;
-    n->g2 = CSET_US; n->g3 = CSET_GRAPH;
-    n->decom = s->insert = s->oxenl = s->xenl = n->lnm = false;
-    CALL(cls);
-    CALL(sgr0);
-    n->am = n->pnm = true;
-    n->pri.vis = n->alt.vis = 1;
-    n->s = &n->pri;
-    wsetscrreg(n->pri.win, 0, MAX(scrollback_history, n->ws.ws_row));
-    wsetscrreg(n->alt.win, 0, n->ws.ws_row);
-    for (i = 0; i < n->ntabs; i++)
-        n->tabs[i] = (i % n->tabstop == 0);
-	} break;
+case sgr0: /* Reset SGR to default */
+	wattrset(win, A_NORMAL);
+	wcolor_set(win, 0, NULL);
+	s->fg = s->bg = -1;
+	wbkgdset(win, COLOR_PAIR(0) | ' ');
+	break;
+case cls: /* Clear screen */
+	CALL(cup);
+	wclrtobot(win);
+	CALL(cup);
+	break;
+case ris: /* Reset to Initial State */
+	n->gs = n->gc = n->g0 = CSET_US;
+	n->g1 = CSET_GRAPH;
+	n->g2 = CSET_US;
+	n->g3 = CSET_GRAPH;
+	n->decom = s->insert = s->oxenl = s->xenl = n->lnm = false;
+	CALL(cls);
+	CALL(sgr0);
+	n->am = n->pnm = true;
+	n->pri.vis = n->alt.vis = 1;
+	n->s = &n->pri;
+	wsetscrreg(n->pri.win, 0, MAX(scrollback_history, n->ws.ws_row));
+	wsetscrreg(n->alt.win, 0, n->ws.ws_row);
+	for( i = 0; i < n->ntabs; i++ ) {
+		n->tabs[i] = (i % n->tabstop == 0);
+	}
+	break;
 
 case mode: { /* Set or Reset Mode */
     bool set = (w == L'h');
