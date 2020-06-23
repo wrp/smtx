@@ -15,12 +15,9 @@
 
 enum cmd {
 	ack = 1, bell, cbt, cls, cnl, cpl, cr, csr, cub, cud, cuf, cup,
-	cuu, dch, decaln, decreqtparm, dsr, ech, ed, el, hpa, ht,
-#if 0
-	decid, hpr, vpr,
-#endif
+	cuu, dch, decaln, decid, decreqtparm, dsr, ech, ed, el, hpa, hpr, ht,
 	hts, ich, idl, ind, mode, nel, numkp, pnl, print, rc, rep,
-	ri, ris, sc, scs, sgr, sgr0, so, su, tab, tbc, vis, vpa
+	ri, ris, sc, scs, sgr, sgr0, so, su, tab, tbc, vis, vpa, vpr
 };
 
 void
@@ -93,7 +90,6 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 		y == top ? wscrl(win, -1) : wmove(win, MAX(tos, py - 1), x);
 		wsetscrreg(win, otop, obot);
 		break;
-#if 0
 	case decid: /* Send Terminal Identification */
 		if( w == L'c' ) {
 			if( iw == L'>' ) {
@@ -105,18 +101,17 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 			safewrite(n->pt, "\033[?6c", 5);
 		}
 		break;
-	case hpr: /* Cursor Horizontal Relative */
-		wmove(win, py, MIN(px + P1(0), mx - 1));
-		break;
-	case vpr: /* Cursor Vertical Relative */
-		wmove(win, MIN(tos + bot - 1, MAX(tos + top, py + P1(0))), x);
-		break;
-#endif
 	case hpa: /* Cursor Horizontal Absolute */
 		wmove(win, py, MIN(P1(0) - 1, mx - 1));
 		break;
+	case hpr: /* Cursor Horizontal Relative */
+		wmove(win, py, MIN(px + P1(0), mx - 1));
+		break;
 	case vpa: /* Cursor Vertical Absolute */
 		wmove(win, MIN(tos + bot - 1, MAX(tos + top, tos + P1(0) - 1)), x);
+		break;
+	case vpr: /* Cursor Vertical Relative */
+		wmove(win, MIN(tos + bot - 1, MAX(tos + top, py + P1(0))), x);
 		break;
 	case cbt: /* Cursor Backwards Tab */
 		for( i = x - 1; i >= 0 && ! n->tabs[i]; i-- ) {
@@ -543,14 +538,11 @@ setupevents(struct proc *n)
 	vtonevent(&n->vp, VTPARSER_CSI,     L'`', hpa);
 	vtonevent(&n->vp, VTPARSER_CSI,     L'^', su);
 	vtonevent(&n->vp, VTPARSER_CSI,     L'@', ich);
-#if 0
-	vtonevent(&n->vp, VTPARSER_CSI,     L'c', decid);
 	vtonevent(&n->vp, VTPARSER_CSI,     L'a', hpr);
-	vtonevent(&n->vp, VTPARSER_CSI,     L'e', vpr);
-	vtonevent(&n->vp, VTPARSER_ESCAPE,  L'Z', decid);
-#endif
 	vtonevent(&n->vp, VTPARSER_CSI,     L'b', rep);
+	vtonevent(&n->vp, VTPARSER_CSI,     L'c', decid);
 	vtonevent(&n->vp, VTPARSER_CSI,     L'd', vpa);
+	vtonevent(&n->vp, VTPARSER_CSI,     L'e', vpr);
 	vtonevent(&n->vp, VTPARSER_CSI,     L'f', cup);
 	vtonevent(&n->vp, VTPARSER_CSI,     L'g', tbc);
 	vtonevent(&n->vp, VTPARSER_CSI,     L'h', mode);
@@ -572,6 +564,7 @@ setupevents(struct proc *n)
 	vtonevent(&n->vp, VTPARSER_ESCAPE,  L'E', nel);
 	vtonevent(&n->vp, VTPARSER_ESCAPE,  L'H', hts);
 	vtonevent(&n->vp, VTPARSER_ESCAPE,  L'M', ri);
+	vtonevent(&n->vp, VTPARSER_ESCAPE,  L'Z', decid);
 	vtonevent(&n->vp, VTPARSER_ESCAPE,  L'c', ris);
 	vtonevent(&n->vp, VTPARSER_ESCAPE,  L'p', vis);
 	vtonevent(&n->vp, VTPARSER_ESCAPE,  L'=', numkp);
