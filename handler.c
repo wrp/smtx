@@ -119,10 +119,8 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 		wmove(win, MIN(tos + bot - 1, MAX(tos + top, tos + P1(0) - 1)), x);
 		break;
 	case cbt: /* Cursor Backwards Tab */
-		for( i = x - 1; i >= 0; i-- ) {
-			if( i < n->ntabs && n->tabs[i] ){
-				break;
-			}
+		for( i = x - 1; i >= 0 && ! n->tabs[i]; i-- ) {
+			assert( i < n->ntabs );
 		}
 		wmove(win, py, i);
 		break;
