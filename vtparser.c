@@ -113,7 +113,7 @@ static void
 docsi(VTPARSER *v, wchar_t w)
 {
 	if( w < MAXCALLBACK && v->csis[w] ) {
-		handle_terminal_cmd(v, NULL, w, v->inter, v->narg, v->args,
+		handle_terminal_cmd2(v, w, v->inter, v->narg, v->args,
 			v->csis[w]);
 	}
 }
