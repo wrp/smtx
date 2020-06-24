@@ -174,23 +174,6 @@ handlechar(VTPARSER *vp, wchar_t w)
 			}
 		}
 	}
-
-#if 0
-	for( ACTION *a = vp->s->actions; a->cb; a++ ) {
-
-		if( w >= a->lo && w <= a->hi ) {
-			a->cb(vp, w);
-			if( a->next ) {
-				vp->s = a->next;
-				if( a->next->entry ) {
-					a->next->entry(vp);
-				}
-			}
-			return;
-		}
-
-	}
-#endif
 }
 
 void
