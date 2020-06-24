@@ -122,8 +122,7 @@ static void
 doprint(VTPARSER *v, wchar_t w)
 {
 	if( v->print ) {
-		handle_terminal_cmd (v, NULL, w, v->inter,
-			0, NULL, v->print);
+		handle_terminal_cmd(v, v->p, w, v->inter, 0, NULL, v->print);
 	}
 }
 
