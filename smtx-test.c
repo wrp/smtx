@@ -269,19 +269,13 @@ test_ich(int fd)
 	for( int i=1; i < 4; i++ ) {
 		expect_row(3 + i, T, "     %d  y%71s", i, "");
 	}
-	/*
-	These should work.  Something about the test harness is
-	incorrect, and the window is not updating (I think).
-	Rather than tracking this down, we should be testing the
-	output of the master pty, though.
-
 	for( int i=4; i < 7; i++ ) {
 		expect_row(3 + i, T, "%80s", "");
 	}
 	for( int i=7; i < 10; i++ ) {
-		expect_row(3 + i, T, "     %d  y%71s", i, "");
+		expect_row(3 + i, T, "     %d  y%71s", i - 3, "");
 	}
-	*/
+	expect_row(13, T, "%-80s", T->ps1);
 	return rv;
 }
 
