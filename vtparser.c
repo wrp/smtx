@@ -34,16 +34,16 @@
 typedef struct ACTION ACTION;
 struct ACTION{
     void (*cb)(VTPARSER *p, wchar_t w);
-    STATE *next;
+    struct state *next;
 };
 
-struct STATE{
+struct state{
     void (*entry)(VTPARSER *v);
     ACTION act[MAXACTIONS];
 };
 
 /**** GLOBALS */
-static STATE ground, escape, escape_intermediate, csi_entry,
+static struct state ground, escape, escape_intermediate, csi_entry,
              csi_ignore, csi_param, csi_intermediate, osc_string;
 
 /**** ACTION FUNCTIONS */
@@ -226,7 +226,7 @@ vtwrite(VTPARSER *vp, const char *s, size_t n)
  */
 
 static void
-initstate(struct STATE *s, void (*entry)(VTPARSER *))
+initstate(struct state *s, void (*entry)(VTPARSER *))
 {
 	s->entry = entry;
 	s->act[0] = (ACTION){ ignore, NULL };

@@ -49,7 +49,6 @@
 #define MAXBUF      100
 
 typedef struct VTPARSER VTPARSER;
-typedef struct STATE STATE;
 typedef void (*VTCALLBACK)(
 	VTPARSER *v,
 	void *p,
@@ -60,7 +59,7 @@ typedef void (*VTCALLBACK)(
 );
 
 struct VTPARSER {
-	STATE *s;
+	struct state *s;
 	int narg;
 	int nosc;
 	int args[MAXPARAM];
