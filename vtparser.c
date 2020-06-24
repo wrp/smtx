@@ -286,15 +286,9 @@ init(void)
 	init_range(&csi_param, 0x40, 0x7e, docsi, &ground);
 
 	initstate(&csi_intermediate, NULL);
-	for( wchar_t i = 0x20; i <= 0x2f; i++ ) {
-		csi_intermediate.act[i] = (ACTION){ collect, NULL };
-	}
-	for( wchar_t i = 0x30; i <= 0x3f; i++ ) {
-		csi_intermediate.act[i] = (ACTION){ ignore, &csi_ignore };
-	}
-	for( wchar_t i = 0x40; i <= 0x7e; i++ ) {
-		csi_intermediate.act[i] = (ACTION){ docsi, &ground };
-	}
+	init_range(&csi_intermediate, 0x20, 0x2f, collect, NULL);
+	init_range(&csi_intermediate, 0x30, 0x3f, ignore, &csi_ignore);
+	init_range(&csi_intermediate, 0x40, 0x7e, docsi, &ground);
 
 	initstate(&osc_string, reset);
 	osc_string.act[0x07] = (ACTION){ doosc, &ground };
