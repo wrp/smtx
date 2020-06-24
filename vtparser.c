@@ -32,8 +32,9 @@
 #define MAXACTIONS  128
 
 typedef struct ACTION ACTION;
+typedef void (*callback)(VTPARSER *p, wchar_t w);
 struct ACTION{
-    void (*cb)(VTPARSER *p, wchar_t w);
+    callback cb;
     struct state *next;
 };
 
@@ -226,21 +227,27 @@ vtwrite(VTPARSER *vp, const char *s, size_t n)
  */
 
 static void
+init_action(struct state *s, wchar_t idx, callback cb, struct state *next)
+{
+	s->act[idx].cb = cb;
+	s->act[idx].next = next;
+}
+
+static void
 initstate(struct state *s, void (*entry)(VTPARSER *))
 {
 	s->entry = entry;
-	s->act[0] = (ACTION){ ignore, NULL };
-	s->act[0x7f] = (ACTION){ ignore, NULL };
-	s->act[0x18] = (ACTION){ docontrol, &ground };
-	s->act[0x1a] = (ACTION){ docontrol, &ground };
-	s->act[0x1b] = (ACTION){ ignore, &escape };
+	init_action(s, 0, ignore, NULL);
+	init_action(s, 0x7f, ignore, NULL);
+	init_action(s, 0x18, docontrol, &ground);
+	init_action(s, 0x1a, docontrol, &ground);
+	init_action(s, 0x1b, ignore, &escape);
 	for( wchar_t i = 0x1; i < 0x20; i++ ) {
 		if( i != 0x18 && i != 0x1a && i != 0x1b ) {
-			s->act[i] = (ACTION){ docontrol, NULL };
+			init_action(s, i, docontrol, NULL);
 		}
 	}
 }
-
 
 static void
 init(void)
@@ -251,7 +258,7 @@ init(void)
 		ground.act[i] = (ACTION){ doprint, NULL };
 	}
 	initstate(&escape, reset);
-	escape.act[0x21] = (ACTION){ ignore, &osc_string };
+	init_action(&escape, 0x21, ignore, &osc_string);
 	escape.act[0x6b] = (ACTION){ ignore, &osc_string };
 	escape.act[0x5d] = (ACTION){ ignore, &osc_string };
 	escape.act[0x5e] = (ACTION){ ignore, &osc_string };
