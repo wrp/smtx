@@ -25,6 +25,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <assert.h>
 #include <stdbool.h>
 #include <string.h>
 #include "vtparser.h"
@@ -136,20 +137,20 @@ doosc(VTPARSER *v, wchar_t w)
 static int initialized;
 static void init(void);
 
-/**** PUBLIC FUNCTIONS */
 void
 vtonevent(VTPARSER *vp, VtEvent t, wchar_t w, int cb)
 {
 	if( ! initialized ) {
 		init();
 	}
-    if (w < MAXCALLBACK) switch (t){
+	assert( w < MAXCALLBACK );
+	switch( t ) {
         case VTPARSER_CONTROL: vp->cons[w] = cb; break;
         case VTPARSER_ESCAPE:  vp->escs[w] = cb; break;
         case VTPARSER_CSI:     vp->csis[w] = cb; break;
         case VTPARSER_PRINT:   vp->print   = cb; break;
         case VTPARSER_OSC:     vp->osc     = cb; break;
-    }
+	}
 }
 
 static void
