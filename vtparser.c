@@ -104,7 +104,7 @@ static void
 doescape(VTPARSER *v, wchar_t w)
 {
 	if( w < MAXCALLBACK && v->escs[w] ) {
-		handle_terminal_cmd( v, NULL, w, v->inter, v->inter > 0,
+		handle_terminal_cmd2(v, w, v->inter, v->inter > 0,
 			&v->inter, v->escs[w]);
 	}
 }
