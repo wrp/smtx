@@ -131,8 +131,7 @@ static void
 doosc(VTPARSER *v, wchar_t w)
 {
 	if( v->osc ) {
-		handle_terminal_cmd (v, NULL, w, v->inter,
-			v->nosc, NULL, v->osc);
+		handle_terminal_cmd2(v, w, v->inter, v->nosc, NULL, v->osc);
 	}
 }
 
