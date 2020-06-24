@@ -278,20 +278,12 @@ init(void)
 	init_range(&csi_ignore, 0x40, 0x7e, ignore, &ground);
 
 	initstate(&csi_param, NULL);
-	for( wchar_t i = 0x30; i <= 0x39; i++ ) {
-		csi_param.act[i] = (ACTION){ param, NULL };
-	}
-	csi_param.act[0x3a] = (ACTION){ ignore, &csi_ignore };
-	csi_param.act[0x3b] = (ACTION){ param, NULL };
-	for( wchar_t i = 0x3c; i <= 0x3f; i++ ) {
-		csi_param.act[i] = (ACTION){ ignore, &csi_ignore };
-	}
-	for( wchar_t i = 0x20; i <= 0x2f; i++ ) {
-		csi_param.act[i] = (ACTION){ collect, &csi_intermediate };
-	}
-	for( wchar_t i = 0x40; i <= 0x7e; i++ ) {
-		csi_param.act[i] = (ACTION){ docsi, &ground };
-	}
+	init_range(&csi_param, 0x20, 0x2f, collect, &csi_intermediate);
+	init_range(&csi_param, 0x30, 0x39, param, NULL);
+	init_action(&csi_param, 0x3a, ignore, &csi_ignore);
+	init_action(&csi_param, 0x3b, param, NULL);
+	init_range(&csi_param, 0x3c, 0x3f, ignore, &csi_ignore);
+	init_range(&csi_param, 0x40, 0x7e, docsi, &ground);
 
 	initstate(&csi_intermediate, NULL);
 	for( wchar_t i = 0x20; i <= 0x2f; i++ ) {
