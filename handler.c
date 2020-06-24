@@ -233,7 +233,7 @@ handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 				wclrtoeol(win);
 			}
 			wmove(win, py, x);
-			handle_terminal_cmd(v, p, w, iw, 1, &o, el);
+			handle_terminal_cmd(v, v->p, w, iw, 1, &o, el);
 			break;
 		}
 		wmove(win, py, px);
