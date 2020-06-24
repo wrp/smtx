@@ -234,6 +234,14 @@ init_action(struct state *s, wchar_t idx, callback cb, struct state *next)
 }
 
 static void
+init_range(struct state *s, wchar_t b, wchar_t e, callback cb, struct state *n)
+{
+	for( ; b <= e; b++ ) {
+		init_action(s, b, cb, n);
+	}
+}
+
+static void
 initstate(struct state *s, void (*entry)(VTPARSER *))
 {
 	s->entry = entry;
@@ -254,9 +262,7 @@ init(void)
 {
 	initialized = 1;
 	initstate(&ground, NULL);
-	for( wchar_t i = 0x20; i < MAXACTIONS; i++ ) {
-		init_action(&ground, i, doprint, NULL);
-	}
+	init_range(&ground, 0x20, MAXACTIONS - 1, doprint, NULL);
 	initstate(&escape, reset);
 	init_action(&escape, 0x21, ignore, &osc_string);
 	init_action(&escape, 0x6b, ignore, &osc_string);
@@ -264,14 +270,10 @@ init(void)
 	init_action(&escape, 0x5e, ignore, &osc_string);
 	init_action(&escape, 0x50, ignore, &osc_string);
 	init_action(&escape, 0x5f, ignore, &osc_string);
-	for( wchar_t i = 0x20; i <= 0x2f; i++ ) {
-		escape.act[i] = (ACTION){ collect, &escape_intermediate };
-	}
-	for( wchar_t i = 0x30; i <= 0x57; i++ ) {
-		if( i != 0x50 ) {
-			escape.act[i] = (ACTION){ doescape, &ground };
-		}
-	}
+	init_range(&escape, 0x20, 0x2f, collect, &escape_intermediate);
+
+	init_range(&escape, 0x30, 0x4f, doescape, &ground);
+	init_range(&escape, 0x51, 0x57, doescape, &ground);
 	for( wchar_t i = 0x60; i <= 0x7e; i++ ) {
 		escape.act[i] = (ACTION){ doescape, &ground };
 	}
