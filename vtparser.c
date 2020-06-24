@@ -29,9 +29,6 @@
 #include <string.h>
 #include "vtparser.h"
 
-/**** DATA TYPES */
-#define MAXACTIONS  128
-
 typedef struct ACTION ACTION;
 typedef void (*callback)(VTPARSER *p, wchar_t w);
 struct ACTION{
@@ -41,7 +38,7 @@ struct ACTION{
 
 struct state{
     void (*entry)(VTPARSER *v);
-    ACTION act[MAXACTIONS];
+    ACTION act[0x80];
 };
 
 /**** GLOBALS */
@@ -246,7 +243,7 @@ init(void)
 {
 	initialized = 1;
 	initstate(&ground, NULL);
-	init_range(&ground, 0x20, MAXACTIONS - 1, doprint, NULL);
+	init_range(&ground, 0x20, 0x7f, doprint, NULL);
 	initstate(&escape, reset);
 	init_action(&escape, 0x21, ignore, &osc_string);
 	init_action(&escape, 0x6b, ignore, &osc_string);
