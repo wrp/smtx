@@ -274,12 +274,8 @@ init(void)
 	init_range(&csi_entry, 0x40, 0x7e, docsi, &ground);
 
 	initstate(&csi_ignore, NULL);
-	for( wchar_t i = 0x20; i <= 0x3f; i++ ) {
-		csi_ignore.act[i] = (ACTION){ ignore, NULL };
-	}
-	for( wchar_t i = 0x40; i <= 0x7e; i++ ) {
-		csi_ignore.act[i] = (ACTION){ ignore, &ground };
-	}
+	init_range(&csi_ignore, 0x20, 0x3f, ignore, NULL);
+	init_range(&csi_ignore, 0x40, 0x7e, ignore, &ground);
 
 	initstate(&csi_param, NULL);
 	for( wchar_t i = 0x30; i <= 0x39; i++ ) {
