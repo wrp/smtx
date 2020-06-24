@@ -180,6 +180,7 @@ vtwrite(VTPARSER *vp, const char *s, size_t n)
 
             case -1: /* invalid character, skip it */
                 w = VTPARSER_BAD_CHAR;
+                memset(&vp->ms, 0, sizeof vp->ms);
                 r = 1;
                 break;
 
