@@ -24,6 +24,7 @@ void
 handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 	int argc, int *argv, enum cmd c)
 {
+	p = v->p;
 	int noclear_repc = 0;
 	int otop = 0, obot = 0;
 	struct proc *n = p;      /* the current proc */
