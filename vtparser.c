@@ -271,7 +271,6 @@ init(void)
 	init_action(&escape, 0x50, ignore, &osc_string);
 	init_action(&escape, 0x5f, ignore, &osc_string);
 	init_range(&escape, 0x20, 0x2f, collect, &escape_intermediate);
-
 	init_range(&escape, 0x30, 0x4f, doescape, &ground);
 	init_range(&escape, 0x51, 0x57, doescape, &ground);
 	init_range(&escape, 0x60, 0x7e, doescape, &ground);
@@ -284,20 +283,12 @@ init(void)
 	init_range(&escape_intermediate, 0x30, 0x7e, doescape, &ground);
 
 	initstate(&csi_entry, reset);
-	for( wchar_t i = 0x20; i <= 0x2f; i++ ) {
-		csi_entry.act[i] = (ACTION){ collect, &csi_intermediate };
-	}
-	csi_entry.act[0x3a] = (ACTION){ ignore,  &csi_ignore};
-	for( wchar_t i = 0x30; i <= 0x39; i++ ) {
-		csi_entry.act[i] = (ACTION){ param, &csi_param };
-	}
-	csi_entry.act[0x3b] = (ACTION){ param, &csi_param };
-	for( wchar_t i = 0x3c; i <= 0x3f; i++ ) {
-		csi_entry.act[i] = (ACTION){ collect, &csi_param };
-	}
-	for( wchar_t i = 0x40; i <= 0x7e; i++ ) {
-		csi_entry.act[i] = (ACTION){ docsi, &ground };
-	}
+	init_range(&csi_entry, 0x20, 0x2f, collect, &csi_intermediate);
+	init_range(&csi_entry, 0x30, 0x39, param, &csi_param);
+	init_action(&csi_entry, 0x3a, ignore, &csi_ignore);
+	init_action(&csi_entry, 0x3b, param, &csi_param);
+	init_range(&csi_entry, 0x3c, 0x3f, collect, &csi_param);
+	init_range(&csi_entry, 0x40, 0x7e, docsi, &ground);
 
 	initstate(&csi_ignore, NULL);
 	for( wchar_t i = 0x20; i <= 0x3f; i++ ) {
