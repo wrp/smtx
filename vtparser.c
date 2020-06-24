@@ -255,15 +255,15 @@ init(void)
 	initialized = 1;
 	initstate(&ground, NULL);
 	for( wchar_t i = 0x20; i < MAXACTIONS; i++ ) {
-		ground.act[i] = (ACTION){ doprint, NULL };
+		init_action(&ground, i, doprint, NULL);
 	}
 	initstate(&escape, reset);
 	init_action(&escape, 0x21, ignore, &osc_string);
-	escape.act[0x6b] = (ACTION){ ignore, &osc_string };
-	escape.act[0x5d] = (ACTION){ ignore, &osc_string };
-	escape.act[0x5e] = (ACTION){ ignore, &osc_string };
-	escape.act[0x50] = (ACTION){ ignore, &osc_string };
-	escape.act[0x5f] = (ACTION){ ignore, &osc_string };
+	init_action(&escape, 0x6b, ignore, &osc_string);
+	init_action(&escape, 0x5d, ignore, &osc_string);
+	init_action(&escape, 0x5e, ignore, &osc_string);
+	init_action(&escape, 0x50, ignore, &osc_string);
+	init_action(&escape, 0x5f, ignore, &osc_string);
 	for( wchar_t i = 0x20; i <= 0x2f; i++ ) {
 		escape.act[i] = (ACTION){ collect, &escape_intermediate };
 	}
