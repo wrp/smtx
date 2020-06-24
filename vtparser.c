@@ -29,16 +29,15 @@
 #include <string.h>
 #include "vtparser.h"
 
-typedef struct ACTION ACTION;
 typedef void (*callback)(VTPARSER *p, wchar_t w);
-struct ACTION{
+struct action {
     callback cb;
     struct state *next;
 };
 
 struct state{
     void (*entry)(VTPARSER *v);
-    ACTION act[0x80];
+    struct action act[0x80];
 };
 
 static struct state ground, escape, escape_intermediate, csi_entry,
@@ -159,7 +158,7 @@ handlechar(VTPARSER *vp, wchar_t w)
 
 	if( w < 0 || w > 127 )
 		return;
-	ACTION *a = vp->s->act + w;
+	struct action *a = vp->s->act + w;
 
 	if( a->cb ) {
 		a->cb(vp, w);
