@@ -33,14 +33,13 @@
 
 typedef struct ACTION ACTION;
 struct ACTION{
-    wchar_t lo, hi;
     void (*cb)(VTPARSER *p, wchar_t w);
     STATE *next;
 };
 
 struct STATE{
     void (*entry)(VTPARSER *v);
-    ACTION actions[MAXACTIONS];
+    ACTION act[MAXACTIONS];
 };
 
 /**** GLOBALS */
@@ -137,10 +136,16 @@ doosc(VTPARSER *v, wchar_t w)
 	}
 }
 
+static int initialized;
+static void init(void);
+
 /**** PUBLIC FUNCTIONS */
 void
 vtonevent(VTPARSER *vp, VtEvent t, wchar_t w, int cb)
 {
+	if( ! initialized ) {
+		init();
+	}
     if (w < MAXCALLBACK) switch (t){
         case VTPARSER_CONTROL: vp->cons[w] = cb; break;
         case VTPARSER_ESCAPE:  vp->escs[w] = cb; break;
@@ -154,7 +159,24 @@ static void
 handlechar(VTPARSER *vp, wchar_t w)
 {
 	vp->s = vp->s ? vp->s : &ground;
+
+	if( w < 0 || w > 127 )
+		return;
+	ACTION *a = vp->s->act + w;
+
+	if( a->cb ) {
+		a->cb(vp, w);
+		if( a->next ) {
+			vp->s = a->next;
+			if( a->next->entry ) {
+				a->next->entry(vp);
+			}
+		}
+	}
+
+#if 0
 	for( ACTION *a = vp->s->actions; a->cb; a++ ) {
+
 		if( w >= a->lo && w <= a->hi ) {
 			a->cb(vp, w);
 			if( a->next ) {
@@ -165,7 +187,9 @@ handlechar(VTPARSER *vp, wchar_t w)
 			}
 			return;
 		}
+
 	}
+#endif
 }
 
 void
@@ -200,7 +224,7 @@ vtwrite(VTPARSER *vp, const char *s, size_t n)
  * Paul Flo Williams: http://vt100.net/emu/dec_ansi_parser
  * Please note that Williams does not (AFAIK) endorse this work.
  */
-#define MAKESTATE(name, onentry, ...)         \
+#define MAKESTATE_OBS(name, onentry, ...)         \
     static STATE name ={                      \
         onentry ,                             \
         {                                     \
@@ -219,62 +243,130 @@ vtwrite(VTPARSER *vp, const char *s, size_t n)
         }                                     \
     }
 
+#if 0
+struct STATE{
+    void (*entry)(VTPARSER *v);
+    ACTION act[MAXACTIONS];
+};
+#endif
+
+#define MAKESTATE(name, onentry, ...)         \
+	name.entry = onentry;                 \
+	name.act[0] = (ACTION){ ignore, NULL };       \
+	name.act[0x7f] = (ACTION){ ignore, NULL };    \
+	name.act[0x18] = (ACTION){ docontrol, &ground }; \
+	name.act[0x1a] = (ACTION){ docontrol, &ground }; \
+	name.act[0x1b] = (ACTION){ ignore, &escape }; \
+	for( wchar_t i = 0x1; i < 0x20; i++ ) { \
+		if( i != 0x18 && i != 0x1a && i != 0x1b )  \
+			name.act[i] = (ACTION){ docontrol, NULL }; \
+	} \
+	__VA_ARGS__
+
+
+static void
+init(void)
+{
+	initialized = 1;
 MAKESTATE(ground, NULL,
-    {0x20, WCHAR_MAX, doprint, NULL}
+	for( wchar_t i = 0x20; i < MAXACTIONS; i++ ) {
+		ground.act[i] = (ACTION){ doprint, NULL };
+	}
 );
 
 MAKESTATE(escape, reset,
-    {0x21, 0x21, ignore,   &osc_string},
-    {0x20, 0x2f, collect,  &escape_intermediate},
-    {0x30, 0x4f, doescape, &ground},
-    {0x51, 0x57, doescape, &ground},
-    {0x59, 0x59, doescape, &ground},
-    {0x5a, 0x5a, doescape, &ground},
-    {0x5c, 0x5c, doescape, &ground},
-    {0x6b, 0x6b, ignore,   &osc_string},
-    {0x60, 0x7e, doescape, &ground},
-    {0x5b, 0x5b, ignore,   &csi_entry},
-    {0x5d, 0x5d, ignore,   &osc_string},
-    {0x5e, 0x5e, ignore,   &osc_string},
-    {0x50, 0x50, ignore,   &osc_string},
-    {0x5f, 0x5f, ignore,   &osc_string}
+	escape.act[0x21] = (ACTION){ ignore, &osc_string };
+	escape.act[0x6b] = (ACTION){ ignore, &osc_string };
+	escape.act[0x5d] = (ACTION){ ignore, &osc_string };
+	escape.act[0x5e] = (ACTION){ ignore, &osc_string };
+	escape.act[0x50] = (ACTION){ ignore, &osc_string };
+	escape.act[0x5f] = (ACTION){ ignore, &osc_string };
+	for( wchar_t i = 0x20; i <= 0x2f; i++ ) {
+		escape.act[i] = (ACTION){ collect, &escape_intermediate };
+	}
+	for( wchar_t i = 0x30; i <= 0x57; i++ ) {
+		if( i != 0x50 ) {
+			escape.act[i] = (ACTION){ doescape, &ground };
+		}
+	}
+	for( wchar_t i = 0x60; i <= 0x7e; i++ ) {
+		escape.act[i] = (ACTION){ doescape, &ground };
+	}
+	escape.act[0x59] = (ACTION){ doescape, &ground };
+	escape.act[0x5a] = (ACTION){ doescape, &ground };
+	escape.act[0x5b] = (ACTION){ ignore, &csi_entry };
+	escape.act[0x5c] = (ACTION){ doescape, &ground };
+
 );
 
 MAKESTATE(escape_intermediate, NULL,
-    {0x20, 0x2f, collect,  NULL},
-    {0x30, 0x7e, doescape, &ground}
+	for( wchar_t i = 0x20; i <= 0x2f; i++ ) {
+		escape_intermediate.act[i] = (ACTION){ collect, NULL };
+	}
+	for( wchar_t i = 0x30; i <= 0x7e; i++ ) {
+		escape_intermediate.act[i] = (ACTION){ doescape, &ground };
+	}
 );
 
 MAKESTATE(csi_entry, reset,
-    {0x20, 0x2f, collect, &csi_intermediate},
-    {0x3a, 0x3a, ignore,  &csi_ignore},
-    {0x30, 0x39, param,   &csi_param},
-    {0x3b, 0x3b, param,   &csi_param},
-    {0x3c, 0x3f, collect, &csi_param},
-    {0x40, 0x7e, docsi,   &ground}
+	for( wchar_t i = 0x20; i <= 0x2f; i++ ) {
+		csi_entry.act[i] = (ACTION){ collect, &csi_intermediate };
+	}
+	csi_entry.act[0x3a] = (ACTION){ ignore,  &csi_ignore};
+	for( wchar_t i = 0x30; i <= 0x39; i++ ) {
+		csi_entry.act[i] = (ACTION){ param, &csi_param };
+	}
+	csi_entry.act[0x3b] = (ACTION){ param, &csi_param };
+	for( wchar_t i = 0x3c; i <= 0x3f; i++ ) {
+		csi_entry.act[i] = (ACTION){ collect, &csi_param };
+	}
+	for( wchar_t i = 0x40; i <= 0x7e; i++ ) {
+		csi_entry.act[i] = (ACTION){ docsi, &ground };
+	}
 );
 
 MAKESTATE(csi_ignore, NULL,
-    {0x20, 0x3f, ignore, NULL},
-    {0x40, 0x7e, ignore, &ground}
+	for( wchar_t i = 0x20; i <= 0x3f; i++ ) {
+		csi_ignore.act[i] = (ACTION){ ignore, NULL };
+	}
+	for( wchar_t i = 0x40; i <= 0x7e; i++ ) {
+		csi_ignore.act[i] = (ACTION){ ignore, &ground };
+	}
 );
 
 MAKESTATE(csi_param, NULL,
-    {0x30, 0x39, param,   NULL},
-    {0x3b, 0x3b, param,   NULL},
-    {0x3a, 0x3a, ignore,  &csi_ignore},
-    {0x3c, 0x3f, ignore,  &csi_ignore},
-    {0x20, 0x2f, collect, &csi_intermediate},
-    {0x40, 0x7e, docsi,   &ground}
+	for( wchar_t i = 0x30; i <= 0x39; i++ ) {
+		csi_param.act[i] = (ACTION){ param, NULL };
+	}
+	csi_param.act[0x3a] = (ACTION){ ignore, &csi_ignore };
+	csi_param.act[0x3b] = (ACTION){ param, NULL };
+	for( wchar_t i = 0x3c; i <= 0x3f; i++ ) {
+		csi_param.act[i] = (ACTION){ ignore, &csi_ignore };
+	}
+	for( wchar_t i = 0x20; i <= 0x2f; i++ ) {
+		csi_param.act[i] = (ACTION){ collect, &csi_intermediate };
+	}
+	for( wchar_t i = 0x40; i <= 0x7e; i++ ) {
+		csi_param.act[i] = (ACTION){ docsi, &ground };
+	}
 );
 
 MAKESTATE(csi_intermediate, NULL,
-    {0x20, 0x2f, collect, NULL},
-    {0x30, 0x3f, ignore,  &csi_ignore},
-    {0x40, 0x7e, docsi,   &ground}
+	for( wchar_t i = 0x20; i <= 0x2f; i++ ) {
+		csi_intermediate.act[i] = (ACTION){ collect, NULL };
+	}
+	for( wchar_t i = 0x30; i <= 0x3f; i++ ) {
+		csi_intermediate.act[i] = (ACTION){ ignore, &csi_ignore };
+	}
+	for( wchar_t i = 0x40; i <= 0x7e; i++ ) {
+		csi_intermediate.act[i] = (ACTION){ docsi, &ground };
+	}
 );
 
 MAKESTATE(osc_string, reset,
-    {0x07, 0x07, doosc, &ground},
-    {0x20, 0x7f, collectosc, NULL}
+	osc_string.act[0x07] = (ACTION){ doosc, &ground };
+	for( wchar_t i = 0x20; i <= 0x7f; i++ ) {
+		osc_string.act[i] = (ACTION){ collectosc, NULL };
+	}
 );
+}
