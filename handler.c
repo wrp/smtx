@@ -10,8 +10,7 @@
 #define PD(x, d) (argc < (x) || !argv? (d) : argv[(x)])
 #define P0(x) PD(x, 0)
 #define P1(x) (!P0(x)? 1 : P0(x))
-#define CALL(x) handle_terminal_cmd(v, NULL, 0, 0, 0, NULL, x)
-
+#define CALL(x) handle_terminal_cmd2(v, 0, 0, 0, NULL, x)
 
 enum cmd {
 	ack = 1, bell, cbt, cls, cnl, cpl, cr, csr, cub, cud, cuf, cup,
@@ -19,6 +18,9 @@ enum cmd {
 	hts, ich, idl, ind, mode, nel, numkp, pnl, print, rc, rep,
 	ri, ris, sc, scs, sgr, sgr0, so, su, tab, tbc, vis, vpa, vpr
 };
+
+void handle_terminal_cmd2(VTPARSER *v, wchar_t w, wchar_t iw,
+	int argc, int *argv, enum cmd c);
 
 void
 handle_terminal_cmd(VTPARSER *v, void *unused, wchar_t w, wchar_t iw,
@@ -502,6 +504,13 @@ case so: { /* Switch Out/In Character Set */
 	if( !noclear_repc ) {
 		n->repc = 0;
 	}
+}
+
+void
+handle_terminal_cmd2(VTPARSER *v, wchar_t w, wchar_t iw,
+	int argc, int *argv, enum cmd c)
+{
+	handle_terminal_cmd(v, v->p, w, iw, argc, argv, c);
 }
 
 void
