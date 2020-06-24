@@ -87,13 +87,16 @@ param(VTPARSER *v, wchar_t w)
 }
 
 extern void
+handle_terminal_cmd2(VTPARSER *v, wchar_t w, wchar_t iw,
+	int argc, int *argv, int);
+extern void
 handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 	int argc, int *argv, int);
 static void
 docontrol(VTPARSER *v, wchar_t w)
 {
 	if( w < MAXCALLBACK && v->cons[w] ) {
-		handle_terminal_cmd(v, NULL, w, v->inter, 0, NULL, v->cons[w]);
+		handle_terminal_cmd2(v, w, v->inter, 0, NULL, v->cons[w]);
 	}
 }
 
