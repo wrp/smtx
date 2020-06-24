@@ -235,7 +235,7 @@ handle_terminal_cmd(VTPARSER *v, void *unused, wchar_t w, wchar_t iw,
 				wclrtoeol(win);
 			}
 			wmove(win, py, x);
-			handle_terminal_cmd(v, v->p, w, iw, 1, &o, el);
+			handle_terminal_cmd2(v, w, iw, 1, &o, el);
 			break;
 		}
 		wmove(win, py, px);
@@ -461,7 +461,7 @@ case print: { /* Print a character to the terminal */
 
 case rep: { /* REP - Repeat Character */
     for (i = 0; i < P1(0) && n->repc; i++)
-        handle_terminal_cmd(v, v->p, n->repc, 0, 0, NULL, print);
+        handle_terminal_cmd2(v, n->repc, 0, 0, NULL, print);
 	} break;
 
 case scs: { /* Select Character Set */
@@ -579,5 +579,5 @@ setupevents(VTPARSER *v)
 	vtonevent(v, VTPARSER_ESCAPE,  L'=', numkp);
 	vtonevent(v, VTPARSER_ESCAPE,  L'>', numkp);
 	vtonevent(v, VTPARSER_PRINT,   0,    print);
-	handle_terminal_cmd(v, v->p, L'c', 0, 0, NULL, ris);
+	handle_terminal_cmd2(v, L'c', 0, 0, NULL, ris);
 }
