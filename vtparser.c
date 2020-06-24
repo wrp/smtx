@@ -86,11 +86,14 @@ param(VTPARSER *v, wchar_t w)
         v->args[v->narg - 1] = v->args[v->narg - 1] * 10 + (w - '0');
 }
 
-extern void
-handle_terminal_cmd2(VTPARSER *v, wchar_t w, wchar_t iw,
+/*
+ * TODO: There is a memory issue somewhere.  If we replace handle_terminal_cmd
+ * with the wrapper in doprint, the tests fail.  Need to track down the
+ * error.
+ */
+extern void handle_terminal_cmd2(VTPARSER *v, wchar_t w, wchar_t iw,
 	int argc, int *argv, int);
-extern void
-handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
+extern void handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 	int argc, int *argv, int);
 static void
 docontrol(VTPARSER *v, wchar_t w)
