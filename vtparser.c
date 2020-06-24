@@ -1,4 +1,5 @@
 /* Copyright (c) 2017-2019 Rob King
+ * Copyright (c) 2020 William R. Pursell
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
