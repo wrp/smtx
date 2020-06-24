@@ -229,11 +229,9 @@ initstate(struct state *s, void (*entry)(VTPARSER *))
 	init_action(s, 0x18, docontrol, &ground);
 	init_action(s, 0x1a, docontrol, &ground);
 	init_action(s, 0x1b, ignore, &escape);
-	for( wchar_t i = 0x1; i < 0x20; i++ ) {
-		if( i != 0x18 && i != 0x1a && i != 0x1b ) {
-			init_action(s, i, docontrol, NULL);
-		}
-	}
+	init_range(s, 0x01, 0x17, docontrol, NULL);
+	init_action(s, 0x19, docontrol, NULL);
+	init_range(s, 0x1c, 0x1f, docontrol, NULL);
 }
 
 static void
