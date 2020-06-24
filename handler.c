@@ -261,16 +261,18 @@ case dsr: { /* DSR - Device Status Report */
 	safewrite(n->pt, buf, strlen(buf));
 	} break;
 
-case idl: { /* IL or DL - Insert/Delete Line */
-    /* we don't use insdelln here because it inserts above and not below,
-     * and has a few other edge cases... */
-    int p1 = MIN(P1(0), (my - 1) - y);
-    wgetscrreg(win, &otop, &obot);
-    wsetscrreg(win, py, obot);
-    wscrl(win, w == L'L'? -p1 : p1);
-    wsetscrreg(win, otop, obot);
-    wmove(win, py, 0);
-	} break;
+case idl: /* Insert/Delete Line */
+	/* we don't use insdelln here because it inserts above and not below,
+	* and has a few other edge cases... */
+	{
+		int p1 = MIN(P1(0), my - 1 - y);
+		wgetscrreg(win, &otop, &obot);
+		wsetscrreg(win, py, obot);
+		wscrl(win, w == L'L' ? -p1 : p1);
+		wsetscrreg(win, otop, obot);
+		wmove(win, py, 0);
+	}
+	break;
 
 case csr: { /* CSR - Change Scrolling Region */
     if (wsetscrreg(win, tos + P1(0) - 1, tos + PD(1, my) - 1) == OK)
