@@ -41,17 +41,15 @@ struct state{
     ACTION act[0x80];
 };
 
-/**** GLOBALS */
 static struct state ground, escape, escape_intermediate, csi_entry,
-             csi_ignore, csi_param, csi_intermediate, osc_string;
+	csi_ignore, csi_param, csi_intermediate, osc_string;
 
-/**** ACTION FUNCTIONS */
 static void
 reset(VTPARSER *v)
 {
-    v->inter = v->narg = v->nosc = 0;
-    memset(v->args, 0, sizeof(v->args));
-    memset(v->oscbuf, 0, sizeof(v->oscbuf));
+	v->inter = v->narg = v->nosc = 0;
+	memset(v->args, 0, sizeof v->args);
+	memset(v->oscbuf, 0, sizeof v->oscbuf);
 }
 
 static void
