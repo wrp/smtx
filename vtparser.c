@@ -176,28 +176,24 @@ handlechar(VTPARSER *vp, wchar_t w)
 void
 vtwrite(VTPARSER *vp, const char *s, size_t n)
 {
-    wchar_t w = 0;
-    while (n){
-        size_t r = mbrtowc(&w, s, n, &vp->ms);
-        switch (r){
-            case -2: /* incomplete character, try again */
-                return;
-
-            case -1: /* invalid character, skip it */
-                w = VTPARSER_BAD_CHAR;
-                memset(&vp->ms, 0, sizeof vp->ms);
-                r = 1;
-                break;
-
-            case 0: /* literal zero, write it but advance */
-                r = 1;
-                break;
-        }
-
-        n -= r;
-        s += r;
-        handlechar(vp, w);
-    }
+	wchar_t w = 0;
+	while( n ) {
+		size_t r = mbrtowc(&w, s, n, &vp->ms);
+		switch( r ) {
+		case -2: /* incomplete character, try again */
+			return;
+		case -1: /* invalid character, skip it */
+			w = VTPARSER_BAD_CHAR;
+			memset(&vp->ms, 0, sizeof vp->ms);
+			r = 1;
+			break;
+		case 0: /* literal zero, write it and advance */
+			r = 1;
+		}
+		n -= r;
+		s += r;
+		handlechar(vp, w);
+	}
 }
 
 /*
