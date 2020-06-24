@@ -10,7 +10,7 @@
 #define PD(x, d) (argc < (x) || !argv? (d) : argv[(x)])
 #define P0(x) PD(x, 0)
 #define P1(x) (!P0(x)? 1 : P0(x))
-#define CALL(x) handle_terminal_cmd(v, v->p, 0, 0, 0, NULL, x)
+#define CALL(x) handle_terminal_cmd(v, NULL, 0, 0, 0, NULL, x)
 
 
 enum cmd {
