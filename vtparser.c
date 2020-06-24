@@ -73,12 +73,13 @@ collectosc(VTPARSER *v, wchar_t w)
 static void
 param(VTPARSER *v, wchar_t w)
 {
-    v->narg = v->narg? v->narg : 1;
-
-    if (w == L';')
-        v->args[v->narg++] = 0;
-    else if (v->narg < MAXPARAM && v->args[v->narg - 1] < 9999)
-        v->args[v->narg - 1] = v->args[v->narg - 1] * 10 + (w - '0');
+	v->narg = v->narg ? v->narg : 1;
+	int *a = v->args + v->narg - 1;
+	if( w == L';' ) {
+		v->args[v->narg++] = 0;
+	} else if( v->narg < MAXPARAM && *a < 9999 ) {
+		*a = *a * 10 + w - '0';
+	}
 }
 
 /*
