@@ -292,7 +292,5 @@ init(void)
 
 	initstate(&osc_string, reset);
 	osc_string.act[0x07] = (ACTION){ doosc, &ground };
-	for( wchar_t i = 0x20; i <= 0x7f; i++ ) {
-		osc_string.act[i] = (ACTION){ collectosc, NULL };
-	}
+	init_range(&osc_string, 0x20, 0x7f, collectosc, NULL);
 }
