@@ -459,7 +459,7 @@ case print: { /* Print a character to the terminal */
 
 case rep: { /* REP - Repeat Character */
     for (i = 0; i < P1(0) && n->repc; i++)
-        handle_terminal_cmd(v, p, n->repc, 0, 0, NULL, print);
+        handle_terminal_cmd(v, v->p, n->repc, 0, 0, NULL, print);
 	} break;
 
 case scs: { /* Select Character Set */
