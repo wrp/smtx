@@ -287,6 +287,6 @@ init(void)
 	init_range(&csi_intermediate, 0x40, 0x7e, docsi, &ground);
 
 	initstate(&osc_string, reset);
-	osc_string.act[0x07] = (ACTION){ doosc, &ground };
+	init_action(&osc_string, 0x07, doosc, &ground);
 	init_range(&osc_string, 0x20, 0x7f, collectosc, NULL);
 }
