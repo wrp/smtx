@@ -21,13 +21,13 @@ enum cmd {
 };
 
 void
-handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
+handle_terminal_cmd(VTPARSER *v, void *unused, wchar_t w, wchar_t iw,
 	int argc, int *argv, enum cmd c)
 {
-	p = v->p;
+	(void)unused;
 	int noclear_repc = 0;
 	int otop = 0, obot = 0;
-	struct proc *n = p;      /* the current proc */
+	struct proc *n = v->p;   /* the current proc */
 	struct screen *s = n->s; /* the current SCRN buffer */
 	WINDOW *win = s->win;    /* the current window */
 	int y, x;                /* cursor position */
