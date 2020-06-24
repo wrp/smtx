@@ -55,13 +55,16 @@ reset(VTPARSER *v)
 static void
 ignore(VTPARSER *v, wchar_t w)
 {
-    (void)v; (void)w; /* avoid warnings */
+	(void)v;
+	(void)w;
 }
 
 static void
 collect(VTPARSER *v, wchar_t w)
 {
-    v->inter = v->inter? v->inter : (int)w;
+	if( !v->inter ) {
+		v->inter = (int)w;
+	}
 }
 
 static void
