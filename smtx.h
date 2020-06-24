@@ -123,7 +123,7 @@ extern void fixcursor(void);
 
 extern struct canvas * init(int, int);
 extern void draw(struct canvas *);
-extern void setupevents(struct proc *);
+extern void setupevents(VTPARSER *);
 extern void safewrite(int fd, const char *b, size_t n);
 extern void main_loop(void);
 extern void build_bindings(void);

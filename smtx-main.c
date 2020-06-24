@@ -285,7 +285,8 @@ new_screens(struct proc *p)
 		keypad(s->win, TRUE);
 	}
 	p->s = &p->pri;
-	setupevents(p);
+	p->vp.p = p;
+	setupevents(&p->vp);
 	return 1;
 }
 
