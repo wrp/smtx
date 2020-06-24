@@ -510,7 +510,7 @@ void
 handle_terminal_cmd2(VTPARSER *v, wchar_t w, wchar_t iw,
 	int argc, int *argv, enum cmd c)
 {
-	handle_terminal_cmd(v, v->p, w, iw, argc, argv, c);
+	handle_terminal_cmd(v, NULL, w, iw, argc, argv, c);
 }
 
 void
