@@ -274,21 +274,14 @@ init(void)
 
 	init_range(&escape, 0x30, 0x4f, doescape, &ground);
 	init_range(&escape, 0x51, 0x57, doescape, &ground);
-	for( wchar_t i = 0x60; i <= 0x7e; i++ ) {
-		escape.act[i] = (ACTION){ doescape, &ground };
-	}
-	escape.act[0x59] = (ACTION){ doescape, &ground };
-	escape.act[0x5a] = (ACTION){ doescape, &ground };
-	escape.act[0x5b] = (ACTION){ ignore, &csi_entry };
-	escape.act[0x5c] = (ACTION){ doescape, &ground };
+	init_range(&escape, 0x60, 0x7e, doescape, &ground);
+	init_range(&escape, 0x59, 0x5a, doescape, &ground);
+	init_action(&escape, 0x5b, ignore, &csi_entry);
+	init_action(&escape, 0x5c, doescape, &ground);
 
 	initstate(&escape_intermediate, NULL);
-	for( wchar_t i = 0x20; i <= 0x2f; i++ ) {
-		escape_intermediate.act[i] = (ACTION){ collect, NULL };
-	}
-	for( wchar_t i = 0x30; i <= 0x7e; i++ ) {
-		escape_intermediate.act[i] = (ACTION){ doescape, &ground };
-	}
+	init_range(&escape_intermediate, 0x20, 0x2f, collect, NULL);
+	init_range(&escape_intermediate, 0x30, 0x7e, doescape, &ground);
 
 	initstate(&csi_entry, reset);
 	for( wchar_t i = 0x20; i <= 0x2f; i++ ) {
