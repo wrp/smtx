@@ -276,6 +276,10 @@ test_ich(int fd)
 		expect_row(3 + i, T, "     %d  y%71s", i - 3, "");
 	}
 	expect_row(13, T, "%-80s", T->ps1);
+	cmd = "yes | nl | sed 6q; tput cuu 5; tput dl 4; tput cud 1";
+	check_cmd(T, cmd, NULL);
+	expect_row(14, T, "     %d  y%71s", 1, "");
+	expect_row(15, T, "     %d  y%71s", 6, "");
 	return rv;
 }
 
