@@ -10,7 +10,7 @@
 #define PD(x, d) (argc < (x) || !argv? (d) : argv[(x)])
 #define P0(x) PD(x, 0)
 #define P1(x) (!P0(x)? 1 : P0(x))
-#define CALL(x) handle_terminal_cmd2(v, 0, 0, 0, NULL, x)
+#define CALL(x) handle_terminal_cmd(v, 0, 0, 0, NULL, x)
 
 enum cmd {
 	ack = 1, bell, cbt, cls, cnl, cpl, cr, csr, cub, cud, cuf, cup,
@@ -19,14 +19,9 @@ enum cmd {
 	ri, ris, sc, scs, sgr, sgr0, so, su, tab, tbc, vis, vpa, vpr
 };
 
-void handle_terminal_cmd2(VTPARSER *v, wchar_t w, wchar_t iw,
-	int argc, int *argv, enum cmd c);
-
-void
-handle_terminal_cmd(VTPARSER *v, void *unused, wchar_t w, wchar_t iw,
+void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 	int argc, int *argv, enum cmd c)
 {
-	(void)unused;
 	int noclear_repc = 0;
 	int otop = 0, obot = 0;
 	struct proc *n = v->p;   /* the current proc */
@@ -235,7 +230,7 @@ handle_terminal_cmd(VTPARSER *v, void *unused, wchar_t w, wchar_t iw,
 				wclrtoeol(win);
 			}
 			wmove(win, py, x);
-			handle_terminal_cmd2(v, w, iw, 1, &o, el);
+			handle_terminal_cmd(v, w, iw, 1, &o, el);
 			break;
 		}
 		wmove(win, py, px);
@@ -463,7 +458,7 @@ case print: { /* Print a character to the terminal */
 
 case rep: { /* REP - Repeat Character */
     for (i = 0; i < P1(0) && n->repc; i++)
-        handle_terminal_cmd2(v, n->repc, 0, 0, NULL, print);
+        handle_terminal_cmd(v, n->repc, 0, 0, NULL, print);
 	} break;
 
 case scs: { /* Select Character Set */
@@ -506,13 +501,6 @@ case so: { /* Switch Out/In Character Set */
 	if( !noclear_repc ) {
 		n->repc = 0;
 	}
-}
-
-void
-handle_terminal_cmd2(VTPARSER *v, wchar_t w, wchar_t iw,
-	int argc, int *argv, enum cmd c)
-{
-	handle_terminal_cmd(v, NULL, w, iw, argc, argv, c);
 }
 
 void
@@ -581,5 +569,5 @@ setupevents(VTPARSER *v)
 	vtonevent(v, VTPARSER_ESCAPE,  L'=', numkp);
 	vtonevent(v, VTPARSER_ESCAPE,  L'>', numkp);
 	vtonevent(v, VTPARSER_PRINT,   0,    print);
-	handle_terminal_cmd2(v, L'c', 0, 0, NULL, ris);
+	handle_terminal_cmd(v, L'c', 0, 0, NULL, ris);
 }
