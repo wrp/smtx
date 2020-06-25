@@ -24,8 +24,8 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 {
 	int noclear_repc = 0;
 	int otop = 0, obot = 0;
-	struct proc *n = v->p;   /* the current proc */
-	struct screen *s = n->s; /* the current SCRN buffer */
+	struct proc *p = v->p;   /* the current proc */
+	struct screen *s = p->s; /* the current SCRN buffer */
 	WINDOW *win = s->win;    /* the current window */
 	int y, x;                /* cursor position */
 	int my, mx;              /* max possible values for x and y */
@@ -46,14 +46,14 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		beep();
 		break;
 	case numkp: /* Application/Numeric Keypad Mode */
-		n->pnm = (w == L'=');
+		p->pnm = (w == L'=');
 		break;
 	case vis: /* Cursor visibility */
 		s->vis = iw == L'6'? 0 : 1;
 		break;
 	case cup: /* Cursor Position */
 		s->xenl = false;
-		wmove(win, tos + (n->decom? top : 0) + P1(0) - 1, P1(1) - 1);
+		wmove(win, tos + (p->decom? top : 0) + P1(0) - 1, P1(1) - 1);
 		break;
 	case dch: /* Delete Character */
 		for( i = 0; i < P1(0); i++ ) {
@@ -75,11 +75,11 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		wmove(win, py, MIN(x + P1(0), mx - 1));
 		break;
 	case ack: /* Acknowledge Enquiry */
-		safewrite(n->pt, "\006", 1);
+		safewrite(p->pt, "\006", 1);
 		break;
 	case hts: /* Horizontal Tab Set */
-		if( x < n->ntabs && x > 0 ) {
-			n->tabs[x] = true;
+		if( x < p->ntabs && x > 0 ) {
+			p->tabs[x] = true;
 		}
 		break;
 	case ri: /* Reverse Index (scroll back) */
@@ -91,12 +91,12 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 	case decid: /* Send Terminal Identification */
 		if( w == L'c' ) {
 			if( iw == L'>' ) {
-				safewrite(n->pt, "\033[>1;10;0c", 10);
+				safewrite(p->pt, "\033[>1;10;0c", 10);
 			} else {
-				safewrite(n->pt, "\033[?1;2c", 7);
+				safewrite(p->pt, "\033[?1;2c", 7);
 			}
 		} else if( w == L'Z' ) {
-			safewrite(n->pt, "\033[?6c", 5);
+			safewrite(p->pt, "\033[?6c", 5);
 		}
 		break;
 	case hpa: /* Cursor Horizontal Absolute */
@@ -112,14 +112,14 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		wmove(win, MIN(tos + bot - 1, MAX(tos + top, py + P1(0))), x);
 		break;
 	case cbt: /* Cursor Backwards Tab */
-		for( i = x - 1; i >= 0 && ! n->tabs[i]; i-- ) {
-			assert( i < n->ntabs );
+		for( i = x - 1; i >= 0 && ! p->tabs[i]; i-- ) {
+			assert( i < p->ntabs );
 		}
 		wmove(win, py, i);
 		break;
 	case ht: /* Horizontal Tab */
-		for( i = x + 1; i < mx - 1 && !n->tabs[i]; i++ ) {
-			assert(i < n->ntabs);
+		for( i = x + 1; i < mx - 1 && !p->tabs[i]; i++ ) {
+			assert(i < p->ntabs);
 		}
 		wmove(win, py, i);
 		break;
@@ -148,7 +148,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		s->sbg = s->bg;                          /* background color */
 		s->oxenl = s->xenl;                      /* xenl state */
 		s->saved = true;                         /* data is valid */
-		n->sgc = n->gc; n->sgs = n->gs;          /* character sets */
+		p->sgc = p->gc; p->sgs = p->gs;          /* character sets */
 		break;
 	case rc: /* Restore Cursor */
 		if( iw == L'#' ) {
@@ -163,7 +163,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		s->fg = s->sfg;                        /* foreground color */
 		s->bg = s->sbg;                        /* background color */
 		s->xenl = s->oxenl;                    /* xenl state */
-		n->gc = n->sgc; n->gs = n->sgs;        /* save character sets */
+		p->gc = p->sgc; p->gs = p->sgs;        /* save character sets */
 
 		/* restore colors */
 		#if HAVE_ALLOC_PAIR
@@ -175,13 +175,13 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		#endif
 		break;
 	case tbc: /* Tabulation Clear */
-		if( n->tabs != NULL ) {
+		if( p->tabs != NULL ) {
 			switch( argc >= 0 && argv ? argv[0] : 0 ) {
 			case 0:
-				n->tabs[x < n->ntabs ? x : 0] = false;
+				p->tabs[x < p->ntabs ? x : 0] = false;
 				break;
 			case 3:
-				memset(n->tabs, 0, n->ntabs * sizeof *n->tabs);
+				memset(p->tabs, 0, p->ntabs * sizeof *p->tabs);
 				break;
 			}
 		}
@@ -249,11 +249,11 @@ case dsr: { /* DSR - Device Status Report */
 	char buf[100] = {0};
 	if( P0(0) == 6 ) {
 		snprintf(buf, sizeof(buf) - 1, "\033[%d;%dR",
-                 (n->decom? y - top : y) + 1, x + 1);
+                 (p->decom? y - top : y) + 1, x + 1);
 	} else {
 		snprintf(buf, sizeof(buf) - 1, "\033[0n");
 	}
-	safewrite(n->pt, buf, strlen(buf));
+	safewrite(p->pt, buf, strlen(buf));
 	} break;
 
 case idl: /* Insert/Delete Line */
@@ -276,9 +276,9 @@ case csr: { /* CSR - Change Scrolling Region */
 
 case decreqtparm: { /* DECREQTPARM - Request Device Parameters */
 	if( P0(0) ) {
-		safewrite(n->pt, "\033[3;1;2;120;1;0x", 16);
+		safewrite(p->pt, "\033[3;1;2;120;1;0x", 16);
 	} else {
-		safewrite(n->pt, "\033[2;1;2;120;128;1;0x", 20);
+		safewrite(p->pt, "\033[2;1;2;120;128;1;0x", 20);
 	}
 	} break;
 
@@ -294,43 +294,43 @@ case cls: /* Clear screen */
 	CALL(cup);
 	break;
 case ris: /* Reset to Initial State */
-	n->gs = n->gc = n->g0 = CSET_US;
-	n->g1 = CSET_GRAPH;
-	n->g2 = CSET_US;
-	n->g3 = CSET_GRAPH;
-	n->decom = s->insert = s->oxenl = s->xenl = n->lnm = false;
+	p->gs = p->gc = p->g0 = CSET_US;
+	p->g1 = CSET_GRAPH;
+	p->g2 = CSET_US;
+	p->g3 = CSET_GRAPH;
+	p->decom = s->insert = s->oxenl = s->xenl = p->lnm = false;
 	CALL(cls);
 	CALL(sgr0);
-	n->am = n->pnm = true;
-	n->pri.vis = n->alt.vis = 1;
-	n->s = &n->pri;
-	wsetscrreg(n->pri.win, 0, MAX(scrollback_history, n->ws.ws_row));
-	wsetscrreg(n->alt.win, 0, n->ws.ws_row);
-	memset(n->tabs, 0, n->ntabs * sizeof *n->tabs);
-	for( i = 0; i < n->ntabs; i += n->tabstop ) {
-		n->tabs[i] = true;
+	p->am = p->pnm = true;
+	p->pri.vis = p->alt.vis = 1;
+	p->s = &p->pri;
+	wsetscrreg(p->pri.win, 0, MAX(scrollback_history, p->ws.ws_row));
+	wsetscrreg(p->alt.win, 0, p->ws.ws_row);
+	memset(p->tabs, 0, p->ntabs * sizeof *p->tabs);
+	for( i = 0; i < p->ntabs; i += p->tabstop ) {
+		p->tabs[i] = true;
 	}
 	break;
 
 case mode: { /* Set or Reset Mode */
     bool set = (w == L'h');
     for (i = 0; i < argc; i++) switch (P0(i)){
-        case  1: n->pnm = set;              break;
+        case  1: p->pnm = set;              break;
         case  3: CALL(cls);                 break;
         case  4: s->insert = set;           break;
-        case  6: n->decom = set; CALL(cup); break;
-        case  7: n->am = set;               break;
-        case 20: n->lnm = set;              break;
+        case  6: p->decom = set; CALL(cup); break;
+        case  7: p->am = set;               break;
+        case 20: p->lnm = set;              break;
         case 25: s->vis = set? 1 : 0;       break;
         case 34: s->vis = set? 1 : 2;       break;
         case 1048: CALL((set? sc : rc));    break;
         case 1049:
             CALL((set? sc : rc)); /* fall-through */
-        case 47: case 1047: if (set && n->s != &n->alt){
-                n->s = &n->alt;
+        case 47: case 1047: if (set && p->s != &p->alt){
+                p->s = &p->alt;
                 CALL(cls);
-            } else if (!set && n->s != &n->pri)
-                n->s = &n->pri;
+            } else if (!set && p->s != &p->pri)
+                p->s = &p->pri;
             break;
     }
 	} break;
@@ -418,7 +418,7 @@ case nel: /* Next Line */
 	CALL(ind);
 	break;
 case pnl: /* Newline */
-	CALL((n->lnm? nel : ind));
+	CALL((p->lnm? nel : ind));
 	break;
 case cpl: { /* CPL - Cursor Previous Line */
     wmove(win, MAX(tos + top, py - P1(0)), 0);
@@ -437,37 +437,37 @@ case print: { /* Print a character to the terminal */
 
     if (s->xenl){
         s->xenl = false;
-        if (n->am)
+        if (p->am)
             CALL(nel);
         getyx(win, y, x);
         y -= tos;
     }
 
-    if (w < MAXMAP && n->gc[w])
-        w = n->gc[w];
-    n->repc = w;
+    if (w < MAXMAP && p->gc[w])
+        w = p->gc[w];
+    p->repc = w;
 
     if (x == mx - wcwidth(w)){
         s->xenl = true;
         wins_nwstr(win, &w, 1);
     } else
         waddnwstr(win, &w, 1);
-    n->gc = n->gs;
+    p->gc = p->gs;
 	noclear_repc = 1;
 	} break;
 
 case rep: { /* REP - Repeat Character */
-    for (i = 0; i < P1(0) && n->repc; i++)
-        handle_terminal_cmd(v, n->repc, 0, 0, NULL, print);
+    for (i = 0; i < P1(0) && p->repc; i++)
+        handle_terminal_cmd(v, p->repc, 0, 0, NULL, print);
 	} break;
 
 case scs: { /* Select Character Set */
     wchar_t **t = NULL;
     switch (iw){
-        case L'(': t = &n->g0;  break;
-        case L')': t = &n->g1;  break;
-        case L'*': t = &n->g2;  break;
-        case L'+': t = &n->g3;  break;
+        case L'(': t = &p->g0;  break;
+        case L')': t = &p->g1;  break;
+        case L'*': t = &p->g2;  break;
+        case L'+': t = &p->g3;  break;
         default: return;        break;
     }
     switch (w){
@@ -481,25 +481,25 @@ case scs: { /* Select Character Set */
 
 case so: { /* Switch Out/In Character Set */
     if (w == 0x0e)
-        n->gs = n->gc = n->g1; /* locking shift */
+        p->gs = p->gc = p->g1; /* locking shift */
     else if (w == 0xf)
-        n->gs = n->gc = n->g0; /* locking shift */
-    else if (w == L'n')
-        n->gs = n->gc = n->g2; /* locking shift */
+        p->gs = p->gc = p->g0; /* locking shift */
+    else if (w == L'p')
+        p->gs = p->gc = p->g2; /* locking shift */
     else if (w == L'o')
-        n->gs = n->gc = n->g3; /* locking shift */
+        p->gs = p->gc = p->g3; /* locking shift */
     else if (w == L'N'){
-        n->gs = n->gc; /* non-locking shift */
-        n->gc = n->g2;
+        p->gs = p->gc; /* non-locking shift */
+        p->gc = p->g2;
     } else if (w == L'O'){
-        n->gs = n->gc; /* non-locking shift */
-        n->gc = n->g3;
+        p->gs = p->gc; /* non-locking shift */
+        p->gc = p->g3;
     }
 	} break;
 }
 
 	if( !noclear_repc ) {
-		n->repc = 0;
+		p->repc = 0;
 	}
 }
 
