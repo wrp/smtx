@@ -294,11 +294,12 @@ new_screens(struct proc *p)
 }
 
 static struct proc *
-new_pty(int rows, int cols)
+new_pty(int rows, int cols, struct canvas *c)
 {
 	rows = MAX(rows, scrollback_history);
 	cols = MAX(cols, S.width);
-	struct proc *p = calloc(1, sizeof *p);
+	int count = 1;
+	struct proc *p = calloc(1, sizeof *p + count + sizeof *p->c);
 	if( p != NULL ) {
 		p->ws = (struct winsize) {.ws_row = rows, .ws_col = cols};
 		p->pid = forkpty(&p->pt, NULL, NULL, &p->ws);
@@ -319,6 +320,8 @@ new_pty(int rows, int cols)
 			fcntl(p->pt, F_SETFL, O_NONBLOCK);
 			extend_tabs(p, p->tabstop = 8);
 		}
+		p->canvas_count = count;
+		p->c[0] = c;
 	}
 	return p;
 }
@@ -495,7 +498,7 @@ create(struct canvas *n, const char *arg)
 		v->typ = dir;
 		v->parent = n;
 		n = balance(v);
-		new_screens(v->p = new_pty(LINES, COLS));
+		new_screens(v->p = new_pty(LINES, COLS, v));
 	}
 	reshape(view_root, 0, 0, LINES, COLS);
 	return 0;
@@ -1052,7 +1055,7 @@ init(void)
 	} else {
 		wattron(werr, A_REVERSE);
 		b = newcanvas();
-		if( !b || !new_screens(b->p = new_pty(LINES, COLS)) ) {
+		if( !b || !new_screens(b->p = new_pty(LINES, COLS, b)) ) {
 			warnx("Unable to create root window");
 		}
 		reshape(b, 0, 0, LINES, COLS);

@@ -33,6 +33,8 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 	int top = 0, bot = 0;    /* the scrolling region */
 	int tos = s->tos;        /* top of screen in the pad */
 	int i;
+
+	assert(p->c[0]->p == p);
 	getyx(win, py, px);
 	y = py - s->tos;
 	x = px;

@@ -55,6 +55,7 @@ struct screen {
 	WINDOW *win;
 };
 
+struct canvas;
 struct proc {
 	int pt, ntabs, tabstop; /* Should tabs be in struct screen ? */
 	pid_t pid;
@@ -64,6 +65,8 @@ struct proc {
 	wchar_t *g0, *g1, *g2, *g3, *gc, *gs, *sgc, *sgs;
 	struct winsize ws;
 	VTPARSER vp;
+	int canvas_count;
+	struct canvas *c[];
 };
 
 struct point { int y, x; };
