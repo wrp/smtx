@@ -129,7 +129,7 @@ static int
 test_description(int fd)
 {
 	(void)fd;
-	struct canvas *r = init(24, 80);
+	struct canvas *r = init();
 	expect_layout(r, "*23x80@0,0(0,0)");
 	create(r, "c");
 	expect_layout(r, "*11x80@0,0(0,0); 11x80@12,0(0,0)");
@@ -180,7 +180,7 @@ new_test_canvas(int rows, int cols, const char *ps1)
 	setenv("COLUMNS", buf, 1);
 	struct test_canvas *T = malloc(sizeof *T);
 	if( T == NULL
-		|| (T->c = init(rows, cols)) == NULL
+		|| (T->c = init()) == NULL
 		|| (T->fp = fdopen(T->c->p->pt, "r")) == NULL
 	) {
 		err(1, "Unable to create test canvas\n");

@@ -1026,15 +1026,13 @@ intenv(const char *name, int v)
 }
 
 struct canvas *
-init(int lines, int columns)
+init(void)
 {
 	struct canvas *b = NULL;
 	FD_SET(maxfd, &fds);
 	intenv("SMTX", (int)getpid());
 	setenv("TERM", getterm(), 1);
 	setenv("SMTX_VERSION", VERSION, 1);
-	(void)columns;
-	(void)lines;
 	setlocale(LC_ALL, "");
 	build_bindings();
 	if( initscr() == NULL ) {
@@ -1066,7 +1064,7 @@ smtx_main(int argc, char *const argv[])
 	S.commandkey = CTL('g'); /* Change at runtime with -c */
 	S.width = 80;
 	parse_args(argc, argv);
-	init(0, 0);
+	init();
 	main_loop();
 	endwin();
 	return EXIT_SUCCESS;

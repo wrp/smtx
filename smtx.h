@@ -123,7 +123,7 @@ extern struct canvas *focused;
 extern void focus(struct canvas *, int);
 extern void fixcursor(void);
 
-extern struct canvas * init(int, int);
+extern struct canvas * init(void);
 extern void draw(struct canvas *);
 extern void setupevents(VTPARSER *);
 extern void safewrite(int fd, const char *b, size_t n);
