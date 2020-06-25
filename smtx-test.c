@@ -173,6 +173,11 @@ check_cmd(struct test_canvas *T, const char *cmd, const char *expect, ...)
 struct test_canvas *
 new_test_canvas(int rows, int cols, const char *ps1)
 {
+	char buf[80];
+	snprintf(buf, sizeof buf - 1, "%d", rows);
+	setenv("LINES", buf, 1);
+	snprintf(buf, sizeof buf - 1, "%d", cols);
+	setenv("COLUMNS", buf, 1);
 	struct test_canvas *T = malloc(sizeof *T);
 	if( T == NULL
 		|| (T->c = init(rows, cols)) == NULL
@@ -434,6 +439,8 @@ main(int argc, char *const argv[])
 		{ NULL, NULL, 0 }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
+	setenv("LINES", "24", 1);
+	setenv("COLUMNS", "80", 1);
 	for( v = tab; ( v->f && argc < 2 ) || *++argv; v += 1 ) {
 		const char *name = *argv;
 		if( argc > 1 ) {

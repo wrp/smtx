@@ -1033,8 +1033,8 @@ init(int lines, int columns)
 	intenv("SMTX", (int)getpid());
 	setenv("TERM", getterm(), 1);
 	setenv("SMTX_VERSION", VERSION, 1);
-	intenv("COLUMNS", columns);
-	intenv("LINES", lines);
+	(void)columns;
+	(void)lines;
 	setlocale(LC_ALL, "");
 	build_bindings();
 	if( initscr() == NULL ) {
