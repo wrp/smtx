@@ -86,14 +86,7 @@ param(VTPARSER *v, wchar_t w)
 	}
 }
 
-/*
- * TODO: There is a memory issue somewhere.  If we replace handle_terminal_cmd
- * with the wrapper in doprint, the tests fail.  Need to track down the
- * error.
- */
 extern void handle_terminal_cmd2(VTPARSER *v, wchar_t w, wchar_t iw,
-	int argc, int *argv, int);
-extern void handle_terminal_cmd(VTPARSER *v, void *p, wchar_t w, wchar_t iw,
 	int argc, int *argv, int);
 static void
 docontrol(VTPARSER *v, wchar_t w)
@@ -125,7 +118,7 @@ static void
 doprint(VTPARSER *v, wchar_t w)
 {
 	if( v->print ) {
-		handle_terminal_cmd(v, NULL, w, v->inter, 0, NULL, v->print);
+		handle_terminal_cmd2(v, w, v->inter, 0, NULL, v->print);
 	}
 }
 
