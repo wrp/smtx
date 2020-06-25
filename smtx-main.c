@@ -17,6 +17,9 @@
  */
 /*
    TODO:
+     fix alt screen.   It's wonky (as in, totally does not work).  Need to fix
+       sizing (probably cannot completely disacoosiate the proc from the
+       canvas if we want pagers to work) and implement some tests.
      make tput rep work.  eg, tput rep w 5 should write 5 'w' to term,
        but the parameters do not seem to be getting sent properly.  We get
        argc == 1 and argv[0] == 5 - 1, but the w is chomped.  Note that this
