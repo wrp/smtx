@@ -14,7 +14,7 @@ describe_row(char *desc, size_t siz, WINDOW *w, int row)
 	getyx(w, oy, ox);
 	for( x = 0; x < mx; x++ ) {
 		chtype c = mvwinch(w, row, x);
-		*desc++ = c & A_CHARTEXT;
+		desc[x] = c & A_CHARTEXT;
 	}
 	desc[x] = '\0';
 	wmove(w, oy, ox);
