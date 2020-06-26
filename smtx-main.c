@@ -136,6 +136,8 @@ extend_tabs(struct proc *p, int tabstop)
 		}
 	}
 }
+static struct proc * new_pty(int rows, int cols, struct canvas *c);
+static int new_screens(struct proc *p);
 
 static struct canvas *
 newcanvas()
@@ -148,6 +150,8 @@ newcanvas()
 		n->split_point[1] = 1.0;
 		strncpy(n->title, getshell(), sizeof n->title);
 		n->title[sizeof n->title - 1] = '\0';
+		n->p = new_pty(LINES, COLS, n);
+		new_screens(n->p);
 	}
 	return n;
 }
@@ -277,12 +281,12 @@ new_screens(struct proc *p)
 	int rows = MAX(LINES, scrollback_history);
 	int cols = MAX(COLS, S.width);
 	if( !p ) {
-		return 0;
+		return -1;
 	}
 	resize_pad(&p->pri.win, rows, cols);
 	resize_pad(&p->alt.win, rows, cols);
 	if( ! p->pri.win || !p->alt.win ) {
-		return 0;
+		return -1;
 	}
 	scrollok(p->pri.win, TRUE);
 	scrollok(p->alt.win, TRUE);
@@ -291,7 +295,7 @@ new_screens(struct proc *p)
 	p->s = &p->pri;
 	p->vp.p = p;
 	setupevents(&p->vp);
-	return 1;
+	return 0;
 }
 
 static struct proc *
@@ -498,8 +502,7 @@ create(struct canvas *n, const char *arg)
 	if( v != NULL ) {
 		v->typ = dir;
 		v->parent = n;
-		n = balance(v);
-		new_screens(v->p = new_pty(LINES, COLS, v));
+		balance(v);
 	}
 	reshape(view_root, 0, 0, LINES, COLS);
 	return 0;
@@ -1055,8 +1058,7 @@ init(void)
 		warnx("Unable to create error window");
 	} else {
 		wattron(werr, A_REVERSE);
-		b = newcanvas();
-		if( !b || !new_screens(b->p = new_pty(LINES, COLS, b)) ) {
+		if( ( b = newcanvas()) == NULL ) {
 			warnx("Unable to create root window");
 		}
 		reshape(b, 0, 0, LINES, COLS);
