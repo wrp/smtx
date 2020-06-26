@@ -278,15 +278,15 @@ new_screens(struct proc *p)
 	if( !p ) {
 		return 0;
 	}
-	struct screen *ss[] = { &p->pri, &p->alt, NULL };
-	for( struct screen **t = ss; *t; t += 1 ) {
-		struct screen *s = *t;
-		if( ! resize_pad(&s->win, rows, cols) ) {
-			return 0;
-		}
-		scrollok(s->win, TRUE);
-		keypad(s->win, TRUE);
+	resize_pad(&p->pri.win, rows, cols);
+	resize_pad(&p->alt.win, rows, cols);
+	if( ! p->pri.win || !p->alt.win ) {
+		return 0;
 	}
+	scrollok(p->pri.win, TRUE);
+	scrollok(p->alt.win, TRUE);
+	keypad(p->pri.win, TRUE);
+	keypad(p->alt.win, TRUE);
 	p->s = &p->pri;
 	p->vp.p = p;
 	setupevents(&p->vp);
