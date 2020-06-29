@@ -4,10 +4,6 @@
 
 int rv = EXIT_SUCCESS;
 
-/* TODO
-Add test of a pager.  Need to prevent a regression like that fixed in 4bfc557
-*/
-
 static unsigned
 describe_row(char *desc, size_t siz, WINDOW *w, int row)
 {
@@ -343,6 +339,20 @@ test_el(int fd)
 }
 
 static int
+test_pager(int fd)
+{
+	struct test_canvas *T = new_test_canvas(24, 80, NULL);
+	fd = fileno(T->fp);
+	char cmd[] = "yes | nl | sed 500q | more\rq";
+
+	safewrite(fd, cmd, sizeof cmd - 1);
+	check_cmd(T, "", "*23x80@0,0(1023,%d)", strlen(T->ps1));
+	expect_row(1, T, "     2%-74s", "  y");
+	expect_row(21, T, "    22%-74s", "  y");
+	return rv;
+}
+
+static int
 test_vpa(int fd)
 {
 	(void) fd;
@@ -440,6 +450,7 @@ main(int argc, char *const argv[])
 		F(test_ich, 0),
 		F(test_scrollback, 0),
 		F(test_nel, 0),
+		F(test_pager, 0),
 		{ NULL, NULL, 0 }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);

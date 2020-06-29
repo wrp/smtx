@@ -108,7 +108,7 @@ safewrite(int fd, const char *b, size_t n)
 	while( s != -1 && (b += s) < e ) {
 		if( (s = write(fd, b, e - b)) == -1 && errno != EINTR ) {
 			show_error("write to fd %d", fd); /* uncovered */
-			s = 0; /* uncovered */
+			return; /* TODO: return an error value */
 		}
 	}
 }
