@@ -464,7 +464,7 @@ main(int argc, char *const argv[])
 static int
 execute_test(struct st *v, const char *argv0)
 {
-	char *const args[] = { v->name, NULL };
+	char *const args[] = { v->name, v->name, NULL };
 	int fd;
 	int status;
 
@@ -475,11 +475,10 @@ execute_test(struct st *v, const char *argv0)
 	case 0:
 		rv = 0;
 		if( v->main ) {
-			exit(smtx_main(1, args));
+			exit(smtx_main(1, args + 1));
 		} else {
 			if( strcmp(argv0, v->name) ) {
-				char *const argv[] = { v->name, v->name, NULL };
-				execv(argv0, argv);
+				execv(argv0, args);
 				perror("execv");
 			}
 			exit(v->f(fd));
