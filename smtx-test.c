@@ -4,6 +4,10 @@
 
 int rv = EXIT_SUCCESS;
 
+/* TODO
+Add test of a pager.  Need to prevent a regression like that fixed in 4bfc557
+*/
+
 static unsigned
 describe_row(char *desc, size_t siz, WINDOW *w, int row)
 {
