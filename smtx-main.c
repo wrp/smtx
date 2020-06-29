@@ -17,10 +17,6 @@
  */
 /*
    TODO:
-     fix alt screen.   It's wonky (as in, totally does not work).  Need to fix
-       sizing (probably cannot completely disacoosiate the proc from the
-       canvas if we want pagers to work) and implement some tests.
-       (was broken in 5eb004d8ca982e6789bf2c74bb4c48a8f9bbc593)
      make tput rep work.  eg, tput rep w 5 should write 5 'w' to term,
        but the parameters do not seem to be getting sent properly.  We get
        argc == 1 and argv[0] == 5 - 1, but the w is chomped.  Note that this
@@ -377,22 +373,21 @@ prune(struct canvas *x, const char *arg)
 	return 0;
 }
 
-#if 0
 
-TODO: make this an action
+/* TODO: make this an action */
 static void
 reshape_window(struct canvas *n)
 {
 	struct proc *p = n->p;
 	int h = MAX(n->extent.y, scrollback_history);
 	int w = MAX(n->extent.x, S.width);
-	p->ws = (struct winsize) {.ws_row = h, .ws_col = w};
+	p->ws = (struct winsize) {.ws_row = n->extent.y, .ws_col = w};
 	resize_pad(&p->pri.win, h, w);
 	resize_pad(&p->alt.win, h, w);
 	p->pri.tos = n->offset.y = h - n->extent.y;
 	assert( p->alt.tos == 0 );
 	wsetscrreg(p->pri.win, 0, h - 1);
-	wsetscrreg(p->alt.win, 0, h - 1);
+	wsetscrreg(p->alt.win, 0, n->extent.y - 1);
 	wrefresh(p->s->win);
 	extend_tabs(p, p->tabstop);
 	if( ioctl(p->pt, TIOCSWINSZ, &p->ws) ) {
@@ -402,7 +397,6 @@ reshape_window(struct canvas *n)
 		show_error("kill");
 	}
 }
-#endif
 
 static void
 reshape(struct canvas *n, int y, int x, int h, int w)
@@ -432,8 +426,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		n->extent.y = h1 - 1; /* Subtract one for title line */
 		n->extent.x = w1;
 		if( n->p && n->p->pt >= 0 ) {
-			int h = MAX(n->extent.y, scrollback_history);
-			n->p->pri.tos = n->offset.y = h - n->extent.y;
+			reshape_window(n);
 		} else if( w1 && h1 > 1 ) {
 			resize_pad(&n->win, n->extent.y, n->extent.x);
 			wbkgd(n->win, ACS_CKBOARD);
