@@ -42,9 +42,20 @@
 #define MAX(x, y) ((x) > (y)? (x) : (y))
 #define CTL(x) ((x) & 0x1f)
 
+enum mode {
+	enter,   /* Keystrokes are passed to focused window */
+	command, /* Keystrokes manipulate windows */
+	pty      /* Keystrokes manipulate the view of the focused window */
+};
+enum display_mode {
+	full,  /* Full screen mode; one window displayed */
+	multi  /* Multiple windows displayed */
+};
 struct state {
 	char commandkey;
 	int width;
+	enum mode mode;
+	enum display_mode display;
 };
 
 struct screen {
