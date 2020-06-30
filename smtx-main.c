@@ -557,8 +557,7 @@ getinput(struct canvas *n, fd_set *f) /* check all ptty's for input. */
 static void
 scrollbottom(struct canvas *n)
 {
-	assert(n);
-	if( n->p && n->p->s ) {
+	if( n && n->p && n->p->s ) {
 		n->offset.y = n->p->s->tos;
 	}
 }
