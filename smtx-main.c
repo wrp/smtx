@@ -88,10 +88,9 @@ static void
 set_errmsg(const char *fmt, ...)
 {
 	int e = errno;
-	int k;
 	va_list ap;
 	va_start(ap, fmt);
-	k = vsnprintf(errmsg, sizeof errmsg, fmt, ap);
+	int k = vsnprintf(errmsg, sizeof errmsg, fmt, ap);
 	va_end(ap);
 	if( e && k < (int)sizeof errmsg ) {
 		snprintf(errmsg + k, sizeof errmsg - k, ": %s", strerror(e));
@@ -102,13 +101,14 @@ set_errmsg(const char *fmt, ...)
 int
 safewrite(int fd, const char *b, size_t n)
 {
-	ssize_t s = 0;
 	const char *e = b + n;
-	while( s != -1 && (b += s) < e ) {
-		if( (s = write(fd, b, e - b)) == -1 && errno != EINTR ) {
+	while( b < e ) {
+		ssize_t s = write(fd, b, e - b);
+		if( s < 0 && errno != EINTR ) {
 			set_errmsg("write to fd %d", fd);
 			return -1;
 		}
+		b += s < 0 ? 0 : s;
 	}
 	return 0;
 }
