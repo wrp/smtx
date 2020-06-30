@@ -72,7 +72,7 @@ static struct handler (*binding)[128] = &keys;
 struct canvas *focused;
 struct canvas *root, *view_root;
 static int maxfd = STDIN_FILENO;
-fd_set fds;
+static fd_set fds;
 int cmd_count = -1;
 int scrollback_history = 1024; /* Change at runtime with -s */
 static WINDOW *werr;

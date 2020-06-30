@@ -128,7 +128,6 @@ extern int scrollback_history;
 extern int tabstop;
 extern int id;
 extern int cmd_count;
-extern fd_set fds;
 extern const char *term;
 extern struct canvas *focused;
 extern void focus(struct canvas *);
