@@ -149,8 +149,7 @@ new_pty(int rows, int cols, struct canvas *c)
 			setsid();
 			signal(SIGCHLD, SIG_DFL);
 			execl(sh, sh, NULL);
-			set_errmsg("exec SHELL='%s'", sh);
-			_exit(EXIT_FAILURE);
+			err(EXIT_FAILURE, "exec SHELL='%s'", sh);
 		} else if( p->pid > 0 ) {
 			FD_SET(p->pt, &fds);
 			maxfd = p->pt > maxfd ? p->pt : maxfd;
@@ -205,14 +204,18 @@ newcanvas(void)
 {
 	struct canvas *n = calloc(1, sizeof *n);
 	if( !n ) {
-		set_errmsg("newcanvas");
+		set_errmsg("calloc");
 	} else {
 		n->split_point[0] = 1.0;
 		n->split_point[1] = 1.0;
 		strncpy(n->title, getshell(), sizeof n->title);
 		n->title[sizeof n->title - 1] = '\0';
 		n->p = new_pty(LINES, COLS, n);
-		new_screens(n->p);
+		if( new_screens(n->p) == -1 ) {
+			free(n->p);
+			free(n);
+			n = NULL;
+		}
 	}
 	return n;
 }
@@ -979,7 +982,7 @@ init(void)
 	} else {
 		wattron(werr, A_REVERSE);
 		if( ( b = newcanvas()) == NULL ) {
-			warnx("Unable to create root window");
+			warnx("Unable to create root window: %s", errmsg);
 		}
 		reshape(b, 0, 0, LINES, COLS);
 		focus(b);
