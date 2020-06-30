@@ -69,7 +69,7 @@ static struct handler keys[128];
 static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 static struct handler (*binding)[128] = &keys;
-struct canvas *focused, *lastfocused = NULL;
+struct canvas *focused;
 struct canvas *root, *view_root;
 static int maxfd = STDIN_FILENO;
 fd_set fds;
@@ -188,16 +188,9 @@ free_proc(struct proc **pv)
 }
 
 void
-focus(struct canvas *n, int reset)
+focus(struct canvas *n)
 {
-	if( n ) {
-		if( n != focused && reset ) {
-			lastfocused = focused;
-		}
-		focused = n;
-	} else {
-		focused = view_root;
-	}
+	focused = n ? n : view_root;
 }
 
 static void
@@ -360,7 +353,7 @@ prune(struct canvas *x, const char *arg)
 	}
 	freecanvas(del);
 	if( x == focused ) {
-		focus(o ? o : n ? n : p, 0);
+		focus(o ? o : n ? n : p);
 	}
 	if( view_root == x && del != NULL ) {
 		view_root = o ? o : n ? n : p;
@@ -657,9 +650,7 @@ mov(struct canvas *n, const char *arg)
 	int startx = n->origin.x;
 	int starty = n->origin.y + n->extent.y;
 	struct canvas *t = n;
-	if( cmd == 'p' ) {
-		n = lastfocused;
-	} else for( ; t && count--; n = t ? t : n ) {
+	for( ; t && count--; n = t ? t : n ) {
 		switch( cmd ) {
 		case 'k': /* move up */
 			t = find_window(view_root, t->origin.y - 1, startx);
@@ -677,7 +668,7 @@ mov(struct canvas *n, const char *arg)
 			break;
 		}
 	}
-	focus(n, 1);
+	focus(n);
 	return 0;
 }
 
@@ -828,7 +819,6 @@ build_bindings()
 	add_key(cmd_keys, L'K', resize, "K", NULL);
 	add_key(cmd_keys, L'L', resize, "L", NULL);
 	add_key(cmd_keys, L'H', resize, "H", NULL);
-	add_key(cmd_keys, L'p', mov, "p", NULL);
 	add_key(cmd_keys, L't', new_tabstop, NULL);
 	add_key(cmd_keys, L'x', prune, NULL);
 	add_key(cmd_keys, L'0', digit, "0", NULL);
@@ -1004,7 +994,7 @@ init(void)
 			warnx("Unable to create root window");
 		}
 		reshape(b, 0, 0, LINES, COLS);
-		focus(b, 0);
+		focus(b);
 	}
 	return view_root = root = b;
 }
