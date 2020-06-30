@@ -93,9 +93,10 @@ set_errmsg(const char *fmt, ...)
 	if( e && k < (int)sizeof errmsg ) {
 		snprintf(errmsg + k, sizeof errmsg - k, ": %s", strerror(e));
 	}
+	errno = e;
 }
 
-void
+int
 safewrite(int fd, const char *b, size_t n)
 {
 	ssize_t s = 0;
@@ -103,9 +104,10 @@ safewrite(int fd, const char *b, size_t n)
 	while( s != -1 && (b += s) < e ) {
 		if( (s = write(fd, b, e - b)) == -1 && errno != EINTR ) {
 			set_errmsg("write to fd %d", fd);
-			return; /* TODO: return an error value */
+			return -1;
 		}
 	}
+	return 0;
 }
 
 static const char *
@@ -582,8 +584,7 @@ sendarrow(struct canvas *n, const char *k)
 {
     char buf[100] = {0};
     snprintf(buf, sizeof(buf) - 1, "\033%s%s", n->p->pnm? "O" : "[", k);
-    safewrite(n->p->pt, buf, strlen(buf));
-    return 0;
+    return safewrite(n->p->pt, buf, strlen(buf));
 }
 
 int
@@ -675,23 +676,23 @@ int
 send_nul(struct canvas *n, const char *arg)
 {
 	(void) arg;
-	safewrite(n->p->pt, "\x00", 1);
 	scrollbottom(n);
-	return 0;
+	return safewrite(n->p->pt, "\x00", 1);
 }
 
 int
 send(struct canvas *n, const char *arg)
 {
+	int rv = -1;
 	if( n->p ) {
 		if( n->p->lnm && *arg == '\r' ) {
 			assert( arg[1] == '\0' );
 			arg = "\r\n";
 		}
-		safewrite(n->p->pt, arg, strlen(arg));
 		scrollbottom(n);
+		rv = safewrite(n->p->pt, arg, strlen(arg));
 	}
-	return 0;
+	return rv;
 }
 
 static struct canvas *
@@ -879,7 +880,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 		char c[MB_LEN_MAX + 1] = {0};
 		if( wctomb(c, k) > 0 && n->p ) {
 			scrollbottom(n);
-			safewrite(n->p->pt, c, strlen(c));
+			(void)safewrite(n->p->pt, c, strlen(c));
 		}
 		if( binding != &keys ) {
 			transition(n, NULL);
