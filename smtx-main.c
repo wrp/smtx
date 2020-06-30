@@ -959,7 +959,6 @@ parse_args(int argc, char *const*argv)
 struct canvas *
 init(void)
 {
-	struct canvas *b = NULL;
 	char buf[16];
 	FD_SET(maxfd, &fds);
 	snprintf(buf, sizeof buf - 1, "%d", getpid());
@@ -980,15 +979,14 @@ init(void)
 	resize_pad(&werr, 1, sizeof errmsg);
 	if( werr == NULL ) {
 		errx(EXIT_FAILURE, "Unable to create error window");
-	} else {
-		wattron(werr, A_REVERSE);
-		if( ( b = newcanvas()) == NULL ) {
-			warnx("Unable to create root window: %s", errmsg);
-		}
-		reshape(b, 0, 0, LINES, COLS);
-		focus(b);
 	}
-	return view_root = root = b;
+	wattron(werr, A_REVERSE);
+	if( ( view_root = root = newcanvas()) == NULL ) {
+		errx(EXIT_FAILURE, "Unable to create root window: %s", errmsg);
+	}
+	reshape(root, 0, 0, LINES, COLS);
+	focus(root);
+	return root;
 }
 
 int
