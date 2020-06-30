@@ -36,8 +36,8 @@
 #define DEFAULT_TERMINAL "screen-bce"
 #define DEFAULT_COLOR_TERMINAL "screen-256color-bce"
 
-#define MIN(x, y) ((x) < (y)? (x) : (y))
-#define MAX(x, y) ((x) > (y)? (x) : (y))
+#define MIN(x, y) ((x) < (y) ? (x) : (y))
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
 #define CTL(x) ((x) & 0x1f)
 
 enum mode {
