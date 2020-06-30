@@ -108,7 +108,6 @@ struct canvas {
 	double split_point[2]; /* percent of window dedicated to win */
 	char title[64];
 	int no_prune;
-	char putative_cmd[64];
 	WINDOW *input; /* one of win, wtit, wdiv, or p->s.win */
 	WINDOW *win;
 	WINDOW *wtit;  /* Window for title */
