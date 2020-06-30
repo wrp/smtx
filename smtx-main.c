@@ -133,12 +133,11 @@ extend_tabs(struct proc *p, int tabstop)
 static struct proc *
 new_pty(int rows, int cols, struct canvas *c)
 {
-	rows = MAX(rows, scrollback_history);
-	cols = MAX(cols, S.width);
 	int count = 1;
 	struct proc *p = calloc(1, sizeof *p + count + sizeof *p->c);
 	if( p != NULL ) {
-		p->ws = (struct winsize) {.ws_row = rows, .ws_col = cols};
+		p->ws.ws_row = MAX(rows, scrollback_history);
+		p->ws.ws_col = MAX(cols, S.width);
 		p->pid = forkpty(&p->pt, NULL, NULL, &p->ws);
 		if( p->pid < 0 ) {
 			set_errmsg("forkpty");
