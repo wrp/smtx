@@ -77,7 +77,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		wmove(win, py, MIN(x + P1(0), mx - 1));
 		break;
 	case ack: /* Acknowledge Enquiry */
-		safewrite(p->pt, "\006", 1);
+		rewrite(p->pt, "\006", 1);
 		break;
 	case hts: /* Horizontal Tab Set */
 		if( x < p->ntabs && x > 0 ) {
@@ -93,12 +93,12 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 	case decid: /* Send Terminal Identification */
 		if( w == L'c' ) {
 			if( iw == L'>' ) {
-				safewrite(p->pt, "\033[>1;10;0c", 10);
+				rewrite(p->pt, "\033[>1;10;0c", 10);
 			} else {
-				safewrite(p->pt, "\033[?1;2c", 7);
+				rewrite(p->pt, "\033[?1;2c", 7);
 			}
 		} else if( w == L'Z' ) {
-			safewrite(p->pt, "\033[?6c", 5);
+			rewrite(p->pt, "\033[?6c", 5);
 		}
 		break;
 	case hpa: /* Cursor Horizontal Absolute */
@@ -255,7 +255,7 @@ case dsr: { /* DSR - Device Status Report */
 	} else {
 		snprintf(buf, sizeof(buf) - 1, "\033[0n");
 	}
-	safewrite(p->pt, buf, strlen(buf));
+	rewrite(p->pt, buf, strlen(buf));
 	} break;
 
 case idl: /* Insert/Delete Line */
@@ -278,9 +278,9 @@ case csr: { /* CSR - Change Scrolling Region */
 
 case decreqtparm: { /* DECREQTPARM - Request Device Parameters */
 	if( P0(0) ) {
-		safewrite(p->pt, "\033[3;1;2;120;1;0x", 16);
+		rewrite(p->pt, "\033[3;1;2;120;1;0x", 16);
 	} else {
-		safewrite(p->pt, "\033[2;1;2;120;128;1;0x", 20);
+		rewrite(p->pt, "\033[2;1;2;120;128;1;0x", 20);
 	}
 	} break;
 

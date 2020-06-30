@@ -53,8 +53,8 @@ send_cmd(int fd, const char *fmt, ...)
 	n = vsnprintf(cmd, sizeof cmd, fmt, ap);
 	va_end(ap);
 	assert( n < sizeof cmd );
-	safewrite(fd, cmd, n);
-	safewrite(fd, "\r", 1);
+	rewrite(fd, cmd, n);
+	rewrite(fd, "\r", 1);
 }
 
 static void
@@ -348,7 +348,7 @@ test_pager(int fd)
 	fd = fileno(T->fp);
 	char cmd[] = "yes | nl | sed 500q | more\rq";
 
-	safewrite(fd, cmd, sizeof cmd - 1);
+	rewrite(fd, cmd, sizeof cmd - 1);
 	check_cmd(T, "", "*23x80@0,0(1023,%d)", plen);
 	expect_row(1, T, "     2%-74s", "  y");
 	expect_row(21, T, "    22%-74s", "  y");

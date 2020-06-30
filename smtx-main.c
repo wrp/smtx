@@ -96,7 +96,7 @@ set_errmsg(const char *fmt, ...)
 }
 
 int
-safewrite(int fd, const char *b, size_t n)
+rewrite(int fd, const char *b, size_t n)
 {
 	const char *e = b + n;
 	while( b < e ) {
@@ -600,7 +600,7 @@ sendarrow(struct canvas *n, const char *k)
 {
     char buf[100] = {0};
     snprintf(buf, sizeof(buf) - 1, "\033%s%s", n->p->pnm? "O" : "[", k);
-    return safewrite(n->p->pt, buf, strlen(buf));
+    return rewrite(n->p->pt, buf, strlen(buf));
 }
 
 int
@@ -693,7 +693,7 @@ send_nul(struct canvas *n, const char *arg)
 {
 	(void) arg;
 	scrollbottom(n);
-	return safewrite(n->p->pt, "\x00", 1);
+	return rewrite(n->p->pt, "\x00", 1);
 }
 
 int
@@ -706,7 +706,7 @@ send(struct canvas *n, const char *arg)
 			arg = "\r\n";
 		}
 		scrollbottom(n);
-		rv = safewrite(n->p->pt, arg, strlen(arg));
+		rv = rewrite(n->p->pt, arg, strlen(arg));
 	}
 	return rv;
 }
@@ -877,7 +877,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 		char c[MB_LEN_MAX + 1] = {0};
 		if( wctomb(c, k) > 0 && n->p ) {
 			scrollbottom(n);
-			(void)safewrite(n->p->pt, c, strlen(c));
+			(void)rewrite(n->p->pt, c, strlen(c));
 		}
 		if( binding != &keys ) {
 			transition(n, NULL);
