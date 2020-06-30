@@ -24,9 +24,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#if 0
 #include <sys/ioctl.h>
-#endif
 #include <sys/select.h>
 #include <sys/types.h>
 #include <sys/wait.h>
