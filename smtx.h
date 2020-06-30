@@ -130,7 +130,6 @@ extern int id;
 extern int cmd_count;
 extern const char *term;
 extern struct canvas *focused;
-extern void focus(struct canvas *);
 extern void fixcursor(void);
 
 extern struct canvas * init(void);

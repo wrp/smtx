@@ -245,7 +245,7 @@ free_proc(struct proc **pv)
 	*pv = NULL;
 }
 
-void
+static void
 focus(struct canvas *n)
 {
 	focused = n ? n : view_root;

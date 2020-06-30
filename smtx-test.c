@@ -194,7 +194,7 @@ new_test_canvas(int rows, int cols, const char *ps1)
 	send_cmd(fd, "PS1='%s'", T->ps1);
 	read_until(T->fp, T->ps1, T->vp); /* discard up to assignment */
 	draw(T->c);
-	focus(T->c);
+	focused = T->c;
 	fixcursor();
 	check_cmd(T, "", NULL);
 	return T;
