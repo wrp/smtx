@@ -306,8 +306,8 @@ case ris: /* Reset to Initial State */
 	p->am = p->pnm = true;
 	p->pri.vis = p->alt.vis = 1;
 	p->s = &p->pri;
-	wsetscrreg(p->pri.win, 0, MAX(scrollback_history, p->ws.ws_row));
-	wsetscrreg(p->alt.win, 0, p->ws.ws_row);
+	wsetscrreg(p->pri.win, 0, MAX(scrollback_history, p->ws.ws_row) - 1);
+	wsetscrreg(p->alt.win, 0, p->ws.ws_row - 1);
 	memset(p->tabs, 0, p->ntabs * sizeof *p->tabs);
 	for( i = 0; i < p->ntabs; i += p->tabstop ) {
 		p->tabs[i] = true;
