@@ -75,12 +75,11 @@ static int maxfd = STDIN_FILENO;
 fd_set fds;
 int cmd_count = -1;
 int scrollback_history = 1024; /* Change at runtime with -s */
+static WINDOW *werr;
+char errmsg[80];
 
 static struct canvas * balance(struct canvas *n);
 static void reshape(struct canvas *n, int y, int x, int h, int w);
-
-static WINDOW *werr;
-char errmsg[80];
 
 static void
 show_error(const char *fmt, ...)
