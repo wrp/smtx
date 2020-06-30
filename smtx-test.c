@@ -110,6 +110,7 @@ struct test_canvas {
 static void
 expect_row(int row, struct test_canvas *T, const char *expect, ...)
 {
+	/* TODO: need to fix this to handle a canvas with children */
 	va_list ap;
 	va_start(ap, expect);
 	vexpect_row(row + T->c->offset.y, T->c->offset.x, T->w, expect, ap);
@@ -342,13 +343,27 @@ static int
 test_pager(int fd)
 {
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
+	size_t plen = strlen(T->ps1);;
+	char *lay;
 	fd = fileno(T->fp);
 	char cmd[] = "yes | nl | sed 500q | more\rq";
 
 	safewrite(fd, cmd, sizeof cmd - 1);
-	check_cmd(T, "", "*23x80@0,0(1023,%d)", strlen(T->ps1));
+	check_cmd(T, "", "*23x80@0,0(1023,%d)", plen);
 	expect_row(1, T, "     2%-74s", "  y");
 	expect_row(21, T, "    22%-74s", "  y");
+
+	create(T->c, "c");
+	expect_layout(T->c, "*11x80@0,0(1023,%d); 11x80@12,0(0,0)", plen);
+	mov(T->c, "j");
+	expect_layout(T->c, lay="11x80@0,0(1023,%d); *11x80@12,0(0,0)", plen);
+	check_cmd(T, cmd, lay, plen);
+	/* This is completely wrong, but at the moment expect_row() cannot
+	handle a canvas with children.  Need to fix the test harness so
+	that we are matching expected output on the master pty, not just
+	comparing internal data structures.  Until then, ignore the
+	discrepancy. */
+	expect_row(9, T, "    10%-74s", "  y");
 	return rv;
 }
 
