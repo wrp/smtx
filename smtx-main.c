@@ -132,7 +132,7 @@ static struct proc * new_pty(int rows, int cols, struct canvas *c);
 static int new_screens(struct proc *p);
 
 static struct canvas *
-newcanvas()
+newcanvas(void)
 {
 	struct canvas *n = calloc(1, sizeof *n);
 	if( !n ) {
