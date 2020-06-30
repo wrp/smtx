@@ -64,19 +64,22 @@
 
 #include "smtx.h"
 
-struct state S;
+static struct state S;
 static struct handler keys[128];
 static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 static struct handler (*binding)[128] = &keys;
-struct canvas *focused;
-struct canvas *root, *view_root;
 static int maxfd = STDIN_FILENO;
 static fd_set fds;
+static WINDOW *werr;
+static char errmsg[80];
+static struct canvas *root;
+static struct canvas *view_root;
+
+/* Variables exposed to test suite */
+struct canvas *focused;
 int cmd_count = -1;
 int scrollback_history = 1024; /* Change at runtime with -s */
-static WINDOW *werr;
-char errmsg[80];
 
 static struct canvas * balance(struct canvas *n);
 static void reshape(struct canvas *n, int y, int x, int h, int w);
