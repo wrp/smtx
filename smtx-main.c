@@ -161,7 +161,7 @@ new_pty(int rows, int cols, struct canvas *c)
 	return p;
 }
 
-static int
+static void
 resize_pad(WINDOW **p, int h, int w)
 {
 	if( *p ) {
@@ -172,7 +172,6 @@ resize_pad(WINDOW **p, int h, int w)
 	} else if( (*p = newpad(h, w)) != NULL ) {
 		nodelay(*p, TRUE);
 	}
-	return *p != NULL;
 }
 
 static int
@@ -976,8 +975,9 @@ init(void)
 	intrflush(NULL, FALSE);
 	start_color();
 	use_default_colors();
-	if( !resize_pad(&werr, 1, sizeof errmsg) ) {
-		warnx("Unable to create error window");
+	resize_pad(&werr, 1, sizeof errmsg);
+	if( werr == NULL ) {
+		errx(EXIT_FAILURE, "Unable to create error window");
 	} else {
 		wattron(werr, A_REVERSE);
 		if( ( b = newcanvas()) == NULL ) {
