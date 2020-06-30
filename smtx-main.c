@@ -955,24 +955,15 @@ parse_args(int argc, char *const*argv)
 	}
 }
 
-static void
-intenv(const char *name, int v)
-{
-	if( v ) {
-		char buf[16];
-		snprintf(buf, sizeof buf - 1, "%d", v);
-		setenv(name, buf, 1);
-	} else {
-		unsetenv(name);
-	}
-}
 
 struct canvas *
 init(void)
 {
 	struct canvas *b = NULL;
+	char buf[16];
 	FD_SET(maxfd, &fds);
-	intenv("SMTX", (int)getpid());
+	snprintf(buf, sizeof buf - 1, "%d", getpid());
+	setenv("SMTX", buf, 1);
 	setenv("TERM", getterm(), 1);
 	setenv("SMTX_VERSION", VERSION, 1);
 	setlocale(LC_ALL, "");
