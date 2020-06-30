@@ -81,9 +81,6 @@ struct canvas *focused;
 int cmd_count = -1;
 int scrollback_history = 1024; /* Change at runtime with -s */
 
-static struct canvas * balance(struct canvas *n);
-static void reshape(struct canvas *n, int y, int x, int h, int w);
-
 static void
 set_errmsg(const char *fmt, ...)
 {
@@ -132,8 +129,76 @@ extend_tabs(struct proc *p, int tabstop)
 		}
 	}
 }
-static struct proc * new_pty(int rows, int cols, struct canvas *c);
-static int new_screens(struct proc *p);
+
+static struct proc *
+new_pty(int rows, int cols, struct canvas *c)
+{
+	rows = MAX(rows, scrollback_history);
+	cols = MAX(cols, S.width);
+	int count = 1;
+	struct proc *p = calloc(1, sizeof *p + count + sizeof *p->c);
+	if( p != NULL ) {
+		p->ws = (struct winsize) {.ws_row = rows, .ws_col = cols};
+		p->pid = forkpty(&p->pt, NULL, NULL, &p->ws);
+		if( p->pid < 0 ) {
+			set_errmsg("forkpty");
+			free(p);
+			p = NULL;
+		} else if( p->pid == 0 ) {
+			const char *sh = getshell();
+			setsid();
+			signal(SIGCHLD, SIG_DFL);
+			execl(sh, sh, NULL);
+			set_errmsg("execl");
+			_exit(EXIT_FAILURE);
+		} else if( p->pid > 0 ) {
+			FD_SET(p->pt, &fds);
+			maxfd = p->pt > maxfd ? p->pt : maxfd;
+			fcntl(p->pt, F_SETFL, O_NONBLOCK);
+			extend_tabs(p, p->tabstop = 8);
+		}
+		p->canvas_count = count;
+		p->c[0] = c;
+	}
+	return p;
+}
+
+static int
+resize_pad(WINDOW **p, int h, int w)
+{
+	if( *p ) {
+		if( wresize(*p, h, w ) != OK ) {
+			set_errmsg("Error resizing window");
+			*p = NULL;
+		}
+	} else if( (*p = newpad(h, w)) != NULL ) {
+		nodelay(*p, TRUE);
+	}
+	return *p != NULL;
+}
+
+static int
+new_screens(struct proc *p)
+{
+	int rows = MAX(LINES, scrollback_history);
+	int cols = MAX(COLS, S.width);
+	if( !p ) {
+		return -1;
+	}
+	resize_pad(&p->pri.win, rows, cols);
+	resize_pad(&p->alt.win, rows, cols);
+	if( ! p->pri.win || !p->alt.win ) {
+		return -1;
+	}
+	scrollok(p->pri.win, TRUE);
+	scrollok(p->alt.win, TRUE);
+	keypad(p->pri.win, TRUE);
+	keypad(p->alt.win, TRUE);
+	p->s = &p->pri;
+	p->vp.p = p;
+	setupevents(&p->vp);
+	return 0;
+}
 
 static struct canvas *
 newcanvas(void)
@@ -158,20 +223,6 @@ delwinnul(WINDOW **w)
 	int rv = *w ? delwin(*w) : OK;
 	*w = NULL;
 	return rv;
-}
-
-static int
-resize_pad(WINDOW **p, int h, int w)
-{
-	if( *p ) {
-		if( wresize(*p, h, w ) != OK ) {
-			set_errmsg("Error resizing window");
-			*p = NULL;
-		}
-	} else if( (*p = newpad(h, w)) != NULL ) {
-		nodelay(*p, TRUE);
-	}
-	return *p != NULL;
 }
 
 static void
@@ -264,109 +315,6 @@ getterm(void)
 	return t ? t : COLORS > 255 ? DEFAULT_COLOR_TERMINAL : DEFAULT_TERMINAL;
 }
 
-static int
-new_screens(struct proc *p)
-{
-	int rows = MAX(LINES, scrollback_history);
-	int cols = MAX(COLS, S.width);
-	if( !p ) {
-		return -1;
-	}
-	resize_pad(&p->pri.win, rows, cols);
-	resize_pad(&p->alt.win, rows, cols);
-	if( ! p->pri.win || !p->alt.win ) {
-		return -1;
-	}
-	scrollok(p->pri.win, TRUE);
-	scrollok(p->alt.win, TRUE);
-	keypad(p->pri.win, TRUE);
-	keypad(p->alt.win, TRUE);
-	p->s = &p->pri;
-	p->vp.p = p;
-	setupevents(&p->vp);
-	return 0;
-}
-
-static struct proc *
-new_pty(int rows, int cols, struct canvas *c)
-{
-	rows = MAX(rows, scrollback_history);
-	cols = MAX(cols, S.width);
-	int count = 1;
-	struct proc *p = calloc(1, sizeof *p + count + sizeof *p->c);
-	if( p != NULL ) {
-		p->ws = (struct winsize) {.ws_row = rows, .ws_col = cols};
-		p->pid = forkpty(&p->pt, NULL, NULL, &p->ws);
-		if( p->pid < 0 ) {
-			set_errmsg("forkpty");
-			free(p);
-			p = NULL;
-		} else if( p->pid == 0 ) {
-			const char *sh = getshell();
-			setsid();
-			signal(SIGCHLD, SIG_DFL);
-			execl(sh, sh, NULL);
-			set_errmsg("execl");
-			_exit(EXIT_FAILURE);
-		} else if( p->pid > 0 ) {
-			FD_SET(p->pt, &fds);
-			maxfd = p->pt > maxfd ? p->pt : maxfd;
-			fcntl(p->pt, F_SETFL, O_NONBLOCK);
-			extend_tabs(p, p->tabstop = 8);
-		}
-		p->canvas_count = count;
-		p->c[0] = c;
-	}
-	return p;
-}
-
-static int
-prune(struct canvas *x, const char *arg)
-{
-	(void) arg;
-	struct canvas *p = x->parent;
-	struct canvas *dummy;
-	struct canvas *del = x;
-	int d = x->typ;
-	struct canvas *n = x->c[d];
-	struct canvas *o = x->c[!d];
-	if( o && o->c[d] ) {
-		x->split_point[!d] = 0.0;
-		free_proc(&x->p);
-		del = NULL;
-	} else if( o ) {
-		assert( o->c[d] == NULL );
-		assert( o->parent == x );
-		assert( o->typ != d );
-		o->typ = d;
-		o->parent = p;
-		*(p ? &p->c[d] : &root) = o;
-		o->c[d] = n;
-		*(n ? &n->parent : &dummy) = o;
-		o->origin = x->origin;
-		o->split_point[d] = x->split_point[d];
-	} else if( n ) {
-		n->parent = p;
-		n->origin = x->origin;
-		*(p ? &p->c[d] : &root) = n;
-	} else if( p ) {
-		p->split_point[d] = 1.0;
-		p->c[d] = NULL;
-	} else {
-		root = NULL;
-	}
-	freecanvas(del);
-	if( x == focused ) {
-		focus(o ? o : n ? n : p);
-	}
-	if( view_root == x && del != NULL ) {
-		view_root = o ? o : n ? n : p;
-	}
-	reshape(view_root, 0, 0, LINES, COLS);
-	return 0;
-}
-
-
 /* TODO: make this an action */
 static void
 reshape_window(struct canvas *n)
@@ -428,6 +376,52 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 	}
 }
 
+static int
+prune(struct canvas *x, const char *arg)
+{
+	(void) arg;
+	struct canvas *p = x->parent;
+	struct canvas *dummy;
+	struct canvas *del = x;
+	int d = x->typ;
+	struct canvas *n = x->c[d];
+	struct canvas *o = x->c[!d];
+	if( o && o->c[d] ) {
+		x->split_point[!d] = 0.0;
+		free_proc(&x->p);
+		del = NULL;
+	} else if( o ) {
+		assert( o->c[d] == NULL );
+		assert( o->parent == x );
+		assert( o->typ != d );
+		o->typ = d;
+		o->parent = p;
+		*(p ? &p->c[d] : &root) = o;
+		o->c[d] = n;
+		*(n ? &n->parent : &dummy) = o;
+		o->origin = x->origin;
+		o->split_point[d] = x->split_point[d];
+	} else if( n ) {
+		n->parent = p;
+		n->origin = x->origin;
+		*(p ? &p->c[d] : &root) = n;
+	} else if( p ) {
+		p->split_point[d] = 1.0;
+		p->c[d] = NULL;
+	} else {
+		root = NULL;
+	}
+	freecanvas(del);
+	if( x == focused ) {
+		focus(o ? o : n ? n : p);
+	}
+	if( view_root == x && del != NULL ) {
+		view_root = o ? o : n ? n : p;
+	}
+	reshape(view_root, 0, 0, LINES, COLS);
+	return 0;
+}
+
 static void
 draw_pane(WINDOW *w, int y, int x)
 {
@@ -473,6 +467,25 @@ draw(struct canvas *n) /* Draw a canvas. */
 		draw_title(n, rev);
 		draw_window(n);
 	}
+}
+
+static struct canvas *
+balance(struct canvas *n)
+{
+	int dir = n->typ;
+	while( n->c[dir] != NULL ) {
+		n = n->c[dir];
+	}
+	for(int count = 1; n; n = n->parent ) {
+		n->split_point[dir] = 1.0 / count++;
+		if( n->parent && n->parent->c[dir] != n ) {
+			break;
+		}
+		if( n->typ != dir ) {
+			break;
+		}
+	}
+	return n ? n : root;
 }
 
 int
@@ -696,25 +709,6 @@ send(struct canvas *n, const char *arg)
 		rv = safewrite(n->p->pt, arg, strlen(arg));
 	}
 	return rv;
-}
-
-static struct canvas *
-balance(struct canvas *n)
-{
-	int dir = n->typ;
-	while( n->c[dir] != NULL ) {
-		n = n->c[dir];
-	}
-	for(int count = 1; n; n = n->parent ) {
-		n->split_point[dir] = 1.0 / count++;
-		if( n->parent && n->parent->c[dir] != n ) {
-			break;
-		}
-		if( n->typ != dir ) {
-			break;
-		}
-	}
-	return n ? n : root;
 }
 
 int
