@@ -161,13 +161,21 @@ new_pty(int rows, int cols, struct canvas *c)
 	return p;
 }
 
+static int
+delwinnul(WINDOW **w)
+{
+	int rv = *w ? delwin(*w) : OK;
+	*w = NULL;
+	return rv;
+}
+
 static void
 resize_pad(WINDOW **p, int h, int w)
 {
 	if( *p ) {
 		if( wresize(*p, h, w ) != OK ) {
 			set_errmsg("Error resizing window");
-			*p = NULL;
+			delwinnul(p);
 		}
 	} else if( (*p = newpad(h, w)) != NULL ) {
 		nodelay(*p, TRUE);
@@ -185,6 +193,8 @@ new_screens(struct proc *p)
 	resize_pad(&p->pri.win, rows, cols);
 	resize_pad(&p->alt.win, rows, cols);
 	if( ! p->pri.win || !p->alt.win ) {
+		delwinnul(&p->pri.win);
+		delwinnul(&p->alt.win);
 		return -1;
 	}
 	scrollok(p->pri.win, TRUE);
@@ -216,14 +226,6 @@ newcanvas(void)
 		}
 	}
 	return n;
-}
-
-static int
-delwinnul(WINDOW **w)
-{
-	int rv = *w ? delwin(*w) : OK;
-	*w = NULL;
-	return rv;
 }
 
 static void
