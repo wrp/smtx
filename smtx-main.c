@@ -82,7 +82,7 @@ static struct canvas * balance(struct canvas *n);
 static void reshape(struct canvas *n, int y, int x, int h, int w);
 
 static void
-show_error(const char *fmt, ...)
+set_errmsg(const char *fmt, ...)
 {
 	int e = errno;
 	int k;
@@ -102,7 +102,7 @@ safewrite(int fd, const char *b, size_t n)
 	const char *e = b + n;
 	while( s != -1 && (b += s) < e ) {
 		if( (s = write(fd, b, e - b)) == -1 && errno != EINTR ) {
-			show_error("write to fd %d", fd); /* uncovered */
+			set_errmsg("write to fd %d", fd);
 			return; /* TODO: return an error value */
 		}
 	}
@@ -135,7 +135,7 @@ newcanvas(void)
 {
 	struct canvas *n = calloc(1, sizeof *n);
 	if( !n ) {
-		show_error("newcanvas");
+		set_errmsg("newcanvas");
 	} else {
 		n->split_point[0] = 1.0;
 		n->split_point[1] = 1.0;
@@ -160,7 +160,7 @@ resize_pad(WINDOW **p, int h, int w)
 {
 	if( *p ) {
 		if( wresize(*p, h, w ) != OK ) {
-			show_error("Error resizing window");
+			set_errmsg("Error resizing window");
 			*p = NULL;
 		}
 	} else if( (*p = newpad(h, w)) != NULL ) {
@@ -293,7 +293,7 @@ new_pty(int rows, int cols, struct canvas *c)
 		p->ws = (struct winsize) {.ws_row = rows, .ws_col = cols};
 		p->pid = forkpty(&p->pt, NULL, NULL, &p->ws);
 		if( p->pid < 0 ) {
-			show_error("forkpty");
+			set_errmsg("forkpty");
 			free(p);
 			p = NULL;
 		} else if( p->pid == 0 ) {
@@ -301,7 +301,7 @@ new_pty(int rows, int cols, struct canvas *c)
 			setsid();
 			signal(SIGCHLD, SIG_DFL);
 			execl(sh, sh, NULL);
-			show_error("execl");
+			set_errmsg("execl");
 			_exit(EXIT_FAILURE);
 		} else if( p->pid > 0 ) {
 			FD_SET(p->pt, &fds);
@@ -379,10 +379,10 @@ reshape_window(struct canvas *n)
 	wrefresh(p->s->win);
 	extend_tabs(p, p->tabstop);
 	if( ioctl(p->pt, TIOCSWINSZ, &p->ws) ) {
-		show_error("ioctl");
+		set_errmsg("ioctl");
 	}
 	if( kill(p->pid, SIGWINCH) ) {
-		show_error("kill");
+		set_errmsg("kill");
 	}
 }
 
