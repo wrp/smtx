@@ -24,10 +24,6 @@
        in vtparser
      Full-screen mode.
      In full-screen mode, make hjkl scroll the screen.
-     Test Suite!!
-       Write a screen dump function.  Capability to write text description
-       of the layout.  This could be also be used for non-testing purposes
-       if the description can be used to construct a new layout.
      Make default minimum width (default 80) instead of tying it to the
        current window width.  Once it is easy to scroll horizontally, this
        will make more sense.
