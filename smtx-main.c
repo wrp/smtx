@@ -113,9 +113,9 @@ rewrite(int fd, const char *b, size_t n)
 static const char *
 getshell(void)
 {
-	const char *shell = getenv("SHELL");
-	struct passwd *pwd = shell && *shell ? NULL : getpwuid(geteuid());
-	return shell && *shell ? shell : pwd ? pwd->pw_shell : "/bin/sh";
+	const char *s = getenv("SHELL");
+	struct passwd *pwd = s ? NULL : getpwuid(geteuid());
+	return s ? s : pwd ? pwd->pw_shell : "/bin/sh";
 }
 
 static void
@@ -149,7 +149,7 @@ new_pty(int rows, int cols, struct canvas *c)
 			setsid();
 			signal(SIGCHLD, SIG_DFL);
 			execl(sh, sh, NULL);
-			set_errmsg("execl");
+			set_errmsg("exec SHELL='%s'", sh);
 			_exit(EXIT_FAILURE);
 		} else if( p->pid > 0 ) {
 			FD_SET(p->pt, &fds);
