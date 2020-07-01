@@ -446,14 +446,12 @@ static void
 draw_title(struct canvas *n, int r)
 {
 	if( n->wtit ) {
-		char t[128];
-		struct point *o = &n->origin;
-		size_t s = MIN(n->extent.x, (int)sizeof t);
+		int pid = n->p ? n->p->pid : -1;
+		struct point o = n->origin;
 		( r ? &wattron : &wattroff )(n->wtit, A_REVERSE);
-		snprintf(t, s, "%d: %s ", n->p ? (int)n->p->pid : -1, n->title);
-		mvwprintw(n->wtit, 0, 0, "%s", t);
+		mvwprintw(n->wtit, 0, 0, "%d: %s", pid, n->title);
 		whline(n->wtit, ACS_HLINE, n->extent.x);
-		draw_pane(n->wtit, o->y + n->extent.y, o->x);
+		draw_pane(n->wtit, o.y + n->extent.y, o.x);
 	}
 }
 
