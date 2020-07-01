@@ -358,12 +358,7 @@ test_pager(int fd)
 	mov(T->c, "j");
 	expect_layout(T->c, lay="11x80@0,0(1023,%d); *11x80@12,0(0,0)", plen);
 	check_cmd(T, cmd, lay, plen);
-	/* This is completely wrong, but at the moment expect_row() cannot
-	handle a canvas with children.  Need to fix the test harness so
-	that we are matching expected output on the master pty, not just
-	comparing internal data structures.  Until then, ignore the
-	discrepancy. */
-	expect_row(9, T, "    10%-74s", "  y");
+	expect_row(9, T, "    22%-74s", "  y");
 	return rv;
 }
 

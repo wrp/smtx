@@ -133,7 +133,7 @@ new_pty(int rows, int cols, struct canvas *c)
 	int count = 1;
 	struct proc *p = calloc(1, sizeof *p + count + sizeof *p->c);
 	if( p != NULL ) {
-		p->ws.ws_row = MAX(rows, scrollback_history);
+		p->ws.ws_row = rows - 1; /* Subtract 1 for title */
 		p->ws.ws_col = MAX(cols, S.width);
 		p->pid = forkpty(&p->pt, NULL, NULL, &p->ws);
 		if( p->pid < 0 ) {
@@ -379,7 +379,8 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		n->extent.x = w1;
 		/* TODO: avoid resizing window unnecessarily */
 		if( n->p && n->p->pt >= 0 ) {
-			reshape_window(n);
+			n->p->pri.tos = n->offset.y =
+				scrollback_history - n->extent.y;
 		} else if( w1 && h1 > 1 ) {
 			resize_pad(&n->win, n->extent.y, n->extent.x);
 			wbkgd(n->win, ACS_CKBOARD);
