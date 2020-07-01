@@ -712,7 +712,7 @@ int
 send(struct canvas *n, const char *arg)
 {
 	int rv = -1;
-	if( n->p ) {
+	if( n->p && arg ) {
 		if( n->p->lnm && *arg == '\r' ) {
 			assert( arg[1] == '\0' );
 			arg = "\r\n";
@@ -736,15 +736,16 @@ equalize(struct canvas *n, const char *arg)
 int
 transition(struct canvas *n, const char *arg)
 {
-	binding = binding == &keys ? &cmd_keys : &keys;
-	if( arg ) {
-		send(n, arg);
-	}
-	if( binding == &keys ) {
+	if( S.mode == enter ) {
+		binding = &cmd_keys;
+		S.mode = command;
 		scrollbottom(n);
 	} else {
+		binding = &keys;
+		S.mode = enter;
 		errmsg[0] = 0;
 	}
+	send(n, arg);
 	return 0;
 }
 
@@ -885,14 +886,11 @@ handlechar(int r, int k) /* Handle a single input character. */
 
 	if( b && b->act ) {
 		b->act(n, b->arg);
-	} else {
+	} else if( S.mode == enter ) {
 		char c[MB_LEN_MAX + 1] = {0};
 		if( wctomb(c, k) > 0 && n->p ) {
 			scrollbottom(n);
 			(void)rewrite(n->p->pt, c, strlen(c));
-		}
-		if( binding != &keys ) {
-			transition(n, NULL);
 		}
 	}
 	if( !b || !(b->act == digit) ) {
@@ -1003,6 +1001,7 @@ smtx_main(int argc, char *const argv[])
 {
 	S.commandkey = CTL('g'); /* Change at runtime with -c */
 	S.width = 80;
+	S.mode = enter;
 	parse_args(argc, argv);
 	init();
 	main_loop();

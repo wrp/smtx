@@ -10,8 +10,8 @@ smtx is a window manager.  When first started, smtx creates a single
 window with a pty running the program specified in SHELL.  Entering
 the `MOD` keysequence (default is `CTRL+g`) will put smtx in `command`
 mode, in which key sequences are interpreted to manipulate the
-windows.  To transition back to `keypress` mode, you may press
-`RETURN`, `MOD`, or `ESC`.  Pressing `ESC` or `RETURN` transitions
+windows.  Transition back to `keypress` mode by pressing
+`RETURN` or `MOD`.  Pressing `RETURN` transitions
 mode without sending a key to the underlying pty, while pressing
 `MOD` transitions and sends the keystroke.  To quit, use `qq` from
 command mode.
