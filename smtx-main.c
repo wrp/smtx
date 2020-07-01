@@ -441,10 +441,7 @@ draw_title(struct canvas *n, int r)
 		( r ? &wattron : &wattroff )(n->wtit, A_REVERSE);
 		snprintf(t, s, "%d: %s ", n->p ? (int)n->p->pid : -1, n->title);
 		mvwprintw(n->wtit, 0, 0, "%s", t);
-		int len = strlen(t);
-		if( n->extent.x - len > 0 ) {
-			mvwhline(n->wtit, 0, len, ACS_HLINE, n->extent.x - len);
-		}
+		whline(n->wtit, ACS_HLINE, n->extent.x);
 		draw_pane(n->wtit, o->y + n->extent.y, o->x);
 	}
 }
