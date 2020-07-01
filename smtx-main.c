@@ -118,7 +118,7 @@ getshell(void)
 static void
 extend_tabs(struct proc *p, int tabstop)
 {
-	int w = MAX(p->ws.ws_col, S.width);
+	int w = p->ws.ws_col;
 	if( p->ntabs < w ) {
 		typeof(*p->tabs) *n = realloc(p->tabs, w * sizeof *n);
 		for( p->tabs = n; n && p->ntabs < w; p->ntabs++ ) {
