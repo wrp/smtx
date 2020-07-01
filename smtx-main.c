@@ -24,9 +24,6 @@
        in vtparser
      Full-screen mode.
      In full-screen mode, make hjkl scroll the screen.
-     Make default minimum width (default 80) instead of tying it to the
-       current window width.  Once it is easy to scroll horizontally, this
-       will make more sense.
      Use current cursor position to set bottom of screen when splitting (?)
      Make it easy to swap bindings.  eg, so that hjkl could be used for
        scrolling in non-full screen mode.  Maybe have labelled bindings,
