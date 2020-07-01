@@ -133,13 +133,13 @@ test_description(int fd)
 	struct canvas *r = init();
 	expect_layout(r, "*23x80@0,0(0,0)");
 	create(r, "c");
-	expect_layout(r, "*11x80@0,0(0,0); 11x80@12,0(0,0)");
-	mov(r, "j");
+	expect_layout(r, "11x80@0,0(0,0); *11x80@12,0(0,0)");
+	mov(r->c[0], "j");
 	expect_layout(r, "11x80@0,0(0,0); *11x80@12,0(0,0)");
 	create(r->c[0], "C");
-	expect_layout(r, "11x80@0,0(0,0); *11x40@12,0(0,0); 11x39@12,41(0,0)");
-	mov(r->c[0], "l");
 	expect_layout(r, "11x80@0,0(0,0); 11x40@12,0(0,0); *11x39@12,41(0,0)");
+	mov(r->c[0]->c[1], "h");
+	expect_layout(r, "11x80@0,0(0,0); *11x40@12,0(0,0); 11x39@12,41(0,0)");
 	return rv;
 }
 
@@ -354,9 +354,7 @@ test_pager(int fd)
 	expect_row(21, T, "    22%-74s", "  y");
 
 	create(T->c, "c");
-	expect_layout(T->c, "*11x80@0,0(1023,%d); 11x80@12,0(0,0)", plen);
-	mov(T->c, "j");
-	expect_layout(T->c, lay="11x80@0,0(1023,%d); *11x80@12,0(0,0)", plen);
+	expect_layout(T->c, lay = "11x80@0,0(1023,%d); *11x80@12,0(0,0)", plen);
 	check_cmd(T, cmd, lay, plen);
 	expect_row(9, T, "    22%-74s", "  y");
 	return rv;

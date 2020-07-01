@@ -517,6 +517,7 @@ create(struct canvas *n, const char *arg)
 		balance(v);
 	}
 	reshape(view_root, 0, 0, LINES, COLS);
+	focus(v);
 	return 0;
 }
 
