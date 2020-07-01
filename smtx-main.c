@@ -437,7 +437,7 @@ draw_title(struct canvas *n, int r)
 	if( n->wtit ) {
 		char t[128];
 		struct point *o = &n->origin;
-		size_t s = MAX(n->extent.x, (int)sizeof t);
+		size_t s = MIN(n->extent.x, (int)sizeof t);
 		( r ? &wattron : &wattroff )(n->wtit, A_REVERSE);
 		snprintf(t, s, "%d: %s ", n->p ? (int)n->p->pid : -1, n->title);
 		mvwprintw(n->wtit, 0, 0, "%s", t);
