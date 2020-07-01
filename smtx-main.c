@@ -279,8 +279,18 @@ draw_window(struct canvas *n)
 	struct point o = n->origin;
 	struct point e = { o.y + n->extent.y - 1, o.x + n->extent.x - 1 };
 	if( e.y > 0 && e.x > 0 ) {
+		int y, x;
 		WINDOW *w = n->win;
 		struct point off = { 0, 0 };
+		getyx(n->input, y, x);
+		(void)y;
+		if( ! n->manualscroll ) {
+			if( x < n->extent.x - 1 ) {
+				n->offset.x = 0;
+			} else if( n->offset.x + n->extent.x < x + 1 ) {
+				n->offset.x = x - n->extent.x + 1;
+			}
+		}
 		if( n->p ) {
 			w = n->p->s->win;
 			off = n->offset;
@@ -307,6 +317,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 		f->input = f->win ? f->win : f->wtit ? f->wtit : f->wdiv;
 	}
 	assert(f->input || root == NULL);
+	wmove(f->input, y, x);
 	draw_window(f);
 	wmove(f->input, y, x);
 }
@@ -579,6 +590,7 @@ scrollh(struct canvas *n, const char *arg)
 		} else if( n->offset.x > x - n->extent.x ) {
 			n->offset.x = x - n->extent.x;
 		}
+		n->manualscroll = n->offset.x != 0;
 	}
 	return 0;
 }
