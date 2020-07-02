@@ -584,6 +584,14 @@ digit(struct canvas *n, const char *arg)
 	cmd_count = 10 * (cmd_count == -1 ? 0 : cmd_count) + *arg - '0';
 }
 
+static void
+set_view_count(struct canvas *n, const char *arg)
+{
+	(void)arg;
+	view_root = n;
+	S.display_level = cmd_count == -1 ? !S.display_level : cmd_count;
+}
+
 void
 scrollh(struct canvas *n, const char *arg)
 {
@@ -826,6 +834,7 @@ build_bindings()
 	add_key(cmd_keys, L'H', resize, "H", NULL);
 	add_key(cmd_keys, L't', new_tabstop, NULL);
 	add_key(cmd_keys, L'W', reshape_window, "hw", NULL);
+	add_key(cmd_keys, L'v', set_view_count, NULL);
 	add_key(cmd_keys, L'x', prune, NULL);
 	add_key(cmd_keys, L'0', digit, "0", NULL);
 	add_key(cmd_keys, L'1', digit, "1", NULL);

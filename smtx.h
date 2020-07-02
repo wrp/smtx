@@ -45,15 +45,11 @@ enum mode {
 	command, /* Keystrokes manipulate windows */
 	pty      /* Keystrokes manipulate the view of the focused window */
 };
-enum display_mode {
-	full,  /* Full screen mode; one window displayed */
-	multi  /* Multiple windows displayed */
-};
 struct state {
 	char commandkey;
 	int width;
 	enum mode mode;
-	enum display_mode display;
+	unsigned display_level;
 };
 
 struct screen {
