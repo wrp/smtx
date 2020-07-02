@@ -356,7 +356,7 @@ test_pager(int fd)
 	create(T->c, "c");
 	expect_layout(T->c, lay = "11x80@0,0(1023,%d); *11x80@12,0(0,0)", plen);
 	check_cmd(T, cmd, lay, plen);
-	expect_row(9, T, "    22%-74s", "  y");
+	expect_row(9, T, "    10%-74s", "  y");
 	return rv;
 }
 

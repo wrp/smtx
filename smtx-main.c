@@ -351,6 +351,14 @@ reshape_window(struct canvas *n)
 }
 
 static void
+scrollbottom(struct canvas *n)
+{
+	if( n && n->p && n->p->s ) {
+		n->offset.y = n->p->s->tos;
+	}
+}
+
+static void
 reshape(struct canvas *n, int y, int x, int h, int w)
 {
 	if( n ) {
@@ -375,12 +383,15 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		reshape(n->c[0], y + h1, x, h - h1, n->typ ? w1 : w);
 		reshape(n->c[1], y, x + w1 + have_div,
 			n->typ ? h : h1, w - w1 - have_div);
+		bool changed = n->extent.y != h1 - 1;
 		n->extent.y = h1 - 1; /* Subtract one for title line */
 		n->extent.x = w1;
 		/* TODO: avoid resizing window unnecessarily */
 		if( n->p && n->p->pt >= 0 ) {
-			n->p->pri.tos = n->offset.y =
-				scrollback_history - n->extent.y;
+			if( changed ) {
+				reshape_window(n);
+			}
+			scrollbottom(n);
 		} else if( w1 && h1 > 1 ) {
 			resize_pad(&n->win, n->extent.y, n->extent.x);
 			wbkgd(n->win, ACS_CKBOARD);
@@ -565,14 +576,6 @@ getinput(struct canvas *n, fd_set *f) /* check all ptty's for input. */
 		}
 	}
 	return status;
-}
-
-static void
-scrollbottom(struct canvas *n)
-{
-	if( n && n->p && n->p->s ) {
-		n->offset.y = n->p->s->tos;
-	}
 }
 
 int
