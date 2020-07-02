@@ -530,7 +530,8 @@ wait_child(struct canvas *n)
 		if( WIFEXITED(status) ) {
 			fmt = "exited %d";
 			k = WEXITSTATUS(status);
-		} else if( WIFSIGNALED(status) ) {
+		} else {
+			assert( WIFSIGNALED(status) );
 			fmt = "signal %d";
 			k = WTERMSIG(status);
 		}
