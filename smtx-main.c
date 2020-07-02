@@ -326,14 +326,15 @@ getterm(void)
 	return t ? t : COLORS > 255 ? DEFAULT_COLOR_TERMINAL : DEFAULT_TERMINAL;
 }
 
-/* TODO: make this an action */
-static void
-reshape_window(struct canvas *n)
+static int
+reshape_window(struct canvas *n, const char *arg)
 {
 	struct proc *p = n->p;
 	int h = MAX(n->extent.y, scrollback_history);
-	int w = MAX(n->extent.x, S.width);
-	p->ws = (struct winsize) {.ws_row = n->extent.y, .ws_col = w};
+	int w = MAX(n->extent.x, cmd_count < 1 ? S.width : cmd_count);
+	memset(&p->ws, 0, sizeof p->ws);
+	p->ws.ws_row = strchr(arg, 'h') ? n->extent.y : p->ws.ws_row;
+	p->ws.ws_col = strchr(arg, 'w') ? w : p->ws.ws_col;
 	resize_pad(&p->pri.win, h, w);
 	resize_pad(&p->alt.win, h, w);
 	p->pri.tos = n->offset.y = h - n->extent.y;
@@ -348,6 +349,7 @@ reshape_window(struct canvas *n)
 	if( kill(p->pid, SIGWINCH) ) {
 		set_errmsg("kill");
 	}
+	return 0;
 }
 
 static void
@@ -389,7 +391,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		/* TODO: avoid resizing window unnecessarily */
 		if( n->p && n->p->pt >= 0 ) {
 			if( changed ) {
-				reshape_window(n);
+				reshape_window(n, "h");
 			}
 			scrollbottom(n);
 		} else if( w1 && h1 > 1 ) {
@@ -837,6 +839,7 @@ build_bindings()
 	add_key(cmd_keys, L'L', resize, "L", NULL);
 	add_key(cmd_keys, L'H', resize, "H", NULL);
 	add_key(cmd_keys, L't', new_tabstop, NULL);
+	add_key(cmd_keys, L'W', reshape_window, "hw", NULL);
 	add_key(cmd_keys, L'x', prune, NULL);
 	add_key(cmd_keys, L'0', digit, "0", NULL);
 	add_key(cmd_keys, L'1', digit, "1", NULL);
