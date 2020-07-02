@@ -524,16 +524,18 @@ create(struct canvas *n, const char *arg)
 static void
 wait_child(struct canvas *n)
 {
-	int status, k;
+	int status, k = 0;
 	const char *fmt;
 	if( waitpid(n->p->pid, &status, WNOHANG) == n->p->pid ) {
 		if( WIFEXITED(status) ) {
 			fmt = "exited %d";
 			k = WEXITSTATUS(status);
-		} else {
-			assert( WIFSIGNALED(status) );
+		} else if( WIFSIGNALED(status) ) {
 			fmt = "signal %d";
 			k = WTERMSIG(status);
+		} else {
+			fmt = "stopped";
+			assert( WIFSTOPPED(status) );
 		}
 		snprintf(n->title, sizeof n->title, fmt, k);
 		free_proc(&n->p);
