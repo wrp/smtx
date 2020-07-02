@@ -326,7 +326,7 @@ getterm(void)
 	return t ? t : COLORS > 255 ? DEFAULT_COLOR_TERMINAL : DEFAULT_TERMINAL;
 }
 
-static int
+static void
 reshape_window(struct canvas *n, const char *arg)
 {
 	struct proc *p = n->p;
@@ -349,7 +349,6 @@ reshape_window(struct canvas *n, const char *arg)
 	if( kill(p->pid, SIGWINCH) ) {
 		set_errmsg("kill");
 	}
-	return 0;
 }
 
 static void
@@ -401,7 +400,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 	}
 }
 
-static int
+static void
 prune(struct canvas *x, const char *arg)
 {
 	(void) arg;
@@ -444,7 +443,6 @@ prune(struct canvas *x, const char *arg)
 		view_root = o ? o : n ? n : p;
 	}
 	reshape(view_root, 0, 0, LINES, COLS);
-	return 0;
 }
 
 static void
@@ -513,7 +511,7 @@ balance(struct canvas *n)
 	return n ? n : root;
 }
 
-int
+void
 create(struct canvas *n, const char *arg)
 {
 	assert( n != NULL );
@@ -531,7 +529,6 @@ create(struct canvas *n, const char *arg)
 	}
 	reshape(view_root, 0, 0, LINES, COLS);
 	focus(v);
-	return 0;
 }
 
 static void
@@ -580,15 +577,14 @@ getinput(struct canvas *n, fd_set *f) /* check all ptty's for input. */
 	return status;
 }
 
-int
+static void
 digit(struct canvas *n, const char *arg)
 {
 	(void)n;
 	cmd_count = 10 * (cmd_count == -1 ? 0 : cmd_count) + *arg - '0';
-	return 0;
 }
 
-int
+void
 scrollh(struct canvas *n, const char *arg)
 {
 	if( n && n->p && n->p->s && n->p->s->win ) {
@@ -602,10 +598,9 @@ scrollh(struct canvas *n, const char *arg)
 		}
 		n->manualscroll = n->offset.x != 0;
 	}
-	return 0;
 }
 
-int
+void
 scrolln(struct canvas *n, const char *arg)
 {
 	if( n && n->p && n->p->s && n->p->s->win ) {
@@ -613,24 +608,22 @@ scrolln(struct canvas *n, const char *arg)
 		n->offset.y += *arg == '-' ? -count : count;
 		n->offset.y = MIN(MAX(0, n->offset.y), n->p->s->tos);
 	}
-	return 0;
 }
 
-static int
+static void
 sendarrow(struct canvas *n, const char *k)
 {
     char buf[100] = {0};
     snprintf(buf, sizeof(buf) - 1, "\033%s%s", n->p->pnm? "O" : "[", k);
-    return rewrite(n->p->pt, buf, strlen(buf));
+    rewrite(n->p->pt, buf, strlen(buf));
 }
 
-int
+static void
 reshape_root(struct canvas *n, const char *arg)
 {
 	(void)arg;
 	reshape(view_root, 0, 0, LINES, COLS);
 	scrollbottom(n);
-	return 0;
 }
 
 int
@@ -653,7 +646,7 @@ find_window(struct canvas *n, int y, int x)
 	return r;
 }
 
-int
+void
 resize(struct canvas *n, const char *arg)
 {
 	int typ = strchr("JK", *arg) ? 0 : 1;
@@ -662,7 +655,7 @@ resize(struct canvas *n, const char *arg)
 		n = n->parent;
 	}
 	if( !n || !n->c[typ] ) {
-		return 1;
+		return;
 	}
 	switch(*arg) {
 	case 'K':
@@ -675,10 +668,9 @@ resize(struct canvas *n, const char *arg)
 		} break;
 	}
 	reshape(view_root, 0, 0, LINES, COLS);
-	return 0;
 }
 
-int
+void
 mov(struct canvas *n, const char *arg)
 {
 	assert( n == focused && n != NULL );
@@ -706,43 +698,39 @@ mov(struct canvas *n, const char *arg)
 		}
 	}
 	focus(n);
-	return 0;
 }
 
-int
+void
 send_nul(struct canvas *n, const char *arg)
 {
 	(void) arg;
 	scrollbottom(n);
-	return rewrite(n->p->pt, "\x00", 1);
+	rewrite(n->p->pt, "\x00", 1);
 }
 
-int
+static void
 send(struct canvas *n, const char *arg)
 {
-	int rv = -1;
 	if( n->p && arg ) {
 		if( n->p->lnm && *arg == '\r' ) {
 			assert( arg[1] == '\0' );
 			arg = "\r\n";
 		}
 		scrollbottom(n);
-		rv = rewrite(n->p->pt, arg, strlen(arg));
+		rewrite(n->p->pt, arg, strlen(arg));
 	}
-	return rv;
 }
 
-int
+void
 equalize(struct canvas *n, const char *arg)
 {
 	(void) arg;
 	assert( n != NULL );
 	n = balance(n);
 	reshape(view_root, 0, 0, LINES, COLS);
-	return 0;
 }
 
-int
+void
 transition(struct canvas *n, const char *arg)
 {
 	if( S.mode == enter ) {
@@ -755,7 +743,6 @@ transition(struct canvas *n, const char *arg)
 		errmsg[0] = 0;
 	}
 	send(n, arg);
-	return 0;
 }
 
 static void
@@ -776,13 +763,12 @@ add_key(struct handler *b, wchar_t k, action act, ...)
 	va_end(ap);
 }
 
-int
+void
 new_tabstop(struct canvas *n, const char *arg)
 {
 	(void) arg;
 	n->p->ntabs = 0;
 	extend_tabs(n->p, n->p->tabstop = cmd_count > -1 ? cmd_count : 8);
-	return 0;
 }
 
 #if 0

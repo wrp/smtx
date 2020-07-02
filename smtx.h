@@ -115,7 +115,7 @@ struct canvas {
 	WINDOW *wdiv;  /* Window for divider */
 };
 
-typedef int(action)(struct canvas *n, const char *arg);
+typedef void(action)(struct canvas *n, const char *arg);
 struct handler {
 	action *act;
 	const char *arg;
@@ -143,12 +143,10 @@ extern void draw(struct canvas *n);
 extern int smtx_main(int, char *const*);
 extern action transition;
 extern action create;
-extern action digit;
 extern action equalize;
 extern action mov;
 extern action new_tabstop;
 extern action reorient;
-extern action reshape_root;
 extern action redrawroot;
 extern action resize;
 extern action swap;
