@@ -22,7 +22,6 @@
        argc == 1 and argv[0] == 5 - 1, but the w is chomped.  Note that this
        is the only terminfo entry that uses %c, and I suspect there is a bug
        in vtparser
-     Full-screen mode.
      In full-screen mode, make hjkl scroll the screen.
      Use current cursor position to set bottom of screen when splitting (?)
      Make it easy to swap bindings.  eg, so that hjkl could be used for
@@ -531,7 +530,6 @@ create(struct canvas *n, const char *arg)
 		balance(v);
 	}
 	reshape(view_root, 0, 0, LINES, COLS, 1);
-	focus(v);
 }
 
 static void
