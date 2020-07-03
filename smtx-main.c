@@ -139,6 +139,23 @@ delwinnul(WINDOW **w)
 }
 
 static void
+free_proc(struct proc **pv)
+{
+	struct proc *p = *pv;
+	if( p != NULL ) {
+		free(p->tabs);
+		if( p->pt >= 0 ) {
+			close(p->pt);
+			FD_CLR(p->pt, &fds);
+		}
+		delwinnul(&p->pri.win);
+		delwinnul(&p->alt.win);
+		free(p);
+	}
+	*pv = NULL;
+}
+
+static void
 resize_pad(WINDOW **p, int h, int w)
 {
 	if( *p ) {
@@ -223,23 +240,6 @@ newcanvas(void)
 		}
 	}
 	return n;
-}
-
-static void
-free_proc(struct proc **pv)
-{
-	struct proc *p = *pv;
-	if( p != NULL ) {
-		free(p->tabs);
-		if( p->pt >= 0 ) {
-			close(p->pt);
-			FD_CLR(p->pt, &fds);
-		}
-		delwinnul(&p->pri.win);
-		delwinnul(&p->alt.win);
-		free(p);
-	}
-	*pv = NULL;
 }
 
 static void
