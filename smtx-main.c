@@ -220,6 +220,7 @@ newcanvas(void)
 			free(n);
 			n = NULL;
 		}
+		n->input = n->p->pri.win;
 	}
 	return n;
 }
@@ -302,7 +303,6 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	int x = 0, y = 0;
 	if( f->p ) {
 		assert( f->p->s );
-		f->input = f->p->s->win;
 		int show = binding != &cmd_keys && f->p->s->vis;
 		curs_set(f->offset.y != f->p->s->tos ? 0 : show);
 
@@ -335,8 +335,8 @@ reshape_window(struct canvas *n, const char *arg)
 	memset(&p->ws, 0, sizeof p->ws);
 	p->ws.ws_row = strchr(arg, 'h') ? n->extent.y : ws.ws_row;
 	p->ws.ws_col = strchr(arg, 'w') ? w : ws.ws_col;
-	resize_pad(&p->pri.win, h, w);
-	resize_pad(&p->alt.win, h, w);
+	resize_pad(&p->pri.win, h, p->ws.ws_col);
+	resize_pad(&p->alt.win, h, p->ws.ws_col);
 	p->pri.tos = n->offset.y = h - n->extent.y;
 	assert( p->alt.tos == 0 );
 	wsetscrreg(p->pri.win, 0, h - 1);
@@ -473,7 +473,7 @@ draw_title(struct canvas *n, int r)
 			pid,
 			n->offset.x + 1,
 			n->offset.x + n->extent.x,
-			winsiz(n->input, 1),
+			n->p->ws.ws_col,
 			n->title);
 		whline(n->wtit, ACS_HLINE, n->extent.x);
 		draw_pane(n->wtit, o.y + n->extent.y, o.x);
