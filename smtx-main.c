@@ -304,9 +304,11 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	if( f->p ) {
 		assert( f->p->s );
 		int show = binding != &cmd_keys && f->p->s->vis;
-		curs_set(f->offset.y != f->p->s->tos ? 0 : show);
-
 		getyx(f->input, y, x);
+		if( x < f->offset.x ) {
+			show = false;
+		}
+		curs_set(f->offset.y != f->p->s->tos ? 0 : show);
 		y = MIN(MAX(y, f->p->s->tos), f->p->s->tos + f->extent.y);
 		assert( y >= f->p->s->tos && y <= f->p->s->tos + f->extent.y );
 	} else {
