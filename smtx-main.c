@@ -978,6 +978,9 @@ init(void)
 int
 smtx_main(int argc, char *const argv[])
 {
+	/* These initializations should be in init, but we want to override
+	them in parse_args.  TODO: clean this up so the test suite doesn't
+	need to initialize */
 	S.commandkey = CTL('g'); /* Change at runtime with -c */
 	S.width = 80;
 	parse_args(argc, argv);
