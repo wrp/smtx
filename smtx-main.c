@@ -22,6 +22,7 @@
        argc == 1 and argv[0] == 5 - 1, but the w is chomped.  Note that this
        is the only terminfo entry that uses %c, and I suspect there is a bug
        in vtparser
+     Understand why `tput cols` in spawned terminal does not get correct width
      In full-screen mode, make hjkl scroll the screen.
      Use current cursor position to set bottom of screen when splitting (?)
      Make it easy to swap bindings.  eg, so that hjkl could be used for
