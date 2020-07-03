@@ -360,15 +360,15 @@ scrollbottom(struct canvas *n)
 }
 
 static void
-reshape(struct canvas *n, int y, int x, int h, int w)
+reshape(struct canvas *n, int y, int x, int h, int w, unsigned level)
 {
 	if( n ) {
 		n->origin.y = y;
 		n->origin.x = x;
-		int h1 = h * n->split_point[0];
-		int w1 = w * n->split_point[1];
+		int h1 = level < S.display_level ? h * n->split_point[0] : h;
+		int w1 = level < S.display_level ? w * n->split_point[1] : w;
 		int have_title = h1 && w1;
-		int have_div = h && w && n->c[1];
+		int have_div = h && w && n->c[1] && level < S.display_level;
 
 		if( have_div ) {
 			resize_pad(&n->wdiv, n->typ ? h : h1, 1);
@@ -381,9 +381,12 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 			delwinnul(&n->wtit);
 		}
 
-		reshape(n->c[0], y + h1, x, h - h1, n->typ ? w1 : w);
-		reshape(n->c[1], y, x + w1 + have_div,
-			n->typ ? h : h1, w - w1 - have_div);
+		if( level < S.display_level ) {
+			reshape(n->c[0], y + h1, x, h - h1, n->typ ? w1 : w,
+				level + 1);
+			reshape(n->c[1], y, x + w1 + have_div,
+				n->typ ? h : h1, w - w1 - have_div, level + 1);
+		}
 		bool changed = n->extent.y != h1 - 1;
 		n->extent.y = h1 - 1; /* Subtract one for title line */
 		n->extent.x = w1;
@@ -442,7 +445,7 @@ prune(struct canvas *x, const char *arg)
 	if( view_root == x && del != NULL ) {
 		view_root = o ? o : n ? n : p;
 	}
-	reshape(view_root, 0, 0, LINES, COLS);
+	reshape(view_root, 0, 0, LINES, COLS, 1);
 }
 
 static void
@@ -527,7 +530,7 @@ create(struct canvas *n, const char *arg)
 		v->parent = n;
 		balance(v);
 	}
-	reshape(view_root, 0, 0, LINES, COLS);
+	reshape(view_root, 0, 0, LINES, COLS, 1);
 	focus(v);
 }
 
@@ -589,7 +592,16 @@ set_view_count(struct canvas *n, const char *arg)
 {
 	(void)arg;
 	view_root = n;
-	S.display_level = cmd_count == -1 ? !S.display_level : cmd_count;
+	switch( cmd_count ) {
+	case 0:
+		view_root = root; /* Fall thru */
+	case -1:
+		S.display_level = S.display_level == 1 ? UINT_MAX : 1;
+		break;
+	default:
+		S.display_level = cmd_count;
+	}
+	reshape(view_root, 0, 0, LINES, COLS, 1);
 }
 
 void
@@ -630,7 +642,7 @@ static void
 reshape_root(struct canvas *n, const char *arg)
 {
 	(void)arg;
-	reshape(view_root, 0, 0, LINES, COLS);
+	reshape(view_root, 0, 0, LINES, COLS, 1);
 	scrollbottom(n);
 }
 
@@ -675,7 +687,7 @@ resize(struct canvas *n, const char *arg)
 		n->split_point[0] = MAX( 0, MIN(new / full, 1.0) );
 		} break;
 	}
-	reshape(view_root, 0, 0, LINES, COLS);
+	reshape(view_root, 0, 0, LINES, COLS, 1);
 }
 
 void
@@ -735,7 +747,7 @@ equalize(struct canvas *n, const char *arg)
 	(void) arg;
 	assert( n != NULL );
 	n = balance(n);
-	reshape(view_root, 0, 0, LINES, COLS);
+	reshape(view_root, 0, 0, LINES, COLS, 1);
 }
 
 void
@@ -946,6 +958,7 @@ struct canvas *
 init(void)
 {
 	char buf[16];
+	S.display_level = UINT_MAX;
 	FD_SET(maxfd, &fds);
 	snprintf(buf, sizeof buf - 1, "%d", getpid());
 	setenv("SMTX", buf, 1);
@@ -970,7 +983,7 @@ init(void)
 	if( ( view_root = root = newcanvas()) == NULL ) {
 		errx(EXIT_FAILURE, "Unable to create root window: %s", errmsg);
 	}
-	reshape(root, 0, 0, LINES, COLS);
+	reshape(root, 0, 0, LINES, COLS, 1);
 	focus(root);
 	return root;
 }
