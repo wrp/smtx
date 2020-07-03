@@ -199,6 +199,10 @@ new_pty(int rows, int cols)
 			maxfd = p->pt > maxfd ? p->pt : maxfd;
 			fcntl(p->pt, F_SETFL, O_NONBLOCK);
 			extend_tabs(p, p->tabstop = 8);
+			if( new_screens(p) == -1 ) {
+				free(p);
+				p = NULL;
+			}
 		}
 	}
 	return p;
@@ -215,13 +219,12 @@ newcanvas(void)
 		n->split_point[1] = 1.0;
 		strncpy(n->title, getshell(), sizeof n->title);
 		n->title[sizeof n->title - 1] = '\0';
-		n->p = new_pty(LINES, COLS);
-		if( new_screens(n->p) == -1 ) {
-			free(n->p);
+		if( ( n->p = new_pty(LINES, COLS)) == NULL ) {
 			free(n);
 			n = NULL;
+		} else {
+			n->input = n->p->pri.win;
 		}
-		n->input = n->p->pri.win;
 	}
 	return n;
 }
