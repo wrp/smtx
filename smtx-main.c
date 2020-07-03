@@ -131,10 +131,9 @@ extend_tabs(struct proc *p, int tabstop)
 }
 
 static struct proc *
-new_pty(int rows, int cols, struct canvas *c)
+new_pty(int rows, int cols)
 {
-	int count = 1;
-	struct proc *p = calloc(1, sizeof *p + count + sizeof *p->c);
+	struct proc *p = calloc(1, sizeof *p);
 	if( p != NULL ) {
 		p->ws.ws_row = rows - 1; /* Subtract 1 for title */
 		p->ws.ws_col = MAX(cols, S.width);
@@ -154,8 +153,6 @@ new_pty(int rows, int cols, struct canvas *c)
 			maxfd = p->pt > maxfd ? p->pt : maxfd;
 			fcntl(p->pt, F_SETFL, O_NONBLOCK);
 			extend_tabs(p, p->tabstop = 8);
-			p->canvas_count = count;
-			p->c[0] = c;
 		}
 	}
 	return p;
@@ -218,7 +215,7 @@ newcanvas(void)
 		n->split_point[1] = 1.0;
 		strncpy(n->title, getshell(), sizeof n->title);
 		n->title[sizeof n->title - 1] = '\0';
-		n->p = new_pty(LINES, COLS, n);
+		n->p = new_pty(LINES, COLS);
 		if( new_screens(n->p) == -1 ) {
 			free(n->p);
 			free(n);
