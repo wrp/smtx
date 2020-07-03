@@ -60,7 +60,11 @@
 
 #include "smtx.h"
 
-static struct state S;
+static struct state S = {
+	.commandkey = CTL('g'),
+	.width = 80,
+	.display_level = UINT_MAX
+};
 static struct handler keys[128];
 static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
@@ -959,7 +963,6 @@ struct canvas *
 init(void)
 {
 	char buf[16];
-	S.display_level = UINT_MAX;
 	FD_SET(maxfd, &fds);
 	snprintf(buf, sizeof buf - 1, "%d", getpid());
 	setenv("SMTX", buf, 1);
@@ -991,11 +994,6 @@ init(void)
 int
 smtx_main(int argc, char *const argv[])
 {
-	/* These initializations should be in init, but we want to override
-	them in parse_args.  TODO: clean this up so the test suite doesn't
-	need to initialize */
-	S.commandkey = CTL('g'); /* Change at runtime with -c */
-	S.width = 80;
 	parse_args(argc, argv);
 	init();
 	main_loop();
