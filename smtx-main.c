@@ -777,30 +777,6 @@ new_tabstop(struct canvas *n, const char *arg)
 	extend_tabs(n->p, n->p->tabstop = cmd_count > -1 ? cmd_count : 8);
 }
 
-#if 0
-int
-swap(struct canvas *a, const char **args)
-{
-	int rv = -1;
-	(void) args;
-	if( cmd_count > 0 && a->parent ) {
-		struct canvas *b = find_canvas(root, cmd_count);
-		int ca = a == a->parent->c[1];
-		int cb = b == b->parent->c[1];
-		struct canvas *siba = sibling(a);
-		struct canvas *sibb = sibling(b);
-		b->parent->c[cb] = a;
-		a->parent->c[ca] = b;
-		a->parent = b->parent;
-		b->parent = siba->parent;
-		reshapechildren(siba->parent);
-		reshapechildren(sibb->parent);
-		rv = 0;
-	}
-	return rv;
-}
-#endif
-
 void
 build_bindings()
 {
