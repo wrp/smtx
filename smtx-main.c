@@ -592,7 +592,9 @@ set_view_count(struct canvas *n, const char *arg)
 	view_root = n;
 	switch( cmd_count ) {
 	case 0:
-		view_root = root; /* Fall thru */
+		view_root = root;
+		S.display_level = UINT_MAX;
+		break;
 	case -1:
 		S.display_level = S.display_level == 1 ? UINT_MAX : 1;
 		break;
