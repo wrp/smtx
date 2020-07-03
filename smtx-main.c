@@ -744,11 +744,11 @@ transition(struct canvas *n, const char *arg)
 	if( S.mode == enter ) {
 		binding = &cmd_keys;
 		S.mode = command;
-		scrollbottom(n);
 	} else {
 		binding = &keys;
 		S.mode = enter;
 		errmsg[0] = 0;
+		scrollbottom(n);
 	}
 	send(n, arg);
 }
