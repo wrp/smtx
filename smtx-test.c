@@ -214,6 +214,18 @@ test_nel(int fd)
 }
 
 static int
+test_cols(int fd)
+{
+	/* Ensure that tput correctly identifies the width */
+	(void) fd;
+	setenv("TERM", "smtx", 1);
+	struct test_canvas *T = new_test_canvas(10, 97, NULL);
+	check_cmd(T, "tput cols", NULL);
+	expect_row(2, T, "%-97s", "97");
+	return rv;
+}
+
+static int
 test_scrollback(int fd)
 {
 	(void) fd;
@@ -459,6 +471,7 @@ main(int argc, char *const argv[])
 		F(test_scrollback, 0),
 		F(test_nel, 0),
 		F(test_pager, 0),
+		F(test_cols, 0),
 		{ NULL, NULL, 0 }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
