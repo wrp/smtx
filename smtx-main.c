@@ -184,25 +184,21 @@ new_pty(int rows, int cols)
 		p->ws.ws_row = rows;
 		p->ws.ws_col = MAX(cols, S.width);
 		p->pid = forkpty(&p->pt, NULL, NULL, &p->ws);
-		if( p->pid < 0 ) {
-			set_errmsg("forkpty");
-			free(p);
-			p = NULL;
-		} else if( p->pid == 0 ) {
+		if( p->pid == 0 ) {
 			const char *sh = getshell();
 			setsid();
 			signal(SIGCHLD, SIG_DFL);
 			execl(sh, sh, NULL);
 			err(EXIT_FAILURE, "exec SHELL='%s'", sh);
+		} else if( p->pid < 0 || new_screens(p) == -1 ) {
+			set_errmsg("new_pty");
+			free(p);
+			p = NULL;
 		} else if( p->pid > 0 ) {
 			FD_SET(p->pt, &fds);
 			maxfd = p->pt > maxfd ? p->pt : maxfd;
 			fcntl(p->pt, F_SETFL, O_NONBLOCK);
 			extend_tabs(p, p->tabstop = 8);
-			if( new_screens(p) == -1 ) {
-				free(p);
-				p = NULL;
-			}
 		}
 	}
 	return p;
