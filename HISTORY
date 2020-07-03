@@ -1,0 +1,26 @@
+
+A quick jaunt down memory lane before I forget.  What is the motivation for smtx?
+
+Originally, I was annoyed at the diffculty of pane management in
+tmux.  I would typically only use one pane per window, with
+occasionally (rarely) 2 panes.  It is just too difficult to manipulate
+panes.  I experimented with dvtm, and got as far as
+https://github.com/wrp/dvtm/tree/mvtm but was not happy with where
+that was going.   In the process of that hacking, I realized that
+what I wanted was modes.  I shifted over to using mtm because the
+code base is simpler. While hacking at that, I discovered that I
+really wanted to be able to scroll horizontally in a window and be
+able to use the multiplexer on my phone, so I needed the pty to be
+wider than the physical screen.  (A few days after those realizations,
+Linus announced a style change in the linux kernel and that 80
+columns would no longer be mandated.  Such a style change only makes
+sense if the tools exist to make it easy to scroll horizontally,
+so horizontal scrolling and not tying the pty width to the physcial
+device become imporant) Also, I played around with different behaviors
+of keystrokes in various modes.  Pretty sure now that what I want
+is the ability to easily swap out keybindings.  Right now, playing
+with the idea of having one keybinding in which '<>' will scroll
+the pty horizontally while all other keys pass through.  Also have
+a mode in which hjkl is used to navigate.  But the key is that it
+must be very simple to change key bindings to make the terminal
+usable on a device with limited keyboard (like termux on Android).
