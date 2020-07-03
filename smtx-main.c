@@ -79,7 +79,7 @@ static struct canvas *view_root;
 /* Variables exposed to test suite */
 struct canvas *focused;
 int cmd_count = -1;
-int scrollback_history = 1024; /* Change at runtime with -s */
+int scrollback_history = 1024;
 
 static void
 set_errmsg(const char *fmt, ...)
