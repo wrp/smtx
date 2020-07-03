@@ -524,14 +524,12 @@ balance(struct canvas *n)
 void
 create(struct canvas *n, const char *arg)
 {
-	assert( n != NULL );
 	int dir = arg && *arg == 'C' ? 1 : 0;
 	/* Always split last window in a chain */
-	while( n->c[dir] != NULL ) {
+	while( n && n->c[dir] != NULL ) {
 		n = n->c[dir];
 	}
-	assert( n->c[dir] == NULL );
-	struct canvas *v = n->c[dir] = newcanvas();
+	struct canvas *v = *( n ? &n->c[dir] : &root) = newcanvas();
 	if( v != NULL ) {
 		v->typ = dir;
 		v->parent = n;
@@ -980,11 +978,10 @@ init(void)
 		errx(EXIT_FAILURE, "Unable to create error window");
 	}
 	wattron(werr, A_REVERSE);
-	if( ( view_root = root = newcanvas()) == NULL ) {
+	create(NULL, NULL);
+	if( ( focused = view_root = root ) == NULL ) {
 		errx(EXIT_FAILURE, "Unable to create root window: %s", errmsg);
 	}
-	reshape_root(NULL, NULL);
-	focus(root);
 	return root;
 }
 
