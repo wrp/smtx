@@ -22,7 +22,6 @@
        argc == 1 and argv[0] == 5 - 1, but the w is chomped.  Note that this
        is the only terminfo entry that uses %c, and I suspect there is a bug
        in vtparser
-     Understand why `tput cols` in spawned terminal does not get correct width
      In full-screen mode, make hjkl scroll the screen.
      Use current cursor position to set bottom of screen when splitting (?)
      Make it easy to swap bindings.  eg, so that hjkl could be used for
@@ -330,11 +329,12 @@ static void
 reshape_window(struct canvas *n, const char *arg)
 {
 	struct proc *p = n->p;
+	struct winsize ws = p->ws;
 	int h = MAX(n->extent.y, scrollback_history);
 	int w = MAX(n->extent.x, cmd_count < 1 ? S.width : cmd_count);
 	memset(&p->ws, 0, sizeof p->ws);
-	p->ws.ws_row = strchr(arg, 'h') ? n->extent.y : p->ws.ws_row;
-	p->ws.ws_col = strchr(arg, 'w') ? w : p->ws.ws_col;
+	p->ws.ws_row = strchr(arg, 'h') ? n->extent.y : ws.ws_row;
+	p->ws.ws_col = strchr(arg, 'w') ? w : ws.ws_col;
 	resize_pad(&p->pri.win, h, w);
 	resize_pad(&p->alt.win, h, w);
 	p->pri.tos = n->offset.y = h - n->extent.y;
