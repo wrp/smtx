@@ -741,12 +741,10 @@ equalize(struct canvas *n, const char *arg)
 void
 transition(struct canvas *n, const char *arg)
 {
-	if( S.mode == enter ) {
+	if( binding == &keys ) {
 		binding = &cmd_keys;
-		S.mode = command;
 	} else {
 		binding = &keys;
-		S.mode = enter;
 		errmsg[0] = 0;
 		scrollbottom(n);
 	}
@@ -891,7 +889,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 
 	if( b && b->act ) {
 		b->act(n, b->arg);
-	} else if( S.mode == enter ) {
+	} else if( S.mode == passthru ) {
 		char c[MB_LEN_MAX + 1] = {0};
 		if( wctomb(c, k) > 0 && n->p ) {
 			scrollbottom(n);
@@ -1006,7 +1004,6 @@ smtx_main(int argc, char *const argv[])
 {
 	S.commandkey = CTL('g'); /* Change at runtime with -c */
 	S.width = 80;
-	S.mode = enter;
 	parse_args(argc, argv);
 	init();
 	main_loop();
