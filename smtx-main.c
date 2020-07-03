@@ -130,34 +130,6 @@ extend_tabs(struct proc *p, int tabstop)
 	}
 }
 
-static struct proc *
-new_pty(int rows, int cols)
-{
-	struct proc *p = calloc(1, sizeof *p);
-	if( p != NULL ) {
-		p->ws.ws_row = rows;
-		p->ws.ws_col = MAX(cols, S.width);
-		p->pid = forkpty(&p->pt, NULL, NULL, &p->ws);
-		if( p->pid < 0 ) {
-			set_errmsg("forkpty");
-			free(p);
-			p = NULL;
-		} else if( p->pid == 0 ) {
-			const char *sh = getshell();
-			setsid();
-			signal(SIGCHLD, SIG_DFL);
-			execl(sh, sh, NULL);
-			err(EXIT_FAILURE, "exec SHELL='%s'", sh);
-		} else if( p->pid > 0 ) {
-			FD_SET(p->pt, &fds);
-			maxfd = p->pt > maxfd ? p->pt : maxfd;
-			fcntl(p->pt, F_SETFL, O_NONBLOCK);
-			extend_tabs(p, p->tabstop = 8);
-		}
-	}
-	return p;
-}
-
 static int
 delwinnul(WINDOW **w)
 {
@@ -202,6 +174,34 @@ new_screens(struct proc *p)
 	p->vp.p = p;
 	setupevents(&p->vp);
 	return 0;
+}
+
+static struct proc *
+new_pty(int rows, int cols)
+{
+	struct proc *p = calloc(1, sizeof *p);
+	if( p != NULL ) {
+		p->ws.ws_row = rows;
+		p->ws.ws_col = MAX(cols, S.width);
+		p->pid = forkpty(&p->pt, NULL, NULL, &p->ws);
+		if( p->pid < 0 ) {
+			set_errmsg("forkpty");
+			free(p);
+			p = NULL;
+		} else if( p->pid == 0 ) {
+			const char *sh = getshell();
+			setsid();
+			signal(SIGCHLD, SIG_DFL);
+			execl(sh, sh, NULL);
+			err(EXIT_FAILURE, "exec SHELL='%s'", sh);
+		} else if( p->pid > 0 ) {
+			FD_SET(p->pt, &fds);
+			maxfd = p->pt > maxfd ? p->pt : maxfd;
+			fcntl(p->pt, F_SETFL, O_NONBLOCK);
+			extend_tabs(p, p->tabstop = 8);
+		}
+	}
+	return p;
 }
 
 static struct canvas *
