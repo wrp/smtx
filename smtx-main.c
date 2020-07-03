@@ -151,9 +151,9 @@ new_pty(int rows, int cols, struct canvas *c)
 			maxfd = p->pt > maxfd ? p->pt : maxfd;
 			fcntl(p->pt, F_SETFL, O_NONBLOCK);
 			extend_tabs(p, p->tabstop = 8);
+			p->canvas_count = count;
+			p->c[0] = c;
 		}
-		p->canvas_count = count;
-		p->c[0] = c;
 	}
 	return p;
 }
