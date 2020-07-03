@@ -173,14 +173,9 @@ new_screens(struct proc *p)
 {
 	int rows = MAX(LINES, scrollback_history);
 	int cols = MAX(COLS, S.width);
-	if( !p ) {
-		return -1;
-	}
 	resize_pad(&p->pri.win, rows, cols);
 	resize_pad(&p->alt.win, rows, cols);
 	if( ! p->pri.win || !p->alt.win ) {
-		delwinnul(&p->pri.win);
-		delwinnul(&p->alt.win);
 		return -1;
 	}
 	scrollok(p->pri.win, TRUE);
@@ -209,8 +204,7 @@ new_pty(int rows, int cols)
 			err(EXIT_FAILURE, "exec SHELL='%s'", sh);
 		} else if( p->pid < 0 || new_screens(p) == -1 ) {
 			set_errmsg("new_pty");
-			free(p);
-			p = NULL;
+			free_proc(&p);
 		} else if( p->pid > 0 ) {
 			FD_SET(p->pt, &fds);
 			maxfd = p->pt > maxfd ? p->pt : maxfd;
