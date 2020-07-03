@@ -135,7 +135,7 @@ new_pty(int rows, int cols)
 {
 	struct proc *p = calloc(1, sizeof *p);
 	if( p != NULL ) {
-		p->ws.ws_row = rows - 1; /* Subtract 1 for title */
+		p->ws.ws_row = rows;
 		p->ws.ws_col = MAX(cols, S.width);
 		p->pid = forkpty(&p->pt, NULL, NULL, &p->ws);
 		if( p->pid < 0 ) {
