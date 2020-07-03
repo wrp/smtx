@@ -40,6 +40,9 @@
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 #define CTL(x) ((x) & 0x1f)
 
+/* TODO: drop the mode.  Just have different keybindings.  We can have
+one binding in which all keys (except MOD) go to the tty, and perhaps keep
+a mode that determines whether or not to send unmapped keys through. */
 enum mode {
 	enter,   /* Keystrokes are passed to focused window */
 	command, /* Keystrokes manipulate windows */
