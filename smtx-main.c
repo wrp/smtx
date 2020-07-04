@@ -18,15 +18,15 @@
 
 #include "smtx.h"
 
-static struct state S = {
-	.commandkey = CTL('g'),
-	.width = 80,
-	.display_level = UINT_MAX
-};
 static struct handler keys[128];
 static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
-static struct handler (*binding)[128] = &keys;
+static struct state S = {
+	.commandkey = CTL('g'),
+	.width = 80,
+	.binding = &keys,
+	.display_level = UINT_MAX
+};
 static int maxfd = STDIN_FILENO;
 static fd_set fds;
 static WINDOW *werr;
@@ -255,7 +255,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	int x = 0, y = 0;
 	if( f->p ) {
 		assert( f->p->s );
-		int show = binding != &cmd_keys && f->p->s->vis;
+		int show = S.binding != &cmd_keys && f->p->s->vis;
 		getyx(f->input, y, x);
 		if( x < f->offset.x ) {
 			show = false;
@@ -448,7 +448,7 @@ void
 draw(struct canvas *n) /* Draw a canvas. */
 {
 	if( n != NULL ) {
-		int rev = binding == &cmd_keys && n == focused;
+		int rev = S.binding == &cmd_keys && n == focused;
 		draw(n->c[0]);
 		draw(n->c[1]);
 		draw_div(n, rev && !n->extent.x);
@@ -706,10 +706,10 @@ equalize(struct canvas *n, const char *arg)
 void
 transition(struct canvas *n, const char *arg)
 {
-	if( binding == &keys ) {
-		binding = &cmd_keys;
+	if( S.binding == &keys ) {
+		S.binding = &cmd_keys;
 	} else {
-		binding = &keys;
+		S.binding = &keys;
 		errmsg[0] = 0;
 		scrollbottom(n);
 	}
@@ -821,8 +821,8 @@ handlechar(int r, int k) /* Handle a single input character. */
 	struct canvas *n = focused;
 
 	assert( r != ERR );
-	if( r == OK && k > 0 && k < (int)sizeof *binding ) {
-		b = &(*binding)[k];
+	if( r == OK && k > 0 && k < (int)sizeof *S.binding ) {
+		b = &(*S.binding)[k];
 	} else if( r == KEY_CODE_YES ) {
 		if( k >= KEY_MIN && k <= KEY_MAX ) {
 			b = &code_keys[k - KEY_MIN];
