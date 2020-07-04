@@ -236,11 +236,9 @@ draw_window(struct canvas *n)
 	struct point o = n->origin;
 	struct point e = { o.y + n->extent.y - 1, o.x + n->extent.x - 1 };
 	if( e.y > 0 && e.x > 0 ) {
-		int y, x;
 		WINDOW *w = n->win;
 		struct point off = { 0, 0 };
-		getyx(n->input, y, x);
-		(void)y;
+		int x = winpos(n->input, 1);
 		if( ! n->manualscroll ) {
 			if( x < n->extent.x - 1 ) {
 				n->offset.x = 0;
