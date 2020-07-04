@@ -1,0 +1,58 @@
+
+TODO:
+	Implmement an "insert mode".  That is, have a command from command mode
+	that sets the keybinding so that all keys except 'return/enter' are
+	passed through, and return is bound to transition to command mode.
+	This would allow the user to easily enter one line of text to the tty.
+
+	In full-screen mode, make hjkl scroll the screen.
+
+	Make it easy to swap bindings.  eg, so that hjkl could be used for
+	scrolling in non-full screen mode.  Maybe have labelled bindings,
+	so perhaps 'a or 'b would select binding a or b.  Would be simpler
+	to use numbers, so 1B or 2B could select bindings 1 or 2.  It seems
+	hjkl would be better for scrolling than <> and fb
+
+	Copy-mode, with stack of registers and ability to edit.
+	Or, maybe just have a binding (s) that dumps the current content
+	of the scrollback region to a file like ~/.smtx-pid-timestamp
+	Perhaps use (e) to edit the file (eg, spawn $EDITOR), then (p)
+	to paste it.
+
+	Ability to set titles.
+
+	List all windows with titles, with ability to navigate.
+
+BUGS:
+	Make tput rep work.  eg, tput rep w 5 should write 5 'w' to term,
+	but the parameters do not seem to be getting sent properly.  We get
+	argc == 1 and argv[0] == 5 - 1, but the w is chomped.  Note that this
+	is the only terminfo entry that uses %c, and I suspect there is a bug
+	in vtparser
+
+MAYBE:
+	Register signal handlers for TERM and HUP.  Need to ensure
+	that endwin is called.
+
+	Be able to attach a process to multiple windows.
+	Configure bindings from a startup file or ?
+	Multi-key bindings (?)
+	Pass master fd of a pty through a socket.
+
+Partially implemented/vague ideas:
+	Implement decent error reporting.
+
+	Be able to set tty screen width. Eg, perhaps 'w' to set width of the
+	focused window, and `W` to change the tty.  Then +/- to adjust
+	width of window, and maybe </> to adjust width of tty.  Or </>
+	should scroll the window.  But +/- should also change number
+	of rows in a type 0 canvas.  Need to think about this, but defintely
+	want ability to change tty width.  Probably use one binding in which
+	hjkl navigate windows, one in which hjkl grows windows, and one in
+	which hjkl changes scroll in pty.  Also use <tab> to scroll right
+	one tabstop in the pty.
+
+	Needs to be easier to navigate in full screen mode.   Perhaps
+	title bar would show title of windows above, below, to the
+	left, and right.  Then hjkl navigation would stay in full
+	screen mode while going between them.
