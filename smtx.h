@@ -44,13 +44,19 @@ enum mode {
 	passthru, /* Unbound keystrokes are passed to focused window */
 	sink      /* Unbound keystrokes are discarded */
 };
+struct canvas;
+typedef void(action)(struct canvas *n, const char *arg);
+struct handler {
+	action *act;
+	const char *arg;
+};
 struct state {
 	char commandkey;
 	int width;
 	enum mode mode;
 	unsigned display_level;
+	struct handler (*binding)[128];
 };
-
 struct screen {
 	int sy, sx, vis, tos;
 	short fg, bg, sfg, sbg, sp;
@@ -58,8 +64,6 @@ struct screen {
 	attr_t sattr;
 	WINDOW *win;
 };
-
-struct canvas;
 struct proc {
 	int pt, ntabs, tabstop; /* Should tabs be in struct screen ? */
 	pid_t pid;
@@ -106,12 +110,6 @@ struct canvas {
 	WINDOW *win;
 	WINDOW *wtit;  /* Window for title */
 	WINDOW *wdiv;  /* Window for divider */
-};
-
-typedef void(action)(struct canvas *n, const char *arg);
-struct handler {
-	action *act;
-	const char *arg;
 };
 
 #define MAXMAP 0x7f
