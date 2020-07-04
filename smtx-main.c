@@ -29,7 +29,6 @@ static struct state S = {
 };
 static int maxfd = STDIN_FILENO;
 static fd_set fds;
-static WINDOW *werr;
 static char errmsg[80];
 static struct canvas *root;
 
@@ -853,9 +852,9 @@ main_loop(void)
 
 		draw(S.root);
 		if( errmsg[0] ) {
-			int y = LINES - 1, x = MIN(winsiz(werr, 1), COLS);
-			mvwprintw(werr, 0, 0, "%s", errmsg);
-			pnoutrefresh(werr, 0, 0, y, 0, y, x);
+			int y = LINES - 1, x = MIN(winsiz(S.werr, 1), COLS);
+			mvwprintw(S.werr, 0, 0, "%s", errmsg);
+			pnoutrefresh(S.werr, 0, 0, y, 0, y, x);
 		}
 		fixcursor();
 		doupdate();
@@ -927,11 +926,11 @@ init(void)
 	intrflush(NULL, FALSE);
 	start_color();
 	use_default_colors();
-	resize_pad(&werr, 1, sizeof errmsg);
-	if( werr == NULL ) {
+	resize_pad(&S.werr, 1, sizeof errmsg);
+	if( S.werr == NULL ) {
 		errx(EXIT_FAILURE, "Unable to create error window");
 	}
-	wattron(werr, A_REVERSE);
+	wattron(S.werr, A_REVERSE);
 	create(NULL, NULL);
 	if( ( focused = S.root = root ) == NULL ) {
 		errx(EXIT_FAILURE, "Unable to create root window: %s", errmsg);

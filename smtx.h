@@ -57,6 +57,7 @@ struct state {
 	unsigned display_level;
 	struct handler (*binding)[128];
 	struct canvas *root;
+	WINDOW *werr;
 };
 struct screen {
 	int sy, sx, vis, tos;
