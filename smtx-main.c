@@ -29,7 +29,6 @@ static struct state S = {
 };
 static int maxfd = STDIN_FILENO;
 static fd_set fds;
-static char errmsg[80];
 static struct canvas *root;
 
 /* Variables exposed to test suite */
@@ -43,10 +42,10 @@ set_errmsg(const char *fmt, ...)
 	int e = errno;
 	va_list ap;
 	va_start(ap, fmt);
-	int k = vsnprintf(errmsg, sizeof errmsg, fmt, ap);
+	int k = vsnprintf(S.err, sizeof S.err, fmt, ap);
 	va_end(ap);
-	if( e && k < (int)sizeof errmsg ) {
-		snprintf(errmsg + k, sizeof errmsg - k, ": %s", strerror(e));
+	if( e && k < (int)sizeof S.err ) {
+		snprintf(S.err + k, sizeof S.err - k, ": %s", strerror(e));
 	}
 	errno = e;
 }
@@ -708,7 +707,7 @@ transition(struct canvas *n, const char *arg)
 		S.binding = &cmd_keys;
 	} else {
 		S.binding = &keys;
-		errmsg[0] = 0;
+		S.err[0] = 0;
 		scrollbottom(n);
 	}
 	send(n, arg);
@@ -851,9 +850,9 @@ main_loop(void)
 		fd_set sfds = fds;
 
 		draw(S.root);
-		if( errmsg[0] ) {
+		if( S.err[0] ) {
 			int y = LINES - 1, x = MIN(winsiz(S.werr, 1), COLS);
-			mvwprintw(S.werr, 0, 0, "%s", errmsg);
+			mvwprintw(S.werr, 0, 0, "%s", S.err);
 			pnoutrefresh(S.werr, 0, 0, y, 0, y, x);
 		}
 		fixcursor();
@@ -926,14 +925,14 @@ init(void)
 	intrflush(NULL, FALSE);
 	start_color();
 	use_default_colors();
-	resize_pad(&S.werr, 1, sizeof errmsg);
+	resize_pad(&S.werr, 1, sizeof S.err);
 	if( S.werr == NULL ) {
 		errx(EXIT_FAILURE, "Unable to create error window");
 	}
 	wattron(S.werr, A_REVERSE);
 	create(NULL, NULL);
 	if( ( focused = S.root = root ) == NULL ) {
-		errx(EXIT_FAILURE, "Unable to create root window: %s", errmsg);
+		errx(EXIT_FAILURE, "Unable to create root window: %s", S.err);
 	}
 	return root;
 }

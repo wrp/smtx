@@ -58,6 +58,7 @@ struct state {
 	struct handler (*binding)[128];
 	struct canvas *root;
 	WINDOW *werr;
+	char err[80];
 };
 struct screen {
 	int sy, sx, vis, tos;
