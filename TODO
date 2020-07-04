@@ -1,5 +1,10 @@
 
 TODO:
+	Change name of reshape_window (or ?).  Reshape_window should only
+	reshape the window, and not the underlying pty.  As I write this,
+	pass 'w' in the arg string makes the function change the pty width,
+	but we probably need a distinct function with a better name.
+
 	Implmement an "insert mode".  That is, have a command from command mode
 	that sets the keybinding so that all keys except 'return/enter' are
 	passed through, and return is bound to transition to command mode.
@@ -22,6 +27,11 @@ TODO:
 	Ability to set titles.
 
 	List all windows with titles, with ability to navigate.
+
+	Figure out initialization.  Maybe just use a "source" command to read
+	from a file.  One could specify a fifo and inject it into the main
+	processing loop so the fifo gets selected in the main loop allowing
+	one to send arbitrary keystrokes.  Clearly, there are security issues.
 
 BUGS:
 	Make tput rep work.  eg, tput rep w 5 should write 5 'w' to term,
