@@ -757,6 +757,7 @@ build_bindings()
 	/* TODO: rebind b,f,<,> to hjkl in different binding */
 	add_key(cmd_keys, L'b', scrolln, "-", NULL);
 	add_key(cmd_keys, L'f', scrolln, "+", NULL);
+	/* If default bindings for scrollh are changed, edit README.rst */
 	add_key(cmd_keys, L'>', scrollh, ">", NULL);
 	add_key(cmd_keys, L'<', scrollh, "<", NULL);
 

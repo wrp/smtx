@@ -1,26 +1,34 @@
 Introduction
 ============
 
-smtx is the Simple Modal Terminal Multiplexer
+smtx -- Simple Modal Terminal Multiplexer
+
+smtx is designed for simplicity in the implementation and ease of use
+in a limited environment (eg, on a small physical device).
 
 Quickstart
 ==========
 
 smtx is a window manager.  When first started, smtx creates a single
-window with a pty running the program specified in SHELL.  Entering
-the `MOD` keysequence (default is `CTRL+g`) will put smtx in `command`
-mode, in which key sequences are interpreted to manipulate the
-windows.  Transition back to `keypress` mode by pressing
-`RETURN` or `MOD`.  Pressing `RETURN` transitions
-mode without sending a key to the underlying pty, while pressing
-`MOD` transitions and sends the keystroke.  To quit, use `qq` from
-command mode.
+window with a pty running the program specified in SHELL.  The window
+that is created will fill the physical screen, and the underlying pty
+that it is viewing will have a width at least as much as that specified
+at startup (default is 80).  The width of the underlying pty can be
+changed at any time at runtime.  The `CMD` keysequence (default is
+`CTRL+g`) will put smtx in `command` mode, in which key sequences are
+interpreted to manipulate the windows.  Transition back to `keypress`
+mode by pressing `RETURN` or `CMD`.  Pressing `RETURN` transitions
+mode without sending a key to the underlying pty, while pressing `CMD`
+transitions and sends the keystroke.  To scroll a window horizontally,
+use the `scrollh` command (by default bound to `<` and `>`).
 
 Windows
 =======
 
-New windows are created in `command` mode with `c` and closed with `xx`.
-To switch among the windows use `j`, `k`, and `1`, `2`, etc.
+New windows are created in `command` mode with `create`, which is by
+default bound to the keystrokes `c` and `C`.  New windows will split
+the currently focused window
+To switch among the windows use `j`, `k`, `l`, and `h`.
 
 Usage
 =====
