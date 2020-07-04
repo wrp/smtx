@@ -916,7 +916,7 @@ parse_args(int argc, char *const*argv)
 {
 	int c;
 	char *name = strrchr(argv[0], '/');
-	while( (c = getopt(argc, argv, ":c:hs:T:t:w:")) != -1 ) {
+	while( (c = getopt(argc, argv, ":c:hs:t:w:")) != -1 ) {
 		switch( c ) {
 		case 'h':
 			printf("usage: %s"
@@ -934,7 +934,6 @@ parse_args(int argc, char *const*argv)
 		case 's':
 			scrollback_history = strtol(optarg, NULL, 10);
 			break;
-		case 'T':
 		case 't':
 			setenv("TERM", optarg, 1);
 			break;
