@@ -56,6 +56,7 @@ struct state {
 	enum mode mode;
 	unsigned display_level;
 	struct handler (*binding)[128];
+	struct canvas *root;
 };
 struct screen {
 	int sy, sx, vis, tos;

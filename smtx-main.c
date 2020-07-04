@@ -32,7 +32,6 @@ static fd_set fds;
 static WINDOW *werr;
 static char errmsg[80];
 static struct canvas *root;
-static struct canvas *view_root;
 
 /* Variables exposed to test suite */
 struct canvas *focused;
@@ -197,7 +196,7 @@ newcanvas(void)
 static void
 focus(struct canvas *n)
 {
-	focused = n ? n : view_root;
+	focused = n ? n : S.root;
 }
 
 static void
@@ -404,8 +403,8 @@ prune(struct canvas *x, const char *arg)
 	if( x == focused ) {
 		focus(o ? o : n ? n : p);
 	}
-	if( view_root == x && del != NULL ) {
-		view_root = o ? o : n ? n : p;
+	if( S.root == x && del != NULL ) {
+		S.root = o ? o : n ? n : p;
 	}
 	reshape_root(NULL, NULL);
 }
@@ -550,10 +549,10 @@ static void
 set_view_count(struct canvas *n, const char *arg)
 {
 	(void)arg;
-	view_root = n;
+	S.root = n;
 	switch( cmd_count ) {
 	case 0:
-		view_root = root;
+		S.root = root;
 		S.display_level = UINT_MAX;
 		break;
 	case -1:
@@ -655,18 +654,18 @@ mov(struct canvas *n, const char *arg)
 	for( ; t && count--; n = t ? t : n ) {
 		switch( cmd ) {
 		case 'k': /* move up */
-			t = find_window(view_root, t->origin.y - 1, startx);
+			t = find_window(S.root, t->origin.y - 1, startx);
 			break;
 		case 'j': /* move down */
-			t = find_window(view_root,
+			t = find_window(S.root,
 				t->origin.y + t->extent.y + 1, startx);
 			break;
 		case 'l': /* move right */
-			t = find_window(view_root, starty,
+			t = find_window(S.root, starty,
 				t->origin.x + t->extent.x + 1);
 			break;
 		case 'h': /* move left */
-			t = find_window(view_root, starty, t->origin.x - 1);
+			t = find_window(S.root, starty, t->origin.x - 1);
 			break;
 		}
 	}
@@ -852,7 +851,7 @@ main_loop(void)
 		wint_t w = 0;
 		fd_set sfds = fds;
 
-		draw(view_root);
+		draw(S.root);
 		if( errmsg[0] ) {
 			int y = LINES - 1, x = MIN(winsiz(werr, 1), COLS);
 			mvwprintw(werr, 0, 0, "%s", errmsg);
@@ -934,7 +933,7 @@ init(void)
 	}
 	wattron(werr, A_REVERSE);
 	create(NULL, NULL);
-	if( ( focused = view_root = root ) == NULL ) {
+	if( ( focused = S.root = root ) == NULL ) {
 		errx(EXIT_FAILURE, "Unable to create root window: %s", errmsg);
 	}
 	return root;
