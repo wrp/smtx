@@ -837,6 +837,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 			scrollbottom(n);
 			(void)rewrite(n->p->pt, c, strlen(c));
 		}
+		n->manualscroll = 0;
 	}
 	if( !b || !(b->act == digit) ) {
 		cmd_count = -1;
