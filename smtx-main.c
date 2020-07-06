@@ -881,14 +881,14 @@ parse_args(int argc, char *const*argv)
 {
 	int c;
 	char *name = strrchr(argv[0], '/');
-	while( (c = getopt(argc, argv, ":c:hs:t:w:")) != -1 ) {
+	while( (c = getopt(argc, argv, ":c:hs:t:vw:")) != -1 ) {
 		switch( c ) {
 		case 'h':
 			printf("usage: %s"
 				" [-c ctrl-key]"
 				" [-s history-size]"
-				" [-T NAME]"
 				" [-t NAME]"
+				" [-v]"
 				" [-w width]"
 				"\n",
 				name ? name + 1 : argv[0]);
@@ -902,6 +902,9 @@ parse_args(int argc, char *const*argv)
 		case 't':
 			setenv("TERM", optarg, 1);
 			break;
+		case 'v':
+			printf("%s-%s\n", PACKAGE_NAME, PACKAGE_VERSION);
+			exit(EXIT_SUCCESS);
 		case 'w':
 			S.width = strtol(optarg, NULL, 10);
 			break;
