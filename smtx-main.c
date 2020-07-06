@@ -429,12 +429,15 @@ draw_title(struct canvas *n, int r)
 		int pid = n->p ? n->p->pid : -1;
 		struct point o = n->origin;
 		( r ? &wattron : &wattroff )(n->wtit, A_REVERSE);
-		mvwprintw(n->wtit, 0, 0, "%d %d-%d/%d %s",
-			pid,
-			n->offset.x + 1,
-			n->offset.x + n->extent.x,
-			n->p->ws.ws_col,
-			n->title);
+		if( n->p ) {
+			mvwprintw(n->wtit, 0, 0, "%d %d-%d/%d %s",
+				pid,
+				n->offset.x + 1,
+				n->offset.x + n->extent.x,
+				n->p->ws.ws_col,
+				n->title
+			);
+		}
 		whline(n->wtit, ACS_HLINE, n->extent.x);
 		draw_pane(n->wtit, o.y + n->extent.y, o.x);
 	}
