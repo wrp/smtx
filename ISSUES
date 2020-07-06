@@ -40,7 +40,10 @@ BUGS:
 	is the only terminfo entry that uses %c, and I suspect there is a bug
 	in vtparser
 
-MAYBE:
+	Figure out why I am getting an extra line at the bottom of screen in
+	termux.  Note this happens outside of smtx, so it is not our bug to
+	fix, but may be a terminfo issue.  It needs to be understood.
+MAYBE TODO:
 	Register signal handlers for TERM and HUP.  Need to ensure
 	that endwin is called.
 
