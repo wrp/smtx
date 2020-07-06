@@ -9,7 +9,7 @@ export GIT_CEILING_DIRECTORIES
 # Take version from git if we can...
 v=$(git describe --always --dirty --match 'v*' 2>/dev/null)
 if test -n "$v"; then
-	printf "%s" "${v#v}"
+	printf "%s" "${v#v}" | tr - .
 # else from the version file (eg in a dist tarball)
 elif v=$(cat version); test -n "$v"; then
 	printf "%s" "$v"
