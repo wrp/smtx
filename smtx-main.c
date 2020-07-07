@@ -890,7 +890,7 @@ parse_args(int argc, char *const*argv)
 			printf("usage: %s"
 				" [-c ctrl-key]"
 				" [-s history-size]"
-				" [-t NAME]"
+				" [-t terminal-type]"
 				" [-v]"
 				" [-w width]"
 				"\n",
