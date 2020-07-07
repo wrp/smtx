@@ -471,24 +471,24 @@ case scs: { /* Select Character Set */
     }
 	} break;
 
-case so: { /* Switch Out/In Character Set */
-    if (w == 0x0e)
-        p->gs = p->gc = p->g1; /* locking shift */
-    else if (w == 0xf)
-        p->gs = p->gc = p->g0; /* locking shift */
-    else if (w == L'p')
-        p->gs = p->gc = p->g2; /* locking shift */
-    else if (w == L'o')
-        p->gs = p->gc = p->g3; /* locking shift */
-    else if (w == L'N'){
-        p->gs = p->gc; /* non-locking shift */
-        p->gc = p->g2;
-    } else if (w == L'O'){
-        p->gs = p->gc; /* non-locking shift */
-        p->gc = p->g3;
-    }
-	} break;
-}
+	case so: /* Switch Out/In Character Set */
+		if( w == 0x0e ) {
+			p->gs = p->gc = p->g1; /* locking shift */
+		} else if( w == 0xf ) {
+			p->gs = p->gc = p->g0; /* locking shift */
+		} else if( w == L'p' ) {
+			p->gs = p->gc = p->g2; /* locking shift */
+		} else if( w == L'o' ) {
+			p->gs = p->gc = p->g3; /* locking shift */
+		} else if( w == L'N' ) {
+			p->gs = p->gc; /* non-locking shift */
+			p->gc = p->g2;
+		} else if( w == L'O' ) {
+			p->gs = p->gc; /* non-locking shift */
+			p->gc = p->g3;
+		}
+		break;
+	}
 
 	if( !noclear_repc ) {
 		p->repc = 0;
