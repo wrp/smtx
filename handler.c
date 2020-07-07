@@ -265,19 +265,18 @@ case idl: /* Insert/Delete Line */
 		wmove(win, py, 0);
 	}
 	break;
-
-case csr: { /* CSR - Change Scrolling Region */
-    if (wsetscrreg(win, tos + P1(0) - 1, tos + PD(1, my) - 1) == OK)
-        CALL(cup);
-	} break;
-
-case decreqtparm: { /* DECREQTPARM - Request Device Parameters */
+case csr: /* CSR - Change Scrolling Region */
+	if( wsetscrreg(win, tos + P1(0) - 1, tos + PD(1, my) - 1) == OK ) {
+		CALL(cup);
+	}
+	break;
+case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 	if( P0(0) ) {
 		rewrite(p->pt, "\033[3;1;2;120;1;0x", 16);
 	} else {
 		rewrite(p->pt, "\033[2;1;2;120;128;1;0x", 20);
 	}
-	} break;
+	break;
 
 case sgr0: /* Reset SGR to default */
 	wattrset(win, A_NORMAL);
