@@ -210,6 +210,10 @@ test_nel(int fd)
 	check_cmd(T, cmd, NULL);
 	expect_row(5, T, "%-80s", "foo");
 	expect_row(6, T, "%-80s", "blah");
+	cmd = "printf foobar; tput cub 3; tput el; echo blah";
+	check_cmd(T, cmd, NULL);
+	expect_row(7, T, "%-80s", "fooblah");
+	check_cmd(T, cmd, NULL);
 	return rv;
 }
 
