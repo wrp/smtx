@@ -21,13 +21,12 @@ version:
 	## This is a terrible hack.  The proper approach (is to not do
 	## this at all!) is to cd $(top_srcdir) && ./autogen.sh before running
 	## build-aux/package-version, but that is too slow.  Just hack it for now:
-	cat Makefile | awk 'match($$1,"^(PACKAGE_)*VERSION$$") && NF == 3{$$3 = v} 1' \
+	< Makefile awk 'match($$1,"^(PACKAGE_)*VERSION$$") && NF == 3{$$3 = v} 1' \
 		v=$$(cat version) > Makefile.tmp
-	cat config.h | awk 'match($$2,"^(PACKAGE_)*VERSION$$") && NF == 3{$$3 = v} 1' \
+	< config.h awk 'match($$2,"^(PACKAGE_)*VERSION$$") && NF == 3{$$3 = v} 1' \
 		v='"'$$(cat version)'"' > config.h.tmp
 	mv Makefile.tmp Makefile
 	mv config.h.tmp config.h
-	make clean
 
 install-terminfo: $(top_srcdir)/smtx.ti
 	tic -s -x $(top_srcdir)/smtx.ti
