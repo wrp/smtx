@@ -215,15 +215,13 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		break;
 	case ed: /* Erase in Display */
 		switch( P0(0) ) {
+		case 2:
+			wmove(win, tos, 0); /* Fall Thru */
 		case 0:
 			wclrtobot(win);
 			break;
 		case 3:
 			werase(win);
-			break;
-		case 2:
-			wmove(win, tos, 0);
-			wclrtobot(win);
 			break;
 		case 1:
 			for( i = tos; i < py; i++ ) {
