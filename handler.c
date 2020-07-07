@@ -304,30 +304,32 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 			p->tabs[i] = true;
 		}
 		break;
-
-case mode: { /* Set or Reset Mode */
-    bool set = (w == L'h');
-    for (i = 0; i < argc; i++) switch (P0(i)){
-        case  1: p->pnm = set;              break;
-        case  3: CALL(cls);                 break;
-        case  4: s->insert = set;           break;
-        case  6: p->decom = set; CALL(cup); break;
-        case  7: p->am = set;               break;
-        case 20: p->lnm = set;              break;
-        case 25: s->vis = set? 1 : 0;       break;
-        case 34: s->vis = set? 1 : 2;       break;
-        case 1048: CALL((set? sc : rc));    break;
-        case 1049:
-            CALL((set? sc : rc)); /* fall-through */
-        case 47: case 1047: if (set && p->s != &p->alt){
-                p->s = &p->alt;
-                CALL(cls);
-            } else if (!set && p->s != &p->pri)
-                p->s = &p->pri;
-            break;
-    }
-	} break;
-
+	case mode: /* Set or Reset Mode */
+	{
+		bool set = (w == L'h');
+		for( i = 0; i < argc; i++ ) {
+			switch( P0(i) ) {
+			case  1: p->pnm = set;              break;
+			case  3: CALL(cls);                 break;
+			case  4: s->insert = set;           break;
+			case  6: p->decom = set; CALL(cup); break;
+			case  7: p->am = set;               break;
+			case 20: p->lnm = set;              break;
+			case 25: s->vis = set ? 1 : 0;      break;
+			case 34: s->vis = set ? 1 : 2;      break;
+			case 1048: CALL((set ? sc : rc));   break;
+			case 1049: CALL((set ? sc : rc)); /* fall-thru */
+			case 47: case 1047:
+				if( set && p->s != &p->alt ) {
+					p->s = &p->alt;
+					CALL(cls);
+				} else if( !set && p->s != &p->pri ) {
+					p->s = &p->pri;
+				}
+			}
+		}
+	}
+		break;
 	case sgr: /* SGR - Select Graphic Rendition */
 	{
 		bool doc = false;
