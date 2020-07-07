@@ -419,35 +419,34 @@ case cpl: { /* CPL - Cursor Previous Line */
 case cnl: { /* CNL - Cursor Next Line */
     wmove(win, MIN(tos + bot - 1, py + P1(0)), 0);
 	} break;
-
-case print: { /* Print a character to the terminal */
-    if (wcwidth(w) < 0)
-        return;
-
-    if (s->insert)
-        CALL(ich);
-
-    if (s->xenl){
-        s->xenl = false;
-        if (p->am)
-            CALL(nel);
-        getyx(win, y, x);
-        y -= tos;
-    }
-
-    if (w < MAXMAP && p->gc[w])
-        w = p->gc[w];
-    p->repc = w;
-
-    if (x == mx - wcwidth(w)){
-        s->xenl = true;
-        wins_nwstr(win, &w, 1);
-    } else
-        waddnwstr(win, &w, 1);
-    p->gc = p->gs;
-	noclear_repc = 1;
-	} break;
-
+	case print: /* Print a character to the terminal */
+		if( wcwidth(w) < 0 ) {
+			return;
+		}
+		if( s->insert ) {
+			CALL(ich);
+		}
+		if( s->xenl ) {
+			s->xenl = false;
+			if( p->am ) {
+				CALL(nel);
+			}
+			getyx(win, y, x);
+			y -= tos;
+		}
+		if( w < MAXMAP && p->gc[w] ) {
+			w = p->gc[w];
+		}
+		p->repc = w;
+		if( x == mx - wcwidth(w) ) {
+			s->xenl = true;
+			wins_nwstr(win, &w, 1);
+		} else {
+			waddnwstr(win, &w, 1);
+		}
+		p->gc = p->gs;
+		noclear_repc = 1;
+		break;
 case rep: { /* REP - Repeat Character */
     for (i = 0; i < P1(0) && p->repc; i++)
         handle_terminal_cmd(v, p->repc, 0, 0, NULL, print);
