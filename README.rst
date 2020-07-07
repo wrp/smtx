@@ -14,7 +14,7 @@ window with a pty running the program specified in SHELL.  The window
 that is created will fill the physical screen, and the underlying pty
 that it is viewing will have a width at least as much as that specified
 at startup (default is 80).  The width of the underlying pty can be
-changed at any time at runtime.  The `CMD` keysequence (default is
+changed at runtime.  The `CMD` keysequence (default is
 `CTRL+g`) will put smtx in `command` mode, in which key sequences are
 interpreted to manipulate the windows.  Transition back to `keypress`
 mode by pressing `RETURN` or `CMD`.  Pressing `RETURN` transitions
@@ -27,7 +27,7 @@ Windows
 
 New windows are created in `command` mode with `create`, which is by
 default bound to the keystrokes `c` and `C`.  New windows will split
-the currently focused window
+the currently focused window.
 To switch among the windows use `j`, `k`, `l`, and `h`.
 
 Usage
@@ -35,17 +35,20 @@ Usage
 
 Usage is simple::
 
-    smtx [-T NAME] [-t NAME] [-c KEY]
-
-The `-T` flag tells smtx to assume a different kind of host terminal.
+    smtx [-c ctrl-key] [-s history-size] [-t terminal-type] [-v] [-w width]
 
 The `-t` flag tells smtx what terminal type to advertise itself as.
-Note that this doesn't change how smtx interprets control sequences; it
-simply controls what the `TERM` environment variable is set to.
+(This just controls what the `TERM` environment variable is set to.)
 
 The `-c` flag lets you specify a keyboard character to use as the "command
 prefix" for smtx when modified with *control* (see below).  By default,
 this is `g`.
+
+The `-s` flag controls the amount of scrollback saved for each terminal.
+
+The `-w` flag sets the minimum width for newly created ptys  (default is 80).
+
+Ths `-v` flag causes smtx to print its version and exit.
 
 Once inside smtx, things pretty much work like any other terminal.  However,
 smtx lets you split up the terminal into multiple virtual terminals.
@@ -54,38 +57,29 @@ At any given moment, exactly one virtual terminal is *focused*.  It is
 to this terminal that keyboad input is sent.  The focused terminal is
 indicated by the location of the cursor.
 
-The following commands are recognized in smtx, when preceded by the command
-prefix (by default *ctrl-g*):
+The following commands are recognized in smtx when in command mode:
 
-Up/Down/Left/Right Arrow
+h/j/k/l/Up/Down/Left/Right Arrow
     Focus the virtual terminal above/below/to the left of/to the right of
     the currently focused terminal.
 
-o
-    Focus the previously-focused virtual terminal.
-
-h / v
+c / C
     Split the focused virtual terminal in half horizontally/vertically,
-    creating a new virtual terminal to the right/below.  The new virtual
-    terminal is focused.
+    creating a new virtual terminal to the right/below.  The old virtual
+    terminal retains the focus.
 
-w
-    Delete the focused virtual terminal.  Some other nearby virtual
-    terminal will become focused if there are any left.  smtx will exit
-    once all virtual terminals are closed.  Virtual terminals will also
-    close if the program started inside them exits.
-
-l
-    Redraw the screen.
-
-PgUp/PgDown/End
+b/f
     Scroll the screen back/forward half a screenful, or recenter the
     screen on the actual terminal.
 
-That's it.  There aren't dozens of commands, there are no modes, there's
-nothing else to learn.
+W
+    Set the width of the focused pty.  eg, to set the width of the currently
+    focused pty to 120, enter command mode and type `120W`
 
-(Note that these keybindings can be changed at compile time.)
+[0-9] Set a command count.
+
+(Note that these keybindings can be changed at compile time, and that the
+above list is incomplete and subject to change.)
 
 Compatibility
 =============
@@ -100,32 +94,6 @@ comes with ncurses::
 
     tic -s -x smtx.ti
 
-or simply::
-
-    make install-terminfo
-
-This will install the following terminal types:
-
-smtx
-    This terminal type supports all of the features of smtx, but with
-    the default 8 "ANSI" colors only.
-
-smtx-256color
-    Note that smtx is not magic and cannot actually display more colors
-    than the host terminal supports.
-
-smtx-noutf
-    This terminal type supports everything the smtx terminal type does,
-    but does not advertise UTF8 capability.
-
-That command will compile and install the terminfo entry.  After doing so,
-calling smtx with `-t smtx`::
-
-    smtx -t smtx
-
-will instruct programs to use that terminfo entry.
-You can, of course, replace `smtx` with any of the other above terminal
-types.
 
 Using these terminfo entries allows programs to use the full power of smtx's
 terminal emulation, but it is entirely optional. A primary design goal
@@ -137,6 +105,7 @@ Copyright and License
 =====================
 
 Copyright 2016-2019 Rob King <jking@deadpixi.com>
+
 Copyright 2020 William Pursell <william.r.pursell@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
