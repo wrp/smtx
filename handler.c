@@ -32,6 +32,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 	int py, px;              /* physical cursor position in scrollback */
 	int top = 0, bot = 0;    /* the scrolling region */
 	int tos = s->tos;        /* top of screen in the pad */
+	int o = 1;
 	int i;
 	cchar_t b;
 
@@ -212,8 +213,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		}
 		wmove(win, py, x);
 		break;
-	case ed: { /* Erase in Display */
-		int o = 1;
+	case ed: /* Erase in Display */
 		switch( P0(0) ) {
 		case 0:
 			wclrtobot(win);
@@ -235,7 +235,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 			break;
 		}
 		wmove(win, py, px);
-		} break;
+		break;
 	case ech: { /* Erase Character */
 		cchar_t c;
 		#if HAVE_ALLOC_PAIR
