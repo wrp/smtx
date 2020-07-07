@@ -199,6 +199,8 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		setcchar(&b, L" ", A_NORMAL, alloc_pair(s->fg, s->bg), NULL);
 #endif
 		switch( P0(0) ) {
+		case 2:
+			wmove(win, py, 0); /* Fall Thru */
 		case 0:
 			wclrtoeol(win);
 			break;
@@ -206,10 +208,6 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 			for( i = 0; i <= x; i++ ) {
 				mvwadd_wchnstr(win, py, i, &b, 1);
 			}
-			break;
-		case 2:
-			wmove(win, py, 0);
-			wclrtoeol(win);
 			break;
 		}
 		wmove(win, py, x);
