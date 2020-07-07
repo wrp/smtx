@@ -829,7 +829,6 @@ handlechar(int r, int k) /* Handle a single input character. */
 	struct handler *b = NULL;
 	struct canvas *n = focused;
 
-	assert( r != ERR );
 	if( r == OK && k > 0 && k < (int)sizeof *S.binding ) {
 		b = &(*S.binding)[k];
 	} else if( r == KEY_CODE_YES ) {
@@ -841,10 +840,10 @@ handlechar(int r, int k) /* Handle a single input character. */
 	if( b && b->act ) {
 		b->act(n, b->arg);
 	} else if( S.mode == passthru ) {
-		char c[MB_LEN_MAX + 1] = {0};
-		if( wctomb(c, k) > 0 && n->p ) {
+		char c[MB_LEN_MAX + 1];
+		if( ( r = wctomb(c, k)) > 0 && n->p ) {
 			scrollbottom(n);
-			(void)rewrite(n->p->pt, c, strlen(c));
+			rewrite(n->p->pt, c, r);
 		}
 		n->manualscroll = 0;
 	}
