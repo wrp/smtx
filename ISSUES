@@ -3,6 +3,8 @@ TODO:
 	Handle dead shell better.  I think the correct behavior is to retain
 	the error message by not pruning the window immediately.  But unsure.
 
+	Make it possible to view different parts of a pty is differenty windows.
+
 	Change name of reshape_window (or ?).  Reshape_window should only
 	reshape the window, and not the underlying pty.  As I write this,
 	pass 'w' in the arg string makes the function change the pty width,
