@@ -32,15 +32,13 @@
 
 typedef void (*callback)(VTPARSER *p, wchar_t w);
 struct action {
-    callback cb;
-    struct state *next;
+	callback cb;
+	struct state *next;
 };
-
 struct state{
-    void (*entry)(VTPARSER *v);
-    struct action act[0x80];
+	void (*entry)(VTPARSER *v);
+	struct action act[0x80];
 };
-
 static struct state ground, escape, escape_intermediate, csi_entry,
 	csi_ignore, csi_param, csi_intermediate, osc_string;
 
@@ -70,8 +68,9 @@ collect(VTPARSER *v, wchar_t w)
 static void
 collectosc(VTPARSER *v, wchar_t w)
 {
-    if (v->nosc < MAXOSC)
-        v->oscbuf[v->nosc++] = w;
+	if( v->nosc < MAXOSC ) {
+		v->oscbuf[v->nosc++] = w;
+	}
 }
 
 static void
@@ -86,8 +85,7 @@ param(VTPARSER *v, wchar_t w)
 	}
 }
 
-extern void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
-	int argc, int *argv, int);
+extern void handle_terminal_cmd(VTPARSER *, wchar_t, wchar_t, int, int *, int);
 static void
 docontrol(VTPARSER *v, wchar_t w)
 {
