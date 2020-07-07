@@ -33,6 +33,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 	int top = 0, bot = 0;    /* the scrolling region */
 	int tos = s->tos;        /* top of screen in the pad */
 	int i;
+	cchar_t b;
 
 	getyx(win, py, px);
 	y = py - s->tos;
@@ -193,8 +194,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		s->xenl = false;
 		wmove(win, py, MAX(x - P1(0), 0));
 		break;
-	case el: { /* Erase in Line */
-		cchar_t b;
+	case el: /* Erase in Line */
 #if HAVE_ALLOC_PAIR
 		setcchar(&b, L" ", A_NORMAL, alloc_pair(s->fg, s->bg), NULL);
 #endif
@@ -211,7 +211,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 			break;
 		}
 		wmove(win, py, x);
-		} break;
+		break;
 	case ed: { /* Erase in Display */
 		int o = 1;
 		switch( P0(0) ) {
