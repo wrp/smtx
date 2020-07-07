@@ -174,9 +174,8 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		#if HAVE_ALLOC_PAIR
 		int cp = alloc_pair(s->fg, s->bg);
 		wcolor_set(win, cp, NULL);
-		cchar_t c;
-		setcchar(&c, L" ", A_NORMAL, cp, NULL);
-		wbkgrndset(win, &c);
+		setcchar(&b, L" ", A_NORMAL, cp, NULL);
+		wbkgrndset(win, &b);
 		#endif
 		break;
 	case tbc: /* Tabulation Clear */
@@ -234,15 +233,14 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		}
 		wmove(win, py, px);
 		break;
-	case ech: { /* Erase Character */
-		cchar_t c;
+	case ech: /* Erase Character */
 		#if HAVE_ALLOC_PAIR
-		setcchar(&c, L" ", A_NORMAL, alloc_pair(s->fg, s->bg), NULL);
+		setcchar(&b, L" ", A_NORMAL, alloc_pair(s->fg, s->bg), NULL);
 		#endif
 		for( i = 0; i < P1(0); i++ )
-			mvwadd_wchnstr(win, py, x + i, &c, 1);
+			mvwadd_wchnstr(win, py, x + i, &b, 1);
 		wmove(win, py, px);
-		} break;
+		break;
 
 case dsr: { /* DSR - Device Status Report */
 	char buf[100] = {0};
@@ -397,9 +395,8 @@ case sgr: { /* SGR - Select Graphic Rendition */
     if (doc){
         int p = alloc_pair(s->fg = fg, s->bg = bg);
         wcolor_set(win, p, NULL);
-        cchar_t c;
-        setcchar(&c, L" ", A_NORMAL, p, NULL);
-        wbkgrndset(win, &c);
+        setcchar(&b, L" ", A_NORMAL, p, NULL);
+        wbkgrndset(win, &b);
    }
 #endif
 	noclear_repc = 1;
