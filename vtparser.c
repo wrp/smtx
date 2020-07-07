@@ -144,13 +144,14 @@ handlechar(VTPARSER *vp, wchar_t w)
 {
 	vp->s = vp->s ? vp->s : &ground;
 
-	if( w < 0 || w > 127 )
-		return;
-	struct action *a = vp->s->act + w;
+	if( w >= 0 && w < MAXCALLBACK ) {
+		struct action *a = vp->s->act + w;
 
-	if( a->cb ) {
-		a->cb(vp, w);
+		if( a->cb ) {
+			a->cb(vp, w);
+		}
 		if( a->next ) {
+			assert( a->cb );
 			vp->s = a->next;
 			if( a->next->entry ) {
 				a->next->entry(vp);
