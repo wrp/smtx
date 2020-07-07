@@ -34,6 +34,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 	int tos = s->tos;        /* top of screen in the pad */
 	int o = 1;
 	int i;
+	char buf[32];
 	cchar_t b;
 
 	getyx(win, py, px);
@@ -241,17 +242,15 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 			mvwadd_wchnstr(win, py, x + i, &b, 1);
 		wmove(win, py, px);
 		break;
-
-case dsr: { /* DSR - Device Status Report */
-	char buf[100] = {0};
-	if( P0(0) == 6 ) {
-		snprintf(buf, sizeof(buf) - 1, "\033[%d;%dR",
-                 (p->decom? y - top : y) + 1, x + 1);
-	} else {
-		snprintf(buf, sizeof(buf) - 1, "\033[0n");
-	}
-	rewrite(p->pt, buf, strlen(buf));
-	} break;
+	case dsr: /* DSR - Device Status Report */
+		if( P0(0) == 6 ) {
+			snprintf(buf, sizeof buf, "\033[%d;%dR",
+				(p->decom ? y - top : y) + 1, x + 1);
+		} else {
+			snprintf(buf, sizeof buf, "\033[0n");
+		}
+		rewrite(p->pt, buf, strlen(buf));
+		break;
 
 case idl: /* Insert/Delete Line */
 	/* we don't use insdelln here because it inserts above and not below,
