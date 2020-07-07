@@ -3,19 +3,19 @@ TODO:
 	Handle dead shell better.  I think the correct behavior is to retain
 	the error message by not pruning the window immediately.  But unsure.
 
-	Make it possible to view different parts of a pty is differenty windows.
+	Make it possible to view different parts of a pty in different windows.
 
-	Change name of reshape_window (or ?).  Reshape_window should only
+	Change name of reshape_window.  Reshape_window should only
 	reshape the window, and not the underlying pty.  As I write this,
-	pass 'w' in the arg string makes the function change the pty width,
+	passing 'w' in the arg string makes the function change the pty width,
 	but we probably need a distinct function with a better name.
 
-	Implmement an "insert mode".  That is, have a command from command mode
+	Implement an "insert mode".  That is, have a command from command mode
 	that sets the keybinding so that all keys except 'return/enter' are
 	passed through, and return is bound to transition to command mode.
 	This would allow the user to easily enter one line of text to the tty.
 
-	In full-screen mode, make hjkl scroll the screen.
+	In full-screen mode, make hjkl scroll the pty.
 
 	Make it easy to swap bindings.  eg, so that hjkl could be used for
 	scrolling in non-full screen mode.  Maybe have labelled bindings,
