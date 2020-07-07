@@ -244,12 +244,13 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		break;
 	case dsr: /* DSR - Device Status Report */
 		if( P0(0) == 6 ) {
-			snprintf(buf, sizeof buf, "\033[%d;%dR",
+			i = snprintf(buf, sizeof buf, "\033[%d;%dR",
 				(p->decom ? y - top : y) + 1, x + 1);
 		} else {
-			snprintf(buf, sizeof buf, "\033[0n");
+			i = snprintf(buf, sizeof buf, "\033[0n");
 		}
-		rewrite(p->pt, buf, strlen(buf));
+		assert( i < (int)sizeof buf ); /* Assumes INT_MAX < 1e14 */
+		rewrite(p->pt, buf, i);
 		break;
 	case idl: /* Insert/Delete Line */
 		/* We don't use insdelln here because it inserts above and
