@@ -198,7 +198,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 #if HAVE_ALLOC_PAIR
 		setcchar(&b, L" ", A_NORMAL, alloc_pair(s->fg, s->bg), NULL);
 #endif
-		switch( P0(0) ) {
+		switch( argc > 0 ? argv[0] : 0 ) {
 		case 2:
 			wmove(win, py, 0); /* Fall Thru */
 		case 0:
@@ -307,7 +307,7 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 	{
 		bool set = (w == L'h');
 		for( i = 0; i < argc; i++ ) {
-			switch( P0(i) ) {
+			switch( argv[i] ) {
 			case  1: p->pnm = set;              break;
 			case  3: CALL(cls);                 break;
 			case  4: s->insert = set;           break;
