@@ -605,9 +605,8 @@ scrolln(struct canvas *n, const char *arg)
 static void
 sendarrow(struct canvas *n, const char *k)
 {
-    char buf[100] = {0};
-    snprintf(buf, sizeof(buf) - 1, "\033%s%s", n->p->pnm? "O" : "[", k);
-    rewrite(n->p->pt, buf, strlen(buf));
+	char buf[3] = { '\033', n->p->pnm ? 'O' : '[', *k };
+	rewrite(n->p->pt, buf, 3);
 }
 
 int
