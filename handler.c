@@ -32,7 +32,6 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 	int py, px;              /* physical cursor position in scrollback */
 	int top = 0, bot = 0;    /* the scrolling region */
 	int tos = s->tos;        /* top of screen in the pad */
-	int o = 1;
 	int i;
 	char buf[32];
 	cchar_t b;
@@ -229,7 +228,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 				wclrtoeol(win);
 			}
 			wmove(win, py, x);
-			handle_terminal_cmd(v, w, iw, 1, &o, el);
+			handle_terminal_cmd(v, w, iw, 1, argv, el);
 			break;
 		}
 		wmove(win, py, px);
