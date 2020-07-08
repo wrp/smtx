@@ -470,24 +470,25 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		}
 		break;
 
-case scs: { /* Select Character Set */
-    wchar_t **t = NULL;
-    switch (iw){
-        case L'(': t = &p->g0;  break;
-        case L')': t = &p->g1;  break;
-        case L'*': t = &p->g2;  break;
-        case L'+': t = &p->g3;  break;
-        default: return;        break;
-    }
-    switch (w){
-        case L'A': *t = CSET_UK;    break;
-        case L'B': *t = CSET_US;    break;
-        case L'0': *t = CSET_GRAPH; break;
-        case L'1': *t = CSET_US;    break;
-        case L'2': *t = CSET_GRAPH; break;
-    }
-	} break;
-
+	case scs: /* Select Character Set */
+	{
+		wchar_t **t;
+		switch( iw ) {
+		case L'(': t = &p->g0;  break;
+		case L')': t = &p->g1;  break;
+		case L'*': t = &p->g2;  break;
+		case L'+': t = &p->g3;  break;
+		default: return;
+		}
+		switch( w ) {
+		case L'A': *t = CSET_UK;    break;
+		case L'B': *t = CSET_US;    break;
+		case L'0': *t = CSET_GRAPH; break;
+		case L'1': *t = CSET_US;    break;
+		case L'2': *t = CSET_GRAPH; break;
+		}
+	}
+		break;
 	case so: /* Switch Out/In Character Set */
 		if( w == 0x0e ) {
 			p->gs = p->gc = p->g1; /* locking shift */
