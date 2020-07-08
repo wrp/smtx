@@ -292,9 +292,11 @@ reshape_window(struct canvas *n, const char *arg)
 	struct winsize ws = p->ws;
 	int h = MAX(n->extent.y, scrollback_history);
 	int w = MAX(n->extent.x, cmd_count < 1 ? S.width : cmd_count);
+
 	memset(&p->ws, 0, sizeof p->ws);
 	p->ws.ws_row = strchr(arg, 'h') ? n->extent.y : ws.ws_row;
 	p->ws.ws_col = strchr(arg, 'w') ? w : ws.ws_col;
+
 	resize_pad(&p->pri.win, h, p->ws.ws_col);
 	resize_pad(&p->alt.win, h, p->ws.ws_col);
 	p->pri.tos = n->offset.y = h - n->extent.y;
@@ -726,21 +728,14 @@ transition(struct canvas *n, const char *arg)
 }
 
 static void
-add_key(struct handler *b, wchar_t k, action act, ...)
+add_key(struct handler *b, wchar_t k, action act, const char *arg)
 {
 	if( b == code_keys ) {
 		assert( k >= KEY_MIN && k <= KEY_MAX );
 		k -= KEY_MIN;
 	}
 	b[k].act = act;
-	va_list ap;
-	va_start(ap, act);
-	b[k].arg = va_arg(ap, const char *);
-	if( b[k].arg != NULL ) {
-		const char *n = va_arg(ap, const char *);
-		assert( n == NULL );
-	}
-	va_end(ap);
+	b[k].arg = arg;
 }
 
 void
@@ -757,70 +752,70 @@ build_bindings()
 	assert( KEY_MAX - KEY_MIN < 2048 ); /* Avoid overly large luts */
 
 	add_key(keys, S.commandkey, transition, NULL);
-	add_key(keys, L'\r', send, "\r",  NULL);
-	add_key(keys, L'\n', send, "\n", NULL);
+	add_key(keys, L'\r', send, "\r");
+	add_key(keys, L'\n', send, "\n");
 	add_key(keys, 0, send_nul, NULL);
 
-	add_key(cmd_keys, S.commandkey, transition, &S.commandkey, NULL);
+	add_key(cmd_keys, S.commandkey, transition, &S.commandkey);
 	add_key(cmd_keys, L'\r', transition, NULL);
 	/* TODO: rebind b,f,<,> to hjkl in different binding */
-	add_key(cmd_keys, L'b', scrolln, "-", NULL);
-	add_key(cmd_keys, L'f', scrolln, "+", NULL);
+	add_key(cmd_keys, L'b', scrolln, "-");
+	add_key(cmd_keys, L'f', scrolln, "+");
 	/* If default bindings for scrollh are changed, edit README.rst */
-	add_key(cmd_keys, L'>', scrollh, ">", NULL);
-	add_key(cmd_keys, L'<', scrollh, "<", NULL);
+	add_key(cmd_keys, L'>', scrollh, ">");
+	add_key(cmd_keys, L'<', scrollh, "<");
 
 	add_key(cmd_keys, L'=', equalize, NULL);
 	add_key(cmd_keys, L'c', create, NULL);
-	add_key(cmd_keys, L'C', create, "C", NULL);
-	add_key(cmd_keys, L'j', mov, "j", NULL);
-	add_key(cmd_keys, L'k', mov, "k", NULL);
-	add_key(cmd_keys, L'l', mov, "l", NULL);
-	add_key(cmd_keys, L'h', mov, "h", NULL);
-	add_key(cmd_keys, L'J', resize, "J", NULL);
-	add_key(cmd_keys, L'K', resize, "K", NULL);
-	add_key(cmd_keys, L'L', resize, "L", NULL);
-	add_key(cmd_keys, L'H', resize, "H", NULL);
+	add_key(cmd_keys, L'C', create, "C");
+	add_key(cmd_keys, L'j', mov, "j");
+	add_key(cmd_keys, L'k', mov, "k");
+	add_key(cmd_keys, L'l', mov, "l");
+	add_key(cmd_keys, L'h', mov, "h");
+	add_key(cmd_keys, L'J', resize, "J");
+	add_key(cmd_keys, L'K', resize, "K");
+	add_key(cmd_keys, L'L', resize, "L");
+	add_key(cmd_keys, L'H', resize, "H");
 	add_key(cmd_keys, L't', new_tabstop, NULL);
-	add_key(cmd_keys, L'W', reshape_window, "hw", NULL);
+	add_key(cmd_keys, L'W', reshape_window, "hw");
 	add_key(cmd_keys, L'v', set_view_count, NULL);
 	add_key(cmd_keys, L'x', prune, NULL);
-	add_key(cmd_keys, L'0', digit, "0", NULL);
-	add_key(cmd_keys, L'1', digit, "1", NULL);
-	add_key(cmd_keys, L'2', digit, "2", NULL);
-	add_key(cmd_keys, L'3', digit, "3", NULL);
-	add_key(cmd_keys, L'4', digit, "4", NULL);
-	add_key(cmd_keys, L'5', digit, "5", NULL);
-	add_key(cmd_keys, L'6', digit, "6", NULL);
-	add_key(cmd_keys, L'7', digit, "7", NULL);
-	add_key(cmd_keys, L'8', digit, "8", NULL);
-	add_key(cmd_keys, L'9', digit, "9", NULL);
+	add_key(cmd_keys, L'0', digit, "0");
+	add_key(cmd_keys, L'1', digit, "1");
+	add_key(cmd_keys, L'2', digit, "2");
+	add_key(cmd_keys, L'3', digit, "3");
+	add_key(cmd_keys, L'4', digit, "4");
+	add_key(cmd_keys, L'5', digit, "5");
+	add_key(cmd_keys, L'6', digit, "6");
+	add_key(cmd_keys, L'7', digit, "7");
+	add_key(cmd_keys, L'8', digit, "8");
+	add_key(cmd_keys, L'9', digit, "9");
 	add_key(code_keys, KEY_RESIZE, reshape_root, NULL);
-	add_key(code_keys, KEY_F(1), send, "\033OP", NULL);
-	add_key(code_keys, KEY_F(2), send, "\033OQ", NULL);
-	add_key(code_keys, KEY_F(3), send, "\033OR", NULL);
-	add_key(code_keys, KEY_F(4), send, "\033OS", NULL);
-	add_key(code_keys, KEY_F(5), send, "\033[15~", NULL);
-	add_key(code_keys, KEY_F(6), send, "\033[17~", NULL);
-	add_key(code_keys, KEY_F(7), send, "\033[18~", NULL);
-	add_key(code_keys, KEY_F(8), send, "\033[19~", NULL);
-	add_key(code_keys, KEY_F(9), send, "\033[20~", NULL);
-	add_key(code_keys, KEY_F(10), send, "\033[21~", NULL);
-	add_key(code_keys, KEY_F(11), send, "\033[23~", NULL);
-	add_key(code_keys, KEY_F(12), send, "\033[24~", NULL);
-	add_key(code_keys, KEY_HOME, send, "\033[1~", NULL);
-	add_key(code_keys, KEY_END, send, "\033[4~", NULL);
-	add_key(code_keys, KEY_PPAGE, send, "\033[5~", NULL);
-	add_key(code_keys, KEY_NPAGE, send, "\033[6~", NULL);
-	add_key(code_keys, KEY_BACKSPACE, send, "\177", NULL);
-	add_key(code_keys, KEY_DC, send, "\033[3~", NULL);
-	add_key(code_keys, KEY_IC, send, "\033[2~", NULL);
-	add_key(code_keys, KEY_BTAB, send, "\033[Z", NULL);
-	add_key(code_keys, KEY_ENTER, send, "\r", NULL);
-	add_key(code_keys, KEY_UP, sendarrow, "A", NULL);
-	add_key(code_keys, KEY_DOWN, sendarrow, "B", NULL);
-	add_key(code_keys, KEY_RIGHT, sendarrow, "C", NULL);
-	add_key(code_keys, KEY_LEFT, sendarrow, "D", NULL);
+	add_key(code_keys, KEY_F(1), send, "\033OP");
+	add_key(code_keys, KEY_F(2), send, "\033OQ");
+	add_key(code_keys, KEY_F(3), send, "\033OR");
+	add_key(code_keys, KEY_F(4), send, "\033OS");
+	add_key(code_keys, KEY_F(5), send, "\033[15~");
+	add_key(code_keys, KEY_F(6), send, "\033[17~");
+	add_key(code_keys, KEY_F(7), send, "\033[18~");
+	add_key(code_keys, KEY_F(8), send, "\033[19~");
+	add_key(code_keys, KEY_F(9), send, "\033[20~");
+	add_key(code_keys, KEY_F(10), send, "\033[21~");
+	add_key(code_keys, KEY_F(11), send, "\033[23~");
+	add_key(code_keys, KEY_F(12), send, "\033[24~");
+	add_key(code_keys, KEY_HOME, send, "\033[1~");
+	add_key(code_keys, KEY_END, send, "\033[4~");
+	add_key(code_keys, KEY_PPAGE, send, "\033[5~");
+	add_key(code_keys, KEY_NPAGE, send, "\033[6~");
+	add_key(code_keys, KEY_BACKSPACE, send, "\177");
+	add_key(code_keys, KEY_DC, send, "\033[3~");
+	add_key(code_keys, KEY_IC, send, "\033[2~");
+	add_key(code_keys, KEY_BTAB, send, "\033[Z");
+	add_key(code_keys, KEY_ENTER, send, "\r");
+	add_key(code_keys, KEY_UP, sendarrow, "A");
+	add_key(code_keys, KEY_DOWN, sendarrow, "B");
+	add_key(code_keys, KEY_RIGHT, sendarrow, "C");
+	add_key(code_keys, KEY_LEFT, sendarrow, "D");
 }
 
 static void
