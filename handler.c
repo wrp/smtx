@@ -1,10 +1,8 @@
 #include "smtx.h"
 
 /*
- *      CALL(h)        - Call handler h with no arguments.
- * The funny names for handlers are from their ANSI/ECMA/DEC mnemonics.
+ * The names for handlers come from their ANSI/ECMA/DEC mnemonics.
  */
-#define CALL(x) handle_terminal_cmd(v, 0, 0, 0, NULL, x)
 
 enum cmd {
 	noop = 0, ack, bell, cbt, cls, cnl, cpl, cr, csr, cub, cud, cuf, cup,
@@ -13,6 +11,7 @@ enum cmd {
 	ri, ris, sc, scs, sgr, sgr0, so, su, tab, tbc, vis, vpa, vpr
 };
 
+#define CALL(x) handle_terminal_cmd(v, 0, 0, 0, NULL, x)
 void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 	int argc, int *argv, enum cmd c)
 {
