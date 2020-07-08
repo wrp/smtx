@@ -3,13 +3,11 @@
 /*
  *      PD(n, d)       - Parameter n, with default d.
  *      P0(n)          - Parameter n, default 0.
- *      P1(n)          - Parameter n, default 1.
  *      CALL(h)        - Call handler h with no arguments.
  * The funny names for handlers are from their ANSI/ECMA/DEC mnemonics.
  */
 #define PD(x, d) (argc < (x) || !argv? (d) : argv[(x)])
 #define P0(x) PD(x, 0)
-#define P1(x) (!P0(x)? 1 : P0(x))
 #define CALL(x) handle_terminal_cmd(v, 0, 0, 0, NULL, x)
 
 enum cmd {
@@ -23,6 +21,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 	int argc, int *argv, enum cmd c)
 {
 	int noclear_repc = 0;
+	int p1[2];               /* First 2 parms, defaulting to 1 */
 	int i, t1, t2;           /* Some temp ints */
 	struct proc *p = v->p;   /* the current proc */
 	struct screen *s = p->s; /* the current SCRN buffer */
@@ -35,6 +34,8 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 	char buf[32];
 	cchar_t b;
 
+	p1[0] = argv && argc > 0 ? argv[0] : 1;
+	p1[1] = argv && argc > 1 ? argv[1] : 1;
 	getyx(win, py, px);
 	y = py - tos;
 	x = px;
@@ -57,26 +58,26 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		break;
 	case cup: /* Cursor Position */
 		s->xenl = false;
-		wmove(win, tos + (p->decom? top : 0) + P1(0) - 1, P1(1) - 1);
+		wmove(win, tos + (p->decom? top : 0) + p1[0] - 1, p1[1] - 1);
 		break;
 	case dch: /* Delete Character */
-		for( i = 0; i < P1(0); i++ ) {
+		for( i = 0; i < p1[0]; i++ ) {
 			wdelch(win);
 		}
 		break;
 	case ich: /* Insert Character */
-		for( i = 0; i < P1(0); i++ ) {
+		for( i = 0; i < p1[0]; i++ ) {
 			wins_nwstr(win, L" ", 1);
 		}
 		break;
 	case cuu: /* Cursor Up */
-		wmove(win, MAX(py - P1(0), tos + top), x);
+		wmove(win, MAX(py - p1[0], tos + top), x);
 		break;
 	case cud: /* Cursor Down */
-		wmove(win, MIN(py + P1(0), tos + bot - 1), x);
+		wmove(win, MIN(py + p1[0], tos + bot - 1), x);
 		break;
 	case cuf: /* Cursor Forward */
-		wmove(win, py, MIN(x + P1(0), mx - 1));
+		wmove(win, py, MIN(x + p1[0], mx - 1));
 		break;
 	case ack: /* Acknowledge Enquiry */
 		rewrite(p->pt, "\006", 1);
@@ -104,16 +105,16 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		}
 		break;
 	case hpa: /* Cursor Horizontal Absolute */
-		wmove(win, py, MIN(P1(0) - 1, mx - 1));
+		wmove(win, py, MIN(p1[0] - 1, mx - 1));
 		break;
 	case hpr: /* Cursor Horizontal Relative */
-		wmove(win, py, MIN(px + P1(0), mx - 1));
+		wmove(win, py, MIN(px + p1[0], mx - 1));
 		break;
 	case vpa: /* Cursor Vertical Absolute */
-		wmove(win, MIN(tos + bot - 1, MAX(tos + top, tos + P1(0) - 1)), x);
+		wmove(win, MIN(tos + bot - 1, MAX(tos + top, tos + p1[0] - 1)), x);
 		break;
 	case vpr: /* Cursor Vertical Relative */
-		wmove(win, MIN(tos + bot - 1, MAX(tos + top, py + P1(0))), x);
+		wmove(win, MIN(tos + bot - 1, MAX(tos + top, py + p1[0])), x);
 		break;
 	case cbt: /* Cursor Backwards Tab */
 		for( i = x - 1; i >= 0 && ! p->tabs[i]; i-- ) {
@@ -128,7 +129,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		wmove(win, py, i);
 		break;
 	case tab: /* Tab forwards or backwards */
-		for( i = 0; i < P1(0); i++ ) {
+		for( i = 0; i < p1[0]; i++ ) {
 			CALL(w == L'Z' ? cbt : ht);
 		}
 		break;
@@ -142,7 +143,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		wmove(win, py, px);
 	} break;
 	case su: /* Scroll Up/Down */
-		wscrl(win, (w == L'T' || w == L'^') ? -P1(0) : P1(0));
+		wscrl(win, (w == L'T' || w == L'^') ? -p1[0] : p1[0]);
 		break;
 	case sc: /* Save Cursor */
 		s->sx = px;                              /* X position */
@@ -191,7 +192,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		break;
 	case cub: /* Cursor Backward */
 		s->xenl = false;
-		wmove(win, py, MAX(x - P1(0), 0));
+		wmove(win, py, MAX(x - p1[0], 0));
 		break;
 	case el: /* Erase in Line */
 #if HAVE_ALLOC_PAIR
@@ -236,7 +237,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		#if HAVE_ALLOC_PAIR
 		setcchar(&b, L" ", A_NORMAL, alloc_pair(s->fg, s->bg), NULL);
 		#endif
-		for( i = 0; i < P1(0); i++ )
+		for( i = 0; i < p1[0]; i++ )
 			mvwadd_wchnstr(win, py, x + i, &b, 1);
 		wmove(win, py, px);
 		break;
@@ -253,7 +254,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 	case idl: /* Insert/Delete Line */
 		/* We don't use insdelln here because it inserts above and
 		   not below, and has a few other edge cases. */
-		i = MIN(P1(0), my - 1 - y);
+		i = MIN(p1[0], my - 1 - y);
 		wgetscrreg(win, &t1, &t2);
 		wsetscrreg(win, py, t2);
 		wscrl(win, w == L'L' ? -i : i);
@@ -261,7 +262,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		wmove(win, py, 0);
 		break;
 case csr: /* CSR - Change Scrolling Region */
-	if( wsetscrreg(win, tos + P1(0) - 1, tos + PD(1, my) - 1) == OK ) {
+	if( wsetscrreg(win, tos + p1[0] - 1, tos + PD(1, my) - 1) == OK ) {
 		CALL(cup);
 	}
 	break;
@@ -429,10 +430,10 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		CALL((p->lnm? nel : ind));
 		break;
 	case cpl: /* CPL - Cursor Previous Line */
-		wmove(win, MAX(tos + top, py - P1(0)), 0);
+		wmove(win, MAX(tos + top, py - p1[0]), 0);
 		break;
 	case cnl: /* CNL - Cursor Next Line */
-		wmove(win, MIN(tos + bot - 1, py + P1(0)), 0);
+		wmove(win, MIN(tos + bot - 1, py + p1[0]), 0);
 		break;
 	case print: /* Print a character to the terminal */
 		if( wcwidth(w) < 0 ) {
@@ -463,7 +464,7 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		noclear_repc = 1;
 		break;
 	case rep: /* REP - Repeat Character */
-		for( i=0; i < P1(0) && p->repc; i++ ) {
+		for( i=0; i < p1[0] && p->repc; i++ ) {
 			handle_terminal_cmd(v, p->repc, 0, 0, NULL, print);
 		}
 		break;
