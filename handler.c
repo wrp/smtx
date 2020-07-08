@@ -23,7 +23,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 	int argc, int *argv, enum cmd c)
 {
 	int noclear_repc = 0;
-	int t[4];
+	int t[4];                /* Some temp ints */
 	struct proc *p = v->p;   /* the current proc */
 	struct screen *s = p->s; /* the current SCRN buffer */
 	WINDOW *win = s->win;    /* the current window */
@@ -38,13 +38,13 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 	cchar_t b;
 
 	getyx(win, py, px);
-	y = py - s->tos;
+	y = py - tos;
 	x = px;
 	getmaxyx(win, my, mx);
-	my -= s->tos;
+	my -= tos;
 	wgetscrreg(win, &top, &bot);
-	bot += 1 - s->tos;
-	top = top <= tos? 0 : top - tos;
+	bot += 1 - tos;
+	top = top <= tos ? 0 : top - tos;
 	switch(c) {
 	case noop:
 		return;
