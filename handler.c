@@ -464,10 +464,11 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		p->gc = p->gs;
 		noclear_repc = 1;
 		break;
-case rep: { /* REP - Repeat Character */
-    for (i = 0; i < P1(0) && p->repc; i++)
-        handle_terminal_cmd(v, p->repc, 0, 0, NULL, print);
-	} break;
+	case rep: /* REP - Repeat Character */
+		for( i=0; i < P1(0) && p->repc; i++ ) {
+			handle_terminal_cmd(v, p->repc, 0, 0, NULL, print);
+		}
+		break;
 
 case scs: { /* Select Character Set */
     wchar_t **t = NULL;
