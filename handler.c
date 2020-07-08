@@ -11,8 +11,8 @@ enum cmd {
 	ri, ris, sc, scs, sgr, sgr0, so, su, tab, tbc, vis, vpa, vpr
 };
 
-#define CALL(x) handle_terminal_cmd(v, 0, 0, 0, NULL, x)
-void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
+#define CALL(x) tput(v, 0, 0, 0, NULL, x)
+void tput(VTPARSER *v, wchar_t w, wchar_t iw,
 	int argc, int *argv, enum cmd c)
 {
 	int noclear_repc = 0;
@@ -225,7 +225,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 				wclrtoeol(win);
 			}
 			wmove(win, py, x);
-			handle_terminal_cmd(v, w, iw, 1, argv, el);
+			tput(v, w, iw, 1, argv, el);
 			break;
 		}
 		wmove(win, py, px);
@@ -466,7 +466,7 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		break;
 	case rep: /* REP - Repeat Character */
 		for( i=0; i < p0[1] && p->repc; i++ ) {
-			handle_terminal_cmd(v, p->repc, 0, 0, NULL, print);
+			tput(v, p->repc, 0, 0, NULL, print);
 		}
 		break;
 
@@ -579,5 +579,5 @@ setupevents(VTPARSER *v)
 	vtonevent(v, VTPARSER_ESCAPE,  L'=', numkp);
 	vtonevent(v, VTPARSER_ESCAPE,  L'>', numkp);
 	vtonevent(v, VTPARSER_PRINT,   0,    print);
-	handle_terminal_cmd(v, L'c', 0, 0, NULL, ris);
+	tput(v, L'c', 0, 0, NULL, ris);
 }

@@ -85,39 +85,38 @@ param(VTPARSER *v, wchar_t w)
 	}
 }
 
-extern void handle_terminal_cmd(VTPARSER *, wchar_t, wchar_t, int, int *, int);
+extern void tput(VTPARSER *, wchar_t, wchar_t, int, int *, int);
 static void
 docontrol(VTPARSER *v, wchar_t w)
 {
 	assert( w < MAXCALLBACK );
-	handle_terminal_cmd(v, w, v->inter, 0, NULL, v->cons[w]);
+	tput(v, w, v->inter, 0, NULL, v->cons[w]);
 }
 
 static void
 doescape(VTPARSER *v, wchar_t w)
 {
 	assert( w < MAXCALLBACK );
-	handle_terminal_cmd(v, w, v->inter, v->inter > 0,
-		&v->inter, v->escs[w]);
+	tput(v, w, v->inter, v->inter > 0, &v->inter, v->escs[w]);
 }
 
 static void
 docsi(VTPARSER *v, wchar_t w)
 {
 	assert( w < MAXCALLBACK );
-	handle_terminal_cmd(v, w, v->inter, v->narg, v->args, v->csis[w]);
+	tput(v, w, v->inter, v->narg, v->args, v->csis[w]);
 }
 
 static void
 doprint(VTPARSER *v, wchar_t w)
 {
-	handle_terminal_cmd(v, w, v->inter, 0, NULL, v->print);
+	tput(v, w, v->inter, 0, NULL, v->print);
 }
 
 static void
 doosc(VTPARSER *v, wchar_t w)
 {
-	handle_terminal_cmd(v, w, v->inter, v->nosc, NULL, v->osc);
+	tput(v, w, v->inter, v->nosc, NULL, v->osc);
 }
 
 static int initialized;
