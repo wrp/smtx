@@ -218,6 +218,24 @@ test_nel(int fd)
 }
 
 static int
+test_csr(int fd)
+{
+	(void) fd;
+	struct test_canvas *T = new_test_canvas(24, 80, NULL);
+	char *cmd = "tput csr 6 12";
+	check_cmd(T, cmd, NULL);
+	check_cmd(T, "yes | nl | sed 25q", NULL);
+	for(int i = 2; i < 6; i++ ) {
+		expect_row(i, T, "     %d  %-72s", i, "y");
+	}
+	for(int i = 6; i < 12; i++ ) {
+		expect_row(i, T, "    %d  %-72s", i + 14, "y");
+	}
+	expect_row(12, T, "%-80s", T->ps1);
+	return rv;
+}
+
+static int
 test_cols(int fd)
 {
 	/* Ensure that tput correctly identifies the width */
@@ -476,6 +494,7 @@ main(int argc, char *const argv[])
 		F(test_nel, 0),
 		F(test_pager, 0),
 		F(test_cols, 0),
+		F(test_csr, 0),
 		{ NULL, NULL, 0 }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
