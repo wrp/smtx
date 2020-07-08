@@ -1,11 +1,9 @@
 #include "smtx.h"
 
 /*
- *      PD(n, d)       - Parameter n, with default d.
  *      CALL(h)        - Call handler h with no arguments.
  * The funny names for handlers are from their ANSI/ECMA/DEC mnemonics.
  */
-#define PD(x, d) (argc < (x) || !argv? (d) : argv[(x)])
 #define CALL(x) handle_terminal_cmd(v, 0, 0, 0, NULL, x)
 
 enum cmd {
@@ -261,11 +259,12 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		wsetscrreg(win, t1, t2);
 		wmove(win, py, 0);
 		break;
-case csr: /* CSR - Change Scrolling Region */
-	if( wsetscrreg(win, tos + p1[0] - 1, tos + PD(1, my) - 1) == OK ) {
-		CALL(cup);
-	}
-	break;
+	case csr: /* CSR - Change Scrolling Region */
+		t1 = argv && argc > 1 ? argv[1] : my;
+		if( wsetscrreg(win, tos + p1[0] - 1, tos + t1 - 1) == OK ) {
+			CALL(cup);
+		}
+		break;
 case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 	if( p0 ) {
 		rewrite(p->pt, "\033[3;1;2;120;1;0x", 16);
