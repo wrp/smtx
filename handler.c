@@ -17,7 +17,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 {
 	int noclear_repc = 0;
 	int p0[2];               /* First arg, defaulting to 0 or 1 */
-	int p1[2];               /* First 2 parms, defaulting to 1 */
+	int p1;                  /* argv[1], defaulting to 1 */
 	int i, t1, t2;           /* Some temp ints */
 	struct proc *p = v->p;   /* the current proc */
 	struct screen *s = p->s; /* the current SCRN buffer */
@@ -32,8 +32,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 
 	p0[0] = argv && argc > 0 ? argv[0] : 0;
 	p0[1] = argv && argc > 0 ? argv[0] : 1;
-	p1[0] = argv && argc > 0 ? argv[0] : 1;
-	p1[1] = argv && argc > 1 ? argv[1] : 1;
+	p1 = argv && argc > 1 ? argv[1] : 1;
 	getyx(win, py, px);
 	y = py - tos;
 	x = px;
@@ -56,7 +55,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		break;
 	case cup: /* Cursor Position */
 		s->xenl = false;
-		wmove(win, tos + (p->decom? top : 0) + p0[1] - 1, p1[1] - 1);
+		wmove(win, tos + (p->decom ? top : 0) + p0[1] - 1, p1 - 1);
 		break;
 	case dch: /* Delete Character */
 		for( i = 0; i < p0[1]; i++ ) {
