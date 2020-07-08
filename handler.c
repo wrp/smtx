@@ -2,12 +2,10 @@
 
 /*
  *      PD(n, d)       - Parameter n, with default d.
- *      P0(n)          - Parameter n, default 0.
  *      CALL(h)        - Call handler h with no arguments.
  * The funny names for handlers are from their ANSI/ECMA/DEC mnemonics.
  */
 #define PD(x, d) (argc < (x) || !argv? (d) : argv[(x)])
-#define P0(x) PD(x, 0)
 #define CALL(x) handle_terminal_cmd(v, 0, 0, 0, NULL, x)
 
 enum cmd {
