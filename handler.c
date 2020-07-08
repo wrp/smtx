@@ -340,7 +340,9 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		}
 		short bg = s->bg, fg = s->fg;
 		for( i = 0; i < argc; i++ ) {
-			switch( P0(i) ) {
+			bool at = argc > i + 2 && argv[i + 1] == 5;
+			int val = argc > i + 2 ? argv[i + 2] : 0;
+			switch( argv[i] ) {
 			case  0: CALL(sgr0);                        break;
 			case  1: wattron(win,  A_BOLD);             break;
 			case  2: wattron(win,  A_DIM);              break;
@@ -364,7 +366,7 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 			case 36:  fg = COLOR_CYAN;      doc = do8;   break;
 			case 37:  fg = COLOR_WHITE;     doc = do8;   break;
 			case 38:
-				fg = P0(i+1) == 5 ? P0(i+2) : s->fg;
+				fg = at ? val : s->fg;
 				i += 2;
 				doc = do256;
 				break;
@@ -378,8 +380,9 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 			case 46:  bg = COLOR_CYAN;       doc = do8;   break;
 			case 47:  bg = COLOR_WHITE;      doc = do8;   break;
 			case 48:
-				bg = P0(i+1) == 5 ? P0(i+2) : s->bg;
-				i += 2; doc = do256;
+				bg = at ? val : s->bg;
+				i += 2;
+				doc = do256;
 				break;
 			case 49:  bg = -1;             doc = true;  break;
 			case 90:  fg = COLOR_BLACK;    doc = do16;  break;
