@@ -23,7 +23,7 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 	int argc, int *argv, enum cmd c)
 {
 	int noclear_repc = 0;
-	int otop = 0, obot = 0;
+	int t[4];
 	struct proc *p = v->p;   /* the current proc */
 	struct screen *s = p->s; /* the current SCRN buffer */
 	WINDOW *win = s->win;    /* the current window */
@@ -89,10 +89,10 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		}
 		break;
 	case ri: /* Reverse Index (scroll back) */
-		wgetscrreg(win, &otop, &obot);
-		wsetscrreg(win, otop >= tos ? otop : tos, obot);
+		wgetscrreg(win, t, t+1);
+		wsetscrreg(win, t[0] >= tos ? t[0] : tos, t[1]);
 		y == top ? wscrl(win, -1) : wmove(win, MAX(tos, py - 1), x);
-		wsetscrreg(win, otop, obot);
+		wsetscrreg(win, t[0], t[1]);
 		break;
 	case decid: /* Send Terminal Identification */
 		if( w == L'c' ) {
@@ -256,10 +256,10 @@ void handle_terminal_cmd(VTPARSER *v, wchar_t w, wchar_t iw,
 		/* We don't use insdelln here because it inserts above and
 		   not below, and has a few other edge cases. */
 		i = MIN(P1(0), my - 1 - y);
-		wgetscrreg(win, &otop, &obot);
-		wsetscrreg(win, py, obot);
+		wgetscrreg(win, t, t+1);
+		wsetscrreg(win, py, t[1]);
 		wscrl(win, w == L'L' ? -i : i);
-		wsetscrreg(win, otop, obot);
+		wsetscrreg(win, t[0], t[1]);
 		wmove(win, py, 0);
 		break;
 case csr: /* CSR - Change Scrolling Region */
