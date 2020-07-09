@@ -78,10 +78,10 @@ static void
 extend_tabs(struct proc *p, int tabstop)
 {
 	int w = p->ws.ws_col;
-	if( p->ntabs < w ) {
-		typeof(*p->tabs) *n = realloc(p->tabs, w * sizeof *n);
-		for( p->tabs = n; n && p->ntabs < w; p->ntabs++ ) {
-			p->tabs[p->ntabs] = p->ntabs % tabstop == 0;
+	typeof(*p->tabs) *n;
+	if( p->ntabs < w && ( n = realloc(p->tabs, w * sizeof *n)) != NULL ) {
+		for( p->tabs = n; p->ntabs < w; p->ntabs++ ) {
+			p->tabs[p->ntabs] = tabstop && p->ntabs % tabstop == 0;
 		}
 	}
 }
@@ -740,9 +740,9 @@ add_key(struct handler *b, wchar_t k, action act, const char *arg)
 void
 new_tabstop(struct canvas *n, const char *arg)
 {
-	(void) arg;
+	int c = arg ? strtol(arg, NULL, 10) : cmd_count > -1 ? cmd_count : 8;
 	n->p->ntabs = 0;
-	extend_tabs(n->p, n->p->tabstop = cmd_count > -1 ? cmd_count : 8);
+	extend_tabs(n->p, n->p->tabstop = c);
 }
 
 void
