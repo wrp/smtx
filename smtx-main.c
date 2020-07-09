@@ -25,9 +25,9 @@ static struct state S = {
 	.commandkey = CTL('g'),
 	.width = 80,
 	.binding = &keys,
+	.maxfd = STDIN_FILENO,
 	.display_level = UINT_MAX
 };
-static int maxfd = STDIN_FILENO;
 static fd_set fds;
 static struct canvas *root;
 
@@ -163,7 +163,7 @@ new_pty(int rows, int cols)
 			free_proc(&p);
 		} else if( p->pid > 0 ) {
 			FD_SET(p->pt, &fds);
-			maxfd = p->pt > maxfd ? p->pt : maxfd;
+			S.maxfd = p->pt > S.maxfd ? p->pt : S.maxfd;
 			fcntl(p->pt, F_SETFL, O_NONBLOCK);
 			extend_tabs(p, p->tabstop = 8);
 		}
@@ -861,7 +861,7 @@ main_loop(void)
 		}
 		fixcursor();
 		doupdate();
-		if( select(maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
+		if( select(S.maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
 			FD_ZERO(&sfds);
 		}
 		while( (r = wget_wch(focused->input, &w)) != ERR ) {
@@ -916,7 +916,7 @@ struct canvas *
 init(void)
 {
 	char buf[16];
-	FD_SET(maxfd, &fds);
+	FD_SET(S.maxfd, &fds);
 	snprintf(buf, sizeof buf - 1, "%d", getpid());
 	setenv("SMTX", buf, 1);
 	setenv("TERM", getterm(), 1);
