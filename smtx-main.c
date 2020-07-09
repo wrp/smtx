@@ -94,15 +94,26 @@ delwinnul(WINDOW **w)
 	return rv;
 }
 
+static int
+find_max_fd(struct canvas *n)
+{
+	return n ? MAX(n->p ? n->p->pt : -1,
+		MAX(find_max_fd(n->c[0]), find_max_fd(n->c[1]))) : -1;
+}
+
 static void
 free_proc(struct proc **pv)
 {
 	struct proc *p = *pv;
 	if( p != NULL ) {
 		free(p->tabs);
-		if( p->pt >= 0 ) {
+		if( p->pt > 0 ) { /* Do not close or clear 0 */
 			close(p->pt);
 			FD_CLR(p->pt, &fds);
+			if( S.maxfd == p->pt ) {
+				p->pt = -1;
+				S.maxfd = find_max_fd(S.root);
+			}
 		}
 		delwinnul(&p->pri.win);
 		delwinnul(&p->alt.win);
