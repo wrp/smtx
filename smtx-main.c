@@ -435,12 +435,12 @@ draw_pane(WINDOW *w, int y, int x)
 }
 
 static void
-draw_title(struct canvas *n, int r)
+update_title(struct canvas *n, const char *t)
 {
-	if( n->wtit ) {
-		int pid = n->p ? n->p->pid : -1;
-		struct point o = n->origin;
-		( r ? &wattron : &wattroff )(n->wtit, A_REVERSE);
+	int pid = n->p ? n->p->pid : -1;
+	if( t ) {
+		mvwprintw(n->wtit, 0, 0, "%s", t);
+	} else {
 		mvwprintw(n->wtit, 0, 0, "%d %d-%d/%d %s",
 			pid,
 			n->offset.x + 1,
@@ -448,7 +448,19 @@ draw_title(struct canvas *n, int r)
 			n->p ? n->p->ws.ws_col : 0,
 			n->title
 		);
-		whline(n->wtit, ACS_HLINE, n->extent.x);
+	}
+	whline(n->wtit, ACS_HLINE, n->extent.x);
+}
+
+static void
+draw_title(struct canvas *n, int r)
+{
+	if( n->wtit ) {
+		struct point o = n->origin;
+		( r ? &wattron : &wattroff )(n->wtit, A_REVERSE);
+		if( n->p ) {
+			update_title(n, NULL);
+		}
 		draw_pane(n->wtit, o.y + n->extent.y, o.x);
 	}
 }
@@ -519,16 +531,17 @@ wait_child(struct canvas *n)
 	const char *fmt;
 	if( waitpid(n->p->pid, &status, WNOHANG) == n->p->pid ) {
 		if( WIFEXITED(status) ) {
-			fmt = "exited %d";
+			fmt = "%d exited %d";
 			k = WEXITSTATUS(status);
 		} else if( WIFSIGNALED(status) ) {
-			fmt = "signal %d";
+			fmt = "%d caught signal %d";
 			k = WTERMSIG(status);
 		} else {
-			fmt = "stopped";
+			fmt = "%d stopped";
 			assert( WIFSTOPPED(status) );
 		}
-		snprintf(n->title, sizeof n->title, fmt, k);
+		snprintf(n->title, sizeof n->title, fmt, n->p->pid, k);
+		update_title(n, n->title);
 		free_proc(&n->p);
 	}
 }
