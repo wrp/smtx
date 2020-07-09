@@ -371,7 +371,6 @@ reshape(struct canvas *n, int y, int x, int h, int w, unsigned level)
 			scrollbottom(n);
 		} else if( w1 && h1 > 1 ) {
 			resize_pad(&n->win, n->extent.y, n->extent.x);
-			wbkgd(n->win, ACS_CKBOARD);
 		}
 	}
 }
