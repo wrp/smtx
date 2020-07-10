@@ -195,8 +195,6 @@ newcanvas(void)
 	} else {
 		n->split_point[0] = 1.0;
 		n->split_point[1] = 1.0;
-		strncpy(n->title, getshell(), sizeof n->title);
-		n->title[sizeof n->title - 1] = '\0';
 		n->auto_prune = 1;
 		n->p->count = 1;
 		n->input = n->p->pri.win;
@@ -337,6 +335,22 @@ scrollbottom(struct canvas *n)
 }
 
 static void
+set_title(struct canvas *n)
+{
+	assert( n->p != NULL );
+	mvwprintw(n->wtit, 0, 0, "%d %d-%d/%d %s",
+		n->p->pid,
+		n->offset.x + 1,
+		n->offset.x + n->extent.x,
+		n->p->ws.ws_col,
+		getshell()
+	);
+	whline(n->wtit, ACS_HLINE, n->extent.x);
+	/* See draw_title().  We must leave the cursor at the start of
+	the HLINE so that we can reliably change reverse video */
+}
+
+static void
 reshape(struct canvas *n, int y, int x, int h, int w, unsigned level)
 {
 	if( n ) {
@@ -369,6 +383,7 @@ reshape(struct canvas *n, int y, int x, int h, int w, unsigned level)
 		n->extent.x = w1;
 		/* TODO: avoid resizing window unnecessarily */
 		if( n->p && n->p->pt >= 0 ) {
+			set_title(n);
 			if( changed ) {
 				reshape_window(n, "h");
 			}
@@ -443,32 +458,16 @@ draw_pane(WINDOW *w, int y, int x)
 }
 
 static void
-update_title(struct canvas *n, const char *t)
-{
-	int pid = n->p ? n->p->pid : -1;
-	if( t ) {
-		mvwprintw(n->wtit, 0, 0, "%s", t);
-	} else {
-		mvwprintw(n->wtit, 0, 0, "%d %d-%d/%d %s",
-			pid,
-			n->offset.x + 1,
-			n->offset.x + n->extent.x,
-			n->p ? n->p->ws.ws_col : 0,
-			n->title
-		);
-	}
-	whline(n->wtit, ACS_HLINE, n->extent.x);
-}
-
-static void
 draw_title(struct canvas *n, int r)
 {
 	if( n->wtit ) {
+		/* This relies on set_title() leaving the
+		cursor at the start of the ACS_HLINE */
 		struct point o = n->origin;
-		( r ? &wattron : &wattroff )(n->wtit, A_REVERSE);
-		if( n->p ) {
-			update_title(n, NULL);
-		}
+		int x = winpos(n->wtit, 1);
+		mvwchgat(n->wtit, 0, 0, x, r ? A_REVERSE : A_NORMAL, 0, NULL);
+		wattrset(n->wtit, r ? A_REVERSE : A_NORMAL);
+		mvwhline(n->wtit, 0, x, ACS_HLINE, n->extent.x);
 		draw_pane(n->wtit, o.y + n->extent.y, o.x);
 	}
 }
@@ -548,8 +547,8 @@ wait_child(struct canvas *n)
 			fmt = "%d stopped";
 			assert( WIFSTOPPED(status) );
 		}
-		snprintf(n->title, sizeof n->title, fmt, n->p->pid, k);
-		update_title(n, n->title);
+		mvwprintw(n->wtit, 0, 0, fmt, n->p->pid, k);
+		whline(n->wtit, ACS_HLINE, n->extent.x);
 		free_proc(&n->p);
 	}
 }
