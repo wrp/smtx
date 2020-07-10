@@ -45,6 +45,7 @@ enum mode {
 	sink      /* Unbound keystrokes are discarded */
 };
 struct canvas;
+struct pty;
 typedef void(action)(struct canvas *n, const char *arg);
 struct handler {
 	action *act;
@@ -57,6 +58,7 @@ struct state {
 	unsigned display_level;
 	struct handler (*binding)[128];
 	struct canvas *root;
+	struct pty *p;
 	int maxfd;
 	WINDOW *werr;
 };
@@ -76,6 +78,7 @@ struct pty {
 	wchar_t *g0, *g1, *g2, *g3, *gc, *gs, *sgc, *sgs;
 	struct winsize ws;
 	unsigned count;
+	struct pty *next;
 	VTPARSER vp;
 };
 

@@ -109,6 +109,17 @@ free_proc(struct pty **pv)
 		free(p->tabs);
 		delwinnul(&p->pri.win);
 		delwinnul(&p->alt.win);
+		if( S.p == p ) {
+			S.p = p->next;
+		} else {
+			struct pty *t;
+			for(t = S.p; t && t->next != p; t = t->next ) {
+				;
+			}
+			if( t->next == p ) {
+				t->next = p->next;
+			}
+		}
 		free(p);
 		*pv = NULL;
 	}
@@ -170,6 +181,8 @@ new_pty(int rows, int cols)
 			fcntl(p->pt, F_SETFL, O_NONBLOCK);
 			extend_tabs(p, p->tabstop = 8);
 		}
+		p->next = S.p;
+		S.p = p;
 	}
 	return p;
 }
