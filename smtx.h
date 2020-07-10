@@ -67,8 +67,8 @@ struct screen {
 	attr_t sattr;
 	WINDOW *win;
 };
-struct proc {
-	int pt, ntabs, tabstop; /* Should tabs be in struct screen ? */
+struct pty {
+	int pt, ntabs, tabstop;
 	pid_t pid;
 	bool *tabs, pnm, decom, am, lnm;
 	wchar_t repc;
@@ -85,7 +85,7 @@ struct canvas {
 	struct point extent; /* relative position of lower right corner */
 	int typ; /* 0: c[0] is full width, 1: c[1] is full height */
 	struct point offset; /* Number of lines window is scrolled */
-	struct proc *p;
+	struct pty *p;
 	struct canvas *parent;
 	/*
 	A canvas contains both c[0] and c[1], and shows only the upper

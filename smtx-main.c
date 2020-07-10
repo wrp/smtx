@@ -75,7 +75,7 @@ getshell(void)
 }
 
 static void
-extend_tabs(struct proc *p, int tabstop)
+extend_tabs(struct pty *p, int tabstop)
 {
 	int w = p->ws.ws_col;
 	typeof(*p->tabs) *n;
@@ -102,9 +102,9 @@ find_max_fd(struct canvas *n)
 }
 
 static void
-free_proc(struct proc **pv)
+free_proc(struct pty **pv)
 {
-	struct proc *p = *pv;
+	struct pty *p = *pv;
 	if( p != NULL ) {
 		free(p->tabs);
 		if( p->pt > 0 ) { /* Do not close or clear 0 */
@@ -136,7 +136,7 @@ resize_pad(WINDOW **p, int h, int w)
 }
 
 static int
-new_screens(struct proc *p)
+new_screens(struct pty *p)
 {
 	int rows = MAX(LINES, scrollback_history);
 	int cols = MAX(COLS, S.width);
@@ -155,10 +155,10 @@ new_screens(struct proc *p)
 	return 0;
 }
 
-static struct proc *
+static struct pty *
 new_pty(int rows, int cols)
 {
-	struct proc *p = calloc(1, sizeof *p);
+	struct pty *p = calloc(1, sizeof *p);
 	if( p != NULL ) {
 		p->ws.ws_row = rows;
 		p->ws.ws_col = MAX(cols, S.width);
@@ -299,7 +299,7 @@ getterm(void)
 static void
 reshape_window(struct canvas *n, const char *arg)
 {
-	struct proc *p = n->p;
+	struct pty *p = n->p;
 	struct winsize ws = p->ws;
 	int h = MAX(n->extent.y, scrollback_history);
 	int w = MAX(n->extent.x, cmd_count < 1 ? S.width : cmd_count);
