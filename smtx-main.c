@@ -188,19 +188,18 @@ newcanvas(void)
 	struct canvas *n = calloc(1, sizeof *n);
 	if( !n ) {
 		set_errmsg("calloc");
+	} else if( ( n->p = new_pty(LINES, COLS)) == NULL ) {
+		set_errmsg("new_pty");
+		free(n);
+		n = NULL;
 	} else {
 		n->split_point[0] = 1.0;
 		n->split_point[1] = 1.0;
 		strncpy(n->title, getshell(), sizeof n->title);
 		n->title[sizeof n->title - 1] = '\0';
-		if( ( n->p = new_pty(LINES, COLS)) == NULL ) {
-			free(n);
-			n = NULL;
-		} else {
-			n->auto_prune = 1;
-			n->p->count = 1;
-			n->input = n->p->pri.win;
-		}
+		n->auto_prune = 1;
+		n->p->count = 1;
+		n->input = n->p->pri.win;
 	}
 	return n;
 }
