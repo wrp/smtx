@@ -107,19 +107,11 @@ free_proc(struct pty **pv)
 	struct pty *p = *pv;
 	if( p != NULL && p->count == 0 ) {
 		free(p->tabs);
-		if( p->pt > 0 ) { /* Do not close or clear 0 */
-			close(p->pt);
-			FD_CLR(p->pt, &fds);
-			if( S.maxfd == p->pt ) {
-				p->pt = -1;
-				S.maxfd = find_max_fd(S.root);
-			}
-		}
 		delwinnul(&p->pri.win);
 		delwinnul(&p->alt.win);
 		free(p);
+		*pv = NULL;
 	}
-	*pv = NULL;
 }
 
 static void
@@ -441,14 +433,16 @@ prune(struct canvas *x)
 	} else {
 		root = NULL;
 	}
-	freecanvas(del);
-	if( x == focused ) {
-		focus(o ? o : n ? n : p);
+	if( del ) {
+		freecanvas(del);
+		if( x == focused ) {
+			focus(o ? o : n ? n : p);
+		}
+		if( S.root == x ) {
+			S.root = o ? o : n ? n : p;
+		}
+		reshape_root(NULL, NULL);
 	}
-	if( S.root == x && del != NULL ) {
-		S.root = o ? o : n ? n : p;
-	}
-	reshape_root(NULL, NULL);
 }
 
 static void
@@ -549,7 +543,13 @@ wait_child(struct canvas *n)
 		}
 		mvwprintw(n->wtit, 0, 0, fmt, n->p->pid, k);
 		whline(n->wtit, ACS_HLINE, n->extent.x);
-		free_proc(&n->p);
+		assert(n->p->pt > 0 );
+		close(n->p->pt);
+		FD_CLR(n->p->pt, &fds);
+		if( S.maxfd == n->p->pt ) {
+			n->p->pt = -1;
+			S.maxfd = find_max_fd(S.root);
+		}
 	}
 }
 
