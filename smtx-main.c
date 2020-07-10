@@ -105,7 +105,7 @@ static void
 free_proc(struct pty **pv)
 {
 	struct pty *p = *pv;
-	if( p != NULL ) {
+	if( p != NULL && p->count == 0 ) {
 		free(p->tabs);
 		if( p->pt > 0 ) { /* Do not close or clear 0 */
 			close(p->pt);
@@ -197,6 +197,7 @@ newcanvas(void)
 			free(n);
 			n = NULL;
 		} else {
+			n->p->count = 1;
 			n->input = n->p->pri.win;
 		}
 	}
@@ -216,7 +217,10 @@ freecanvas(struct canvas *n)
 		delwinnul(&n->wtit);
 		delwinnul(&n->wdiv);
 		delwinnul(&n->win);
-		free_proc(&n->p);
+		if( n->p ) {
+			n->p->count -= 1;
+			free_proc(&n->p);
+		}
 		free(n);
 	}
 }
