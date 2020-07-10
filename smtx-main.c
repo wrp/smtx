@@ -197,6 +197,7 @@ newcanvas(void)
 			free(n);
 			n = NULL;
 		} else {
+			n->auto_prune = 1;
 			n->p->count = 1;
 			n->input = n->p->pri.win;
 		}
@@ -388,17 +389,22 @@ reshape_root(struct canvas *n, const char *arg)
 }
 
 static void
-prune(struct canvas *x, const char *arg)
+toggle_prune(struct canvas *n, const char *arg)
 {
-	(void) arg;
+	(void)arg;
+	n->auto_prune = !n->auto_prune;
+}
+
+static void
+prune(struct canvas *x)
+{
 	struct canvas *p = x->parent;
 	struct canvas *dummy;
 	struct canvas *del = x;
 	int d = x->typ;
 	struct canvas *n = x->c[d];
 	struct canvas *o = x->c[!d];
-	if( x->no_prune || ( o && o->c[d]) ) {
-		free_proc(&x->p);
+	if( ! x->auto_prune || ( o && o->c[d]) ) {
 		del = NULL;
 	} else if( o ) {
 		assert( o->c[d] == NULL );
@@ -564,7 +570,7 @@ getinput(struct canvas *n, fd_set *f) /* check all ptty's for input. */
 			vtwrite(&n->p->vp, iobuf, r);
 		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
 			wait_child(n);
-			prune(n, NULL);
+			prune(n);
 			status = false;
 		}
 	}
@@ -799,7 +805,7 @@ build_bindings()
 	add_key(cmd_keys, L't', new_tabstop, NULL);
 	add_key(cmd_keys, L'W', reshape_window, "hw");
 	add_key(cmd_keys, L'v', set_view_count, NULL);
-	add_key(cmd_keys, L'x', prune, NULL);
+	add_key(cmd_keys, L'x', toggle_prune, NULL);
 	add_key(cmd_keys, L'0', digit, "0");
 	add_key(cmd_keys, L'1', digit, "1");
 	add_key(cmd_keys, L'2', digit, "2");
