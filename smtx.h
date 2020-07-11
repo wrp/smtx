@@ -59,6 +59,7 @@ struct state {
 	struct handler (*binding)[128];
 	struct canvas *v; /* Root canvas currently displayed */
 	struct canvas *c; /* Root of tree of all canvas */
+	struct canvas *f; /* Currently focused canvas */;
 	struct pty *p;    /* Head of list of all pty */
 	int maxfd;
 	fd_set fds;

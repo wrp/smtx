@@ -28,7 +28,6 @@ static struct state S = {
 	.display_level = UINT_MAX
 };
 
-static struct canvas *focused;
 /* Variables exposed to test suite */
 int cmd_count = -1;
 int scrollback_history = 1024;
@@ -200,8 +199,8 @@ newcanvas(void)
 	return n;
 }
 
-void focus(struct canvas *n) { focused = n ? n : S.v; }
-struct canvas * get_focus(void) { return focused; }
+void focus(struct canvas *n) { S.f = n ? n : S.v; }
+struct canvas * get_focus(void) { return S.f; }
 
 static void
 freecanvas(struct canvas *n)
@@ -265,7 +264,7 @@ draw_window(struct canvas *n)
 void
 fixcursor(void) /* Move the terminal cursor to the active window. */
 {
-	struct canvas *f = focused;
+	struct canvas *f = S.f;
 	int x = 0, y = 0;
 	if( f->p ) {
 		assert( f->p->s );
@@ -438,7 +437,7 @@ prune(struct canvas *x)
 	}
 	if( del ) {
 		freecanvas(del);
-		if( x == focused ) {
+		if( x == S.f ) {
 			focus(o ? o : n ? n : p);
 		}
 		if( S.v == x ) {
@@ -483,7 +482,7 @@ void
 draw(struct canvas *n) /* Draw a canvas. */
 {
 	if( n != NULL ) {
-		int rev = S.binding == &cmd_keys && n == focused;
+		int rev = S.binding == &cmd_keys && n == S.f;
 		draw(n->c[0]);
 		draw(n->c[1]);
 		draw_div(n, rev && !n->extent.x);
@@ -683,7 +682,7 @@ resize(struct canvas *n, const char *arg)
 void
 mov(struct canvas *n, const char *arg)
 {
-	assert( n == focused && n != NULL );
+	assert( n == S.f && n != NULL );
 	char cmd = *arg;
 	int count = cmd_count < 1 ? 1 : cmd_count;
 	int startx = n->origin.x;
@@ -848,7 +847,7 @@ static void
 handlechar(int r, int k) /* Handle a single input character. */
 {
 	struct handler *b = NULL;
-	struct canvas *n = focused;
+	struct canvas *n = S.f;
 
 	if( r == OK && k > 0 && k < (int)sizeof *S.binding ) {
 		b = &(*S.binding)[k];
@@ -892,7 +891,7 @@ main_loop(void)
 			set_errmsg("select");
 			FD_ZERO(&sfds);
 		}
-		while( (r = wget_wch(focused->input, &w)) != ERR ) {
+		while( (r = wget_wch(S.f->input, &w)) != ERR ) {
 			handlechar(r, w);
 			fixcursor();
 		}
@@ -968,7 +967,7 @@ init(void)
 	}
 	wattron(S.werr, A_REVERSE);
 	create(NULL, NULL);
-	if( ( focused = S.v = S.c ) == NULL ) {
+	if( ( S.f = S.v = S.c ) == NULL ) {
 		errx(EXIT_FAILURE, "Unable to create root window");
 	}
 	return S.c;
