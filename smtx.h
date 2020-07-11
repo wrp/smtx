@@ -129,8 +129,9 @@ extern int tabstop;
 extern int id;
 extern int cmd_count;
 extern const char *term;
-extern struct canvas *focused;
 extern void fixcursor(void);
+extern void focus(struct canvas *n);
+extern struct canvas * get_focus(void);
 
 extern struct canvas * init(void);
 extern void draw(struct canvas *);

@@ -25,7 +25,7 @@ unsigned
 describe_layout(char *d, size_t siz, const struct canvas *c, int recurse)
 {
 	unsigned len = snprintf(d, siz, "%s%dx%d@%d,%d",
-		c == focused ? "*" : "",
+		c == get_focus() ? "*" : "",
 		c->extent.y, c->extent.x, c->origin.y, c->origin.x
 	);
 	if( c->p->s && c->p->s->vis ) {
@@ -194,7 +194,7 @@ new_test_canvas(int rows, int cols, const char *ps1)
 	send_cmd(fd, "PS1='%s'", T->ps1);
 	read_until(T->fp, T->ps1, T->vp); /* discard up to assignment */
 	draw(T->c);
-	focused = T->c;
+	focus(T->c);
 	fixcursor();
 	check_cmd(T, "", NULL);
 	return T;

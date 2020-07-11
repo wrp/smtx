@@ -28,8 +28,8 @@ static struct state S = {
 	.display_level = UINT_MAX
 };
 
+static struct canvas *focused;
 /* Variables exposed to test suite */
-struct canvas *focused;
 int cmd_count = -1;
 int scrollback_history = 1024;
 
@@ -200,11 +200,8 @@ newcanvas(void)
 	return n;
 }
 
-static void
-focus(struct canvas *n)
-{
-	focused = n ? n : S.v;
-}
+void focus(struct canvas *n) { focused = n ? n : S.v; }
+struct canvas * get_focus(void) { return focused; }
 
 static void
 freecanvas(struct canvas *n)
