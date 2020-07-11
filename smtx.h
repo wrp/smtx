@@ -61,6 +61,7 @@ struct state {
 	struct canvas *c; /* Root of tree of all canvas */
 	struct pty *p;    /* Head of list of all pty */
 	int maxfd;
+	fd_set fds;
 	WINDOW *werr;
 };
 struct screen {

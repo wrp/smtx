@@ -25,10 +25,8 @@ static struct state S = {
 	.commandkey = CTL('g'),
 	.width = 80,
 	.binding = &keys,
-	.maxfd = STDIN_FILENO,
 	.display_level = UINT_MAX
 };
-static fd_set fds;
 
 /* Variables exposed to test suite */
 struct canvas *focused;
@@ -171,7 +169,7 @@ new_pty(int rows, int cols)
 			set_errmsg("new_pty");
 			free_proc(&p);
 		} else if( p->pid > 0 ) {
-			FD_SET(p->pt, &fds);
+			FD_SET(p->pt, &S.fds);
 			S.maxfd = p->pt > S.maxfd ? p->pt : S.maxfd;
 			fcntl(p->pt, F_SETFL, O_NONBLOCK);
 			extend_tabs(p, p->tabstop = 8);
@@ -552,7 +550,7 @@ wait_child(struct canvas *n)
 		whline(n->wtit, ACS_HLINE, n->extent.x);
 		assert(n->p->pt > 0 );
 		close(n->p->pt);
-		FD_CLR(n->p->pt, &fds);
+		FD_CLR(n->p->pt, &S.fds);
 		if( S.maxfd == n->p->pt ) {
 			n->p->pt = -1;
 			S.maxfd = find_max_fd(S.c);
@@ -884,7 +882,7 @@ main_loop(void)
 	while( S.c != NULL ) {
 		int r;
 		wint_t w = 0;
-		fd_set sfds = fds;
+		fd_set sfds = S.fds;
 
 		draw(S.v);
 		if( winpos(S.werr, 1) ) {
@@ -948,7 +946,9 @@ struct canvas *
 init(void)
 {
 	char buf[16];
-	FD_SET(S.maxfd, &fds);
+	FD_ZERO(&S.fds);
+	FD_SET(STDIN_FILENO, &S.fds);
+	S.maxfd = STDIN_FILENO;
 	snprintf(buf, sizeof buf - 1, "%d", getpid());
 	setenv("SMTX", buf, 1);
 	setenv("TERM", getterm(), 1);
