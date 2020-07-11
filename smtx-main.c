@@ -521,9 +521,8 @@ void
 create(struct canvas *n, const char *arg)
 {
 	int dir = arg && *arg == 'C' ? 1 : 0;
-	/* Always split last window in a chain */
 	while( n && n->c[dir] != NULL ) {
-		n = n->c[dir];
+		n = n->c[dir]; /* Split last window in a chain. */
 	}
 	struct canvas *v = *( n ? &n->c[dir] : &root) = newcanvas();
 	if( v != NULL ) {
