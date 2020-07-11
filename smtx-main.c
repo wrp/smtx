@@ -109,16 +109,12 @@ free_proc(struct pty **pv)
 		free(p->tabs);
 		delwinnul(&p->pri.win);
 		delwinnul(&p->alt.win);
-		if( S.p == p ) {
-			S.p = p->next;
-		} else {
-			struct pty *t;
-			for(t = S.p; t && t->next != p; t = t->next ) {
-				;
+		struct pty *t, *prev = NULL;
+		for( t = S.p; t; t = t->next ) {
+			if( t == p ) {
+				*(prev ? &prev->next : &S.p) = p->next;
 			}
-			if( t->next == p ) {
-				t->next = p->next;
-			}
+			prev = t;
 		}
 		free(p);
 		*pv = NULL;
