@@ -851,10 +851,8 @@ handlechar(int r, int k) /* Handle a single input character. */
 
 	if( r == OK && k > 0 && k < (int)sizeof *S.binding ) {
 		b = &(*S.binding)[k];
-	} else if( r == KEY_CODE_YES ) {
-		if( k >= KEY_MIN && k <= KEY_MAX ) {
-			b = &code_keys[k - KEY_MIN];
-		}
+	} else if( r == KEY_CODE_YES && k >= KEY_MIN && k <= KEY_MAX ) {
+		b = &code_keys[k - KEY_MIN];
 	}
 
 	if( b && b->act ) {
