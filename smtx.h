@@ -57,8 +57,9 @@ struct state {
 	enum mode mode;
 	unsigned display_level;
 	struct handler (*binding)[128];
-	struct canvas *root;
-	struct pty *p;
+	struct canvas *v; /* Root canvas currently displayed */
+	struct canvas *c; /* Root of tree of all canvas */
+	struct pty *p;    /* Head of list of all pty */
 	int maxfd;
 	WINDOW *werr;
 };

@@ -29,7 +29,6 @@ static struct state S = {
 	.display_level = UINT_MAX
 };
 static fd_set fds;
-static struct canvas *root;
 
 /* Variables exposed to test suite */
 struct canvas *focused;
@@ -206,7 +205,7 @@ newcanvas(void)
 static void
 focus(struct canvas *n)
 {
-	focused = n ? n : S.root;
+	focused = n ? n : S.v;
 }
 
 static void
@@ -286,7 +285,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	} else {
 		f->input = f->win ? f->win : f->wtit ? f->wtit : f->wdiv;
 	}
-	assert(f->input || root == NULL);
+	assert(f->input || S.c == NULL);
 	wmove(f->input, y, x);
 	draw_window(f);
 	wmove(f->input, y, x);
@@ -400,7 +399,7 @@ reshape_root(struct canvas *n, const char *arg)
 {
 	(void)arg;
 	(void)n;
-	reshape(root, 0, 0, LINES, COLS, 1);
+	reshape(S.c, 0, 0, LINES, COLS, 1);
 }
 
 static void
@@ -427,7 +426,7 @@ prune(struct canvas *x)
 		assert( o->typ != d );
 		o->typ = d;
 		o->parent = p;
-		*(p ? &p->c[d] : &root) = o;
+		*(p ? &p->c[d] : &S.c) = o;
 		o->c[d] = n;
 		*(n ? &n->parent : &dummy) = o;
 		o->origin = x->origin;
@@ -435,20 +434,20 @@ prune(struct canvas *x)
 	} else if( n ) {
 		n->parent = p;
 		n->origin = x->origin;
-		*(p ? &p->c[d] : &root) = n;
+		*(p ? &p->c[d] : &S.c) = n;
 	} else if( p ) {
 		p->split_point[d] = 1.0;
 		p->c[d] = NULL;
 	} else {
-		root = NULL;
+		S.c = NULL;
 	}
 	if( del ) {
 		freecanvas(del);
 		if( x == focused ) {
 			focus(o ? o : n ? n : p);
 		}
-		if( S.root == x ) {
-			S.root = o ? o : n ? n : p;
+		if( S.v == x ) {
+			S.v = o ? o : n ? n : p;
 		}
 		reshape_root(NULL, NULL);
 	}
@@ -514,7 +513,7 @@ balance(struct canvas *n)
 			break;
 		}
 	}
-	return n ? n : root;
+	return n ? n : S.c;
 }
 
 void
@@ -524,7 +523,7 @@ create(struct canvas *n, const char *arg)
 	while( n && n->c[dir] != NULL ) {
 		n = n->c[dir]; /* Split last window in a chain. */
 	}
-	struct canvas *v = *( n ? &n->c[dir] : &root) = newcanvas();
+	struct canvas *v = *( n ? &n->c[dir] : &S.c) = newcanvas();
 	if( v != NULL ) {
 		v->typ = dir;
 		v->parent = n;
@@ -556,7 +555,7 @@ wait_child(struct canvas *n)
 		FD_CLR(n->p->pt, &fds);
 		if( S.maxfd == n->p->pt ) {
 			n->p->pt = -1;
-			S.maxfd = find_max_fd(S.root);
+			S.maxfd = find_max_fd(S.v);
 		}
 	}
 }
@@ -594,10 +593,10 @@ static void
 set_view_count(struct canvas *n, const char *arg)
 {
 	(void)arg;
-	S.root = n;
+	S.v = n;
 	switch( cmd_count ) {
 	case 0:
-		S.root = root;
+		S.v = S.c;
 		S.display_level = UINT_MAX;
 		break;
 	case -1:
@@ -698,18 +697,18 @@ mov(struct canvas *n, const char *arg)
 	for( ; t && count--; n = t ? t : n ) {
 		switch( cmd ) {
 		case 'k': /* move up */
-			t = find_window(S.root, t->origin.y - 1, startx);
+			t = find_window(S.v, t->origin.y - 1, startx);
 			break;
 		case 'j': /* move down */
-			t = find_window(S.root,
+			t = find_window(S.v,
 				t->origin.y + t->extent.y + 1, startx);
 			break;
 		case 'l': /* move right */
-			t = find_window(S.root, starty,
+			t = find_window(S.v, starty,
 				t->origin.x + t->extent.x + 1);
 			break;
 		case 'h': /* move left */
-			t = find_window(S.root, starty, t->origin.x - 1);
+			t = find_window(S.v, starty, t->origin.x - 1);
 			break;
 		}
 	}
@@ -882,12 +881,12 @@ handlechar(int r, int k) /* Handle a single input character. */
 void
 main_loop(void)
 {
-	while( root != NULL ) {
+	while( S.c != NULL ) {
 		int r;
 		wint_t w = 0;
 		fd_set sfds = fds;
 
-		draw(S.root);
+		draw(S.v);
 		if( winpos(S.werr, 1) ) {
 			int y = LINES - 1, x = MIN(winsiz(S.werr, 1), COLS);
 			pnoutrefresh(S.werr, 0, 0, y, 0, y, x);
@@ -901,7 +900,7 @@ main_loop(void)
 			handlechar(r, w);
 			fixcursor();
 		}
-		getinput(root, &sfds);
+		getinput(S.c, &sfds);
 	}
 }
 
@@ -971,10 +970,10 @@ init(void)
 	}
 	wattron(S.werr, A_REVERSE);
 	create(NULL, NULL);
-	if( ( focused = S.root = root ) == NULL ) {
+	if( ( focused = S.v = S.c ) == NULL ) {
 		errx(EXIT_FAILURE, "Unable to create root window");
 	}
-	return root;
+	return S.c;
 }
 
 int
