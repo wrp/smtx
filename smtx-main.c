@@ -555,7 +555,7 @@ wait_child(struct canvas *n)
 		FD_CLR(n->p->pt, &fds);
 		if( S.maxfd == n->p->pt ) {
 			n->p->pt = -1;
-			S.maxfd = find_max_fd(S.v);
+			S.maxfd = find_max_fd(S.c);
 		}
 	}
 }
