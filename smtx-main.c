@@ -709,14 +709,6 @@ mov(struct canvas *n, const char *arg)
 	focus(n);
 }
 
-void
-send_nul(struct canvas *n, const char *arg)
-{
-	(void) arg;
-	scrollbottom(n);
-	rewrite(n->p->pt, "\x00", 1);
-}
-
 static void
 send(struct canvas *n, const char *arg)
 {
@@ -779,7 +771,6 @@ build_bindings()
 	add_key(keys, S.commandkey, transition, NULL);
 	add_key(keys, L'\r', send, "\r");
 	add_key(keys, L'\n', send, "\n");
-	add_key(keys, 0, send_nul, NULL);
 
 	add_key(cmd_keys, S.commandkey, transition, &S.commandkey);
 	add_key(cmd_keys, L'\r', transition, NULL);
