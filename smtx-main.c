@@ -321,6 +321,22 @@ getterm(void)
 }
 
 static void
+set_title(struct canvas *n)
+{
+	assert( n->p != NULL );
+	mvwprintw(n->wtit, 0, 0, "%d %d-%d/%d %s",
+		n->p->pid,
+		n->offset.x + 1,
+		n->offset.x + n->extent.x,
+		n->p->ws.ws_col,
+		getshell()
+	);
+	whline(n->wtit, ACS_HLINE, n->extent.x);
+	/* See draw_title().  We must leave the cursor at the start of
+	the HLINE so that we can reliably change reverse video */
+}
+
+static void
 reshape_window(struct canvas *n, const char *arg)
 {
 	struct pty *p = n->p;
@@ -346,6 +362,7 @@ reshape_window(struct canvas *n, const char *arg)
 	if( kill(p->pid, SIGWINCH) ) {
 		set_errmsg("kill");
 	}
+	set_title(n);
 }
 
 static void
@@ -354,22 +371,6 @@ scrollbottom(struct canvas *n)
 	if( n && n->p && n->p->s ) {
 		n->offset.y = n->p->s->tos;
 	}
-}
-
-static void
-set_title(struct canvas *n)
-{
-	assert( n->p != NULL );
-	mvwprintw(n->wtit, 0, 0, "%d %d-%d/%d %s",
-		n->p->pid,
-		n->offset.x + 1,
-		n->offset.x + n->extent.x,
-		n->p->ws.ws_col,
-		getshell()
-	);
-	whline(n->wtit, ACS_HLINE, n->extent.x);
-	/* See draw_title().  We must leave the cursor at the start of
-	the HLINE so that we can reliably change reverse video */
 }
 
 static void
@@ -665,9 +666,10 @@ attach(struct canvas *n, const char *arg)
 	for( struct pty *t = S.p; t; t = t->next ) {
 		if( t->pid == target ) {
 			n->p = t;
-			break;
+			return;
 		}
 	}
+	set_errmsg("No pty exists with pid: %d", target);
 }
 
 void
