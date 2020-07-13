@@ -363,6 +363,17 @@ reshape_window(struct canvas *n, const char *arg)
 		set_errmsg("kill");
 	}
 	set_title(n);
+	if( n->extent.x > p->ws.ws_col) {
+		int d = n->extent.x - p->ws.ws_col;
+		resize_pad(&n->win, n->extent.y, d);
+		wbkgd(n->win, ACS_CKBOARD);
+		pnoutrefresh(n->win, 0, 0,
+			n->origin.y,
+			n->origin.x + p->ws.ws_col,
+			n->origin.y + n->extent.y - 1,
+			n->origin.x + n->extent.x - 1
+		);
+	}
 }
 
 static void
@@ -666,6 +677,7 @@ attach(struct canvas *n, const char *arg)
 	for( struct pty *t = S.p; t; t = t->next ) {
 		if( t->pid == target ) {
 			n->p = t;
+			reshape_root(NULL, NULL);
 			return;
 		}
 	}
