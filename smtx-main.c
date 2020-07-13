@@ -737,7 +737,7 @@ mov(struct canvas *n, const char *arg)
 static void
 send(struct canvas *n, const char *arg)
 {
-	if( n->p && arg ) {
+	if( n->p && n->p->pt > 0 && arg ) {
 		if( n->p->lnm && *arg == '\r' ) {
 			assert( arg[1] == '\0' );
 			arg = "\r\n";
@@ -873,9 +873,9 @@ handlechar(int r, int k) /* Handle a single input character. */
 
 	if( b && b->act ) {
 		b->act(n, b->arg);
-	} else if( S.mode == passthru ) {
+	} else if( S.mode == passthru && n->p && n->p->pt > 0 ) {
 		char c[MB_LEN_MAX + 1];
-		if( ( r = wctomb(c, k)) > 0 && n->p ) {
+		if( ( r = wctomb(c, k)) > 0 ) {
 			scrollbottom(n);
 			rewrite(n->p->pt, c, r);
 		}
