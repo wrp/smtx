@@ -419,13 +419,6 @@ reshape_root(struct canvas *n, const char *arg)
 }
 
 static void
-toggle_prune(struct canvas *n, const char *arg)
-{
-	(void)arg;
-	n->auto_prune = !n->auto_prune;
-}
-
-static void
 prune(struct canvas *x)
 {
 	struct canvas *p = x->parent;
@@ -468,6 +461,15 @@ prune(struct canvas *x)
 		reshape_root(NULL, NULL);
 	}
 }
+
+static void
+toggle_prune(struct canvas *n, const char *arg)
+{
+	(void)arg;
+	n->auto_prune = !n->auto_prune;
+	prune(n);
+}
+
 
 static void
 draw_pane(WINDOW *w, int y, int x)
