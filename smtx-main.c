@@ -659,6 +659,18 @@ scrollh(struct canvas *n, const char *arg)
 }
 
 void
+attach(struct canvas *n, const char *arg)
+{
+	int target = arg ? strtol(arg, NULL, 10) : cmd_count;
+	for( struct pty *t = S.p; t; t = t->next ) {
+		if( t->pid == target ) {
+			n->p = t;
+			break;
+		}
+	}
+}
+
+void
 scrolln(struct canvas *n, const char *arg)
 {
 	if( n && n->p && n->p->s && n->p->s->win ) {
@@ -815,6 +827,7 @@ build_bindings()
 	add_key(cmd_keys, S.commandkey, transition, &S.commandkey);
 	add_key(cmd_keys, L'\r', transition, NULL);
 	/* TODO: rebind b,f,<,> to hjkl in different binding */
+	add_key(cmd_keys, L'a', attach, NULL);
 	add_key(cmd_keys, L'b', scrolln, "-");
 	add_key(cmd_keys, L'f', scrolln, "+");
 	/* If default bindings for scrollh are changed, edit README.rst */
