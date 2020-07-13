@@ -404,8 +404,10 @@ reshape(struct canvas *n, int y, int x, int h, int w, unsigned level)
 		n->extent.y = h1 - 1; /* Subtract one for title line */
 		n->extent.x = w1;
 		/* TODO: avoid resizing window unnecessarily */
-		if( n->p && n->p->pt >= 0 ) {
-			set_title(n);
+		if( n->p ) {
+			if( n->p->pt >= 0 ) {
+				set_title(n);
+			}
 			if( changed ) {
 				reshape_window(n, "h");
 			}
