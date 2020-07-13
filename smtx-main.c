@@ -587,18 +587,19 @@ wait_child(struct canvas *n)
 		whline(n->wtit, ACS_HLINE, n->extent.x);
 		assert(n->p->pt > 0 );
 		close_fd(&n->p->pt);
+		assert(n->p->pt == -1 );
 	}
 }
 
 static bool
 getinput(struct canvas *n, fd_set *f) /* check all ptty's for input. */
 {
-	bool status = true;
-	if( n && n->c[0] && !getinput(n->c[0], f) ) {
-		status = false;
-	} else if( n && n->c[1] && !getinput(n->c[1], f) ) {
-		status = false;
-	} else if( n && n->p && n->p->pt > 0 && FD_ISSET(n->p->pt, f) ) {
+	bool status = false;
+	if( n == NULL ) {
+		;
+	} else if( getinput(n->c[0], f) || getinput(n->c[1], f) ) {
+		status = true;
+	} else if( n->p && n->p->pt > 0 && FD_ISSET(n->p->pt, f) ) {
 		char iobuf[BUFSIZ];
 		ssize_t r = read(n->p->pt, iobuf, sizeof iobuf);
 		if( r > 0 ) {
@@ -606,7 +607,7 @@ getinput(struct canvas *n, fd_set *f) /* check all ptty's for input. */
 		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
 			wait_child(n);
 			prune(n);
-			status = false;
+			status = true;
 		}
 	}
 	return status;
