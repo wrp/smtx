@@ -1,8 +1,5 @@
 
 TODO:
-	Handle dead shell better.  I think the correct behavior is to retain
-	the error message by not pruning the window immediately.  But unsure.
-
 	Make it possible to view different parts of a pty in different windows.
 
 	Change name of reshape_window.  Reshape_window should only
