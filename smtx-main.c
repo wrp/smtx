@@ -114,10 +114,15 @@ delwinnul(WINDOW **w)
 }
 
 static int
-find_max_fd(struct canvas *n)
+find_max_fd()
 {
-	return n ? MAX(n->p ? n->p->pt : -1,
-		MAX(find_max_fd(n->c[0]), find_max_fd(n->c[1]))) : -1;
+	int max = -1;
+	for( struct pty *t = S.p; t; t = t->next ) {
+		if( t->pt > max ) {
+			max = t->pt;
+		}
+	}
+	return max;
 }
 
 static void
@@ -552,6 +557,17 @@ create(struct canvas *n, const char *arg)
 }
 
 static void
+close_fd(int *fd)
+{
+	int o = *fd;
+	*fd = -1;
+	FD_CLR(o, &S.fds);
+	if( S.maxfd == o ) {
+		S.maxfd = find_max_fd();
+	}
+}
+
+static void
 wait_child(struct canvas *n)
 {
 	int status, k = 0;
@@ -570,12 +586,7 @@ wait_child(struct canvas *n)
 		mvwprintw(n->wtit, 0, 0, fmt, n->p->pid, k);
 		whline(n->wtit, ACS_HLINE, n->extent.x);
 		assert(n->p->pt > 0 );
-		close(n->p->pt);
-		FD_CLR(n->p->pt, &S.fds);
-		if( S.maxfd == n->p->pt ) {
-			n->p->pt = -1;
-			S.maxfd = find_max_fd(S.c);
-		}
+		close_fd(&n->p->pt);
 	}
 }
 
