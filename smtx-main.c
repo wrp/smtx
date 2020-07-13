@@ -66,6 +66,7 @@ set_errmsg(const char *fmt, ...)
 	if( e ) {
 		wprintw(S.werr, ": %s", strerror(e));
 	}
+	wclrtoeol(S.werr);
 	errno = e;
 }
 
