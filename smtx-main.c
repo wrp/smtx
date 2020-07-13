@@ -652,6 +652,7 @@ scrollh(struct canvas *n, const char *arg)
 			n->offset.x = x - n->extent.x;
 		}
 		n->manualscroll = n->offset.x != 0;
+		set_title(n);
 	}
 }
 
