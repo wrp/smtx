@@ -99,7 +99,7 @@ pty_width(struct pty *p, struct winsize *w)
 	struct winsize ws;
 	struct winsize *wp = w ? w : &ws;
 	if( ioctl(p->pt, TIOCGWINSZ, wp) ) {
-		set_errmsg("Can't get size of pty %d. Assuming 24 x 80", p->pt);
+		set_errmsg("Can't get size of pty %d. Assuming 24 x 80", p->id);
 		wp->ws_row = 24;
 		wp->ws_col = 80;
 	}
