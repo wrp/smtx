@@ -213,6 +213,7 @@ new_pty(int rows, int cols)
 			fcntl(p->pt, F_SETFL, O_NONBLOCK);
 			extend_tabs(p, p->tabstop = 8);
 			p->next = S.p;
+			p->id = p->pt - 2;
 		}
 		S.p = p;
 	}
@@ -336,7 +337,7 @@ set_title(struct canvas *n)
 {
 	assert( n->p != NULL );
 	mvwprintw(n->wtit, 0, 0, "%d %d-%d/%d %s",
-		n->p->pt - 2,
+		n->p->id,
 		n->offset.x + 1,
 		n->offset.x + n->extent.x,
 		pty_width(n->p, NULL),
@@ -687,7 +688,7 @@ attach(struct canvas *n, const char *arg)
 {
 	int target = arg ? strtol(arg, NULL, 10) : cmd_count;
 	for( struct pty *t = S.p; t; t = t->next ) {
-		if( t->pt - 2 == target ) {
+		if( t->id == target ) {
 			n->p = t;
 			reshape_root(NULL, NULL);
 			return;
