@@ -57,7 +57,6 @@ struct pty {
 	wchar_t repc;
 	struct screen pri, alt, *s;
 	wchar_t *g0, *g1, *g2, *g3, *gc, *gs, *sgc, *sgs;
-	struct winsize ws;
 	unsigned count;
 	struct pty *next;
 	VTPARSER vp;

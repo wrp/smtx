@@ -93,10 +93,23 @@ getshell(void)
 	return s ? s : pwd ? pwd->pw_shell : "/bin/sh";
 }
 
+static int
+pty_width(struct pty *p, struct winsize *w)
+{
+	struct winsize ws;
+	struct winsize *wp = w ? w : &ws;
+	if( ioctl(p->pt, TIOCGWINSZ, wp) ) {
+		set_errmsg("Can't get size of pty %d. Assuming 24 x 80", p->pt);
+		wp->ws_row = 24;
+		wp->ws_col = 80;
+	}
+	return wp->ws_col;
+}
+
 static void
 extend_tabs(struct pty *p, int tabstop)
 {
-	int w = p->ws.ws_col;
+	int w = pty_width(p, NULL);
 	typeof(*p->tabs) *n;
 	if( p->ntabs < w && ( n = realloc(p->tabs, w * sizeof *n)) != NULL ) {
 		for( p->tabs = n; p->ntabs < w; p->ntabs++ ) {
@@ -183,9 +196,8 @@ new_pty(int rows, int cols)
 {
 	struct pty *p = calloc(1, sizeof *p);
 	if( p != NULL ) {
-		p->ws.ws_row = rows;
-		p->ws.ws_col = MAX(cols, S.width);
-		p->pid = forkpty(&p->pt, NULL, NULL, &p->ws);
+		struct winsize ws = { .ws_row = rows, .ws_col = cols };
+		p->pid = forkpty(&p->pt, NULL, NULL, &ws);
 		if( p->pid == 0 ) {
 			const char *sh = getshell();
 			setsid();
@@ -213,7 +225,7 @@ newcanvas(void)
 	struct canvas *n = calloc(1, sizeof *n);
 	if( !n ) {
 		set_errmsg("calloc");
-	} else if( ( n->p = new_pty(LINES, COLS)) == NULL ) {
+	} else if( ( n->p = new_pty(LINES, MAX(COLS, S.width))) == NULL ) {
 		set_errmsg("new_pty");
 		free(n);
 		n = NULL;
@@ -328,7 +340,7 @@ set_title(struct canvas *n)
 		n->p->pid,
 		n->offset.x + 1,
 		n->offset.x + n->extent.x,
-		n->p->ws.ws_col,
+		pty_width(n->p, NULL),
 		getshell()
 	);
 	whline(n->wtit, ACS_HLINE, n->extent.x);
@@ -339,37 +351,38 @@ set_title(struct canvas *n)
 static void
 reshape_window(struct canvas *n, const char *arg)
 {
+	struct winsize ws;
 	struct pty *p = n->p;
-	struct winsize ws = p->ws;
+
+	(void)pty_width(p, &ws);
 	int h = MAX(n->extent.y, scrollback_history);
 	int w = MAX(n->extent.x, cmd_count < 1 ? S.width : cmd_count);
 
-	memset(&p->ws, 0, sizeof p->ws);
-	p->ws.ws_row = strchr(arg, 'h') ? n->extent.y : ws.ws_row;
-	p->ws.ws_col = strchr(arg, 'w') ? w : ws.ws_col;
+	ws.ws_row = strchr(arg, 'h') ? n->extent.y : ws.ws_row;
+	ws.ws_col = strchr(arg, 'w') ? w : ws.ws_col;
 
-	resize_pad(&p->pri.win, h, p->ws.ws_col);
-	resize_pad(&p->alt.win, h, p->ws.ws_col);
+	resize_pad(&p->pri.win, h, ws.ws_col);
+	resize_pad(&p->alt.win, h, ws.ws_col);
 	p->pri.tos = n->offset.y = h - n->extent.y;
 	assert( p->alt.tos == 0 );
 	wsetscrreg(p->pri.win, 0, h - 1);
 	wsetscrreg(p->alt.win, 0, n->extent.y - 1);
 	wrefresh(p->s->win);
 	extend_tabs(p, p->tabstop);
-	if( ioctl(p->pt, TIOCSWINSZ, &p->ws) ) {
+	if( ioctl(p->pt, TIOCSWINSZ, &ws) ) {
 		set_errmsg("ioctl");
 	}
 	if( kill(p->pid, SIGWINCH) ) {
 		set_errmsg("kill");
 	}
 	set_title(n);
-	if( n->extent.x > p->ws.ws_col) {
-		int d = n->extent.x - p->ws.ws_col;
+	if( n->extent.x > ws.ws_col) {
+		int d = n->extent.x - ws.ws_col;
 		resize_pad(&n->win, n->extent.y, d);
 		wbkgd(n->win, ACS_CKBOARD);
 		pnoutrefresh(n->win, 0, 0,
 			n->origin.y,
-			n->origin.x + p->ws.ws_col,
+			n->origin.x + ws.ws_col,
 			n->origin.y + n->extent.y - 1,
 			n->origin.x + n->extent.x - 1
 		);
