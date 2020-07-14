@@ -182,14 +182,14 @@ new_test_canvas(int rows, int cols, const char *ps1)
 	struct test_canvas *T = malloc(sizeof *T);
 	if( T == NULL
 		|| (T->c = init()) == NULL
-		|| (T->fp = fdopen(T->c->p->pt, "r")) == NULL
+		|| (T->fp = fdopen(T->c->p->fd, "r")) == NULL
 	) {
 		err(1, "Unable to create test canvas\n");
 	}
 	T->ps1 = ps1 ? ps1 : "uniq> ";
 	T->vp = &T->c->p->vp;
 	T->w = T->c->p->s->win;
-	int fd = T->c->p->pt;
+	int fd = T->c->p->fd;
 	expect_layout(T->c, "*%dx%d@0,0(0,0)", rows - 1, cols);
 	send_cmd(fd, "PS1='%s'", T->ps1);
 	read_until(T->fp, T->ps1, T->vp); /* discard up to assignment */

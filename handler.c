@@ -77,7 +77,7 @@ void tput(VTPARSER *v, wchar_t w, wchar_t iw,
 		wmove(win, py, MIN(x + p0[1], mx - 1));
 		break;
 	case ack: /* Acknowledge Enquiry */
-		rewrite(p->pt, "\006", 1);
+		rewrite(p->fd, "\006", 1);
 		break;
 	case hts: /* Horizontal Tab Set */
 		if( x < p->ntabs && x > 0 ) {
@@ -93,12 +93,12 @@ void tput(VTPARSER *v, wchar_t w, wchar_t iw,
 	case decid: /* Send Terminal Identification */
 		if( w == L'c' ) {
 			if( iw == L'>' ) {
-				rewrite(p->pt, "\033[>1;10;0c", 10);
+				rewrite(p->fd, "\033[>1;10;0c", 10);
 			} else {
-				rewrite(p->pt, "\033[?1;2c", 7);
+				rewrite(p->fd, "\033[?1;2c", 7);
 			}
 		} else if( w == L'Z' ) {
-			rewrite(p->pt, "\033[?6c", 5);
+			rewrite(p->fd, "\033[?6c", 5);
 		}
 		break;
 	case hpa: /* Cursor Horizontal Absolute */
@@ -246,7 +246,7 @@ void tput(VTPARSER *v, wchar_t w, wchar_t iw,
 			i = snprintf(buf, sizeof buf, "\033[0n");
 		}
 		assert( i < (int)sizeof buf ); /* Assumes INT_MAX < 1e14 */
-		rewrite(p->pt, buf, i);
+		rewrite(p->fd, buf, i);
 		break;
 	case idl: /* Insert/Delete Line */
 		/* We don't use insdelln here because it inserts above and
@@ -266,9 +266,9 @@ void tput(VTPARSER *v, wchar_t w, wchar_t iw,
 		break;
 case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 	if( p0[0] ) {
-		rewrite(p->pt, "\033[3;1;2;120;1;0x", 16);
+		rewrite(p->fd, "\033[3;1;2;120;1;0x", 16);
 	} else {
-		rewrite(p->pt, "\033[2;1;2;120;128;1;0x", 20);
+		rewrite(p->fd, "\033[2;1;2;120;128;1;0x", 20);
 	}
 	break;
 	case sgr0: /* Reset SGR to default */
@@ -285,7 +285,7 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 	case ris: /* Reset to Initial State */
 	{
 		struct winsize ws = {.ws_row = 24, .ws_col = 80};
-		ioctl(p->pt, TIOCGWINSZ, &ws);
+		ioctl(p->fd, TIOCGWINSZ, &ws);
 		int bottom = MAX(scrollback_history, ws.ws_row) - 1;
 		p->gs = p->gc = p->g0 = CSET_US;
 		p->g1 = CSET_GRAPH;

@@ -98,7 +98,7 @@ pty_width(struct pty *p, struct winsize *w)
 {
 	struct winsize ws;
 	struct winsize *wp = w ? w : &ws;
-	if( ioctl(p->pt, TIOCGWINSZ, wp) ) {
+	if( ioctl(p->fd, TIOCGWINSZ, wp) ) {
 		set_errmsg("Can't get size of pty %d. Assuming 24 x 80", p->id);
 		wp->ws_row = 24;
 		wp->ws_col = 80;
@@ -131,8 +131,8 @@ find_max_fd()
 {
 	int max = -1;
 	for( struct pty *t = S.p; t; t = t->next ) {
-		if( t->pt > max ) {
-			max = t->pt;
+		if( t->fd > max ) {
+			max = t->fd;
 		}
 	}
 	return max;
@@ -197,7 +197,7 @@ new_pty(int rows, int cols)
 	struct pty *p = calloc(1, sizeof *p);
 	if( p != NULL ) {
 		struct winsize ws = { .ws_row = rows, .ws_col = cols };
-		p->pid = forkpty(&p->pt, NULL, NULL, &ws);
+		p->pid = forkpty(&p->fd, NULL, NULL, &ws);
 		if( p->pid == 0 ) {
 			const char *sh = getshell();
 			setsid();
@@ -208,12 +208,12 @@ new_pty(int rows, int cols)
 			set_errmsg("new_pty");
 			free_proc(&p);
 		} else if( p->pid > 0 ) {
-			FD_SET(p->pt, &S.fds);
-			S.maxfd = p->pt > S.maxfd ? p->pt : S.maxfd;
-			fcntl(p->pt, F_SETFL, O_NONBLOCK);
+			FD_SET(p->fd, &S.fds);
+			S.maxfd = p->fd > S.maxfd ? p->fd : S.maxfd;
+			fcntl(p->fd, F_SETFL, O_NONBLOCK);
 			extend_tabs(p, p->tabstop = 8);
 			p->next = S.p;
-			p->id = p->pt - 2;
+			p->id = p->fd - 2;
 		}
 		S.p = p;
 	}
@@ -364,8 +364,8 @@ set_width(struct canvas *n, const char *arg)
 		resize_pad(&p->pri.win, h, w);
 		resize_pad(&p->alt.win, h, w);
 		extend_tabs(p, p->tabstop);
-		if( ioctl(p->pt, TIOCSWINSZ, &ws) ) {
-			set_errmsg("ioctl to %d", p->pt);
+		if( ioctl(p->fd, TIOCSWINSZ, &ws) ) {
+			set_errmsg("ioctl to %d", p->fd);
 		}
 		if( kill(p->pid, SIGWINCH) ) {
 			set_errmsg("kill %d", (int)p->pid);
@@ -388,7 +388,7 @@ reshape_window(struct canvas *n)
 	wsetscrreg(p->pri.win, 0, h - 1);
 	wsetscrreg(p->alt.win, 0, n->extent.y - 1);
 	wrefresh(p->s->win);
-	if( ioctl(p->pt, TIOCSWINSZ, &ws) ) {
+	if( ioctl(p->fd, TIOCSWINSZ, &ws) ) {
 		set_errmsg("ioctl");
 	}
 	if( kill(p->pid, SIGWINCH) ) {
@@ -449,7 +449,7 @@ reshape(struct canvas *n, int y, int x, int h, int w, unsigned level)
 		n->extent.x = w1;
 		/* TODO: avoid resizing window unnecessarily */
 		if( n->p ) {
-			if( n->p->pt >= 0 ) {
+			if( n->p->fd >= 0 ) {
 				set_title(n);
 			}
 			if( changed ) {
@@ -630,9 +630,9 @@ wait_child(struct canvas *n)
 		}
 		mvwprintw(n->wtit, 0, 0, fmt, n->p->pid, k);
 		whline(n->wtit, ACS_HLINE, n->extent.x);
-		assert(n->p->pt > 0 );
-		close_fd(&n->p->pt);
-		assert(n->p->pt == -1 );
+		assert(n->p->fd > 0 );
+		close_fd(&n->p->fd);
+		assert(n->p->fd == -1 );
 	}
 }
 
@@ -644,9 +644,9 @@ getinput(struct canvas *n, fd_set *f) /* check all ptty's for input. */
 		;
 	} else if( getinput(n->c[0], f) || getinput(n->c[1], f) ) {
 		status = true;
-	} else if( n->p && n->p->pt > 0 && FD_ISSET(n->p->pt, f) ) {
+	} else if( n->p && n->p->fd > 0 && FD_ISSET(n->p->fd, f) ) {
 		char iobuf[BUFSIZ];
-		ssize_t r = read(n->p->pt, iobuf, sizeof iobuf);
+		ssize_t r = read(n->p->fd, iobuf, sizeof iobuf);
 		if( r > 0 ) {
 			vtwrite(&n->p->vp, iobuf, r);
 		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
@@ -729,7 +729,7 @@ static void
 sendarrow(struct canvas *n, const char *k)
 {
 	char buf[3] = { '\033', n->p->pnm ? 'O' : '[', *k };
-	rewrite(n->p->pt, buf, 3);
+	rewrite(n->p->fd, buf, 3);
 }
 
 int
@@ -809,13 +809,13 @@ mov(struct canvas *n, const char *arg)
 static void
 send(struct canvas *n, const char *arg)
 {
-	if( n->p && n->p->pt > 0 && arg ) {
+	if( n->p && n->p->fd > 0 && arg ) {
 		if( n->p->lnm && *arg == '\r' ) {
 			assert( arg[1] == '\0' );
 			arg = "\r\n";
 		}
 		scrollbottom(n);
-		rewrite(n->p->pt, arg, strlen(arg));
+		rewrite(n->p->fd, arg, strlen(arg));
 	}
 }
 
@@ -946,11 +946,11 @@ handlechar(int r, int k) /* Handle a single input character. */
 
 	if( b && b->act ) {
 		b->act(n, b->arg);
-	} else if( S.mode == passthru && n->p && n->p->pt > 0 ) {
+	} else if( S.mode == passthru && n->p && n->p->fd > 0 ) {
 		char c[MB_LEN_MAX + 1];
 		if( ( r = wctomb(c, k)) > 0 ) {
 			scrollbottom(n);
-			rewrite(n->p->pt, c, r);
+			rewrite(n->p->fd, c, r);
 		}
 		n->manualscroll = 0;
 	}
