@@ -349,6 +349,31 @@ set_title(struct canvas *n)
 }
 
 static void
+set_width(struct canvas *n, const char *arg)
+{
+	struct winsize ws;
+	struct pty *p = n->p;
+	int h = MAX(n->extent.y, scrollback_history);
+	int w = arg ? strtol(arg, NULL, 10) : cmd_count;
+	if( w == -1 ) {
+		w = n->extent.x;
+	}
+	(void)pty_width(p, &ws);
+	if( w != ws.ws_col ) {
+		ws.ws_col = w;
+		resize_pad(&p->pri.win, h, w);
+		resize_pad(&p->alt.win, h, w);
+		extend_tabs(p, p->tabstop);
+		if( ioctl(p->pt, TIOCSWINSZ, &ws) ) {
+			set_errmsg("ioctl to %d", p->pt);
+		}
+		if( kill(p->pid, SIGWINCH) ) {
+			set_errmsg("kill %d", (int)p->pid);
+		}
+	}
+}
+
+static void
 reshape_window(struct canvas *n, const char *arg)
 {
 	struct winsize ws;
@@ -872,7 +897,7 @@ build_bindings()
 	add_key(cmd_keys, L'L', resize, "L");
 	add_key(cmd_keys, L'H', resize, "H");
 	add_key(cmd_keys, L't', new_tabstop, NULL);
-	add_key(cmd_keys, L'W', reshape_window, "hw");
+	add_key(cmd_keys, L'W', set_width, NULL);
 	add_key(cmd_keys, L'v', set_view_count, NULL);
 	add_key(cmd_keys, L'x', toggle_prune, NULL);
 	add_key(cmd_keys, L'0', digit, "0");
