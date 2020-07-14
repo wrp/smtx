@@ -337,7 +337,7 @@ set_title(struct canvas *n)
 {
 	assert( n->p != NULL );
 	mvwprintw(n->wtit, 0, 0, "%d %d-%d/%d %s",
-		n->p->pid,
+		n->p->pt - 2,
 		n->offset.x + 1,
 		n->offset.x + n->extent.x,
 		pty_width(n->p, NULL),
@@ -688,7 +688,7 @@ attach(struct canvas *n, const char *arg)
 {
 	int target = arg ? strtol(arg, NULL, 10) : cmd_count;
 	for( struct pty *t = S.p; t; t = t->next ) {
-		if( t->pid == target ) {
+		if( t->pt - 2 == target ) {
 			n->p = t;
 			reshape_root(NULL, NULL);
 			return;
