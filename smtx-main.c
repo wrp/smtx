@@ -447,8 +447,7 @@ static void
 reshape_root(struct canvas *n, const char *arg)
 {
 	(void)arg;
-	(void)n;
-	reshape(S.c, 0, 0, LINES, COLS, 1);
+	reshape(n ? n : S.c, 0, 0, LINES, COLS, 1);
 }
 
 static void
@@ -663,7 +662,7 @@ set_view_count(struct canvas *n, const char *arg)
 	default:
 		S.display_level = cmd_count;
 	}
-	reshape_root(NULL, NULL);
+	reshape_root(S.v, NULL);
 }
 
 void
