@@ -212,8 +212,8 @@ new_pty(int rows, int cols)
 			S.maxfd = p->pt > S.maxfd ? p->pt : S.maxfd;
 			fcntl(p->pt, F_SETFL, O_NONBLOCK);
 			extend_tabs(p, p->tabstop = 8);
+			p->next = S.p;
 		}
-		p->next = S.p;
 		S.p = p;
 	}
 	return p;
@@ -226,7 +226,6 @@ newcanvas(void)
 	if( !n ) {
 		set_errmsg("calloc");
 	} else if( ( n->p = new_pty(LINES, MAX(COLS, S.width))) == NULL ) {
-		set_errmsg("new_pty");
 		free(n);
 		n = NULL;
 	} else {
