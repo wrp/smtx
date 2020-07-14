@@ -283,6 +283,10 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		CALL(cup);
 		break;
 	case ris: /* Reset to Initial State */
+	{
+		struct winsize ws = {.ws_row = 24, .ws_col = 80};
+		ioctl(p->pt, TIOCGWINSZ, &ws);
+		int bottom = MAX(scrollback_history, ws.ws_row) - 1;
 		p->gs = p->gc = p->g0 = CSET_US;
 		p->g1 = CSET_GRAPH;
 		p->g2 = CSET_US;
@@ -293,14 +297,14 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		p->am = p->pnm = true;
 		p->pri.vis = p->alt.vis = 1;
 		p->s = &p->pri;
-		wsetscrreg(p->pri.win, 0, MAX(scrollback_history,
-			p->ws.ws_row) - 1);
-		wsetscrreg(p->alt.win, 0, p->ws.ws_row - 1);
+		wsetscrreg(p->pri.win, 0, bottom);
+		wsetscrreg(p->alt.win, 0, ws.ws_row - 1);
 		memset(p->tabs, 0, p->ntabs * sizeof *p->tabs);
 		for( i = 0; i < p->ntabs; i += p->tabstop ) {
 			p->tabs[i] = true;
 		}
-		break;
+	}
+	break;
 	case mode: /* Set or Reset Mode */
 	{
 		bool set = (w == L'h');
