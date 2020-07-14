@@ -374,26 +374,20 @@ set_width(struct canvas *n, const char *arg)
 }
 
 static void
-reshape_window(struct canvas *n, const char *arg)
+reshape_window(struct canvas *n)
 {
 	struct winsize ws;
 	struct pty *p = n->p;
 
 	(void)pty_width(p, &ws);
 	int h = MAX(n->extent.y, scrollback_history);
-	int w = MAX(n->extent.x, cmd_count < 1 ? S.width : cmd_count);
 
-	ws.ws_row = strchr(arg, 'h') ? n->extent.y : ws.ws_row;
-	ws.ws_col = strchr(arg, 'w') ? w : ws.ws_col;
-
-	resize_pad(&p->pri.win, h, ws.ws_col);
-	resize_pad(&p->alt.win, h, ws.ws_col);
+	ws.ws_row = n->extent.y;
 	p->pri.tos = n->offset.y = h - n->extent.y;
-	assert( p->alt.tos == 0 );
+
 	wsetscrreg(p->pri.win, 0, h - 1);
 	wsetscrreg(p->alt.win, 0, n->extent.y - 1);
 	wrefresh(p->s->win);
-	extend_tabs(p, p->tabstop);
 	if( ioctl(p->pt, TIOCSWINSZ, &ws) ) {
 		set_errmsg("ioctl");
 	}
@@ -459,7 +453,7 @@ reshape(struct canvas *n, int y, int x, int h, int w, unsigned level)
 				set_title(n);
 			}
 			if( changed ) {
-				reshape_window(n, "h");
+				reshape_window(n);
 			}
 			scrollbottom(n);
 		} else if( w1 && h1 > 1 ) {
