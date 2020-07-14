@@ -59,6 +59,7 @@ struct pty {
 	wchar_t *g0, *g1, *g2, *g3, *gc, *gs, *sgc, *sgs;
 	unsigned count;
 	struct pty *next;
+	char status[32];
 	VTPARSER vp;
 };
 

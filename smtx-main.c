@@ -613,11 +613,11 @@ close_fd(int *fd)
 }
 
 static void
-wait_child(struct canvas *n)
+wait_child(struct pty *p)
 {
 	int status, k = 0;
 	const char *fmt;
-	if( waitpid(n->p->pid, &status, WNOHANG) == n->p->pid ) {
+	if( waitpid(p->pid, &status, WNOHANG) == p->pid ) {
 		if( WIFEXITED(status) ) {
 			fmt = "%d exited %d";
 			k = WEXITSTATUS(status);
@@ -628,11 +628,8 @@ wait_child(struct canvas *n)
 			fmt = "%d stopped";
 			assert( WIFSTOPPED(status) );
 		}
-		mvwprintw(n->wtit, 0, 0, fmt, n->p->pid, k);
-		whline(n->wtit, ACS_HLINE, n->extent.x);
-		assert(n->p->fd > 0 );
-		close_fd(&n->p->fd);
-		assert(n->p->fd == -1 );
+		close_fd(&p->fd);
+		snprintf(p->status, sizeof p->status, fmt, p->pid, k);
 	}
 }
 
@@ -649,7 +646,7 @@ getinput(struct canvas *n, fd_set *f) /* check all pty's for input. */
 		if( r > 0 ) {
 			vtwrite(&n->p->vp, iobuf, r);
 		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
-			wait_child(n);
+			wait_child(n->p);
 			prune(n);
 		}
 	}
