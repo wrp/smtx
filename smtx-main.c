@@ -612,26 +612,6 @@ close_fd(int *fd)
 	}
 }
 
-static void
-wait_child(struct pty *p)
-{
-	int status, k = 0;
-	const char *fmt;
-	if( waitpid(p->pid, &status, WNOHANG) == p->pid ) {
-		if( WIFEXITED(status) ) {
-			fmt = "%d exited %d";
-			k = WEXITSTATUS(status);
-		} else if( WIFSIGNALED(status) ) {
-			fmt = "%d caught signal %d";
-			k = WTERMSIG(status);
-		} else {
-			fmt = "%d stopped";
-			assert( WIFSTOPPED(status) );
-		}
-		close_fd(&p->fd);
-		snprintf(p->status, sizeof p->status, fmt, p->pid, k);
-	}
-}
 
 static void
 getinput(struct canvas *n, fd_set *f) /* check all pty's for input. */
@@ -646,7 +626,7 @@ getinput(struct canvas *n, fd_set *f) /* check all pty's for input. */
 		if( r > 0 ) {
 			vtwrite(&n->p->vp, iobuf, r);
 		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
-			wait_child(n->p);
+			close_fd(&n->p->fd);
 			prune(n);
 		}
 	}
