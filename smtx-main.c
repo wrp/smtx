@@ -636,15 +636,14 @@ wait_child(struct canvas *n)
 	}
 }
 
-static bool
-getinput(struct canvas *n, fd_set *f) /* check all ptty's for input. */
+static void
+getinput(struct canvas *n, fd_set *f) /* check all pty's for input. */
 {
-	bool status = false;
-	if( n == NULL ) {
-		;
-	} else if( getinput(n->c[0], f) || getinput(n->c[1], f) ) {
-		status = true;
-	} else if( n->p && n->p->fd > 0 && FD_ISSET(n->p->fd, f) ) {
+	if( n ) {
+		getinput(n->c[0], f);
+		getinput(n->c[1], f);
+	}
+	if( n && n->p && FD_ISSET(n->p->fd, f) ) {
 		char iobuf[BUFSIZ];
 		ssize_t r = read(n->p->fd, iobuf, sizeof iobuf);
 		if( r > 0 ) {
@@ -652,10 +651,8 @@ getinput(struct canvas *n, fd_set *f) /* check all ptty's for input. */
 		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
 			wait_child(n);
 			prune(n);
-			status = true;
 		}
 	}
-	return status;
 }
 
 static void
