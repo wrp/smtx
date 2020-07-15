@@ -754,7 +754,7 @@ resize(struct canvas *n, const char *arg)
 	int count = cmd_count < 1 ? 1 : cmd_count;
 	int *s = typ ? &n->extent.x : &n->extent.y;
 
-	if( dir == 1 ) while( n && n->c[typ] == NULL ) {
+	while( n && n->c[typ] == NULL ) {
 		n = n->parent;
 	}
 	if( !n || !n->c[typ] ) {
