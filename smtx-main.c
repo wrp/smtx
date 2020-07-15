@@ -953,10 +953,13 @@ handlechar(int r, int k) /* Handle a single input character. */
 	}
 }
 
+static sig_atomic_t terminated;
+static void handle_term(int s) { terminated = s; }
+
 void
 main_loop(void)
 {
-	while( S.c != NULL ) {
+	while( S.c != NULL && ! terminated ) {
 		int r;
 		wint_t w = 0;
 		fd_set sfds = S.fds;
@@ -1019,11 +1022,12 @@ parse_args(int argc, char *const*argv)
 	}
 }
 
-
 struct canvas *
 init(void)
 {
 	char buf[16];
+	signal(SIGTERM, handle_term);
+	signal(SIGHUP, handle_term); /* TODO: have this refresh screen */
 	FD_ZERO(&S.fds);
 	FD_SET(STDIN_FILENO, &S.fds);
 	S.maxfd = STDIN_FILENO;
