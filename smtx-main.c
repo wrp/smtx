@@ -750,23 +750,19 @@ void
 resize(struct canvas *n, const char *arg)
 {
 	int typ = strchr("JK", *arg) ? 0 : 1;
-	enum { down, up } dir = strchr("JL", *arg) ? down : up;
-	if( dir == down ) while( n && n->c[dir] == NULL ) {
+	int dir = strchr("JL", *arg) ? 1 : -1;
+	int count = cmd_count < 1 ? 1 : cmd_count;
+	int *s = typ ? &n->extent.x : &n->extent.y;
+
+	if( dir == 1 ) while( n && n->c[typ] == NULL ) {
 		n = n->parent;
 	}
 	if( !n || !n->c[typ] ) {
 		return;
 	}
-	switch(*arg) {
-	case 'K':
-	case 'J':
-	{
-		int full = (n->extent.y + 1) / n->split_point[0];
-		int count = cmd_count < 1 ? 1 : cmd_count;
-		double new = (n->extent.y + 1) + count * ( *arg == 'K' ? -1 : 1 );
-		n->split_point[0] = MAX( 0, MIN(new / full, 1.0) );
-		} break;
-	}
+	double full = (*s + 1) / n->split_point[typ];
+	double new = *s + 1 + count * dir;
+	n->split_point[typ] = MAX( 0, MIN(new / full, 1.0) );
 	reshape_root(NULL, NULL);
 }
 
