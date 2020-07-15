@@ -959,28 +959,26 @@ static void handle_term(int s) { terminated = s; }
 void
 main_loop(void)
 {
-	while( S.c != NULL && ! terminated ) {
-		int r;
-		wint_t w = 0;
-		fd_set sfds = S.fds;
+	int r;
+	wint_t w = 0;
+	fd_set sfds = S.fds;
 
-		draw(S.v);
-		if( winpos(S.werr, 1) ) {
-			int y = LINES - 1, x = MIN(winsiz(S.werr, 1), COLS);
-			pnoutrefresh(S.werr, 0, 0, y, 0, y, x);
-		}
-		fixcursor();
-		doupdate();
-		if( select(S.maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
-			set_errmsg("select");
-			FD_ZERO(&sfds);
-		}
-		while( (r = wget_wch(S.f->input, &w)) != ERR ) {
-			handlechar(r, w);
-			fixcursor();
-		}
-		getinput(S.c, &sfds);
+	draw(S.v);
+	if( winpos(S.werr, 1) ) {
+		int y = LINES - 1, x = MIN(winsiz(S.werr, 1), COLS);
+		pnoutrefresh(S.werr, 0, 0, y, 0, y, x);
 	}
+	fixcursor();
+	doupdate();
+	if( select(S.maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
+		set_errmsg("select");
+		FD_ZERO(&sfds);
+	}
+	while( (r = wget_wch(S.f->input, &w)) != ERR ) {
+		handlechar(r, w);
+		fixcursor();
+	}
+	getinput(S.c, &sfds);
 }
 
 static void
@@ -1063,7 +1061,9 @@ smtx_main(int argc, char *const argv[])
 {
 	parse_args(argc, argv);
 	init();
-	main_loop();
+	while( S.c != NULL && ! terminated ) {
+		main_loop();
+	}
 	endwin();
 	return EXIT_SUCCESS;
 }
