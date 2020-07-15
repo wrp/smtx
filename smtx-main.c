@@ -956,7 +956,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 static sig_atomic_t terminated;
 static void handle_term(int s) { terminated = s; }
 
-void
+static void
 main_loop(void)
 {
 	int r;

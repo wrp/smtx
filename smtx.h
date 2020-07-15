@@ -116,7 +116,6 @@ extern struct canvas * init(void);
 extern void draw(struct canvas *);
 extern void setupevents(VTPARSER *);
 extern int rewrite(int fd, const char *b, size_t n);
-extern void main_loop(void);
 extern void build_bindings(void);
 extern void draw(struct canvas *n);
 extern int smtx_main(int, char *const*);
