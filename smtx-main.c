@@ -771,34 +771,47 @@ resize(struct canvas *n, const char *arg)
 	reshape_root(NULL, NULL);
 }
 
+enum direction {nil, up, down, left, right};
+static void
+navigate_display(enum direction dir, int count)
+{
+	struct canvas *n = S.f;
+	struct canvas *t = S.f;
+	int startx = t->origin.x;
+	int starty = t->origin.y + t->extent.y;
+	for( ; t && count--; n = t ? t : n ) {
+		switch( dir ) {
+		case up:
+			t = find_window(S.v, t->origin.y - 1, startx);
+			break;
+		case down:
+			t = find_window(S.v,
+				t->origin.y + t->extent.y + 1, startx);
+			break;
+		case right:
+			t = find_window(S.v, starty,
+				t->origin.x + t->extent.x + 1);
+			break;
+		case left:
+			t = find_window(S.v, starty, t->origin.x - 1);
+			break;
+		case nil:
+			;
+		}
+	}
+	focus(n);
+}
+
+
 void
 mov(struct canvas *n, const char *arg)
 {
 	assert( n == S.f && n != NULL );
-	char cmd = *arg;
+	(void)arg;
+
 	int count = cmd_count < 1 ? 1 : cmd_count;
-	int startx = n->origin.x;
-	int starty = n->origin.y + n->extent.y;
-	struct canvas *t = n;
-	for( ; t && count--; n = t ? t : n ) {
-		switch( cmd ) {
-		case 'k': /* move up */
-			t = find_window(S.v, t->origin.y - 1, startx);
-			break;
-		case 'j': /* move down */
-			t = find_window(S.v,
-				t->origin.y + t->extent.y + 1, startx);
-			break;
-		case 'l': /* move right */
-			t = find_window(S.v, starty,
-				t->origin.x + t->extent.x + 1);
-			break;
-		case 'h': /* move left */
-			t = find_window(S.v, starty, t->origin.x - 1);
-			break;
-		}
-	}
-	focus(n);
+	navigate_display(*arg == 'k' ? up : *arg == 'j' ? down :
+		*arg == 'h' ? left : *arg == 'l' ? right : nil, count);
 }
 
 static void
