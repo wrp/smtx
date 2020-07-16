@@ -773,6 +773,13 @@ resize(struct canvas *n, const char *arg)
 
 enum direction {nil, up, down, left, right};
 static void
+navigate_tree(enum direction dir, int count)
+{
+	(void)dir;
+	(void)count;
+}
+
+static void
 navigate_display(enum direction dir, int count)
 {
 	struct canvas *n = S.f;
@@ -802,16 +809,14 @@ navigate_display(enum direction dir, int count)
 	focus(n);
 }
 
-
 void
 mov(struct canvas *n, const char *arg)
 {
 	assert( n == S.f && n != NULL );
-	(void)arg;
-
 	int count = cmd_count < 1 ? 1 : cmd_count;
-	navigate_display(*arg == 'k' ? up : *arg == 'j' ? down :
-		*arg == 'h' ? left : *arg == 'l' ? right : nil, count);
+	enum direction dir = *arg == 'k' ? up : *arg == 'j' ? down :
+			*arg == 'h' ? left : *arg == 'l' ? right : nil;
+	(S.display_level == 1 ? navigate_tree : navigate_display)(dir, count);
 }
 
 static void
