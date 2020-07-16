@@ -752,16 +752,16 @@ resize(struct canvas *n, const char *arg)
 	int typ = strchr("JK", *arg) ? 0 : 1;
 	int dir = strchr("JL", *arg) ? 1 : -1;
 	int count = cmd_count < 1 ? 1 : cmd_count;
-	int *s = typ ? &n->extent.x : &n->extent.y;
+	int s = *(typ ? &n->extent.x : &n->extent.y) + 1;
 
 	while( n && n->c[typ] == NULL ) {
 		n = n->parent;
 	}
-	if( !n || !n->c[typ] ) {
+	if( !n || !n->c[typ] || n->split_point[typ] == 0 || s < 1) {
 		return;
 	}
-	double full = (*s + 1) / n->split_point[typ];
-	double new = *s + 1 + count * dir;
+	double full = s / n->split_point[typ];
+	double new = s + count * dir;
 	n->split_point[typ] = MAX( 0, MIN(new / full, 1.0) );
 	reshape_root(NULL, NULL);
 }
