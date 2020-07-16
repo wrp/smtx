@@ -232,7 +232,6 @@ newcanvas(void)
 	} else {
 		n->split_point[0] = 1.0;
 		n->split_point[1] = 1.0;
-		n->auto_prune = 1;
 		n->p->count = 1;
 		n->input = n->p->pri.win;
 	}
@@ -470,7 +469,7 @@ reshape_root(struct canvas *n, const char *arg)
 }
 
 static void
-prune(struct canvas *x)
+prune(struct canvas *x, const char *arg)
 {
 	struct canvas *p = x->parent;
 	struct canvas *dummy;
@@ -478,7 +477,8 @@ prune(struct canvas *x)
 	int d = x->typ;
 	struct canvas *n = x->c[d];
 	struct canvas *o = x->c[!d];
-	if( ! x->auto_prune || ( o && o->c[d]) ) {
+	(void)arg;
+	if( o && o->c[d] ) {
 		del = NULL;
 	} else if( o ) {
 		assert( o->c[d] == NULL );
@@ -512,15 +512,6 @@ prune(struct canvas *x)
 		reshape_root(NULL, NULL);
 	}
 }
-
-static void
-toggle_prune(struct canvas *n, const char *arg)
-{
-	(void)arg;
-	n->auto_prune = !n->auto_prune;
-	prune(n);
-}
-
 
 static void
 draw_pane(WINDOW *w, int y, int x)
@@ -924,7 +915,7 @@ build_bindings()
 	add_key(cmd_keys, L't', new_tabstop, NULL);
 	add_key(cmd_keys, L'W', set_width, NULL);
 	add_key(cmd_keys, L'v', set_view_count, NULL);
-	add_key(cmd_keys, L'x', toggle_prune, NULL);
+	add_key(cmd_keys, L'x', prune, NULL);
 	add_key(cmd_keys, L'0', digit, "0");
 	add_key(cmd_keys, L'1', digit, "1");
 	add_key(cmd_keys, L'2', digit, "2");

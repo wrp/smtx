@@ -91,7 +91,6 @@ struct canvas {
 	*/
 	struct canvas *c[2];
 	double split_point[2]; /* percent of window dedicated to win */
-	int auto_prune;
 	int manualscroll;
 	WINDOW *input; /* one of win, wtit, wdiv, or p->s.win */
 	WINDOW *win;
