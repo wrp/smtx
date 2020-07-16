@@ -779,25 +779,25 @@ navigate_display(enum direction dir, int count)
 	struct canvas *t = S.f;
 	int startx = t->origin.x;
 	int starty = t->origin.y + t->extent.y;
-	for( ; t && count--; n = t ? t : n ) {
+	for( ; t && count-- && dir != nil; n = t ? t : n ) {
+		struct point target = {starty, startx};
 		switch( dir ) {
 		case up:
-			t = find_window(S.v, t->origin.y - 1, startx);
+			target.y = t->origin.y - 1;
 			break;
 		case down:
-			t = find_window(S.v,
-				t->origin.y + t->extent.y + 1, startx);
+			target.y = t->origin.y + t->extent.y + 1;
 			break;
 		case right:
-			t = find_window(S.v, starty,
-				t->origin.x + t->extent.x + 1);
+			target.x = t->origin.x + t->extent.x + 1;
 			break;
 		case left:
-			t = find_window(S.v, starty, t->origin.x - 1);
+			target.x = t->origin.x - 1;
 			break;
 		case nil:
 			;
 		}
+		t = find_window(S.v, target.y, target.x);
 	}
 	focus(n);
 }
