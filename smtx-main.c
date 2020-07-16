@@ -775,8 +775,26 @@ enum direction {nil, up, down, left, right};
 static void
 navigate_tree(enum direction dir, int count)
 {
-	(void)dir;
-	(void)count;
+	struct canvas *n = S.f;
+	struct canvas *t = S.f;
+	for( ; t && count-- && dir != nil; n = t ? t : n ) {
+		switch( dir ) {
+		case left:
+		case up:
+			t = t->parent;
+			break;
+		case down:
+			t = t->c[0];
+			break;
+		case right:
+			t = t->c[1];
+			break;
+		case nil:
+			;
+		}
+	}
+	focus(n);
+	reshape_root(NULL, NULL);
 }
 
 static void
