@@ -993,19 +993,6 @@ handlechar(int r, int k) /* Handle a single input character. */
 static sig_atomic_t terminated;
 static void handle_term(int s) { terminated = s; }
 
-/* TODO: dump this hack */
-static void
-prune_all(struct canvas *n)
-{
-	if( n ) {
-		prune_all(n->c[0]);
-		prune_all(n->c[1]);
-		if( n->p && n->p->fd == -1 ) {
-			prune(n);
-		}
-	}
-}
-
 static void
 main_loop(void)
 {
@@ -1029,7 +1016,6 @@ main_loop(void)
 		fixcursor();
 	}
 	getinput(&sfds);
-	prune_all(S.c);
 }
 
 static void
@@ -1112,7 +1098,7 @@ smtx_main(int argc, char *const argv[])
 {
 	parse_args(argc, argv);
 	init();
-	while( S.c != NULL && ! terminated ) {
+	while( S.c != NULL && ! terminated && S.maxfd > 0 ) {
 		main_loop();
 	}
 	endwin();
