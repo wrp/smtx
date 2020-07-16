@@ -762,7 +762,12 @@ resize(struct canvas *n, const char *arg)
 	}
 	double full = s / n->split_point[typ];
 	double new = s + count * dir;
-	n->split_point[typ] = MAX( 0, MIN(new / full, 1.0) );
+	if( new > 0 ) {
+		n->split_point[typ] = MIN(new / full, 1.0);
+	} else {
+		n->split_point[typ] = 0.0;
+		focus(S.v);
+	}
 	reshape_root(NULL, NULL);
 }
 
