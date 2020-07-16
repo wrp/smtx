@@ -607,6 +607,9 @@ close_fd(int *fd)
 	int o = *fd;
 	*fd = -1;
 	FD_CLR(o, &S.fds);
+	if( close(o) ) {
+		set_errmsg("close fd %d", o);
+	}
 	if( S.maxfd == o ) {
 		S.maxfd = find_max_fd();
 	}
