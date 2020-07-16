@@ -634,19 +634,17 @@ wait_child(struct pty *p)
 }
 
 static void
-getinput(struct canvas *n, fd_set *f) /* check all pty's for input. */
+getinput(fd_set *f) /* check all pty's for input. */
 {
-	if( n ) {
-		getinput(n->c[0], f);
-		getinput(n->c[1], f);
-	}
-	if( n && n->p && FD_ISSET(n->p->fd, f) ) {
-		char iobuf[BUFSIZ];
-		ssize_t r = read(n->p->fd, iobuf, sizeof iobuf);
-		if( r > 0 ) {
-			vtwrite(&n->p->vp, iobuf, r);
-		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
-			wait_child(n->p);
+	for( struct pty *t = S.p; t; t = t->next ) {
+		if( FD_ISSET(t->fd, f) ) {
+			char iobuf[BUFSIZ];
+			ssize_t r = read(t->fd, iobuf, sizeof iobuf);
+			if( r > 0 ) {
+				vtwrite(&t->vp, iobuf, r);
+			} else if( errno != EINTR && errno != EWOULDBLOCK ) {
+				wait_child(t);
+			}
 		}
 	}
 }
@@ -1027,7 +1025,7 @@ main_loop(void)
 		handlechar(r, w);
 		fixcursor();
 	}
-	getinput(S.c, &sfds);
+	getinput(&sfds);
 	prune_all(S.c);
 }
 
