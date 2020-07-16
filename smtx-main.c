@@ -647,7 +647,6 @@ getinput(struct canvas *n, fd_set *f) /* check all pty's for input. */
 			vtwrite(&n->p->vp, iobuf, r);
 		} else if( errno != EINTR && errno != EWOULDBLOCK ) {
 			wait_child(n->p);
-			prune(n);
 		}
 	}
 }
@@ -993,6 +992,19 @@ handlechar(int r, int k) /* Handle a single input character. */
 static sig_atomic_t terminated;
 static void handle_term(int s) { terminated = s; }
 
+/* TODO: dump this hack */
+static void
+prune_all(struct canvas *n)
+{
+	if( n ) {
+		prune_all(n->c[0]);
+		prune_all(n->c[1]);
+		if( n->p && n->p->fd == -1 ) {
+			prune(n);
+		}
+	}
+}
+
 static void
 main_loop(void)
 {
@@ -1016,6 +1028,7 @@ main_loop(void)
 		fixcursor();
 	}
 	getinput(S.c, &sfds);
+	prune_all(S.c);
 }
 
 static void
