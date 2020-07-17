@@ -60,7 +60,7 @@ struct pty {
 	unsigned count;
 	struct pty *next;
 	char status[32];
-	struct vtparser vp;
+	struct vtp vp;
 };
 
 struct point { int y, x; };
@@ -113,7 +113,7 @@ extern struct canvas * get_focus(void);
 
 extern struct canvas * init(void);
 extern void draw(struct canvas *);
-extern void setupevents(struct vtparser *);
+extern void setupevents(struct vtp *);
 extern int rewrite(int fd, const char *b, size_t n);
 extern void build_bindings(void);
 extern void draw(struct canvas *n);

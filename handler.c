@@ -12,7 +12,7 @@ enum cmd {
 };
 
 #define CALL(x) tput(v, 0, 0, 0, NULL, x)
-void tput(struct vtparser *v, wchar_t w, wchar_t iw,
+void tput(struct vtp *v, wchar_t w, wchar_t iw,
 	int argc, int *argv, enum cmd c)
 {
 	int noclear_repc = 0;
@@ -518,7 +518,7 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 }
 
 void
-setupevents(struct vtparser *v)
+setupevents(struct vtp *v)
 {
 	vtonevent(v, VTPARSER_CONTROL, 0x05, ack);
 	vtonevent(v, VTPARSER_CONTROL, 0x07, bell);

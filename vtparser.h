@@ -48,7 +48,7 @@
 #define MAXOSC      100
 #define MAXBUF      100
 
-struct vtparser {
+struct vtp {
 	struct state *s;
 	int narg;
 	int nosc;
@@ -65,7 +65,7 @@ struct vtparser {
 };
 
 typedef void (*VTCALLBACK)(
-	struct vtparser *v,
+	struct vtp *v,
 	void *p,
 	wchar_t w,
 	wchar_t iw,
@@ -81,6 +81,6 @@ typedef enum {
 	VTPARSER_PRINT
 } VtEvent;
 
-void vtonevent(struct vtparser *vp, VtEvent t, wchar_t w,  int);
-void vtwrite(struct vtparser *vp, const char *s, size_t n);
+void vtonevent(struct vtp *vp, VtEvent t, wchar_t w,  int);
+void vtwrite(struct vtp *vp, const char *s, size_t n);
 #endif
