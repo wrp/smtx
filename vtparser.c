@@ -157,9 +157,8 @@ vtwrite(VTPARSER *vp, const char *s, size_t n)
 		}
 		n -= r;
 		s += r;
-		vp->s = vp->s ? vp->s : &ground;
 		if( w >= 0 && w < MAXCALLBACK ) {
-			struct action *a = vp->s->act + w;
+			struct action *a = (vp->s ? vp->s : &ground)->act + w;
 			if( a->cb ) {
 				a->cb(vp, w);
 			}
