@@ -30,20 +30,20 @@
 #include <string.h>
 #include "vtparser.h"
 
-typedef void (*callback)(VTPARSER *p, wchar_t w);
+typedef void (*callback)(struct vtparser *p, wchar_t w);
 struct action {
 	callback cb;
 	struct state *next;
 };
 struct state{
-	void (*entry)(VTPARSER *v);
+	void (*entry)(struct vtparser *v);
 	struct action act[0x80];
 };
 static struct state ground, escape, escape_intermediate, csi_entry,
 	csi_ignore, csi_param, csi_intermediate, osc_string;
 
 static void
-reset(VTPARSER *v)
+reset(struct vtparser *v)
 {
 	v->inter = v->narg = v->nosc = 0;
 	memset(v->args, 0, sizeof v->args);
@@ -51,14 +51,14 @@ reset(VTPARSER *v)
 }
 
 static void
-ignore(VTPARSER *v, wchar_t w)
+ignore(struct vtparser *v, wchar_t w)
 {
 	(void)v;
 	(void)w;
 }
 
 static void
-collect(VTPARSER *v, wchar_t w)
+collect(struct vtparser *v, wchar_t w)
 {
 	if( !v->inter ) {
 		v->inter = (int)w;
@@ -66,7 +66,7 @@ collect(VTPARSER *v, wchar_t w)
 }
 
 static void
-collectosc(VTPARSER *v, wchar_t w)
+collectosc(struct vtparser *v, wchar_t w)
 {
 	if( v->nosc < MAXOSC ) {
 		v->oscbuf[v->nosc++] = w;
@@ -74,7 +74,7 @@ collectosc(VTPARSER *v, wchar_t w)
 }
 
 static void
-param(VTPARSER *v, wchar_t w)
+param(struct vtparser *v, wchar_t w)
 {
 	v->narg = v->narg ? v->narg : 1;
 	int *a = v->args + v->narg - 1;
@@ -85,36 +85,36 @@ param(VTPARSER *v, wchar_t w)
 	}
 }
 
-extern void tput(VTPARSER *, wchar_t, wchar_t, int, int *, int);
+extern void tput(struct vtparser *, wchar_t, wchar_t, int, int *, int);
 static void
-docontrol(VTPARSER *v, wchar_t w)
+docontrol(struct vtparser *v, wchar_t w)
 {
 	assert( w < MAXCALLBACK );
 	tput(v, w, v->inter, 0, NULL, v->cons[w]);
 }
 
 static void
-doescape(VTPARSER *v, wchar_t w)
+doescape(struct vtparser *v, wchar_t w)
 {
 	assert( w < MAXCALLBACK );
 	tput(v, w, v->inter, v->inter > 0, &v->inter, v->escs[w]);
 }
 
 static void
-docsi(VTPARSER *v, wchar_t w)
+docsi(struct vtparser *v, wchar_t w)
 {
 	assert( w < MAXCALLBACK );
 	tput(v, w, v->inter, v->narg, v->args, v->csis[w]);
 }
 
 static void
-doprint(VTPARSER *v, wchar_t w)
+doprint(struct vtparser *v, wchar_t w)
 {
 	tput(v, w, v->inter, 0, NULL, v->print);
 }
 
 static void
-doosc(VTPARSER *v, wchar_t w)
+doosc(struct vtparser *v, wchar_t w)
 {
 	tput(v, w, v->inter, v->nosc, NULL, v->osc);
 }
@@ -123,7 +123,7 @@ static int initialized;
 static void init(void);
 
 void
-vtonevent(VTPARSER *vp, VtEvent t, wchar_t w, int cb)
+vtonevent(struct vtparser *vp, VtEvent t, wchar_t w, int cb)
 {
 	if( ! initialized ) {
 		init();
@@ -139,7 +139,7 @@ vtonevent(VTPARSER *vp, VtEvent t, wchar_t w, int cb)
 }
 
 void
-vtwrite(VTPARSER *vp, const char *s, size_t n)
+vtwrite(struct vtparser *vp, const char *s, size_t n)
 {
 	wchar_t w = 0;
 	while( n ) {
@@ -195,7 +195,7 @@ init_range(struct state *s, wchar_t b, wchar_t e, callback cb, struct state *n)
 }
 
 static void
-initstate(struct state *s, void (*entry)(VTPARSER *))
+initstate(struct state *s, void (*entry)(struct vtparser *))
 {
 	s->entry = entry;
 	init_action(s, 0, ignore, NULL);

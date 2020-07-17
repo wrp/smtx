@@ -104,7 +104,7 @@ struct test_canvas {
 	const char *ps1;
 	FILE *fp;
 	WINDOW *w;
-	VTPARSER *vp;
+	struct vtparser *vp;
 };
 
 static void
@@ -144,7 +144,7 @@ test_description(int fd)
 }
 
 static void
-read_until(FILE *fp, const char *s, VTPARSER *vp)
+read_until(FILE *fp, const char *s, struct vtparser *vp)
 {
 	const char *t = s;
 	int c;
