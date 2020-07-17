@@ -148,8 +148,7 @@ read_until(FILE *fp, const char *s, struct vtp *vp)
 {
 	const char *t = s;
 	int c;
-	if( vp ) while( *t /* && ( c = fgetc(fp)) != EOF*/ ) {
-		c = fgetc(fp);
+	if( vp ) while( *t && ( (c = fgetc(fp)) != EOF || ! feof(fp) ) ) {
 		vtwrite(vp, (char *)&c, 1);
 		t = (c == *t) ? t + 1 : s;
 	}
