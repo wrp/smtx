@@ -147,11 +147,10 @@ static void
 read_until(FILE *fp, const char *s, VTPARSER *vp)
 {
 	const char *t = s;
-	while( *t ) {
-		int c = fgetc(fp);
-		if( vp != NULL ) {
-			vtwrite(vp, (char *)&c, 1);
-		}
+	int c;
+	if( vp ) while( *t /* && ( c = fgetc(fp)) != EOF*/ ) {
+		c = fgetc(fp);
+		vtwrite(vp, (char *)&c, 1);
 		t = (c == *t) ? t + 1 : s;
 	}
 }
