@@ -138,27 +138,6 @@ vtonevent(VTPARSER *vp, VtEvent t, wchar_t w, int cb)
 	}
 }
 
-static void
-handlechar(VTPARSER *vp, wchar_t w)
-{
-	vp->s = vp->s ? vp->s : &ground;
-
-	if( w >= 0 && w < MAXCALLBACK ) {
-		struct action *a = vp->s->act + w;
-
-		if( a->cb ) {
-			a->cb(vp, w);
-		}
-		if( a->next ) {
-			assert( a->cb );
-			vp->s = a->next;
-			if( a->next->entry ) {
-				a->next->entry(vp);
-			}
-		}
-	}
-}
-
 void
 vtwrite(VTPARSER *vp, const char *s, size_t n)
 {
@@ -178,7 +157,20 @@ vtwrite(VTPARSER *vp, const char *s, size_t n)
 		}
 		n -= r;
 		s += r;
-		handlechar(vp, w);
+		vp->s = vp->s ? vp->s : &ground;
+		if( w >= 0 && w < MAXCALLBACK ) {
+			struct action *a = vp->s->act + w;
+			if( a->cb ) {
+				a->cb(vp, w);
+			}
+			if( a->next ) {
+				assert( a->cb );
+				vp->s = a->next;
+				if( vp->s->entry ) {
+					vp->s->entry(vp);
+				}
+			}
+		}
 	}
 }
 
