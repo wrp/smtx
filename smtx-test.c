@@ -220,6 +220,17 @@ test_nel(int fd)
 }
 
 static int
+test_navigate(int fd)
+{
+	/* Another nearly pointless test that exercises creation of windows,
+	 * cursor movement, and prune, but doesn't actually verify results */
+	char cmd[] = "\07cjkhlxCCvjkhlc\r\rexit\rexit\rexit\rexit\rexit\r";
+	assert( cmd[0] == CTL('g') );
+	write(fd, cmd, strlen(cmd));
+	return 0;
+}
+
+static int
 test_csr(int fd)
 {
 	(void) fd;
@@ -497,6 +508,7 @@ main(int argc, char *const argv[])
 		F(test_pager, 0),
 		F(test_cols, 0),
 		F(test_csr, 0),
+		F(test_navigate, 1),
 		{ NULL, NULL, 0 }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
