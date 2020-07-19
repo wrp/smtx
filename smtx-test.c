@@ -203,45 +203,28 @@ static int
 test_navigate(int fd)
 {
 	ssize_t s;
-	int flags;
-	char buf[1024] = "\07cjkhlxCCvjkhlc\r";
+	int status = 0;
+	char buf[1024] = "\07cjkhlCCvjkhlc\r";
 	assert( buf[0] == CTL('g') );
 	write(fd, buf, strlen(buf));
-	flags = fcntl(fd, F_GETFL);
-	fcntl(fd, F_SETFL, O_NONBLOCK);
-	while( (s = read(fd, buf, sizeof buf)) != -1 ) {
-		;
-	}
-	if( errno != EAGAIN ) {
-		return 1;
-	}
-	fcntl(fd, F_SETFL, flags);
-
-	/*
-	kill(child, SIGHUP);
-	The child should catch these.  Indeed, I see that
-	happen in gdb, but the test suite still detects it as having been
-	signalled.  TODO: track down why we can't send this signal.
-	kill(child, SIGTERM);
-	*/
 
 	sprintf(buf, "kill -HUP $SMTX\r");
 	write(fd, buf, strlen(buf));
-/*
-	s = read(fd, buf, 10);
+	/*
+	s = read(child_pipe[0], buf, sizeof buf - 1);
 	buf[s] = 0;
 	if( strcmp( buf, "test" ) ) {
 		fprintf(stderr, "layout: %s", buf);
-		return 1;
+		status = 1;
 	}
-*/
+	*/
 
 	buf[0] = 0;
 	for( int i = 0; i < 5; i += 1 ) {
 		strcat(buf, "exit\r");
 	}
 	write(fd, buf, strlen(buf));
-	return 0;
+	return status;
 }
 
 static int
