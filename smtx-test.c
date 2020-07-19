@@ -4,7 +4,8 @@
 
 int rv = EXIT_SUCCESS;
 int child_pipe[2];
-static unsigned describe_layout(char *, size_t, const struct canvas *, int);
+static unsigned describe_layout(char *, size_t, const struct canvas *,
+	int, int);
 
 static unsigned
 describe_row(char *desc, size_t siz, WINDOW *w, int row)
@@ -61,7 +62,7 @@ vexpect_layout(const struct canvas *c, const char *fmt, va_list ap)
 	char actual[1024];
 	char expect[1024];
 	const char *a = actual, *b = expect;
-	describe_layout(actual, sizeof actual, c, 1);
+	describe_layout(actual, sizeof actual, c, 1, 1);
 	vsnprintf(expect, sizeof expect, fmt, ap);
 	while( *a && ( *a == *b || *b == '?' ) ) {
 		a += 1;
@@ -204,25 +205,24 @@ test_navigate(int fd)
 {
 	ssize_t s;
 	int status = 0;
-	char buf[1024] = "\07cjkhlCCvjkhlc\r";
+	char buf[1024] = "\07cjkhlC4tCvjkhlc\r";
 	assert( buf[0] == CTL('g') );
 	write(fd, buf, strlen(buf));
 
 	sprintf(buf, "kill -HUP $SMTX\r");
 	write(fd, buf, strlen(buf));
-	/*
 	s = read(child_pipe[0], buf, sizeof buf - 1);
 	buf[s] = 0;
-	if( strcmp( buf, "test" ) ) {
-		fprintf(stderr, "layout: %s", buf);
+	char *expect = "23x80@0,0; 11x80@12,0; *11x26@0,27; "
+		"0x0@0,0; 11x26@0,54";
+	if( strcmp( buf, expect ) ) {
+		fprintf(stderr, "unexpected layout: %s\n", buf);
 		status = 1;
 	}
-	*/
 
-	buf[0] = 0;
-	for( int i = 0; i < 5; i += 1 ) {
-		strcat(buf, "exit\r");
-	}
+	sprintf(buf, "kill $$\r\007xv\r");
+	write(fd, buf, strlen(buf));
+	sprintf(buf, "kill -TERM $SMTX\r");
 	write(fd, buf, strlen(buf));
 	return status;
 }
@@ -486,19 +486,20 @@ huphandler(int s)
 {
 	(void) s;
 	char buf[256];
-	unsigned len = describe_layout(buf, sizeof buf, S.c, 1);
+	unsigned len = describe_layout(buf, sizeof buf, S.c, 1, 0);
 	write(child_pipe[1], buf, len);
 }
 
 /* Describe a layout. This may be called in a signal handler */
 static unsigned
-describe_layout(char *d, size_t siz, const struct canvas *c, int recurse)
+describe_layout(char *d, size_t siz, const struct canvas *c, int recurse,
+	int cursor)
 {
 	unsigned len = snprintf(d, siz, "%s%dx%d@%d,%d",
 		c == get_focus() ? "*" : "",
 		c->extent.y, c->extent.x, c->origin.y, c->origin.x
 	);
-	if( c->p->s && c->p->s->vis ) {
+	if( cursor && c->p->s && c->p->s->vis ) {
 		int y = 0, x = 0;
 		getyx(c->p->s->win, y, x);
 		len += snprintf(d + len, siz - len, "(%d,%d)", y, x);
@@ -507,7 +508,8 @@ describe_layout(char *d, size_t siz, const struct canvas *c, int recurse)
 		if( recurse && len + 3 < siz && c->c[i] ) {
 			d[len++] = ';';
 			d[len++] = ' ';
-			len += describe_layout(d + len, siz - len, c->c[i], 1);
+			len += describe_layout(d + len, siz - len, c->c[i], 1,
+				cursor);
 		}
 	}
 	return len;

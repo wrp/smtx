@@ -871,6 +871,7 @@ build_bindings()
 
 	add_key(cmd_keys, S.commandkey, transition, &S.commandkey);
 	add_key(cmd_keys, L'\r', transition, NULL);
+	add_key(cmd_keys, L'\n', transition, NULL);
 	/* TODO: rebind b,f,<,> to hjkl in different binding */
 	add_key(cmd_keys, L'a', attach, NULL);
 	add_key(cmd_keys, L'b', scrolln, "-");
@@ -943,7 +944,6 @@ handlechar(int r, int k) /* Handle a single input character. */
 	} else if( r == KEY_CODE_YES && k >= KEY_MIN && k <= KEY_MAX ) {
 		b = &code_keys[k - KEY_MIN];
 	}
-
 	if( b && b->act ) {
 		b->act(n, b->arg);
 	} else if( S.mode == passthru && n->p && n->p->fd > 0 ) {
