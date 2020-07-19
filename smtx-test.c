@@ -21,28 +21,6 @@ describe_row(char *desc, size_t siz, WINDOW *w, int row)
 	return x;
 }
 
-unsigned
-describe_layout(char *d, size_t siz, const struct canvas *c, int recurse)
-{
-	unsigned len = snprintf(d, siz, "%s%dx%d@%d,%d",
-		c == get_focus() ? "*" : "",
-		c->extent.y, c->extent.x, c->origin.y, c->origin.x
-	);
-	if( c->p->s && c->p->s->vis ) {
-		int y = 0, x = 0;
-		getyx(c->p->s->win, y, x);
-		len += snprintf(d + len, siz - len, "(%d,%d)", y, x);
-	}
-	for( int i = 0; i < 2; i ++ ) {
-		if( recurse && len + 3 < siz && c->c[i] ) {
-			d[len++] = ';';
-			d[len++] = ' ';
-			len += describe_layout(d + len, siz - len, c->c[i], 1);
-		}
-	}
-	return len;
-}
-
 static void
 send_cmd(int fd, const char *fmt, ...)
 {

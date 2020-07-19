@@ -118,6 +118,8 @@ extern int rewrite(int fd, const char *b, size_t n);
 extern void build_bindings(void);
 extern void draw(struct canvas *n);
 extern int smtx_main(int, char *const*);
+extern unsigned describe_layout(char *, size_t, const struct canvas *, int);
+
 extern action transition;
 extern action create;
 extern action equalize;
