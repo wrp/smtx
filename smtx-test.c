@@ -583,6 +583,9 @@ execute_test(struct st *v, const char *argv0)
 	int fd;
 	int status;
 
+	if( v->main && pipe(child_pipe) ) {
+		err(EXIT_FAILURE, "pipe");
+	}
 	switch( forkpty(&fd, NULL, NULL, NULL) ) {
 	case -1:
 		err(1, "forkpty");
@@ -596,11 +599,8 @@ execute_test(struct st *v, const char *argv0)
 			sigemptyset(&sa.sa_mask);
 			sa.sa_handler = huphandler;
 			sigaction(SIGHUP, &sa, NULL);
-			if( pipe(child_pipe) ) {
-				err(EXIT_FAILURE, "pipe");
-			}
 			if( close(child_pipe[0])) {
-				err(EXIT_FAILURE, "close");
+				err(EXIT_FAILURE, "close read side");
 			}
 			exit(smtx_main(1, args + 1));
 		} else {
@@ -612,6 +612,9 @@ execute_test(struct st *v, const char *argv0)
 		}
 	default:
 		if( v->main ) {
+			if( close(child_pipe[1])) {
+				err(EXIT_FAILURE, "close write side");
+			}
 			rv = v->f(fd);
 		}
 		wait(&status);
