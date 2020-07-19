@@ -999,7 +999,9 @@ main_loop(void)
 	fixcursor();
 	doupdate();
 	if( select(S.maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
-		set_errmsg("select");
+		if( errno != EINTR ) {
+			set_errmsg("select");
+		}
 		FD_ZERO(&sfds);
 	}
 	while( (r = wget_wch(S.f->input, &w)) != ERR ) {
