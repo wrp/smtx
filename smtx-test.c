@@ -3,6 +3,8 @@
 #include <sys/wait.h>
 
 int rv = EXIT_SUCCESS;
+int child_pipe[2];
+static unsigned describe_layout(char *, size_t, const struct canvas *, int);
 
 static unsigned
 describe_row(char *desc, size_t siz, WINDOW *w, int row)
@@ -200,11 +202,45 @@ test_nel(int fd)
 static int
 test_navigate(int fd)
 {
-	/* Another nearly pointless test that exercises creation of windows,
-	 * cursor movement, and prune, but doesn't actually verify results */
-	char cmd[] = "\07cjkhlxCCvjkhlc\r\rexit\rexit\rexit\rexit\rexit\r";
-	assert( cmd[0] == CTL('g') );
-	write(fd, cmd, strlen(cmd));
+	ssize_t s;
+	int flags;
+	char buf[1024] = "\07cjkhlxCCvjkhlc\r";
+	assert( buf[0] == CTL('g') );
+	write(fd, buf, strlen(buf));
+	flags = fcntl(fd, F_GETFL);
+	fcntl(fd, F_SETFL, O_NONBLOCK);
+	while( (s = read(fd, buf, sizeof buf)) != -1 ) {
+		;
+	}
+	if( errno != EAGAIN ) {
+		return 1;
+	}
+	fcntl(fd, F_SETFL, flags);
+
+	/*
+	kill(child, SIGHUP);
+	The child should catch these.  Indeed, I see that
+	happen in gdb, but the test suite still detects it as having been
+	signalled.  TODO: track down why we can't send this signal.
+	kill(child, SIGTERM);
+	*/
+
+	sprintf(buf, "kill -HUP $SMTX\r");
+	write(fd, buf, strlen(buf));
+/*
+	s = read(fd, buf, 10);
+	buf[s] = 0;
+	if( strcmp( buf, "test" ) ) {
+		fprintf(stderr, "layout: %s", buf);
+		return 1;
+	}
+*/
+
+	buf[0] = 0;
+	for( int i = 0; i < 5; i += 1 ) {
+		strcat(buf, "exit\r");
+	}
+	write(fd, buf, strlen(buf));
 	return 0;
 }
 
@@ -462,6 +498,38 @@ test1(int fd)
 	return 0;
 }
 
+static void
+huphandler(int s)
+{
+	(void) s;
+	char buf[256];
+	unsigned len = describe_layout(buf, sizeof buf, S.c, 1);
+	write(child_pipe[1], buf, len);
+}
+
+/* Describe a layout. This may be called in a signal handler */
+static unsigned
+describe_layout(char *d, size_t siz, const struct canvas *c, int recurse)
+{
+	unsigned len = snprintf(d, siz, "%s%dx%d@%d,%d",
+		c == get_focus() ? "*" : "",
+		c->extent.y, c->extent.x, c->origin.y, c->origin.x
+	);
+	if( c->p->s && c->p->s->vis ) {
+		int y = 0, x = 0;
+		getyx(c->p->s->win, y, x);
+		len += snprintf(d + len, siz - len, "(%d,%d)", y, x);
+	}
+	for( int i = 0; i < 2; i ++ ) {
+		if( recurse && len + 3 < siz && c->c[i] ) {
+			d[len++] = ';';
+			d[len++] = ' ';
+			len += describe_layout(d + len, siz - len, c->c[i], 1);
+		}
+	}
+	return len;
+}
+
 typedef int test(int);
 struct st { char *name; test *f; int main; };
 static int execute_test(struct st *v, const char *argv0);
@@ -522,6 +590,18 @@ execute_test(struct st *v, const char *argv0)
 	case 0:
 		rv = 0;
 		if( v->main ) {
+			struct sigaction sa;
+			memset(&sa, 0, sizeof sa);
+			sa.sa_flags = 0;
+			sigemptyset(&sa.sa_mask);
+			sa.sa_handler = huphandler;
+			sigaction(SIGHUP, &sa, NULL);
+			if( pipe(child_pipe) ) {
+				err(EXIT_FAILURE, "pipe");
+			}
+			if( close(child_pipe[0])) {
+				err(EXIT_FAILURE, "close");
+			}
 			exit(smtx_main(1, args + 1));
 		} else {
 			if( strcmp(argv0, v->name) ) {
@@ -532,7 +612,7 @@ execute_test(struct st *v, const char *argv0)
 		}
 	default:
 		if( v->main ) {
-			v->f(fd);
+			rv = v->f(fd);
 		}
 		wait(&status);
 	}
@@ -552,5 +632,5 @@ execute_test(struct st *v, const char *argv0)
 		fprintf(stderr, "test %s caught signal %d\n",
 			v->name, WTERMSIG(status));
 	}
-	return WIFEXITED(status) ? WEXITSTATUS(status) : EXIT_FAILURE;
+	return rv == 0 && WIFEXITED(status) ? WEXITSTATUS(status) : EXIT_FAILURE;
 }

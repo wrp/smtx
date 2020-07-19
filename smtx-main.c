@@ -17,40 +17,18 @@
  */
 
 #include "smtx.h"
-enum mode {
-	passthru, /* Unbound keystrokes are passed to focused window */
-	sink      /* Unbound keystrokes are discarded */
-};
-struct handler {
-	action *act;
-	const char *arg;
-};
-struct state {
-	char commandkey;
-	int width;
-	enum mode mode;
-	unsigned display_level;
-	struct handler (*binding)[128];
-	struct canvas *v; /* Root canvas currently displayed */
-	struct canvas *c; /* Root of tree of all canvas */
-	struct canvas *f; /* Currently focused canvas */;
-	struct pty *p;    /* Head of list of all pty */
-	int maxfd;
-	fd_set fds;
-	WINDOW *werr;
-};
 
 static struct handler keys[128];
 static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
-static struct state S = {
+
+/* Variables exposed to test suite */
+struct state S = {
 	.commandkey = CTL('g'),
 	.width = 80,
 	.binding = &keys,
 	.display_level = UINT_MAX
 };
-
-/* Variables exposed to test suite */
 int cmd_count = -1;
 int scrollback_history = 1024;
 
@@ -1060,7 +1038,6 @@ init(void)
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = handle_term;
 	sigaction(SIGTERM, &sa, NULL);
-	sigaction(SIGHUP, &sa, NULL);
 	FD_ZERO(&S.fds);
 	FD_SET(STDIN_FILENO, &S.fds);
 	S.maxfd = STDIN_FILENO;
@@ -1091,40 +1068,12 @@ init(void)
 	return S.c;
 }
 
-unsigned
-describe_layout(char *d, size_t siz, const struct canvas *c, int recurse)
-{
-	unsigned len = snprintf(d, siz, "%s%dx%d@%d,%d",
-		c == get_focus() ? "*" : "",
-		c->extent.y, c->extent.x, c->origin.y, c->origin.x
-	);
-	if( c->p->s && c->p->s->vis ) {
-		int y = 0, x = 0;
-		getyx(c->p->s->win, y, x);
-		len += snprintf(d + len, siz - len, "(%d,%d)", y, x);
-	}
-	for( int i = 0; i < 2; i ++ ) {
-		if( recurse && len + 3 < siz && c->c[i] ) {
-			d[len++] = ';';
-			d[len++] = ' ';
-			len += describe_layout(d + len, siz - len, c->c[i], 1);
-		}
-	}
-	return len;
-}
-
 int
 smtx_main(int argc, char *const argv[])
 {
 	parse_args(argc, argv);
 	init();
 	while( S.c != NULL && terminated != SIGTERM && S.maxfd > 0 ) {
-		if( terminated == SIGHUP ) {
-			char buf[256];
-			describe_layout(buf, sizeof buf, S.c, 1);
-			fprintf(stderr, "%s\n", buf);
-			terminated = 0;
-		}
 		main_loop();
 	}
 	endwin();

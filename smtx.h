@@ -62,6 +62,28 @@ struct pty {
 	char status[32];
 	struct vtp vp;
 };
+enum mode {
+	passthru, /* Unbound keystrokes are passed to focused window */
+	sink      /* Unbound keystrokes are discarded */
+};
+struct handler {
+	action *act;
+	const char *arg;
+};
+struct state {
+	char commandkey;
+	int width;
+	enum mode mode;
+	unsigned display_level;
+	struct handler (*binding)[128];
+	struct canvas *v; /* Root canvas currently displayed */
+	struct canvas *c; /* Root of tree of all canvas */
+	struct canvas *f; /* Currently focused canvas */;
+	struct pty *p;    /* Head of list of all pty */
+	int maxfd;
+	fd_set fds;
+	WINDOW *werr;
+};
 
 struct point { int y, x; };
 
@@ -117,8 +139,9 @@ extern void setupevents(struct vtp *);
 extern int rewrite(int fd, const char *b, size_t n);
 extern void build_bindings(void);
 extern void draw(struct canvas *n);
+/* exposed to test suite */
 extern int smtx_main(int, char *const*);
-extern unsigned describe_layout(char *, size_t, const struct canvas *, int);
+extern struct state S;
 
 extern action transition;
 extern action create;
