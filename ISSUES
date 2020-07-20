@@ -45,6 +45,10 @@ BUGS:
 	Figure out why I am getting an extra line at the bottom of screen in
 	termux.  Note this happens outside of smtx, so it is not our bug to
 	fix, but may be a terminfo issue.  It needs to be understood.
+
+	As of 61c41fe0f1dd73829315c959b69cf44df2af102f, the test suite hangs
+	on macos
+
 MAYBE TODO:
 	Register signal handlers for TERM and HUP.  Need to ensure
 	that endwin is called.
