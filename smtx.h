@@ -13,6 +13,7 @@
 #include <locale.h>
 #if HAVE_PTY_H
 # include <pty.h>
+# include <utmp.h>
 #elif HAVE_LIBUTIL_H
 # include <libutil.h>
 #elif HAVE_UTIL_H

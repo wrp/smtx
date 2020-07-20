@@ -565,17 +565,26 @@ static int
 execute_test(struct st *v, const char *argv0)
 {
 	char *const args[] = { v->name, v->name, NULL };
-	int fd;
+	int fd[2]; /* primary/secondary fd of pty */
 	int status;
 
 	if( v->main && pipe(child_pipe) ) {
 		err(EXIT_FAILURE, "pipe");
 	}
-	switch( forkpty(&fd, NULL, NULL, NULL) ) {
+	if( openpty(fd, fd + 1, NULL, NULL, NULL) ) {
+		err(EXIT_FAILURE, "openpty");
+	}
+	switch( fork() ) {
 	case -1:
-		err(1, "forkpty");
+		err(1, "fork");
 		break;
 	case 0:
+		if( close(fd[0]) ) {
+			err(EXIT_FAILURE, "close");
+		}
+		if( login_tty(fd[1]) ) {
+			err(EXIT_FAILURE, "login_tty");
+		}
 		rv = 0;
 		if( v->main ) {
 			struct sigaction sa;
@@ -593,21 +602,24 @@ execute_test(struct st *v, const char *argv0)
 				execv(argv0, args);
 				perror("execv");
 			}
-			exit(v->f(fd));
+			exit(v->f(fd[0]));
 		}
 	default:
 		if( v->main ) {
+			if( close(fd[1]) ) {
+				err(EXIT_FAILURE, "close secondary");
+			}
 			if( close(child_pipe[1])) {
 				err(EXIT_FAILURE, "close write side");
 			}
-			rv = v->f(fd);
+			rv = v->f(fd[0]);
 		}
 		wait(&status);
 	}
 	if( WIFEXITED(status) && WEXITSTATUS(status) != 0 ) {
 		char iobuf[BUFSIZ], *s = iobuf;
 		fprintf(stderr, "test %s FAILED\n", v->name);
-		ssize_t r = read(fd, iobuf, sizeof iobuf - 1);
+		ssize_t r = read(fd[0], iobuf, sizeof iobuf - 1);
 		if( r > 0 ) {
 			iobuf[r] = '\0';
 			for( ; *s; s++ ) {
