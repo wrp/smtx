@@ -33,18 +33,33 @@ int cmd_count = -1;
 int scrollback_history = 1024;
 
 static void
-set_errmsg(const char *fmt, ...)
+set_errmsg(const char *fmt, va_list ap, int e)
 {
-	int e = errno;
 	wmove(S.werr, 0, 0);
-	va_list ap;
-	va_start(ap, fmt);
 	vw_printw(S.werr, fmt, ap);
-	va_end(ap);
 	if( e ) {
 		wprintw(S.werr, ": %s", strerror(e));
 	}
 	wclrtoeol(S.werr);
+}
+
+static void
+print_errmsg(const char *fmt, va_list ap, int e)
+{
+	vfprintf(stderr, fmt, ap);
+	if( e ) {
+		fprintf(stderr, ": %s", strerror(e));
+	}
+}
+
+static void
+show_err(const char *fmt, ...)
+{
+	int e = errno;
+	va_list ap;
+	va_start(ap, fmt);
+	( S.werr ? set_errmsg : print_errmsg )(fmt, ap, e);
+	va_end(ap);
 	errno = e;
 }
 
@@ -55,7 +70,7 @@ rewrite(int fd, const char *b, size_t n)
 	while( b < e ) {
 		ssize_t s = write(fd, b, e - b);
 		if( s < 0 && errno != EINTR ) {
-			set_errmsg("write to fd %d", fd);
+			show_err("write to fd %d", fd);
 			return -1;
 		}
 		b += s < 0 ? 0 : s;
@@ -77,7 +92,7 @@ pty_width(struct pty *p, struct winsize *w)
 	struct winsize ws;
 	struct winsize *wp = w ? w : &ws;
 	if( ioctl(p->fd, TIOCGWINSZ, wp) ) {
-		set_errmsg("Can't get size of pty %d. Assuming 24 x 80", p->id);
+		show_err("Can't get size of pty %d. Assuming 24 x 80", p->id);
 		wp->ws_row = 24;
 		wp->ws_col = 80;
 	}
@@ -141,7 +156,7 @@ resize_pad(WINDOW **p, int h, int w)
 {
 	if( *p ) {
 		if( wresize(*p, h, w ) != OK ) {
-			set_errmsg("Error resizing window");
+			show_err("Error resizing window");
 			delwinnul(p);
 		}
 	} else if( (*p = newpad(h, w)) != NULL ) {
@@ -183,7 +198,7 @@ new_pty(int rows, int cols)
 			execl(sh, sh, NULL);
 			err(EXIT_FAILURE, "exec SHELL='%s'", sh);
 		} else if( p->pid < 0 || new_screens(p) == -1 ) {
-			set_errmsg("new_pty");
+			show_err("new_pty");
 			free_proc(&p);
 		} else if( p->pid > 0 ) {
 			FD_SET(p->fd, &S.fds);
@@ -203,7 +218,7 @@ newcanvas(void)
 {
 	struct canvas *n = calloc(1, sizeof *n);
 	if( !n ) {
-		set_errmsg("calloc");
+		show_err("calloc");
 	} else if( ( n->p = new_pty(LINES, MAX(COLS, S.width))) == NULL ) {
 		free(n);
 		n = NULL;
@@ -342,10 +357,10 @@ set_width(struct canvas *n, const char *arg)
 		resize_pad(&p->alt.win, h, w);
 		extend_tabs(p, p->tabstop);
 		if( ioctl(p->fd, TIOCSWINSZ, &ws) ) {
-			set_errmsg("ioctl to %d", p->fd);
+			show_err("ioctl to %d", p->fd);
 		}
 		if( kill(p->pid, SIGWINCH) ) {
-			set_errmsg("kill %d", (int)p->pid);
+			show_err("kill %d", (int)p->pid);
 		}
 	}
 }
@@ -366,10 +381,10 @@ reshape_window(struct canvas *n)
 	wsetscrreg(p->alt.win, 0, n->extent.y - 1);
 	wrefresh(p->s->win);
 	if( ioctl(p->fd, TIOCSWINSZ, &ws) ) {
-		set_errmsg("ioctl");
+		show_err("ioctl");
 	}
 	if( kill(p->pid, SIGWINCH) ) {
-		set_errmsg("kill");
+		show_err("kill");
 	}
 	set_title(n);
 	if( n->extent.x > ws.ws_col) {
@@ -577,7 +592,7 @@ close_fd(int *fd)
 	*fd = -1;
 	FD_CLR(o, &S.fds);
 	if( close(o) ) {
-		set_errmsg("close fd %d", o);
+		show_err("close fd %d", o);
 	}
 	if( S.maxfd == o ) {
 		S.maxfd = find_max_fd();
@@ -675,7 +690,7 @@ attach(struct canvas *n, const char *arg)
 			return;
 		}
 	}
-	set_errmsg("No pty exists with pid: %d", target);
+	show_err("No pty exists with pid: %d", target);
 }
 
 void
@@ -978,7 +993,7 @@ main_loop(void)
 	doupdate();
 	if( select(S.maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
 		if( errno != EINTR ) {
-			set_errmsg("select");
+			show_err("select");
 		}
 		FD_ZERO(&sfds);
 	}
@@ -1022,7 +1037,8 @@ parse_args(int argc, char *const*argv)
 			S.width = strtol(optarg, NULL, 10);
 			break;
 		default:
-			fprintf(stderr, "Unknown option: %c\n", optopt);
+			errno = 0;
+			show_err("Unknown option: %c\n", optopt);
 			exit(EXIT_FAILURE);
 		}
 	}

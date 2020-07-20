@@ -1,6 +1,7 @@
 #!/bin/sh
 
 export SHELL=/bin/sh
+./smtx -z && exit 1  # test invalid option
 echo '{ echo foo; exit; }' | ./smtx -c l || exit
 echo '{ tput cub 10; tput ich 10; exit; }' | ./smtx || exit
 echo '{ tput cbt 10; exit; }' | ./smtx || exit
