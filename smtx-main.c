@@ -603,17 +603,17 @@ static void
 wait_child(struct pty *p)
 {
 	int status, k = 0;
-	const char *fmt;
-	if( waitpid(p->pid, &status, WNOHANG) == p->pid ) {
+	const char *fmt = "%d exited %d";
+	switch( waitpid(p->pid, &status, WNOHANG) ) {
+	case -1: show_err("waitpid %d", p->pid);
+	case 0: break;
+	default:
 		if( WIFEXITED(status) ) {
-			fmt = "%d exited %d";
 			k = WEXITSTATUS(status);
-		} else if( WIFSIGNALED(status) ) {
+		} else {
+			assert( WIFSIGNALED(status) );
 			fmt = "%d caught signal %d";
 			k = WTERMSIG(status);
-		} else {
-			fmt = "%d stopped";
-			assert( WIFSTOPPED(status) );
 		}
 		close_fd(&p->fd);
 		snprintf(p->status, sizeof p->status, fmt, p->pid, k);
