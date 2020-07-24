@@ -465,26 +465,11 @@ static void
 prune(struct canvas *x, const char *arg)
 {
 	struct canvas *p = x->parent;
-	struct canvas *dummy;
-	struct canvas *del = x;
 	int d = x->typ;
 	struct canvas *n = x->c[d];
-	struct canvas *o = x->c[!d];
 	(void)arg;
-	if( o && o->c[d] ) {
-		del = NULL;
-	} else if( o ) {
-		assert( o->c[d] == NULL );
-		assert( o->parent == x );
-		assert( o->typ != d );
-		o->typ = d;
-		o->parent = p;
-		*(p ? &p->c[d] : &S.c) = o;
-		o->c[d] = n;
-		*(n ? &n->parent : &dummy) = o;
-		o->origin = x->origin;
-		o->split_point[d] = x->split_point[d];
-	} else if( n ) {
+
+	if( n ) {
 		n->parent = p;
 		n->origin = x->origin;
 		*(p ? &p->c[d] : &S.c) = n;
@@ -494,16 +479,17 @@ prune(struct canvas *x, const char *arg)
 	} else {
 		S.c = NULL;
 	}
-	if( del ) {
-		freecanvas(del);
-		if( x == S.f ) {
-			focus(o ? o : n ? n : p);
-		}
-		if( S.v == x ) {
-			S.v = o ? o : n ? n : p;
-		}
-		reshape_root(NULL, NULL);
+	if( x == S.f ) {
+		focus(n ? n : p);
 	}
+	if( S.v == x ) {
+		S.v = n ? n : p;
+	}
+	for( ; x; x = n ) {
+		n = x->c[!d];
+		freecanvas(x);
+	}
+	reshape_root(NULL, NULL);
 }
 
 static void
