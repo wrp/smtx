@@ -97,11 +97,11 @@ struct canvas {
 	struct canvas *parent;
 	/*
 	A canvas contains both c[0] and c[1], and shows only the upper
-	left corner.  eg: siz.y=8, siz.x=42, win.y=3, win.x=13, typ=0
+	left corner.  eg: if extent = {8, 42}, p->s.win = {3, 13}, typ = 0
 	    split_point = { 0.5, 0.333 }
 
 	             |<-wdiv
-	    win      |              c[1]
+	  p->s.win   |              c[1]
 	             |
 	----wtit-----x-------c[1]->wtit-----------
 
@@ -110,13 +110,13 @@ struct canvas {
 	-------------c[0]->wtit-------------------
 	c[0] is the window below this, c[1] is the window to the right
 	(in a typ==1 window, c1 is full height and c0 is partial width)
-	(Note that win.x + c1->win.x == siz.x - 1, subtracting 1 for wdiv)
+	(Note that w.x + c1->w.x == extent.x - 1, subtracting 1 for wdiv)
 	*/
 	struct canvas *c[2];
-	double split_point[2]; /* percent of window dedicated to win */
+	double split_point[2]; /* percent of screen dedicated to window */
 	int manualscroll;
-	WINDOW *input; /* one of win, wtit, wdiv, or p->s.win */
-	WINDOW *win;
+	WINDOW *input; /* one of bkg, wtit, wdiv, or p->s.win */
+	WINDOW *bkg;   /* Display hash if pty too small */
 	WINDOW *wtit;  /* Window for title */
 	WINDOW *wdiv;  /* Window for divider */
 };

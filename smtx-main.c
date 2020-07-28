@@ -240,7 +240,7 @@ freecanvas(struct canvas *n)
 	if( n ) {
 		delwinnul(&n->wtit);
 		delwinnul(&n->wdiv);
-		delwinnul(&n->win);
+		delwinnul(&n->bkg);
 		if( n->p ) {
 			n->p->count -= 1;
 			free_proc(&n->p);
@@ -304,7 +304,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 		y = MIN(MAX(y, f->p->s->tos), f->p->s->tos + f->extent.y);
 		assert( y >= f->p->s->tos && y <= f->p->s->tos + f->extent.y );
 	} else {
-		f->input = f->win ? f->win : f->wtit ? f->wtit : f->wdiv;
+		f->input = f->bkg ? f->bkg : f->wtit ? f->wtit : f->wdiv;
 	}
 	assert(f->input || S.c == NULL);
 	wmove(f->input, y, x);
@@ -384,9 +384,9 @@ reshape_window(struct canvas *n)
 	set_title(n);
 	if( n->extent.x > ws.ws_col) {
 		int d = n->extent.x - ws.ws_col;
-		resize_pad(&n->win, n->extent.y, d);
-		wbkgd(n->win, ACS_CKBOARD);
-		pnoutrefresh(n->win, 0, 0,
+		resize_pad(&n->bkg, n->extent.y, d);
+		wbkgd(n->bkg, ACS_CKBOARD);
+		pnoutrefresh(n->bkg, 0, 0,
 			n->origin.y,
 			n->origin.x + ws.ws_col,
 			n->origin.y + n->extent.y - 1,
@@ -444,7 +444,7 @@ reshape(struct canvas *n, int y, int x, int h, int w, unsigned level)
 			}
 			scrollbottom(n);
 		} else if( w1 && h1 > 1 ) {
-			resize_pad(&n->win, n->extent.y, n->extent.x);
+			resize_pad(&n->bkg, n->extent.y, n->extent.x);
 		}
 	}
 }
