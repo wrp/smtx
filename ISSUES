@@ -1,6 +1,16 @@
 
 TODO:
-	Make it possible to view different parts of a pty in different windows.
+	Change behavior of 'v' to use preset window layouts. eg, '1v'
+	should make one window visible, while (perhaps):
+	2v -> "0.5x1.0@0,0; 0.5x1.0@0.5,0"  (2 screens, top and bottom)
+	3v -> "1.0x0.5@0,0; 0.5x0.5@0,0.5; 0.5x0.5@0.5,0.5"
+	4v -> "1.0x0.5@0,0; 0.34x0.5@0,0.5; 0.33x0.5@0.34,0.5; 0.33x0.5@0.37,0.5"
+	5v -> "1.0x0.5@0,0; 1.0x0.5@0,0.5"  (2 screens, left and right)
+	6v -> "0.5x1.0@0,0; 0.5x0.5@0.5,0; 0.5x0.5@0.5,0.5"
+	7v -> "0.5x1.0@0,0; 0.5x0.34@0.5,0; 0.5x0.33@0.5,0.34; 0.5x0.33@0.5,0.37"
+	8v -> "0.5x0.5@0,0; 0.5x0.5@0,0.5; 0.5x0.5@0.5,0; 0.5x0.5@0.5,0.5"
+	Perhaps implement 's' to save the current layout into a buffer.  Make
+	the presets modifiable at startup.
 
 	Change name of reshape_window.  Reshape_window should only
 	reshape the window, and not the underlying pty.  As I write this,
