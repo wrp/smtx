@@ -87,22 +87,18 @@ getshell(void)
 }
 
 static int
-pty_size(struct pty *p, struct winsize *w)
+pty_size(struct pty *p)
 {
-	struct winsize ws;
-	struct winsize *wp = w ? w : &ws;
-	if( ioctl(p->fd, TIOCGWINSZ, wp) ) {
-		show_err("Can't get size of pty %d. Assuming 24 x 80", p->id);
-		wp->ws_row = 24;
-		wp->ws_col = 80;
+	if( p->fd != -1 && ioctl(p->fd, TIOCGWINSZ, &p->ws) ) {
+		show_err("Error getting size of pty %d", p->id);
 	}
-	return wp->ws_col;
+	return p->ws.ws_col;
 }
 
 static void
 extend_tabs(struct pty *p, int tabstop)
 {
-	int w = pty_size(p, NULL);
+	int w = pty_size(p);
 	typeof(*p->tabs) *n;
 	if( p->ntabs < w && ( n = realloc(p->tabs, w * sizeof *n)) != NULL ) {
 		for( p->tabs = n; p->ntabs < w; p->ntabs++ ) {
@@ -321,7 +317,7 @@ set_title(struct canvas *n)
 		n->p->id,
 		n->offset.x + 1,
 		n->offset.x + n->extent.x,
-		pty_size(n->p, NULL),
+		pty_size(n->p),
 		getshell()
 	);
 	whline(n->wtit, ACS_HLINE, n->extent.x);
@@ -332,21 +328,19 @@ set_title(struct canvas *n)
 static void
 set_width(struct canvas *n, const char *arg)
 {
-	struct winsize ws;
 	struct pty *p = n->p;
 	int h = MAX(n->extent.y, scrollback_history);
 	int w = arg ? strtol(arg, NULL, 10) : cmd_count;
 	if( w == -1 ) {
 		w = n->extent.x;
 	}
-	(void)pty_size(p, &ws);
-	if( w != ws.ws_col ) {
-		ws.ws_col = w;
+	if( p->fd > 0 && w != pty_size(p) ) {
+		p->ws.ws_col = w;
 		resize_pad(&p->pri.win, h, w);
 		resize_pad(&p->alt.win, h, w);
 		extend_tabs(p, p->tabstop);
-		if( ioctl(p->fd, TIOCSWINSZ, &ws) ) {
-			show_err("ioctl to %d", p->fd);
+		if( ioctl(p->fd, TIOCSWINSZ, &p->ws) ) {
+			show_err("error changing width of %d", p->fd);
 		}
 		if( kill(p->pid, SIGWINCH) ) {
 			show_err("kill %d", (int)p->pid);
@@ -357,32 +351,31 @@ set_width(struct canvas *n, const char *arg)
 static void
 reshape_window(struct canvas *n)
 {
-	struct winsize ws;
 	struct pty *p = n->p;
 
-	(void)pty_size(p, &ws);
+	pty_size(p);
 	int h = MAX(n->extent.y, scrollback_history);
 
-	ws.ws_row = n->extent.y;
+	p->ws.ws_row = n->extent.y;
 	p->pri.tos = n->offset.y = h - n->extent.y;
 
 	wsetscrreg(p->pri.win, 0, h - 1);
 	wsetscrreg(p->alt.win, 0, n->extent.y - 1);
 	wrefresh(p->s->win);
-	if( ioctl(p->fd, TIOCSWINSZ, &ws) ) {
+	if( ioctl(p->fd, TIOCSWINSZ, &p->ws) ) {
 		show_err("ioctl");
 	}
 	if( kill(p->pid, SIGWINCH) ) {
 		show_err("kill");
 	}
 	set_title(n);
-	if( n->extent.x > ws.ws_col ) {
-		int d = n->extent.x - ws.ws_col;
+	if( n->extent.x > p->ws.ws_col ) {
+		int d = n->extent.x - p->ws.ws_col;
 		resize_pad(&n->bkg, n->extent.y, d);
 		wbkgd(n->bkg, ACS_CKBOARD);
 		pnoutrefresh(n->bkg, 0, 0,
 			n->origin.y,
-			n->origin.x + ws.ws_col,
+			n->origin.x + p->ws.ws_col,
 			n->origin.y + n->extent.y - 1,
 			n->origin.x + n->extent.x - 1
 		);
@@ -432,9 +425,9 @@ reshape(struct canvas *n, int y, int x, int h, int w, unsigned level)
 		if( n->p ) {
 			if( n->p->fd >= 0 ) {
 				set_title(n);
-			}
-			if( changed ) {
-				reshape_window(n);
+				if( changed ) {
+					reshape_window(n);
+				}
 			}
 			scrollbottom(n);
 		} else if( w1 && h1 > 1 ) {

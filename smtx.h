@@ -53,6 +53,7 @@ struct screen {
 };
 struct pty {
 	int fd, ntabs, tabstop, id;
+	struct winsize ws;
 	pid_t pid;
 	bool *tabs, pnm, decom, am, lnm;
 	wchar_t repc;
