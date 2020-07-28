@@ -135,16 +135,15 @@ static void
 free_proc(struct pty **pv)
 {
 	struct pty *p = *pv;
-	if( p != NULL && p->count == 0 ) {
+	if( p != NULL ) {
 		free(p->tabs);
 		delwinnul(&p->pri.win);
 		delwinnul(&p->alt.win);
 		struct pty *t, *prev = NULL;
-		for( t = S.p; t; t = t->next ) {
+		for( t = S.p; t; prev = t, t = t->next ) {
 			if( t == p ) {
-				*(prev ? &prev->next : &S.p) = p->next;
+				*(prev ? &prev->next : &S.p) = t->next;
 			}
-			prev = t;
 		}
 		free(p);
 		*pv = NULL;
@@ -225,7 +224,6 @@ newcanvas(void)
 	} else {
 		n->split_point[0] = 1.0;
 		n->split_point[1] = 1.0;
-		n->p->count = 1;
 		n->input = n->p->pri.win;
 	}
 	return n;
@@ -241,10 +239,6 @@ freecanvas(struct canvas *n)
 		delwinnul(&n->wtit);
 		delwinnul(&n->wdiv);
 		delwinnul(&n->bkg);
-		if( n->p ) {
-			n->p->count -= 1;
-			free_proc(&n->p);
-		}
 		free(n);
 	}
 }
