@@ -382,7 +382,7 @@ reshape_window(struct canvas *n)
 		show_err("kill");
 	}
 	set_title(n);
-	if( n->extent.x > ws.ws_col) {
+	if( n->extent.x > ws.ws_col ) {
 		int d = n->extent.x - ws.ws_col;
 		resize_pad(&n->bkg, n->extent.y, d);
 		wbkgd(n->bkg, ACS_CKBOARD);
