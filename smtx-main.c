@@ -87,7 +87,7 @@ getshell(void)
 }
 
 static int
-pty_width(struct pty *p, struct winsize *w)
+pty_size(struct pty *p, struct winsize *w)
 {
 	struct winsize ws;
 	struct winsize *wp = w ? w : &ws;
@@ -102,7 +102,7 @@ pty_width(struct pty *p, struct winsize *w)
 static void
 extend_tabs(struct pty *p, int tabstop)
 {
-	int w = pty_width(p, NULL);
+	int w = pty_size(p, NULL);
 	typeof(*p->tabs) *n;
 	if( p->ntabs < w && ( n = realloc(p->tabs, w * sizeof *n)) != NULL ) {
 		for( p->tabs = n; p->ntabs < w; p->ntabs++ ) {
@@ -327,7 +327,7 @@ set_title(struct canvas *n)
 		n->p->id,
 		n->offset.x + 1,
 		n->offset.x + n->extent.x,
-		pty_width(n->p, NULL),
+		pty_size(n->p, NULL),
 		getshell()
 	);
 	whline(n->wtit, ACS_HLINE, n->extent.x);
@@ -345,7 +345,7 @@ set_width(struct canvas *n, const char *arg)
 	if( w == -1 ) {
 		w = n->extent.x;
 	}
-	(void)pty_width(p, &ws);
+	(void)pty_size(p, &ws);
 	if( w != ws.ws_col ) {
 		ws.ws_col = w;
 		resize_pad(&p->pri.win, h, w);
@@ -366,7 +366,7 @@ reshape_window(struct canvas *n)
 	struct winsize ws;
 	struct pty *p = n->p;
 
-	(void)pty_width(p, &ws);
+	(void)pty_size(p, &ws);
 	int h = MAX(n->extent.y, scrollback_history);
 
 	ws.ws_row = n->extent.y;
