@@ -12,6 +12,10 @@ TODO:
 	Perhaps implement 's' to save the current layout into a buffer.  Make
 	the presets modifiable at startup.
 
+	Need to have a pool of ttys and a pool of windows (maybe just use
+	the existing tree and set split_point = 1.0 to hide unused)
+	Be able to manipulate them.
+
 	Change name of reshape_window.  Reshape_window should only
 	reshape the window, and not the underlying pty.  As I write this,
 	passing 'w' in the arg string makes the function change the pty width,
