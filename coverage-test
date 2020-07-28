@@ -37,7 +37,7 @@ fi
 cat << EOF |
 handler 57
 smtx 100
-smtx-main 78,98
+smtx-main 78.53
 vtparser 80.26
 EOF
 {
@@ -56,7 +56,7 @@ while read name cover; do
 #	Lines executed:100.00% of 2
 #	Creating 'smtx.c.gcov'
 	if ! echo "$output" | awk 'NR==2 && /^Lines executed/ && $2 >= f{ok = 1}
-			END {exit !ok}' f="${cover:-100}" FS='[:%]'; then
+			END {exit !ok}' f="${cover}" FS='[:%]'; then
 		RV=1
 		echo "FAIL: Coverage for $name below $cover" >&2
 	fi

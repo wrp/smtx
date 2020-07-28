@@ -115,18 +115,6 @@ delwinnul(WINDOW **w)
 	return rv;
 }
 
-static int
-find_max_fd()
-{
-	int max = -1;
-	for( struct pty *t = S.p; t; t = t->next ) {
-		if( t->fd > max ) {
-			max = t->fd;
-		}
-	}
-	return max;
-}
-
 static void
 free_proc(struct pty **pv)
 {
@@ -197,13 +185,17 @@ new_pty(int rows, int cols)
 			free_proc(&p);
 		} else if( p->pid > 0 ) {
 			FD_SET(p->fd, &S.fds);
-			S.maxfd = p->fd > S.maxfd ? p->fd : S.maxfd;
 			fcntl(p->fd, F_SETFL, O_NONBLOCK);
 			extend_tabs(p, p->tabstop = 8);
-			p->next = S.p;
 			p->id = p->fd - 2;
+			struct pty **t = &S.p;
+			/* Insert into ordered list */
+			while( *t && (*t)->next && (*t)->next->fd > p->fd ) {
+				t = &(*t)->next;
+			}
+			p->next = *t;
+			*t = p;
 		}
-		S.p = p;
 	}
 	return p;
 }
@@ -562,9 +554,6 @@ close_fd(int *fd)
 	if( close(o) ) {
 		show_err("close fd %d", o);
 	}
-	if( S.maxfd == o ) {
-		S.maxfd = find_max_fd();
-	}
 }
 
 static void
@@ -584,6 +573,14 @@ wait_child(struct pty *p)
 			k = WTERMSIG(status);
 		}
 		close_fd(&p->fd);
+		if( p == S.p && p->next ) {
+			S.p = p->next;
+			struct pty *t = S.p;
+			while( t && t->next ) {
+				t = t->next;
+			}
+			t->next = p;
+		}
 		snprintf(p->status, sizeof p->status, fmt, p->pid, k);
 	}
 }
@@ -948,7 +945,7 @@ static void handle_term(int s) { terminated = s; }
 static void
 main_loop(void)
 {
-	while( S.c != NULL && terminated != SIGTERM && S.maxfd > 0 ) {
+	while( S.c != NULL && terminated != SIGTERM && S.p->fd > 0 ) {
 		int r;
 		wint_t w = 0;
 		fd_set sfds = S.fds;
@@ -960,7 +957,7 @@ main_loop(void)
 		}
 		fixcursor();
 		doupdate();
-		if( select(S.maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
+		if( select(S.p->fd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
 			if( errno != EINTR ) {
 				show_err("select");
 			}
@@ -1026,7 +1023,6 @@ init(void)
 	sigaction(SIGTERM, &sa, NULL);
 	FD_ZERO(&S.fds);
 	FD_SET(STDIN_FILENO, &S.fds);
-	S.maxfd = STDIN_FILENO;
 	snprintf(buf, sizeof buf - 1, "%d", getpid());
 	setenv("SMTX", buf, 1);
 	setenv("TERM", getterm(), 1);
