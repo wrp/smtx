@@ -966,28 +966,30 @@ static void handle_term(int s) { terminated = s; }
 static void
 main_loop(void)
 {
-	int r;
-	wint_t w = 0;
-	fd_set sfds = S.fds;
+	while( S.c != NULL && terminated != SIGTERM && S.maxfd > 0 ) {
+		int r;
+		wint_t w = 0;
+		fd_set sfds = S.fds;
 
-	draw(S.v);
-	if( winpos(S.werr, 1) ) {
-		int y = LINES - 1, x = MIN(winsiz(S.werr, 1), COLS);
-		pnoutrefresh(S.werr, 0, 0, y, 0, y, x);
-	}
-	fixcursor();
-	doupdate();
-	if( select(S.maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
-		if( errno != EINTR ) {
-			show_err("select");
+		draw(S.v);
+		if( winpos(S.werr, 1) ) {
+			int y = LINES - 1, x = MIN(winsiz(S.werr, 1), COLS);
+			pnoutrefresh(S.werr, 0, 0, y, 0, y, x);
 		}
-		FD_ZERO(&sfds);
-	}
-	while( (r = wget_wch(S.f->input, &w)) != ERR ) {
-		handlechar(r, w);
 		fixcursor();
+		doupdate();
+		if( select(S.maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
+			if( errno != EINTR ) {
+				show_err("select");
+			}
+			FD_ZERO(&sfds);
+		}
+		while( (r = wget_wch(S.f->input, &w)) != ERR ) {
+			handlechar(r, w);
+			fixcursor();
+		}
+		getinput(&sfds);
 	}
-	getinput(&sfds);
 }
 
 static void
@@ -1075,9 +1077,7 @@ smtx_main(int argc, char *const argv[])
 {
 	parse_args(argc, argv);
 	init();
-	while( S.c != NULL && terminated != SIGTERM && S.maxfd > 0 ) {
-		main_loop();
-	}
+	main_loop();
 	endwin();
 	return EXIT_SUCCESS;
 }
