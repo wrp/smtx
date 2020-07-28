@@ -305,13 +305,17 @@ static void
 set_title(struct canvas *n)
 {
 	assert( n->p != NULL );
-	mvwprintw(n->wtit, 0, 0, "%d %d-%d/%d %s",
-		n->p->id,
-		n->offset.x + 1,
-		n->offset.x + n->extent.x,
-		pty_size(n->p),
-		getshell()
-	);
+	if( n->p->fd > 0 ) {
+		mvwprintw(n->wtit, 0, 0, "%d %d-%d/%d %s",
+			n->p->id,
+			n->offset.x + 1,
+			n->offset.x + n->extent.x,
+			pty_size(n->p),
+			getshell()
+		);
+	} else {
+		mvwprintw(n->wtit, 0, 0, "%s", n->p->status);
+	}
 	whline(n->wtit, ACS_HLINE, n->extent.x);
 	/* See draw_title().  We must leave the cursor at the start of
 	the HLINE so that we can reliably change reverse video */
@@ -415,11 +419,9 @@ reshape(struct canvas *n, int y, int x, int h, int w, unsigned level)
 		n->extent.x = w1;
 		/* TODO: avoid resizing window unnecessarily */
 		if( n->p ) {
-			if( n->p->fd >= 0 ) {
-				set_title(n);
-				if( changed ) {
-					reshape_window(n);
-				}
+			set_title(n);
+			if( n->p->fd >= 0 && changed ) {
+				reshape_window(n);
 			}
 			scrollbottom(n);
 		} else if( w1 && h1 > 1 ) {
@@ -950,6 +952,7 @@ main_loop(void)
 		wint_t w = 0;
 		fd_set sfds = S.fds;
 
+		reshape_root(NULL, NULL);
 		draw(S.v);
 		if( winpos(S.werr, 1) ) {
 			int y = LINES - 1, x = MIN(winsiz(S.werr, 1), COLS);
