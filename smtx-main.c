@@ -21,6 +21,7 @@
 static struct handler keys[128];
 static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
+static int redraw;
 
 /* Variables exposed to test suite */
 struct state S = {
@@ -435,6 +436,7 @@ reshape_root(struct canvas *n, const char *arg)
 {
 	(void)arg;
 	reshape(n ? n : S.c, 0, 0, LINES, COLS, 1);
+	redraw = 0;
 }
 
 static void
@@ -465,7 +467,7 @@ prune(struct canvas *x, const char *arg)
 		n = x->c[!d];
 		freecanvas(x);
 	}
-	reshape_root(NULL, NULL);
+	redraw = 1;
 }
 
 static void
@@ -544,6 +546,7 @@ create(struct canvas *n, const char *arg)
 		v->parent = n;
 		balance(v);
 	}
+	/* TODO: just set the flag.  Currently that causes test failure. */
 	reshape_root(NULL, NULL);
 }
 
@@ -577,6 +580,7 @@ wait_child(struct pty *p)
 		*(prev ? &prev->next : &S.p) = p;
 		p->next = NULL;
 		snprintf(p->status, sizeof p->status, fmt, p->pid, k);
+		redraw = 1;
 	}
 }
 
@@ -646,7 +650,7 @@ attach(struct canvas *n, const char *arg)
 	for( struct pty *t = S.p; t; t = t->next ) {
 		if( t->id == target ) {
 			n->p = t;
-			reshape_root(NULL, NULL);
+			redraw = 1;
 			return;
 		}
 	}
@@ -712,7 +716,7 @@ resize(struct canvas *n, const char *arg)
 		n->split_point[typ] = 0.0;
 		focus(S.v);
 	}
-	reshape_root(NULL, NULL);
+	redraw = 1;
 }
 
 enum direction {nil, up, down, left, right};
@@ -738,7 +742,7 @@ navigate_tree(enum direction dir, int count)
 		}
 	}
 	focus(n);
-	reshape_root(NULL, NULL);
+	redraw = 1;
 }
 
 static void
@@ -800,7 +804,7 @@ equalize(struct canvas *n, const char *arg)
 	(void) arg;
 	assert( n != NULL );
 	n = balance(n);
-	reshape_root(NULL, NULL);
+	redraw = 1;
 }
 
 void
@@ -945,7 +949,9 @@ main_loop(void)
 		wint_t w = 0;
 		fd_set sfds = S.fds;
 
-		reshape_root(NULL, NULL);
+		if( redraw ) {
+			reshape_root(NULL, NULL);
+		}
 		draw(S.v);
 		if( winpos(S.werr, 1) ) {
 			int y = LINES - 1, x = MIN(winsiz(S.werr, 1), COLS);

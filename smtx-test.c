@@ -146,6 +146,7 @@ check_cmd(struct test_canvas *T, const char *cmd, const char *expect, ...)
 		send_cmd(fileno(T->fp), "%s", cmd);
 	}
 	read_until(T->fp, T->ps1, T->vp);
+
 	if( expect != NULL ) {
 		va_list ap;
 		va_start(ap, expect);
