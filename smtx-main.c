@@ -306,17 +306,13 @@ static void
 set_title(struct canvas *n)
 {
 	assert( n->p != NULL );
-	if( n->p->fd > 0 ) {
-		mvwprintw(n->wtit, 0, 0, "%d %d-%d/%d %s",
-			n->p->id,
-			n->offset.x + 1,
-			n->offset.x + n->extent.x,
-			pty_size(n->p),
-			getshell()
-		);
-	} else {
-		mvwprintw(n->wtit, 0, 0, "%s", n->p->status);
-	}
+	mvwprintw(n->wtit, 0, 0, "%d %s %d-%d/%d",
+		n->p->id,
+		n->p->fd > 0 ? getshell() : n->p->status,
+		n->offset.x + 1,
+		n->offset.x + n->extent.x,
+		pty_size(n->p)
+	);
 	whline(n->wtit, ACS_HLINE, n->extent.x);
 	/* See draw_title().  We must leave the cursor at the start of
 	the HLINE so that we can reliably change reverse video */
@@ -554,7 +550,7 @@ static void
 wait_child(struct pty *p)
 {
 	int status, k = 0;
-	const char *fmt = "%d exited %d";
+	const char *fmt = "exited %d";
 	switch( waitpid(p->pid, &status, WNOHANG) ) {
 	case -1: show_err("waitpid %d", p->pid);
 	case 0: break;
@@ -563,7 +559,7 @@ wait_child(struct pty *p)
 			k = WEXITSTATUS(status);
 		} else {
 			assert( WIFSIGNALED(status) );
-			fmt = "%d caught signal %d";
+			fmt = "caught signal %d";
 			k = WTERMSIG(status);
 		}
 		FD_CLR(p->fd, &S.fds);
@@ -579,7 +575,8 @@ wait_child(struct pty *p)
 		}
 		*(prev ? &prev->next : &S.p) = p;
 		p->next = NULL;
-		snprintf(p->status, sizeof p->status, fmt, p->pid, k);
+		snprintf(p->status, sizeof p->status, fmt, k);
+		p->id = p->pid;
 		redraw = 1;
 	}
 }
