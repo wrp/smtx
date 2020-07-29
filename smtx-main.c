@@ -108,12 +108,13 @@ extend_tabs(struct pty *p, int tabstop)
 	}
 }
 
-static int
+static void
 delwinnul(WINDOW **w)
 {
-	int rv = *w ? delwin(*w) : OK;
+	if( (*w ? delwin(*w) : OK) != OK ) {
+		show_err("Error deleting window");
+	}
 	*w = NULL;
-	return rv;
 }
 
 static void
