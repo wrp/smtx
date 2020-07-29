@@ -548,17 +548,6 @@ create(struct canvas *n, const char *arg)
 }
 
 static void
-close_fd(int *fd)
-{
-	int o = *fd;
-	*fd = -1;
-	FD_CLR(o, &S.fds);
-	if( close(o) ) {
-		show_err("close fd %d", o);
-	}
-}
-
-static void
 wait_child(struct pty *p)
 {
 	int status, k = 0;
@@ -574,15 +563,19 @@ wait_child(struct pty *p)
 			fmt = "%d caught signal %d";
 			k = WTERMSIG(status);
 		}
-		close_fd(&p->fd);
-		if( p == S.p && p->next ) {
-			S.p = p->next;
-			struct pty *t = S.p;
-			while( t && t->next ) {
-				t = t->next;
-			}
-			t->next = p;
+		FD_CLR(p->fd, &S.fds);
+		if( close(p->fd) ) {
+			show_err("close fd %d", p->fd);
 		}
+		p->fd = -1;
+		struct pty *t, *prev = NULL;
+		for( t = S.p; t; prev = t, t = t->next ) {
+			if( t == p ) {
+				*(prev ? &prev->next : &S.p) = p->next;
+			}
+		}
+		*(prev ? &prev->next : &S.p) = p;
+		p->next = NULL;
 		snprintf(p->status, sizeof p->status, fmt, p->pid, k);
 	}
 }
@@ -947,7 +940,7 @@ static void handle_term(int s) { terminated = s; }
 static void
 main_loop(void)
 {
-	while( S.c != NULL && terminated != SIGTERM && S.p->fd > 0 ) {
+	while( S.c != NULL && terminated != SIGTERM && S.p && S.p->fd > 0 ) {
 		int r;
 		wint_t w = 0;
 		fd_set sfds = S.fds;
