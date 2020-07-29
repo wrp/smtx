@@ -12,6 +12,8 @@ TODO:
 	Perhaps implement 's' to save the current layout into a buffer.  Make
 	the presets modifiable at startup.
 
+	Add a command to start up a new shell in a canvas where the shell is dead.
+
 	Need to have a pool of ttys and a pool of windows (maybe just use
 	the existing tree and set split_point = 1.0 to hide unused)
 	Be able to manipulate them.
