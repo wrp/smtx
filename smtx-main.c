@@ -346,8 +346,6 @@ static void
 reshape_window(struct canvas *n)
 {
 	struct pty *p = n->p;
-
-	pty_size(p);
 	int h = MAX(n->extent.y, scrollback_history);
 
 	p->ws.ws_row = n->extent.y;
@@ -413,10 +411,11 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		reshape(n->c[0], y + h1, x, h - h1, n->typ ? w1 : w);
 		reshape(n->c[1], y, x + w1 + have_div,
 			n->typ ? h : h1, w - w1 - have_div);
-		bool changed = n->extent.y != h1 - have_title;
 		n->extent.y = h1 - have_title;
 		n->extent.x = w1;
 		if( n->p ) {
+			pty_size(n->p);
+			bool changed = n->extent.y != n->p->ws.ws_row;
 			set_title(n);
 			if( n->p->fd >= 0 && changed ) {
 				reshape_window(n);
