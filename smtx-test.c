@@ -220,6 +220,19 @@ test_navigate(int fd)
 		fprintf(stderr, "unexpected layout: %s\n", buf);
 		status = 1;
 	}
+	sprintf(buf, "\07cccccccc\r");
+	write(fd, buf, strlen(buf));
+	sprintf(buf, "kill -HUP $SMTX\r");
+	write(fd, buf, strlen(buf));
+	s = read(child_pipe[0], buf, sizeof buf - 1);
+	expect = "11x26@0,0; 11x80@12,0; *0x26@0,27; 0x26@1,27; 0x26@2,27; "
+		"0x26@3,27; 0x26@4,27; 0x26@5,27; 0x26@6,27; 0x26@7,27; "
+		"1x26@8,27; 1x26@10,27; 11x26@0,54";
+
+	if( strcmp( buf, expect ) ) {
+		fprintf(stderr, "unexpected layout after squeeze: %s\n", buf);
+		status = 1;
+	}
 
 	sprintf(buf, "kill $$\r\007xv\r");
 	write(fd, buf, strlen(buf));
