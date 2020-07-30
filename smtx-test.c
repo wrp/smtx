@@ -206,7 +206,7 @@ test_navigate(int fd)
 {
 	ssize_t s;
 	int status = 0;
-	char buf[1024] = "\07cjkhlC4tCvjkhlc\r";
+	char buf[1024] = "\07cjkhlC4tCvjkh2slc\r";
 	assert( buf[0] == CTL('g') );
 	write(fd, buf, strlen(buf));
 

@@ -646,7 +646,7 @@ attach(struct canvas *n, const char *arg)
 			return;
 		}
 	}
-	show_err("No pty exists with pid: %d", target);
+	show_err("No pty exists with id %d", target);
 }
 
 void
@@ -823,6 +823,40 @@ add_key(struct handler *b, wchar_t k, action act, const char *arg)
 	b[k].arg = arg;
 }
 
+static struct canvas *
+find_canvas(struct canvas *c, int id)
+{
+	struct canvas *r = NULL;
+	if( c ) {
+		if( c->p->id == id ) {
+			r = c;
+		} else if( (r = find_canvas( c->c[0], id)) == NULL ) {
+			r = find_canvas( c->c[1], id);
+		}
+	}
+	return r;
+}
+
+void
+swap(struct canvas *n, const char *arg)
+{
+	struct canvas *t;
+	(void) arg;
+	if( cmd_count == -1 ) {
+		t = n->c[n->typ];
+	} else {
+		t = find_canvas(S.c, cmd_count);
+	}
+	if( t ) {
+		struct pty *tmp = n->p;
+		n->p = t->p;
+		t->p = tmp;
+		redraw = 1;
+	} else {
+		show_err("Cannot find target");
+	}
+}
+
 void
 new_tabstop(struct canvas *n, const char *arg)
 {
@@ -863,6 +897,7 @@ build_bindings()
 	add_key(cmd_keys, L'K', resize, "K");
 	add_key(cmd_keys, L'L', resize, "L");
 	add_key(cmd_keys, L'H', resize, "H");
+	add_key(cmd_keys, L's', swap, NULL);
 	add_key(cmd_keys, L't', new_tabstop, NULL);
 	add_key(cmd_keys, L'W', set_width, NULL);
 	add_key(cmd_keys, L'v', set_view_count, NULL);
