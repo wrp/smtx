@@ -214,8 +214,8 @@ test_navigate(int fd)
 	write(fd, buf, strlen(buf));
 	s = read(child_pipe[0], buf, sizeof buf - 1);
 	buf[s] = 0;
-	char *expect = "23x80@0,0; 11x80@12,0; *11x26@0,27; "
-		"0x0@0,0; 11x26@0,54";
+	char *expect = "11x26@0,0; 11x80@12,0; *5x26@0,27; "
+		"5x26@6,27; 11x26@0,54";
 	if( strcmp( buf, expect ) ) {
 		fprintf(stderr, "unexpected layout: %s\n", buf);
 		status = 1;

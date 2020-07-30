@@ -75,7 +75,6 @@ struct state {
 	char commandkey;
 	int width;
 	enum mode mode;
-	unsigned display_level;
 	struct handler (*binding)[128];
 	struct canvas *v; /* Root canvas currently displayed */
 	struct canvas *c; /* Root of tree of all canvas */

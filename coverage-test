@@ -37,7 +37,7 @@ fi
 cat << EOF |
 handler 57
 smtx 100
-smtx-main 78.41
+smtx-main 76.59
 vtparser 80.26
 EOF
 {

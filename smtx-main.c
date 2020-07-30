@@ -28,7 +28,6 @@ struct state S = {
 	.commandkey = CTL('g'),
 	.width = 80,
 	.binding = &keys,
-	.display_level = UINT_MAX
 };
 int cmd_count = -1;
 int scrollback_history = 1024;
@@ -385,15 +384,15 @@ scrollbottom(struct canvas *n)
 }
 
 static void
-reshape(struct canvas *n, int y, int x, int h, int w, unsigned level)
+reshape(struct canvas *n, int y, int x, int h, int w)
 {
 	if( n ) {
 		n->origin.y = y;
 		n->origin.x = x;
-		int h1 = level < S.display_level ? h * n->split_point[0] : h;
-		int w1 = level < S.display_level ? w * n->split_point[1] : w;
+		int h1 = h * n->split_point[0];
+		int w1 = w * n->split_point[1];
 		int have_title = h1 && w1;
-		int have_div = h && w && n->c[1] && level < S.display_level;
+		int have_div = h && w && n->c[1];
 
 		if( have_div ) {
 			resize_pad(&n->wdiv, n->typ ? h : h1, 1);
@@ -406,12 +405,9 @@ reshape(struct canvas *n, int y, int x, int h, int w, unsigned level)
 			delwinnul(&n->wtit);
 		}
 
-		if( level < S.display_level ) {
-			reshape(n->c[0], y + h1, x, h - h1, n->typ ? w1 : w,
-				level + 1);
-			reshape(n->c[1], y, x + w1 + have_div,
-				n->typ ? h : h1, w - w1 - have_div, level + 1);
-		}
+		reshape(n->c[0], y + h1, x, h - h1, n->typ ? w1 : w);
+		reshape(n->c[1], y, x + w1 + have_div,
+			n->typ ? h : h1, w - w1 - have_div);
 		bool changed = n->extent.y != h1 - 1;
 		n->extent.y = h1 - 1; /* Subtract one for title line */
 		n->extent.x = w1;
@@ -432,7 +428,7 @@ static void
 reshape_root(struct canvas *n, const char *arg)
 {
 	(void)arg;
-	reshape(n ? n : S.c, 0, 0, LINES, COLS, 1);
+	reshape(n ? n : S.c, 0, 0, LINES, COLS);
 	redraw = 0;
 }
 
@@ -613,13 +609,7 @@ set_view_count(struct canvas *n, const char *arg)
 	switch( cmd_count ) {
 	case 0:
 		S.v = S.c;
-		S.display_level = UINT_MAX;
 		break;
-	case -1:
-		S.display_level = S.display_level == 1 ? UINT_MAX : 1;
-		break;
-	default:
-		S.display_level = cmd_count;
 	}
 	reshape_root(S.v, NULL);
 }
@@ -780,7 +770,7 @@ mov(struct canvas *n, const char *arg)
 	int count = cmd_count < 1 ? 1 : cmd_count;
 	enum direction dir = *arg == 'k' ? up : *arg == 'j' ? down :
 			*arg == 'h' ? left : *arg == 'l' ? right : nil;
-	(S.display_level == 1 ? navigate_tree : navigate_display)(dir, count);
+	( 0 ? navigate_tree : navigate_display)(dir, count);
 }
 
 static void
