@@ -391,9 +391,13 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		n->origin.x = x;
 		int h1 = h * n->split_point[0];
 		int w1 = w * n->split_point[1];
-		int have_title = h1 && w1;
-		int have_div = h && w && n->c[1];
+		int have_title = h1 > 0 && w1 > 0;
+		int have_div = h1 > 0 && w1 > 0 && n->c[1];
 
+		assert(n->split_point[0] >= 0.0);
+		assert(n->split_point[0] <= 1.0);
+		assert(n->split_point[1] >= 0.0);
+		assert(n->split_point[1] <= 1.0);
 		if( have_div ) {
 			resize_pad(&n->wdiv, n->typ ? h : h1, 1);
 		} else {
@@ -408,10 +412,9 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		reshape(n->c[0], y + h1, x, h - h1, n->typ ? w1 : w);
 		reshape(n->c[1], y, x + w1 + have_div,
 			n->typ ? h : h1, w - w1 - have_div);
-		bool changed = n->extent.y != h1 - 1;
-		n->extent.y = h1 - 1; /* Subtract one for title line */
+		bool changed = n->extent.y != h1 - have_title;
+		n->extent.y = h1 - have_title;
 		n->extent.x = w1;
-		/* TODO: avoid resizing window unnecessarily */
 		if( n->p ) {
 			set_title(n);
 			if( n->p->fd >= 0 && changed ) {
