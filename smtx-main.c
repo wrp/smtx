@@ -98,7 +98,7 @@ pty_size(struct pty *p)
 static void
 extend_tabs(struct pty *p, int tabstop)
 {
-	int w = pty_size(p);
+	int w = p->ws.ws_col;
 	typeof(*p->tabs) *n;
 	if( p->ntabs < w && ( n = realloc(p->tabs, w * sizeof *n)) != NULL ) {
 		for( p->tabs = n; p->ntabs < w; p->ntabs++ ) {
@@ -173,8 +173,9 @@ new_pty(int rows, int cols)
 {
 	struct pty *p = calloc(1, sizeof *p);
 	if( p != NULL ) {
-		struct winsize ws = { .ws_row = rows, .ws_col = cols };
-		p->pid = forkpty(&p->fd, NULL, NULL, &ws);
+		p->ws.ws_row = rows;
+		p->ws.ws_col = cols;
+		p->pid = forkpty(&p->fd, NULL, NULL, &p->ws);
 		if( p->pid == 0 ) {
 			const char *sh = getshell();
 			setsid();
@@ -827,6 +828,7 @@ new_tabstop(struct canvas *n, const char *arg)
 {
 	int c = arg ? strtol(arg, NULL, 10) : cmd_count > -1 ? cmd_count : 8;
 	n->p->ntabs = 0;
+	(void)pty_size(n->p); /* Make sure n->p->ws is up to date */
 	extend_tabs(n->p, n->p->tabstop = c);
 }
 
