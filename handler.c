@@ -18,7 +18,7 @@ void tput(struct vtp *v, wchar_t w, wchar_t iw,
 	int noclear_repc = 0;
 	int p0[2];               /* First arg, defaulting to 0 or 1 */
 	int p1;                  /* argv[1], defaulting to 1 */
-	int i, t1, t2;           /* Some temp ints */
+	int i, t1 = 0, t2 = 0;   /* Some temp ints */
 	struct pty *p = v->p;    /* the current pty */
 	struct screen *s = p->s; /* the current SCRN buffer */
 	WINDOW *win = s->win;    /* the current window */
