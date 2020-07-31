@@ -402,11 +402,11 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 			n->typ ? h : h1, w - w1 - have_div);
 		n->extent.y = h1 - have_title;
 		n->extent.x = w1;
-		if( n->p ) {
-			pty_size(n->p);
-			bool changed = n->extent.y != n->p->ws.ws_row;
+		if( p ) {
+			pty_size(p);
+			bool changed = n->extent.y != p->ws.ws_row;
 			set_title(n);
-			if( n->p->fd >= 0 && changed ) {
+			if( p->fd >= 0 && changed ) {
 				reshape_window(n);
 				set_title(n);
 				if( n->extent.x > p->ws.ws_col ) {
