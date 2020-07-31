@@ -21,7 +21,7 @@
 static struct handler keys[128];
 static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
-static int redraw;
+static int reshape_flag;
 
 /* Variables exposed to test suite */
 struct state S = {
@@ -432,7 +432,7 @@ reshape_root(struct canvas *n, const char *arg)
 {
 	(void)arg;
 	reshape(n ? n : S.c, 0, 0, LINES, COLS);
-	redraw = 0;
+	reshape_flag = 0;
 }
 
 static void
@@ -463,7 +463,7 @@ prune(struct canvas *x, const char *arg)
 		n = x->c[!d];
 		freecanvas(x);
 	}
-	redraw = 1;
+	reshape_flag = 1;
 }
 
 static void
@@ -577,7 +577,7 @@ wait_child(struct pty *p)
 		p->next = NULL;
 		snprintf(p->status, sizeof p->status, fmt, k);
 		p->id = p->pid;
-		redraw = 1;
+		reshape_flag = 1;
 	}
 }
 
@@ -641,7 +641,7 @@ attach(struct canvas *n, const char *arg)
 	for( struct pty *t = S.p; t; t = t->next ) {
 		if( t->id == target ) {
 			n->p = t;
-			redraw = 1;
+			reshape_flag = 1;
 			return;
 		}
 	}
@@ -707,7 +707,7 @@ resize(struct canvas *n, const char *arg)
 		n->split_point[typ] = 0.0;
 		focus(S.v);
 	}
-	redraw = 1;
+	reshape_flag = 1;
 }
 
 enum direction {nil, up, down, left, right};
@@ -733,7 +733,7 @@ navigate_tree(enum direction dir, int count)
 		}
 	}
 	focus(n);
-	redraw = 1;
+	reshape_flag = 1;
 }
 
 static void
@@ -795,7 +795,7 @@ equalize(struct canvas *n, const char *arg)
 	(void) arg;
 	assert( n != NULL );
 	n = balance(n);
-	redraw = 1;
+	reshape_flag = 1;
 }
 
 void
@@ -850,7 +850,7 @@ swap(struct canvas *n, const char *arg)
 		struct pty *tmp = n->p;
 		n->p = t->p;
 		t->p = tmp;
-		redraw = 1;
+		reshape_flag = 1;
 	} else {
 		show_err("Cannot find target");
 	}
@@ -976,7 +976,7 @@ main_loop(void)
 		wint_t w = 0;
 		fd_set sfds = S.fds;
 
-		if( redraw ) {
+		if( reshape_flag ) {
 			reshape_root(NULL, NULL);
 		}
 		draw(S.v);
