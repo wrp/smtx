@@ -58,6 +58,13 @@ BUGS:
 	is the only terminfo entry that uses %c, and I suspect there is a bug
 	in vtparser
 
+	When a pty appears in two windows, p->ws.ws_row gets set to the number
+	of rows in the extent of the canvas highest up the tree.  I believe the
+	desired behavior is that ws.ws_row be set to the number of rows in the
+	extent of the largest canvas.  Smaller canvasses will see the top rows
+	of the pty dissappear off the top, but since the small canvasses are intended
+	to be smaller views, I think that is acceptable.
+
 	Figure out why I am getting an extra line at the bottom of screen in
 	termux.  Note this happens outside of smtx, so it is not our bug to
 	fix, but may be a terminfo issue.  It needs to be understood.
