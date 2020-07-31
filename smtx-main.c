@@ -360,18 +360,6 @@ reshape_window(struct canvas *n)
 	if( kill(p->pid, SIGWINCH) ) {
 		show_err("kill");
 	}
-	set_title(n);
-	if( n->extent.x > p->ws.ws_col ) {
-		int d = n->extent.x - p->ws.ws_col;
-		resize_pad(&n->bkg, n->extent.y, d);
-		wbkgd(n->bkg, ACS_CKBOARD);
-		pnoutrefresh(n->bkg, 0, 0,
-			n->origin.y,
-			n->origin.x + p->ws.ws_col,
-			n->origin.y + n->extent.y - 1,
-			n->origin.x + n->extent.x - 1
-		);
-	}
 }
 
 static void
@@ -386,6 +374,7 @@ static void
 reshape(struct canvas *n, int y, int x, int h, int w)
 {
 	if( n ) {
+		struct pty *p = n->p;
 		n->origin.y = y;
 		n->origin.x = x;
 		int h1 = h * n->split_point[0];
@@ -419,6 +408,18 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 			set_title(n);
 			if( n->p->fd >= 0 && changed ) {
 				reshape_window(n);
+				set_title(n);
+				if( n->extent.x > p->ws.ws_col ) {
+					int d = n->extent.x - p->ws.ws_col;
+					resize_pad(&n->bkg, n->extent.y, d);
+					wbkgd(n->bkg, ACS_CKBOARD);
+					pnoutrefresh(n->bkg, 0, 0,
+						n->origin.y,
+						n->origin.x + p->ws.ws_col,
+						n->origin.y + n->extent.y - 1,
+						n->origin.x + n->extent.x - 1
+					);
+				}
 			}
 			scrollbottom(n);
 		} else if( w1 && h1 > 1 ) {
