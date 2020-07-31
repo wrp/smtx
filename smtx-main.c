@@ -403,8 +403,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		n->extent.y = h1 - have_title;
 		n->extent.x = w1;
 		if( p ) {
-			pty_size(p);
-			bool changed = n->extent.y != p->ws.ws_row;
+			bool changed = n->extent.y > p->ws.ws_row;
 			set_title(n);
 			if( p->fd >= 0 && changed ) {
 				reshape_window(n);
@@ -432,6 +431,9 @@ static void
 reshape_root(struct canvas *n, const char *arg)
 {
 	(void)arg;
+	for( struct pty *p = S.p; p; p = p->next ) {
+		p->ws.ws_row = 0;
+	}
 	reshape(n ? n : S.c, 0, 0, LINES, COLS);
 	reshape_flag = 0;
 }
