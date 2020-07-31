@@ -500,7 +500,7 @@ draw_div(struct canvas *n, int rev)
 void
 draw(struct canvas *n) /* Draw a canvas. */
 {
-	if( n != NULL ) {
+	if( n != NULL && n->extent.y > 0 ) {
 		int rev = S.binding == &cmd_keys && n == S.f;
 		draw(n->c[0]);
 		draw(n->c[1]);
