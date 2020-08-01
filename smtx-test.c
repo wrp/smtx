@@ -111,16 +111,19 @@ static int
 test_description(int fd)
 {
 	(void)fd;
+	int row = 0;
 	struct canvas *r = init();
-	expect_layout(r, "*23x80@0,0(0,0)");
+	expect_layout(r, "*23x80@0,0(%d,0)", row);
 	create(r, "c");
-	expect_layout(r, "*11x80@0,0(0,0); 11x80@12,0(0,0)");
+	expect_layout(r, "*11x80@0,0(%d,0); 11x80@12,0(%d,0)", row, row);
 	mov(r, "j");
-	expect_layout(r, "11x80@0,0(0,0); *11x80@12,0(0,0)");
+	expect_layout(r, "11x80@0,0(%d,0); *11x80@12,0(%d,0)", row, row);
 	create(r->c[0], "C");
-	expect_layout(r, "11x80@0,0(0,0); *11x40@12,0(0,0); 11x39@12,41(0,0)");
+	expect_layout(r, "11x80@0,0(%d,0); *11x40@12,0(%d,0); "
+		"11x39@12,41(%d,0)", row, row, row);
 	mov(r->c[0], "l");
-	expect_layout(r, "11x80@0,0(0,0); 11x40@12,0(0,0); *11x39@12,41(0,0)");
+	expect_layout(r, "11x80@0,0(%d,0); 11x40@12,0(%d,0); "
+		"*11x39@12,41(%d,0)", row, row, row);
 	return rv;
 }
 
