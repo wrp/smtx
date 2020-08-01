@@ -278,16 +278,18 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 {
 	struct canvas *f = S.f;
 	int x = 0, y = 0;
-	if( f->p ) {
+	if( f->p && f->extent.y) {
 		assert( f->p->s );
+		assert( f->p->s->tos == S.history - f->extent.y );
+		int top = S.history - f->extent.y;
 		int show = S.binding != &cmd_keys && f->p->s->vis;
 		getyx(f->input, y, x);
 		if( x < f->offset.x ) {
 			show = false;
 		}
-		curs_set(f->offset.y != f->p->s->tos ? 0 : show);
-		y = MIN(MAX(y, f->p->s->tos), f->p->s->tos + f->extent.y);
-		assert( y >= f->p->s->tos && y <= f->p->s->tos + f->extent.y );
+		curs_set(f->offset.y != top ? 0 : show);
+		y = MIN(MAX(y, top), top + f->extent.y);
+		assert( y >= top && y <= top + f->extent.y );
 	} else {
 		f->input = f->bkg ? f->bkg : f->wtit ? f->wtit : f->wdiv;
 	}
