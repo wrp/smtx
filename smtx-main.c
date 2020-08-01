@@ -350,12 +350,10 @@ reshape_window(struct canvas *n)
 	struct pty *p = n->p;
 	assert( S.history >= n->extent.y );
 
-	int h = S.history;
-
 	p->ws.ws_row = n->extent.y;
-	p->pri.tos = n->offset.y = h - n->extent.y;
+	p->pri.tos = n->offset.y = S.history - n->extent.y;
 
-	wsetscrreg(p->pri.win, 0, h - 1);
+	wsetscrreg(p->pri.win, 0, S.history - 1);
 	wsetscrreg(p->alt.win, 0, n->extent.y - 1);
 	wrefresh(p->s->win);
 	if( ioctl(p->fd, TIOCSWINSZ, &p->ws) ) {
@@ -369,16 +367,15 @@ reshape_window(struct canvas *n)
 static void
 scrollbottom(struct canvas *n)
 {
-	if( n && n->p && n->p->s ) {
+	if( n && n->p && n->p->s && n->extent.y ) {
 		assert( S.history >= n->extent.y );
 		n->offset.y = S.history - n->extent.y;
+
 		/* This assertion is to allow us to remove tos.  It is not
 		quite correct for "hidden" windows (when extent.y == 0, I
 		am seeing tos == scrollback_history -1.  All of this
 		crap is about to be refactored. */
-
-		assert( n->extent.y == 0 ||
-			n->p->s->tos == S.history - n->extent.y );
+		assert( n->p->s->tos == S.history - n->extent.y );
 	}
 }
 
