@@ -278,7 +278,7 @@ test_scrollback(int fd)
 	char cmd[80] = "yes | nl | sed 50q";
 	const char *string = "This is a relatively long string, dragon!";
 	snprintf(cmd, sizeof cmd, "yes %s | nl | sed 50q", string);
-	scrollback_history = 20;
+	S.history = 20;
 	struct test_canvas *T = new_test_canvas(10, 80, NULL);
 	check_cmd(T, cmd, NULL);
 	expect_row(0, T, "%6d  %-72s", 43, string);
@@ -424,7 +424,7 @@ test_vpa(int fd)
 	(void) fd;
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
 	check_cmd(T, "tput vpa 7; tput hpa 18", "*23x80@0,0(%d,%d)",
-		scrollback_history - 23 + 7, 18 + strlen(T->ps1));
+		S.history - 23 + 7, 18 + strlen(T->ps1));
 	return rv;
 }
 
@@ -441,7 +441,7 @@ test_cursor(int fd)
 	expect_row(y - 1001, T, "012%-77s", T->ps1);
 	check_cmd(T, "tput sc", "*23x80@0,0(%d,6)", ++y);
 	check_cmd(T, "tput rc", "*23x80@0,0(%d,6)", y);
-	y = scrollback_history - 24 + 15;
+	y = S.history - 24 + 15;
 	check_cmd(T, "tput cup 15 50;", "*23x80@0,0(%d,56)", ++y);
 	check_cmd(T, "tput clear", "*23x80@0,0(%d,6)", y -= 15);
 	check_cmd(T, "tput ht", "*23x80@0,0(%d,14)", ++y);

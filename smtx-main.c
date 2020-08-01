@@ -28,9 +28,9 @@ struct state S = {
 	.commandkey = CTL('g'),
 	.width = 80,
 	.binding = &keys,
+	.history = 1024,
 };
 int cmd_count = -1;
-int scrollback_history = 1024;
 
 static void
 set_errmsg(const char *fmt, va_list ap, int e)
@@ -151,7 +151,8 @@ resize_pad(WINDOW **p, int h, int w)
 static int
 new_screens(struct pty *p)
 {
-	int rows = MAX(LINES, scrollback_history);
+	assert( S.history >= LINES );
+	int rows = S.history;
 	int cols = MAX(COLS, S.width);
 	resize_pad(&p->pri.win, rows, cols);
 	resize_pad(&p->alt.win, rows, cols);
@@ -323,7 +324,8 @@ static void
 set_width(struct canvas *n, const char *arg)
 {
 	struct pty *p = n->p;
-	int h = MAX(n->extent.y, scrollback_history);
+	assert( S.history >= n->extent.y );
+	int h = S.history;
 	int w = arg ? strtol(arg, NULL, 10) : cmd_count;
 	if( w == -1 ) {
 		w = n->extent.x;
@@ -346,7 +348,9 @@ static void
 reshape_window(struct canvas *n)
 {
 	struct pty *p = n->p;
-	int h = MAX(n->extent.y, scrollback_history);
+	assert( S.history >= n->extent.y );
+
+	int h = S.history;
 
 	p->ws.ws_row = n->extent.y;
 	p->pri.tos = n->offset.y = h - n->extent.y;
@@ -366,15 +370,15 @@ static void
 scrollbottom(struct canvas *n)
 {
 	if( n && n->p && n->p->s ) {
-		n->offset.y = MAX(0, scrollback_history - n->extent.y);
+		assert( S.history >= n->extent.y );
+		n->offset.y = S.history - n->extent.y;
 		/* This assertion is to allow us to remove tos.  It is not
 		quite correct for "hidden" windows (when extent.y == 0, I
 		am seeing tos == scrollback_history -1.  All of this
 		crap is about to be refactored. */
 
-		assert( scrollback_history >= n->extent.y );
 		assert( n->extent.y == 0 ||
-			n->p->s->tos == scrollback_history - n->extent.y );
+			n->p->s->tos == S.history - n->extent.y );
 	}
 }
 
@@ -438,6 +442,10 @@ static void
 reshape_root(struct canvas *n, const char *arg)
 {
 	(void)arg;
+	if( LINES > S.history ) {
+		S.history = LINES;
+		/* TODO: walk the list of pty and reset row counts */
+	}
 	for( struct pty *p = S.p; p; p = p->next ) {
 		p->ws.ws_row = 0;
 	}
@@ -1031,7 +1039,7 @@ parse_args(int argc, char *const*argv)
 			S.commandkey = CTL(optarg[0]);
 			break;
 		case 's':
-			scrollback_history = strtol(optarg, NULL, 10);
+			S.history = strtol(optarg, NULL, 10);
 			break;
 		case 't':
 			setenv("TERM", optarg, 1);
@@ -1093,6 +1101,7 @@ int
 smtx_main(int argc, char *const argv[])
 {
 	parse_args(argc, argv);
+	S.history = MAX(LINES, S.history);
 	init();
 	main_loop();
 	endwin();
