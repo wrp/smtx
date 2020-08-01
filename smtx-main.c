@@ -670,8 +670,9 @@ scrolln(struct canvas *n, const char *arg)
 {
 	if( n && n->p && n->p->s && n->p->s->win ) {
 		int count = cmd_count == -1 ? n->extent.y - 1 : cmd_count;
+		int top = S.history - n->extent.y;
 		n->offset.y += *arg == '-' ? -count : count;
-		n->offset.y = MIN(MAX(0, n->offset.y), n->p->s->tos);
+		n->offset.y = MIN(MAX(0, n->offset.y), top);
 	}
 }
 
