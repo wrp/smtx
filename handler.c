@@ -26,7 +26,7 @@ void tput(struct vtp *v, wchar_t w, wchar_t iw,
 	int my, mx;              /* max possible values for x and y */
 	int py, px;              /* physical cursor position in scrollback */
 	int top = 0, bot = 0;    /* the scrolling region */
-	int tos = s->tos;        /* top of screen in the pad */
+	int tos = S.history - p->ws.ws_row;
 	char buf[32];
 	cchar_t b;
 
