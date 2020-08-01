@@ -366,12 +366,13 @@ static void
 scrollbottom(struct canvas *n)
 {
 	if( n && n->p && n->p->s ) {
-		n->offset.y = n->p->s->tos;
+		n->offset.y = MAX(0, scrollback_history - n->extent.y);
 		/* This assertion is to allow us to remove tos.  It is not
 		quite correct for "hidden" windows (when extent.y == 0, I
 		am seeing tos == scrollback_history -1.  All of this
 		crap is about to be refactored. */
 
+		assert( scrollback_history >= n->extent.y );
 		assert( n->extent.y == 0 ||
 			n->p->s->tos == scrollback_history - n->extent.y );
 	}
