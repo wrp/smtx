@@ -90,7 +90,7 @@ static int
 pty_size(struct pty *p)
 {
 	if( p->fd != -1 && ioctl(p->fd, TIOCGWINSZ, &p->ws) ) {
-		show_err("Error getting size of pty %d", p->id);
+		show_err("ioctl error getting size of pty %d", p->id);
 	}
 	return p->ws.ws_col;
 }
@@ -404,11 +404,10 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		n->extent.x = w1;
 		if( p ) {
 			bool changed = n->extent.y > p->ws.ws_row;
-			set_title(n);
 			if( p->fd >= 0 && changed ) {
 				reshape_window(n);
+				set_title(n);
 			}
-			set_title(n);
 			if( n->extent.x > p->ws.ws_col ) {
 				int d = n->extent.x - p->ws.ws_col;
 				resize_pad(&n->bkg, n->extent.y, d);
@@ -864,7 +863,7 @@ new_tabstop(struct canvas *n, const char *arg)
 {
 	int c = arg ? strtol(arg, NULL, 10) : cmd_count > -1 ? cmd_count : 8;
 	n->p->ntabs = 0;
-	(void)pty_size(n->p); /* Make sure n->p->ws is up to date */
+	(void)pty_size(n->p); /* Update n->p->ws */
 	extend_tabs(n->p, n->p->tabstop = c);
 }
 
