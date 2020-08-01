@@ -45,7 +45,7 @@ struct canvas;
 struct pty;
 typedef void(action)(struct canvas *n, const char *arg);
 struct screen {
-	int sy, sx, vis, tos;
+	int sy, sx, vis;
 	short fg, bg, sfg, sbg, sp;
 	bool insert, oxenl, xenl, saved;
 	attr_t sattr;

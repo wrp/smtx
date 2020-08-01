@@ -280,7 +280,6 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	int x = 0, y = 0;
 	if( f->p && f->extent.y) {
 		assert( f->p->s );
-		assert( f->p->s->tos == S.history - f->extent.y );
 		int top = S.history - f->extent.y;
 		int show = S.binding != &cmd_keys && f->p->s->vis;
 		getyx(f->input, y, x);
@@ -353,7 +352,6 @@ reshape_window(struct canvas *n)
 	assert( S.history >= n->extent.y );
 
 	p->ws.ws_row = n->extent.y;
-	p->pri.tos = n->offset.y = S.history - n->extent.y;
 
 	wsetscrreg(p->pri.win, 0, S.history - 1);
 	wsetscrreg(p->alt.win, 0, n->extent.y - 1);
@@ -372,12 +370,6 @@ scrollbottom(struct canvas *n)
 	if( n && n->p && n->p->s && n->extent.y ) {
 		assert( S.history >= n->extent.y );
 		n->offset.y = S.history - n->extent.y;
-
-		/* This assertion is to allow us to remove tos.  It is not
-		quite correct for "hidden" windows (when extent.y == 0, I
-		am seeing tos == scrollback_history -1.  All of this
-		crap is about to be refactored. */
-		assert( n->p->s->tos == S.history - n->extent.y );
 	}
 }
 
