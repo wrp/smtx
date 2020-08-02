@@ -255,22 +255,6 @@ winsiz(WINDOW *w, int dir)
 }
 
 static void
-set_title(struct canvas *n)
-{
-	assert( n->p != NULL );
-	mvwprintw(n->wtit, 0, 0, "%d %s %d-%d/%d",
-		n->p->id,
-		n->p->fd > 0 ? getshell() : n->p->status,
-		n->offset.x + 1,
-		n->offset.x + n->extent.x,
-		pty_size(n->p)
-	);
-	whline(n->wtit, ACS_HLINE, n->extent.x);
-	/* See draw_title().  We must leave the cursor at the start of
-	the HLINE so that we can reliably change reverse video */
-}
-
-static void
 draw_window(struct canvas *n)
 {
 	struct point o = n->origin;
@@ -281,10 +265,8 @@ draw_window(struct canvas *n)
 			int x = winpos(n->input, 1);
 			if( x < n->extent.x - 1 ) {
 				n->offset.x = 0;
-				set_title(n);
 			} else if( n->offset.x + n->extent.x < x + 1 ) {
 				n->offset.x = x - n->extent.x + 1;
-				set_title(n);
 			}
 		}
 		pnoutrefresh(n->p->s->win, off.y, off.x, o.y, o.x, e.y, e.x);
@@ -411,7 +393,6 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 			bool changed = n->extent.y > p->ws.ws_row;
 			if( p->fd >= 0 && changed ) {
 				reshape_window(n);
-				set_title(n);
 			}
 			if( n->extent.x > p->ws.ws_col ) {
 				int d = n->extent.x - p->ws.ws_col;
@@ -487,8 +468,15 @@ static void
 draw_title(struct canvas *n, int r)
 {
 	if( n->wtit ) {
-		/* This relies on set_title() leaving the
-		cursor at the start of the ACS_HLINE */
+		assert( n->p != NULL );
+		mvwprintw(n->wtit, 0, 0, "%d %s %d-%d/%d",
+			n->p->id,
+			n->p->fd > 0 ? getshell() : n->p->status,
+			n->offset.x + 1,
+			n->offset.x + n->extent.x,
+			n->p->ws.ws_col
+		);
+		whline(n->wtit, ACS_HLINE, n->extent.x);
 		struct point o = n->origin;
 		int x = winpos(n->wtit, 1);
 		mvwchgat(n->wtit, 0, 0, x, r ? A_REVERSE : A_NORMAL, 0, NULL);
@@ -641,7 +629,6 @@ scrollh(struct canvas *n, const char *arg)
 			n->offset.x = x - n->extent.x;
 		}
 		n->manualscroll = n->offset.x != 0;
-		set_title(n);
 	}
 }
 
