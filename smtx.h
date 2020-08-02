@@ -75,6 +75,7 @@ struct state {
 	char commandkey;
 	int width;
 	int history;      /* Number of lines retained */
+	int count;
 	enum mode mode;
 	struct handler (*binding)[128];
 	struct canvas *v; /* Root canvas currently displayed */
@@ -126,7 +127,6 @@ extern wchar_t CSET_UK[]; /* "United Kingdom" */
 extern wchar_t CSET_GRAPH[]; /* Graphics Set One */
 extern int tabstop;
 extern int id;
-extern int cmd_count;
 extern const char *term;
 extern void fixcursor(void);
 extern void focus(struct canvas *n);

@@ -250,19 +250,19 @@ test_scrollback(int fd)
 	expect_row(0, T, "%6d  %-72s", 43, string);
 	expect_row(7, T, "%6d  %-72s", 50, string);
 	expect_row(8, T, "%-80s", T->ps1, string);
-	cmd_count = 8;
+	S.count = 8;
 	scrolln(T->c, "-");
 	expect_row(0, T, "%6d  %-72s", 35, string);
 	expect_row(7, T, "%6d  %-72s", 42, string);
 	expect_row(8, T, "%6d  %-72s", 43, string);
 
-	cmd_count = 3;
+	S.count = 3;
 	scrolln(T->c, "+");
 	expect_row(0, T, "%6d  %-72s", 38, string);
 	expect_row(7, T, "%6d  %-72s", 45, string);
 	expect_row(8, T, "%6d  %-72s", 46, string);
 
-	cmd_count = 2;
+	S.count = 2;
 	/* make the window larger so scrollh is not a no-op */
 	T->c->extent.x = 60;
 	scrollh(T->c, ">");
@@ -270,13 +270,13 @@ test_scrollback(int fd)
 	expect_row(7, T, "%4d  %-72s", 45, string);
 	expect_row(8, T, "%4d  %-72s", 46, string);
 
-	cmd_count = 1;
+	S.count = 1;
 	scrollh(T->c, "<");
 	expect_row(0, T, "%5d  %-72s", 38, string);
 	expect_row(7, T, "%5d  %-72s", 45, string);
 	expect_row(8, T, "%5d  %-72s", 46, string);
 
-	cmd_count = -1;
+	S.count = -1;
 	scrollh(T->c, ">");
 	expect_row(0, T, "%-60s", string + 80 - 60 - 8);
 	expect_row(7, T, "%-60s", string + 80 - 60 - 8);

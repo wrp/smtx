@@ -29,8 +29,8 @@ struct state S = {
 	.width = 80,
 	.binding = &keys,
 	.history = 1024,
+	.count = -1,
 };
-int cmd_count = -1;
 
 static void
 set_errmsg(const char *fmt, va_list ap, int e)
@@ -327,7 +327,7 @@ set_width(struct canvas *n, const char *arg)
 	struct pty *p = n->p;
 	assert( S.history >= n->extent.y );
 	int h = S.history;
-	int w = arg ? strtol(arg, NULL, 10) : cmd_count;
+	int w = arg ? strtol(arg, NULL, 10) : S.count;
 	if( w == -1 ) {
 		w = n->extent.x;
 	}
@@ -610,7 +610,7 @@ static void
 digit(struct canvas *n, const char *arg)
 {
 	(void)n;
-	cmd_count = 10 * (cmd_count == -1 ? 0 : cmd_count) + *arg - '0';
+	S.count = 10 * (S.count == -1 ? 0 : S.count) + *arg - '0';
 }
 
 static void
@@ -618,7 +618,7 @@ set_view_count(struct canvas *n, const char *arg)
 {
 	(void)arg;
 	S.v = n;
-	switch( cmd_count ) {
+	switch( S.count ) {
 	case 0:
 		S.v = S.c;
 		break;
@@ -631,7 +631,7 @@ scrollh(struct canvas *n, const char *arg)
 {
 	if( n && n->p && n->p->s && n->p->s->win ) {
 		int x = winsiz(n->p->s->win, 1);
-		int count = cmd_count == -1 ? n->extent.x - 1 : cmd_count;
+		int count = S.count == -1 ? n->extent.x - 1 : S.count;
 		n->offset.x += *arg == '<' ? -count : count;
 		if( n->offset.x < 0 ) {
 			n->offset.x = 0;
@@ -646,7 +646,7 @@ scrollh(struct canvas *n, const char *arg)
 void
 attach(struct canvas *n, const char *arg)
 {
-	int target = arg ? strtol(arg, NULL, 10) : cmd_count;
+	int target = arg ? strtol(arg, NULL, 10) : S.count;
 	for( struct pty *t = S.p; t; t = t->next ) {
 		if( t->id == target ) {
 			n->p = t;
@@ -661,7 +661,7 @@ void
 scrolln(struct canvas *n, const char *arg)
 {
 	if( n && n->p && n->p->s && n->p->s->win ) {
-		int count = cmd_count == -1 ? n->extent.y - 1 : cmd_count;
+		int count = S.count == -1 ? n->extent.y - 1 : S.count;
 		int top = S.history - n->extent.y;
 		n->offset.y += *arg == '-' ? -count : count;
 		n->offset.y = MIN(MAX(0, n->offset.y), top);
@@ -700,7 +700,7 @@ resize(struct canvas *n, const char *arg)
 {
 	int typ = strchr("JK", *arg) ? 0 : 1;
 	int dir = strchr("JL", *arg) ? 1 : -1;
-	int count = cmd_count < 1 ? 1 : cmd_count;
+	int count = S.count < 1 ? 1 : S.count;
 	int s = *(typ ? &n->extent.x : &n->extent.y) + 1;
 
 	while( n && n->c[typ] == NULL ) {
@@ -780,7 +780,7 @@ void
 mov(struct canvas *n, const char *arg)
 {
 	assert( n == S.f && n != NULL );
-	int count = cmd_count < 1 ? 1 : cmd_count;
+	int count = S.count < 1 ? 1 : S.count;
 	enum direction dir = *arg == 'k' ? up : *arg == 'j' ? down :
 			*arg == 'h' ? left : *arg == 'l' ? right : nil;
 	( 0 ? navigate_tree : navigate_display)(dir, count);
@@ -851,10 +851,10 @@ swap(struct canvas *n, const char *arg)
 {
 	struct canvas *t;
 	(void) arg;
-	if( cmd_count == -1 ) {
+	if( S.count == -1 ) {
 		t = n->c[n->typ];
 	} else {
-		t = find_canvas(S.c, cmd_count);
+		t = find_canvas(S.c, S.count);
 	}
 	if( t ) {
 		struct pty *tmp = n->p;
@@ -869,7 +869,7 @@ swap(struct canvas *n, const char *arg)
 void
 new_tabstop(struct canvas *n, const char *arg)
 {
-	int c = arg ? strtol(arg, NULL, 10) : cmd_count > -1 ? cmd_count : 8;
+	int c = arg ? strtol(arg, NULL, 10) : S.count > -1 ? S.count : 8;
 	n->p->ntabs = 0;
 	(void)pty_size(n->p); /* Update n->p->ws */
 	extend_tabs(n->p, n->p->tabstop = c);
@@ -971,7 +971,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 		n->manualscroll = 0;
 	}
 	if( !b || !(b->act == digit) ) {
-		cmd_count = -1;
+		S.count = -1;
 	}
 }
 
