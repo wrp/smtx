@@ -504,8 +504,8 @@ draw(struct canvas *n) /* Draw a canvas. */
 		draw(n->c[0]);
 		draw(n->c[1]);
 		draw_div(n, rev && !n->extent.x);
-		draw_title(n, rev);
 		draw_window(n);
+		draw_title(n, rev);
 	}
 }
 
@@ -628,7 +628,7 @@ scrollh(struct canvas *n, const char *arg)
 		} else if( n->offset.x > x - n->extent.x ) {
 			n->offset.x = x - n->extent.x;
 		}
-		n->manualscroll = n->offset.x != 0;
+		n->manualscroll = 1;
 	}
 }
 
@@ -957,7 +957,6 @@ handlechar(int r, int k) /* Handle a single input character. */
 			scrollbottom(n);
 			rewrite(n->p->fd, c, r);
 		}
-		n->manualscroll = 0;
 	}
 	if( !b || !(b->act == digit) ) {
 		S.count = -1;
