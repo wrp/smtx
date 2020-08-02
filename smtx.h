@@ -115,7 +115,6 @@ struct canvas {
 	struct canvas *c[2];
 	double split_point[2]; /* percent of screen dedicated to window */
 	int manualscroll;
-	WINDOW *input; /* one of bkg, wtit, wdiv, or p->s.win */
 	WINDOW *bkg;   /* Display hash if pty too small */
 	WINDOW *wtit;  /* Window for title */
 	WINDOW *wdiv;  /* Window for divider */

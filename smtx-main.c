@@ -215,7 +215,6 @@ newcanvas(void)
 	} else {
 		n->split_point[0] = 1.0;
 		n->split_point[1] = 1.0;
-		n->input = n->p->pri.win;
 	}
 	return n;
 }
@@ -262,7 +261,7 @@ draw_window(struct canvas *n)
 	if( n->p && e.y > 0 && e.x > 0 ) {
 		struct point off = n->offset;
 		if( ! n->manualscroll ) {
-			int x = winpos(n->input, 1);
+			int x = winpos(n->p->s->win, 1);
 			if( x < n->extent.x - 1 ) {
 				n->offset.x = 0;
 			} else if( n->offset.x + n->extent.x < x + 1 ) {
@@ -282,20 +281,17 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 		assert( f->p->s );
 		int top = S.history - f->extent.y;
 		int show = S.binding != &cmd_keys && f->p->s->vis;
-		getyx(f->input, y, x);
+		getyx(f->p->s->win, y, x);
 		if( x < f->offset.x ) {
 			show = false;
 		}
 		curs_set(f->offset.y != top ? 0 : show);
 		y = MIN(MAX(y, top), top + f->extent.y);
 		assert( y >= top && y <= top + f->extent.y );
-	} else {
-		f->input = f->bkg ? f->bkg : f->wtit ? f->wtit : f->wdiv;
 	}
-	assert(f->input || S.c == NULL);
-	wmove(f->input, y, x);
+	wmove(f->p->s->win, y, x);
 	draw_window(f);
-	wmove(f->input, y, x);
+	wmove(f->p->s->win, y, x);
 }
 
 static const char *
