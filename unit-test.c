@@ -208,46 +208,6 @@ test_nel(int fd)
 }
 
 static int
-test_navigate(int fd)
-{
-	ssize_t s;
-	int status = 0;
-	char buf[1024] = "\07cjkhlC4tCvjkh2slc\r";
-	assert( buf[0] == CTL('g') );
-	write(fd, buf, strlen(buf));
-
-	sprintf(buf, "kill -HUP $SMTX\r");
-	write(fd, buf, strlen(buf));
-	s = read(child_pipe[0], buf, sizeof buf - 1);
-	buf[s] = 0;
-	char *expect = "11x26@0,0; 11x80@12,0; *5x26@0,27; "
-		"5x26@6,27; 11x26@0,54";
-	if( strcmp( buf, expect ) ) {
-		fprintf(stderr, "unexpected layout: %s\n", buf);
-		status = 1;
-	}
-	sprintf(buf, "\07cccccccc\r");
-	write(fd, buf, strlen(buf));
-	sprintf(buf, "kill -HUP $SMTX\r");
-	write(fd, buf, strlen(buf));
-	s = read(child_pipe[0], buf, sizeof buf - 1);
-	expect = "11x26@0,0; 11x80@12,0; *0x26@0,27; 0x26@1,27; 0x26@2,27; "
-		"0x26@3,27; 0x26@4,27; 0x26@5,27; 0x26@6,27; 0x26@7,27; "
-		"1x26@8,27; 1x26@10,27; 11x26@0,54";
-
-	if( strcmp( buf, expect ) ) {
-		fprintf(stderr, "unexpected layout after squeeze: %s\n", buf);
-		status = 1;
-	}
-
-	sprintf(buf, "kill $$\r\007xv\r");
-	write(fd, buf, strlen(buf));
-	sprintf(buf, "kill -TERM $SMTX\r");
-	write(fd, buf, strlen(buf));
-	return status;
-}
-
-static int
 test_csr(int fd)
 {
 	(void) fd;
@@ -480,37 +440,6 @@ where the extra 2 characters come from.  This same behavior was
 observed when the prompt was only one character long.
 */
 
-static int
-test1(int fd)
-{
-	char *cmds[] = {
-		"echo err >&2;",
-		"tput cud 2; tput cuu 2; tput cuf 1",
-		"tput ed; tput bel",
-		"tput hpa 5; tput ri",
-		"tput tsl; tput fsl; tput dsl",
-		"tput cub 1; tput dch 1; tput ack",
-		"tput civis; tput cvvis; tput ack",
-		"tabs -5",
-		"exit",
-		NULL
-	};
-	for( char **cmd = cmds; *cmd; cmd++ ) {
-		write(fd, *cmd, strlen(*cmd));
-		write(fd, "\r", 1);
-	}
-	return 0;
-}
-
-static void
-huphandler(int s)
-{
-	(void) s;
-	char buf[256];
-	unsigned len = describe_layout(buf, sizeof buf, S.c, 1, 0);
-	write(child_pipe[1], buf, len);
-}
-
 /* Describe a layout. This may be called in a signal handler */
 static unsigned
 describe_layout(char *d, size_t siz, const struct canvas *c, int recurse,
@@ -537,31 +466,29 @@ describe_layout(char *d, size_t siz, const struct canvas *c, int recurse,
 }
 
 typedef int test(int);
-struct st { char *name; test *f; int main; };
+struct st { char *name; test *f; };
 static int execute_test(struct st *v, const char *argv0);
-#define F(x, y) { .name = #x, .f = (x), .main = y }
+#define F(x) { .name = #x, .f = (x) }
 int
 main(int argc, char *const argv[])
 {
 	int status = 0;
 	const char *argv0 = argv[0];
 	struct st tab[] = {
-		F(test1, 1),
-		F(test_cursor, 0),
-		F(test_vpa, 0),
-		F(test_el, 0),
-		F(test_description, 0),
-		F(test_insert, 0),
-		F(test_vis, 0),
-		F(test_ech, 0),
-		F(test_ich, 0),
-		F(test_scrollback, 0),
-		F(test_nel, 0),
-		F(test_pager, 0),
-		F(test_cols, 0),
-		F(test_csr, 0),
-		F(test_navigate, 1),
-		{ NULL, NULL, 0 }
+		F(test_cursor),
+		F(test_vpa),
+		F(test_el),
+		F(test_description),
+		F(test_insert),
+		F(test_vis),
+		F(test_ech),
+		F(test_ich),
+		F(test_scrollback),
+		F(test_nel),
+		F(test_pager),
+		F(test_cols),
+		F(test_csr),
+		{ NULL, NULL }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
 	setenv("LINES", "24", 1);
@@ -589,9 +516,6 @@ execute_test(struct st *v, const char *argv0)
 	int fd[2]; /* primary/secondary fd of pty */
 	int status;
 
-	if( v->main && pipe(child_pipe) ) {
-		err(EXIT_FAILURE, "pipe");
-	}
 	if( openpty(fd, fd + 1, NULL, NULL, NULL) ) {
 		err(EXIT_FAILURE, "openpty");
 	}
@@ -607,34 +531,12 @@ execute_test(struct st *v, const char *argv0)
 			err(EXIT_FAILURE, "login_tty");
 		}
 		rv = 0;
-		if( v->main ) {
-			struct sigaction sa;
-			memset(&sa, 0, sizeof sa);
-			sa.sa_flags = 0;
-			sigemptyset(&sa.sa_mask);
-			sa.sa_handler = huphandler;
-			sigaction(SIGHUP, &sa, NULL);
-			if( close(child_pipe[0])) {
-				err(EXIT_FAILURE, "close read side");
-			}
-			exit(smtx_main(1, args + 1));
-		} else {
-			if( strcmp(argv0, v->name) ) {
-				execv(argv0, args);
-				perror("execv");
-			}
-			exit(v->f(fd[0]));
+		if( strcmp(argv0, v->name) ) {
+			execv(argv0, args);
+			perror("execv");
 		}
+		exit(v->f(fd[0]));
 	default:
-		if( v->main ) {
-			if( close(fd[1]) ) {
-				err(EXIT_FAILURE, "close secondary");
-			}
-			if( close(child_pipe[1])) {
-				err(EXIT_FAILURE, "close write side");
-			}
-			rv = v->f(fd[0]);
-		}
 		wait(&status);
 	}
 	if( WIFEXITED(status) && WEXITSTATUS(status) != 0 ) {
