@@ -255,6 +255,22 @@ winsiz(WINDOW *w, int dir)
 }
 
 static void
+set_title(struct canvas *n)
+{
+	assert( n->p != NULL );
+	mvwprintw(n->wtit, 0, 0, "%d %s %d-%d/%d",
+		n->p->id,
+		n->p->fd > 0 ? getshell() : n->p->status,
+		n->offset.x + 1,
+		n->offset.x + n->extent.x,
+		pty_size(n->p)
+	);
+	whline(n->wtit, ACS_HLINE, n->extent.x);
+	/* See draw_title().  We must leave the cursor at the start of
+	the HLINE so that we can reliably change reverse video */
+}
+
+static void
 draw_window(struct canvas *n)
 {
 	struct point o = n->origin;
@@ -265,8 +281,10 @@ draw_window(struct canvas *n)
 			int x = winpos(n->input, 1);
 			if( x < n->extent.x - 1 ) {
 				n->offset.x = 0;
+				set_title(n);
 			} else if( n->offset.x + n->extent.x < x + 1 ) {
 				n->offset.x = x - n->extent.x + 1;
+				set_title(n);
 			}
 		}
 		pnoutrefresh(n->p->s->win, off.y, off.x, o.y, o.x, e.y, e.x);
@@ -303,22 +321,6 @@ getterm(void)
 {
 	const char *t = getenv("TERM");
 	return t ? t : COLORS > 255 ? DEFAULT_COLOR_TERMINAL : DEFAULT_TERMINAL;
-}
-
-static void
-set_title(struct canvas *n)
-{
-	assert( n->p != NULL );
-	mvwprintw(n->wtit, 0, 0, "%d %s %d-%d/%d",
-		n->p->id,
-		n->p->fd > 0 ? getshell() : n->p->status,
-		n->offset.x + 1,
-		n->offset.x + n->extent.x,
-		pty_size(n->p)
-	);
-	whline(n->wtit, ACS_HLINE, n->extent.x);
-	/* See draw_title().  We must leave the cursor at the start of
-	the HLINE so that we can reliably change reverse video */
 }
 
 static void
