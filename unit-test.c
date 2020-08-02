@@ -2,7 +2,7 @@
 #include <err.h>
 #include <sys/wait.h>
 
-/* Non-intrusive tests that manipulate the master pty. */
+/* Intrusive tests that manipulate program internals. */
 
 int rv = EXIT_SUCCESS;
 int child_pipe[2];
