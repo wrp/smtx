@@ -990,7 +990,7 @@ main_loop(void)
 			}
 			FD_ZERO(&sfds);
 		}
-		while( (r = wget_wch(S.f->input, &w)) != ERR ) {
+		while( (r = get_wch(&w)) != ERR ) {
 			handlechar(r, w);
 			fixcursor();
 		}
@@ -1062,6 +1062,7 @@ init(void)
 	raw();
 	noecho();
 	nonl();
+	timeout(0);
 	intrflush(NULL, FALSE);
 	start_color();
 	use_default_colors();
