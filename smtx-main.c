@@ -174,7 +174,7 @@ new_pty(int rows, int cols)
 {
 	struct pty *p = calloc(1, sizeof *p);
 	if( p != NULL ) {
-		p->ws.ws_row = rows;
+		p->ws.ws_row = rows - 1;
 		p->ws.ws_col = cols;
 		p->pid = forkpty(&p->fd, NULL, NULL, &p->ws);
 		if( p->pid == 0 ) {

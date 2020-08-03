@@ -112,7 +112,7 @@ expect_layout(const struct canvas *c, const char *expect, ...)
 static int
 test_description(void)
 {
-	int row = 1000;
+	int row = 1001;
 	struct canvas *r = init();
 	expect_layout(r, "*23x80@0,0(%d,0)", row);
 	create(r, "c");
@@ -179,7 +179,7 @@ new_test_canvas(int rows, int cols, const char *ps1)
 	T->w = T->c->p->s->win;
 	int fd = T->c->p->fd;
 	expect_layout(T->c, "*%dx%d@0,0(%d,0)", rows - 1, cols,
-		S.history - rows);
+		S.history - rows + 1);
 	send_cmd(fd, "PS1='%s'", T->ps1);
 	read_until(T->fp, T->ps1, T->vp); /* discard up to assignment */
 	draw(T->c);
@@ -368,7 +368,7 @@ test_pager(void)
 	expect_row(21, T, "    22%-74s", "  y");
 
 	create(T->c, "c");
-	expect_layout(T->c, lay = "*11x80@0,0(1023,%d); 11x80@12,0(1000,0)",
+	expect_layout(T->c, lay = "*11x80@0,0(1023,%d); 11x80@12,0(1001,0)",
 		plen);
 	check_cmd(T, cmd, lay, plen);
 	expect_row(9, T, "    10%-74s", "  y");
