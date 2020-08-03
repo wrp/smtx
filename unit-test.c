@@ -110,9 +110,8 @@ expect_layout(const struct canvas *c, const char *expect, ...)
 }
 
 static int
-test_description(int fd)
+test_description(void)
 {
-	(void)fd;
 	int row = 1000;
 	struct canvas *r = init();
 	expect_layout(r, "*23x80@0,0(%d,0)", row);
@@ -191,9 +190,8 @@ new_test_canvas(int rows, int cols, const char *ps1)
 }
 
 static int
-test_nel(int fd)
+test_nel(void)
 {
-	(void) fd;
 	setenv("TERM", "smtx", 1);
 	const char *cmd = "tput cud 3; printf foo; tput nel; echo blah";
 	struct test_canvas *T = new_test_canvas(10, 80, NULL);
@@ -208,9 +206,8 @@ test_nel(int fd)
 }
 
 static int
-test_csr(int fd)
+test_csr(void)
 {
-	(void) fd;
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
 	char *cmd = "tput csr 6 12";
 	check_cmd(T, cmd, NULL);
@@ -226,10 +223,9 @@ test_csr(int fd)
 }
 
 static int
-test_cols(int fd)
+test_cols(void)
 {
 	/* Ensure that tput correctly identifies the width */
-	(void) fd;
 	setenv("TERM", "smtx", 1);
 	struct test_canvas *T = new_test_canvas(10, 97, NULL);
 	check_cmd(T, "tput cols", NULL);
@@ -238,9 +234,8 @@ test_cols(int fd)
 }
 
 static int
-test_scrollback(int fd)
+test_scrollback(void)
 {
-	(void) fd;
 	char cmd[80] = "yes | nl | sed 50q";
 	const char *string = "This is a relatively long string, dragon!";
 	snprintf(cmd, sizeof cmd, "yes %s | nl | sed 50q", string);
@@ -285,9 +280,8 @@ test_scrollback(int fd)
 }
 
 static int
-test_ich(int fd)
+test_ich(void)
 {
-	(void) fd;
 	const char *cmd = "printf abcdefg; tput cub 3; tput ich 5; echo";
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
 	check_cmd(T, cmd, NULL);
@@ -314,10 +308,9 @@ test_ich(int fd)
 }
 
 static int
-test_vis(int fd)
+test_vis(void)
 {
 	int y = 1002;
-	(void) fd;
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
 	check_cmd(T, "tput civis", "*23x80@0,0", ++y);
 	check_cmd(T, "tput cvvis", "*23x80@0,0(%d,%d)", ++y, strlen(T->ps1));
@@ -325,9 +318,8 @@ test_vis(int fd)
 }
 
 static int
-test_ech(int fd)
+test_ech(void)
 {
-	(void) fd;
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
 	check_cmd(T, "printf 012345; tput cub 3; tput ech 1; echo", NULL);
 	expect_row(2, T, "012 45%-74s", "");
@@ -335,10 +327,9 @@ test_ech(int fd)
 }
 
 static int
-test_insert(int fd)
+test_insert(void)
 {
 	int y = 1002;
-	(void) fd;
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
 	check_cmd(T, "printf 0123456; tput cub 3; tput smir; "
 		"echo foo; tput rmir", "*23x80@0,0(%d,6)", y += 2);
@@ -348,10 +339,9 @@ test_insert(int fd)
 }
 
 static int
-test_el(int fd)
+test_el(void)
 {
 	int y = 1002;
-	(void) fd;
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
 	check_cmd(T, "printf 01234; tput cub 3; tput el", "*23x80@0,0(%d,%d)",
 		++y, 2 + strlen(T->ps1));
@@ -364,12 +354,12 @@ test_el(int fd)
 }
 
 static int
-test_pager(int fd)
+test_pager(void)
 {
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
 	size_t plen = strlen(T->ps1);;
 	char *lay;
-	fd = fileno(T->fp);
+	int fd = fileno(T->fp);
 	char cmd[] = "yes | nl | sed 500q | more\rq";
 
 	rewrite(fd, cmd, sizeof cmd - 1);
@@ -386,9 +376,8 @@ test_pager(int fd)
 }
 
 static int
-test_vpa(int fd)
+test_vpa(void)
 {
-	(void) fd;
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
 	check_cmd(T, "tput vpa 7; tput hpa 18", "*23x80@0,0(%d,%d)",
 		S.history - 23 + 7, 18 + strlen(T->ps1));
@@ -396,12 +385,11 @@ test_vpa(int fd)
 }
 
 static int
-test_cursor(int fd)
+test_cursor(void)
 {
 	int y = 1002;
 	/* many below tests expect ps1 length 6 */
 	struct test_canvas *T = new_test_canvas(24, 80, "uniq> ");
-	(void)fd;
 
 	/* (1) */
 	check_cmd(T, "printf '0123456'; tput cub 4", "*23x80@0,0(%d,9)", ++y);
@@ -465,7 +453,7 @@ describe_layout(char *d, size_t siz, const struct canvas *c, int recurse,
 	return len;
 }
 
-typedef int test(int);
+typedef int test(void);
 struct st { char *name; test *f; };
 static int execute_test(struct st *v, const char *argv0);
 #define F(x) { .name = #x, .f = (x) }
@@ -535,7 +523,7 @@ execute_test(struct st *v, const char *argv0)
 			execv(argv0, args);
 			perror("execv");
 		}
-		exit(v->f(fd[0]));
+		exit(v->f());
 	default:
 		wait(&status);
 	}
