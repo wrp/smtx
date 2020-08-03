@@ -282,7 +282,13 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 		assert( f->p->s );
 		int top = S.history - f->extent.y;
 		getyx(f->p->s->win, y, x);
-		if( x < f->offset.x || f->offset.y < top ) {
+		if( 0
+			|| x < f->offset.x
+			|| x > f->offset.x + f->extent.x
+			/* || y < f->offset.y (1) */
+			|| y > f->offset.y + f->extent.y
+			|| f->offset.y < top /* (1) */
+		) {
 			show = false;
 		} else {
 			y = MIN( MAX(y, top), top + f->extent.y);
@@ -292,6 +298,11 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	}
 	curs_set(show);
 }
+/* (1) Checking f->offset.y < top really does not make any
+ * sense.  This test *should* be y < f->offset.y, but
+ * changing it breaks the current tests...which
+ * are not reliable! TODO: figure this out
+ */
 
 static const char *
 getterm(void)
