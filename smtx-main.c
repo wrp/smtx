@@ -277,21 +277,20 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 {
 	struct canvas *f = S.f;
 	int x = 0, y = 0;
-	if( f->p && f->extent.y) {
+	int show = S.binding != &cmd_keys && f->p->s->vis;
+	if( f->p && f->extent.y && show ) {
 		assert( f->p->s );
 		int top = S.history - f->extent.y;
-		int show = S.binding != &cmd_keys && f->p->s->vis;
 		getyx(f->p->s->win, y, x);
-		if( x < f->offset.x ) {
+		if( x < f->offset.x || f->offset.y < top ) {
 			show = false;
+		} else {
+			y = MIN( MAX(y, top), top + f->extent.y);
+			draw_window(f);
+			wmove(f->p->s->win, y, x);
 		}
-		curs_set(f->offset.y != top ? 0 : show);
-		y = MIN(MAX(y, top), top + f->extent.y);
-		assert( y >= top && y <= top + f->extent.y );
 	}
-	wmove(f->p->s->win, y, x);
-	draw_window(f);
-	wmove(f->p->s->win, y, x);
+	curs_set(show);
 }
 
 static const char *
