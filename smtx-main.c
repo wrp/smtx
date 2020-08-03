@@ -998,7 +998,6 @@ main_loop(void)
 		}
 		while( (r = get_wch(&w)) != ERR ) {
 			handlechar(r, w);
-			fixcursor();
 		}
 		getinput(&sfds);
 	}
