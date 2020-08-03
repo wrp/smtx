@@ -284,9 +284,9 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 		getyx(f->p->s->win, y, x);
 		if( 0
 			|| x < f->offset.x
-			|| x > f->offset.x + f->extent.x
+			|| x > f->offset.x + f->extent.x - 1
 			/* || y < f->offset.y (1) */
-			|| y > f->offset.y + f->extent.y
+			|| y > f->offset.y + f->extent.y - 1
 			|| f->offset.y < top /* (1) */
 		) {
 			show = false;
