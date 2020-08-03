@@ -531,7 +531,7 @@ create(struct canvas *n, const char *arg)
 	while( n && n->c[dir] != NULL ) {
 		n = n->c[dir]; /* Split last window in a chain. */
 	}
-	struct canvas *v = *( n ? &n->c[dir] : &S.c) = newcanvas();
+	struct canvas *v = *( n ? &n->c[dir] : &S.c ) = newcanvas();
 	if( v != NULL ) {
 		v->typ = dir;
 		v->parent = n;
