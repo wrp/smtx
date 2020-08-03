@@ -16,7 +16,7 @@ Linus announced a style change in the linux kernel and that 80
 columns would no longer be mandated.  Such a style change only makes
 sense if the tools exist to make it easy to scroll horizontally,
 so horizontal scrolling and not tying the pty width to the physcial
-device become imporant) Also, I played around with different behaviors
+device become important.) Also, I played around with different behaviors
 of keystrokes in various modes.  Pretty sure now that what I want
 is the ability to easily swap out keybindings.  Right now, playing
 with the idea of having one keybinding in which '<>' will scroll
