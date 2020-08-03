@@ -292,8 +292,8 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 			show = false;
 		} else {
 			y = MIN( MAX(y, top), top + f->extent.y);
-			draw_window(f);
 			wmove(f->p->s->win, y, x);
+			draw_window(f);
 		}
 	}
 	curs_set(show);
