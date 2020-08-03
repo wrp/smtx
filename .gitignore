@@ -11,4 +11,5 @@ depcomp
 install-sh
 ltmain.sh
 missing
+m4/
 test-driver
