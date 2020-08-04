@@ -28,6 +28,7 @@ struct state S = {
 	.commandkey = CTL('g'),
 	.width = 80,
 	.binding = &keys,
+	.maps = { &keys, &cmd_keys },
 	.history = 1024,
 	.count = -1,
 };
@@ -355,7 +356,7 @@ reshape_window(struct canvas *n)
 	}
 }
 
-static void
+void
 scrollbottom(struct canvas *n)
 {
 	if( n && n->p && n->p->s && n->extent.y ) {
@@ -790,7 +791,7 @@ mov(const char *arg)
 	( 0 ? navigate_tree : navigate_display)(dir, count);
 }
 
-static void
+void
 send(const char *arg)
 {
 	struct canvas *n = S.f;
@@ -812,19 +813,6 @@ equalize(const char *arg)
 	assert( n != NULL );
 	balance(n);
 	reshape_flag = 1;
-}
-
-void
-transition(const char *arg)
-{
-	if( S.binding == &keys ) {
-		S.binding = &cmd_keys;
-	} else {
-		S.binding = &keys;
-		wmove(S.werr, 0, 0);
-		scrollbottom(S.f);
-	}
-	send(arg);
 }
 
 static void

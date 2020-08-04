@@ -78,6 +78,7 @@ struct state {
 	int count;
 	enum mode mode;
 	struct handler (*binding)[128];
+	void *maps[2];
 	struct canvas *v; /* Root canvas currently displayed */
 	struct canvas *c; /* Root of tree of all canvas */
 	struct canvas *f; /* Currently focused canvas */;
@@ -137,6 +138,8 @@ extern void setupevents(struct vtp *);
 extern int rewrite(int fd, const char *b, size_t n);
 extern void build_bindings(void);
 extern void draw(struct canvas *n);
+extern void scrollbottom(struct canvas *n);
+
 /* exposed to test suite */
 extern int smtx_main(int, char *const*);
 extern struct state S;
@@ -151,3 +154,4 @@ extern action redrawroot;
 extern action resize;
 extern action scrolln;
 extern action scrollh;
+extern action send;
