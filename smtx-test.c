@@ -314,5 +314,5 @@ execute_test(struct st *v)
 		fprintf(stderr, "test %s caught signal %d\n",
 			v->name, WTERMSIG(status));
 	}
-	return rv == 0 && WIFEXITED(status) ? WEXITSTATUS(status) : EXIT_FAILURE;
+	return !rv && WIFEXITED(status) ? WEXITSTATUS(status) : EXIT_FAILURE;
 }
