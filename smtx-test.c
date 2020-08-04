@@ -205,10 +205,11 @@ describe_layout(char *d, size_t siz, const struct canvas *c, int recurse,
 		c == get_focus() ? "*" : "",
 		c->extent.y, c->extent.x, c->origin.y, c->origin.x
 	);
-	if( cursor && c->p->s && c->p->s->vis ) {
+	if( cursor && c->p->s ) {
 		int y = 0, x = 0;
 		getyx(c->p->s->win, y, x);
-		len += snprintf(d + len, siz - len, "(%d,%d)", y, x);
+		len += snprintf(d + len, siz - len, "(%d,%d)%s", y, x,
+			c->p->s->vis ? "" : "!");
 	}
 	for( int i = 0; i < 2; i ++ ) {
 		if( recurse && len + 3 < siz && c->c[i] ) {
