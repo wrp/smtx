@@ -159,7 +159,7 @@ check_cmd(struct test_canvas *T, const char *cmd, const char *expect, ...)
 	}
 }
 
-struct test_canvas *
+static struct test_canvas *
 new_test_canvas(int rows, int cols, const char *ps1)
 {
 	char buf[80];
