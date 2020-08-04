@@ -515,7 +515,7 @@ draw(struct canvas *n) /* Draw a canvas. */
 	}
 }
 
-static struct canvas *
+static void
 balance(struct canvas *n)
 {
 	int dir = n->typ;
@@ -531,7 +531,6 @@ balance(struct canvas *n)
 			break;
 		}
 	}
-	return n ? n : S.c;
 }
 
 void
@@ -799,7 +798,7 @@ equalize(struct canvas *n, const char *arg)
 {
 	(void) arg;
 	assert( n != NULL );
-	n = balance(n);
+	balance(n);
 	reshape_flag = 1;
 }
 
