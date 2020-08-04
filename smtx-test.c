@@ -127,6 +127,24 @@ new_test_canvas(int rows, int cols, const char *ps1)
 }
 
 static int
+test_prompt(int fd)
+{
+	ssize_t s;
+	int status = 0;
+	char buf[1024] = "yes | nl -ba | sed 30q; kill -USR1 $SMTX\r";
+	write(fd, buf, strlen(buf));
+	s = read(child_pipe[0], buf, sizeof buf - 1);
+	buf[s] = 0;
+	char *expect = "foo";
+	if( strcmp( buf, expect ) ) {
+		fprintf(stderr, "unexpected row: %s\n", buf);
+	}
+	sprintf(buf, "kill -TERM $SMTX\r");
+	write(fd, buf, strlen(buf));
+	return status;
+}
+
+static int
 test_navigate(int fd)
 {
 	ssize_t s;
@@ -198,7 +216,8 @@ handler(int s)
 		len = describe_layout(buf, sizeof buf, S.c, 1, 0);
 		break;
 	case SIGUSR1:
-		len = describe_row(buf, sizeof buf, S.c->p->s->win, S.count);
+		len = describe_row(buf, sizeof buf, S.c->p->s->win,
+			S.c->offset.y + S.c->extent.y - 1);
 	}
 	if( len > 0 ) {
 		write(child_pipe[1], buf, len);
@@ -240,7 +259,7 @@ describe_row(char *desc, size_t siz, WINDOW *w, int row)
 	mx = mx < (int)siz ? mx : (int)siz - 1;
 	getyx(w, y, x);
 	desc[rv = mx] = '\0';
-	for( ; mx; mx-- ) {
+	for( ; mx >= 0; mx-- ) {
 		desc[mx] = mvwinch(w, row, mx) & A_CHARTEXT;
 	}
 	wmove(w, y, x);
@@ -258,6 +277,7 @@ main(int argc, char *const argv[])
 	struct st tab[] = {
 		F(test1),
 		F(test_navigate),
+		F(test_prompt),
 		{ NULL, NULL }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
@@ -310,6 +330,7 @@ execute_test(struct st *v)
 		sigemptyset(&sa.sa_mask);
 		sa.sa_handler = handler;
 		sigaction(SIGHUP, &sa, NULL);
+		sigaction(SIGUSR1, &sa, NULL);
 		if( close(child_pipe[0])) {
 			err(EXIT_FAILURE, "close read side");
 		}
