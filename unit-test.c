@@ -115,14 +115,14 @@ test_description(void)
 	int row = 1001;
 	struct canvas *r = init();
 	expect_layout(r, "*23x80@0,0(%d,0)", row);
-	create(r, "c");
+	create("c");
 	expect_layout(r, "*11x80@0,0(%d,0); 11x80@12,0(%d,0)", row, row);
-	mov(r, "j");
+	mov("j");
 	expect_layout(r, "11x80@0,0(%d,0); *11x80@12,0(%d,0)", row, row);
-	create(r->c[0], "C");
+	create("C");
 	expect_layout(r, "11x80@0,0(%d,0); *11x40@12,0(%d,0); "
 		"11x39@12,41(%d,0)", row, row, row);
-	mov(r->c[0], "l");
+	mov("l");
 	expect_layout(r, "11x80@0,0(%d,0); 11x40@12,0(%d,0); "
 		"*11x39@12,41(%d,0)", row, row, row);
 	return rv;
@@ -186,6 +186,7 @@ new_test_canvas(int rows, int cols, const char *ps1)
 	focus(T->c);
 	fixcursor();
 	check_cmd(T, "", NULL);
+	S.c = T->c;
 	return T;
 }
 
@@ -246,13 +247,13 @@ test_scrollback(void)
 	expect_row(7, T, "%6d  %-72s", 50, string);
 	expect_row(8, T, "%-80s", T->ps1, string);
 	S.count = 8;
-	scrolln(T->c, "-");
+	scrolln("-");
 	expect_row(0, T, "%6d  %-72s", 35, string);
 	expect_row(7, T, "%6d  %-72s", 42, string);
 	expect_row(8, T, "%6d  %-72s", 43, string);
 
 	S.count = 3;
-	scrolln(T->c, "+");
+	scrolln("+");
 	expect_row(0, T, "%6d  %-72s", 38, string);
 	expect_row(7, T, "%6d  %-72s", 45, string);
 	expect_row(8, T, "%6d  %-72s", 46, string);
@@ -260,19 +261,19 @@ test_scrollback(void)
 	S.count = 2;
 	/* make the window larger so scrollh is not a no-op */
 	T->c->extent.x = 60;
-	scrollh(T->c, ">");
+	scrollh(">");
 	expect_row(0, T, "%4d  %-72s", 38, string);
 	expect_row(7, T, "%4d  %-72s", 45, string);
 	expect_row(8, T, "%4d  %-72s", 46, string);
 
 	S.count = 1;
-	scrollh(T->c, "<");
+	scrollh("<");
 	expect_row(0, T, "%5d  %-72s", 38, string);
 	expect_row(7, T, "%5d  %-72s", 45, string);
 	expect_row(8, T, "%5d  %-72s", 46, string);
 
 	S.count = -1;
-	scrollh(T->c, ">");
+	scrollh(">");
 	expect_row(0, T, "%-60s", string + 80 - 60 - 8);
 	expect_row(7, T, "%-60s", string + 80 - 60 - 8);
 	expect_row(8, T, "%-60s", string + 80 - 60 - 8);
@@ -367,7 +368,7 @@ test_pager(void)
 	expect_row(1, T, "     2%-74s", "  y");
 	expect_row(21, T, "    22%-74s", "  y");
 
-	create(T->c, "c");
+	create("c");
 	expect_layout(T->c, lay = "*11x80@0,0(1023,%d); 11x80@12,0(1001,0)",
 		plen);
 	check_cmd(T, cmd, lay, plen);

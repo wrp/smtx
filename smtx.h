@@ -43,7 +43,7 @@
 
 struct canvas;
 struct pty;
-typedef void(action)(struct canvas *n, const char *arg);
+typedef void(action)(const char *arg);
 struct screen {
 	int sy, sx, vis;
 	short fg, bg, sfg, sbg, sp;

@@ -312,8 +312,9 @@ getterm(void)
 }
 
 static void
-set_width(struct canvas *n, const char *arg)
+set_width(const char *arg)
 {
+	struct canvas *n = S.f;
 	struct pty *p = n->p;
 	assert( S.history >= n->extent.y );
 	int h = S.history;
@@ -419,7 +420,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 }
 
 static void
-reshape_root(struct canvas *n, const char *arg)
+reshape_root(const char *arg)
 {
 	(void)arg;
 	if( LINES > S.history ) {
@@ -429,13 +430,14 @@ reshape_root(struct canvas *n, const char *arg)
 	for( struct pty *p = S.p; p; p = p->next ) {
 		p->ws.ws_row = 0;
 	}
-	reshape(n ? n : S.c, 0, 0, LINES, COLS);
+	reshape(S.c, 0, 0, LINES, COLS);
 	reshape_flag = 0;
 }
 
 static void
-prune(struct canvas *x, const char *arg)
+prune(const char *arg)
 {
+	struct canvas *x = S.f;
 	struct canvas *p = x->parent;
 	int d = x->typ;
 	struct canvas *n = x->c[d];
@@ -534,8 +536,9 @@ balance(struct canvas *n)
 }
 
 void
-create(struct canvas *n, const char *arg)
+create(const char *arg)
 {
+	struct canvas *n = S.f;
 	int dir = arg && *arg == 'C' ? 1 : 0;
 	while( n && n->c[dir] != NULL ) {
 		n = n->c[dir]; /* Split last window in a chain. */
@@ -547,7 +550,7 @@ create(struct canvas *n, const char *arg)
 		balance(v);
 	}
 	/* TODO: just set the flag.  Currently that causes test failure. */
-	reshape_root(NULL, NULL);
+	reshape_root(NULL);
 }
 
 static void
@@ -603,28 +606,29 @@ getinput(fd_set *f) /* check all pty's for input. */
 }
 
 static void
-digit(struct canvas *n, const char *arg)
+digit(const char *arg)
 {
-	(void)n;
 	S.count = 10 * (S.count == -1 ? 0 : S.count) + *arg - '0';
 }
 
 static void
-set_view_count(struct canvas *n, const char *arg)
+set_view_count(const char *arg)
 {
 	(void)arg;
+	struct canvas *n = S.f;
 	S.v = n;
 	switch( S.count ) {
 	case 0:
 		S.v = S.c;
 		break;
 	}
-	reshape_root(S.v, NULL);
+	reshape_root(NULL);
 }
 
 void
-scrollh(struct canvas *n, const char *arg)
+scrollh(const char *arg)
 {
+	struct canvas *n = S.f;
 	if( n && n->p && n->p->s && n->p->s->win ) {
 		int x = winsiz(n->p->s->win, 1);
 		int count = S.count == -1 ? n->extent.x - 1 : S.count;
@@ -639,8 +643,9 @@ scrollh(struct canvas *n, const char *arg)
 }
 
 void
-attach(struct canvas *n, const char *arg)
+attach(const char *arg)
 {
+	struct canvas *n = S.f;
 	int target = arg ? strtol(arg, NULL, 10) : S.count;
 	for( struct pty *t = S.p; t; t = t->next ) {
 		if( t->id == target ) {
@@ -653,8 +658,9 @@ attach(struct canvas *n, const char *arg)
 }
 
 void
-scrolln(struct canvas *n, const char *arg)
+scrolln(const char *arg)
 {
+	struct canvas *n = S.f;
 	if( n && n->p && n->p->s && n->p->s->win ) {
 		int count = S.count == -1 ? n->extent.y - 1 : S.count;
 		int top = S.history - n->extent.y;
@@ -664,8 +670,9 @@ scrolln(struct canvas *n, const char *arg)
 }
 
 static void
-sendarrow(struct canvas *n, const char *k)
+sendarrow(const char *k)
 {
+	struct canvas *n = S.f;
 	char buf[3] = { '\033', n->p->pnm ? 'O' : '[', *k };
 	rewrite(n->p->fd, buf, 3);
 }
@@ -691,8 +698,9 @@ find_window(struct canvas *n, int y, int x)
 }
 
 void
-resize(struct canvas *n, const char *arg)
+resize(const char *arg)
 {
+	struct canvas *n = S.f;
 	int typ = strchr("JK", *arg) ? 0 : 1;
 	int dir = strchr("JL", *arg) ? 1 : -1;
 	int count = S.count < 1 ? 1 : S.count;
@@ -772,8 +780,9 @@ navigate_display(enum direction dir, int count)
 }
 
 void
-mov(struct canvas *n, const char *arg)
+mov(const char *arg)
 {
+	struct canvas *n = S.f;
 	assert( n == S.f && n != NULL );
 	int count = S.count < 1 ? 1 : S.count;
 	enum direction dir = *arg == 'k' ? up : *arg == 'j' ? down :
@@ -782,8 +791,9 @@ mov(struct canvas *n, const char *arg)
 }
 
 static void
-send(struct canvas *n, const char *arg)
+send(const char *arg)
 {
+	struct canvas *n = S.f;
 	if( n->p && n->p->fd > 0 && arg ) {
 		if( n->p->lnm && *arg == '\r' ) {
 			assert( arg[1] == '\0' );
@@ -795,25 +805,26 @@ send(struct canvas *n, const char *arg)
 }
 
 void
-equalize(struct canvas *n, const char *arg)
+equalize(const char *arg)
 {
 	(void) arg;
+	struct canvas *n = S.f;
 	assert( n != NULL );
 	balance(n);
 	reshape_flag = 1;
 }
 
 void
-transition(struct canvas *n, const char *arg)
+transition(const char *arg)
 {
 	if( S.binding == &keys ) {
 		S.binding = &cmd_keys;
 	} else {
 		S.binding = &keys;
 		wmove(S.werr, 0, 0);
-		scrollbottom(n);
+		scrollbottom(S.f);
 	}
-	send(n, arg);
+	send(arg);
 }
 
 static void
@@ -842,8 +853,9 @@ find_canvas(struct canvas *c, int id)
 }
 
 static void
-quit(struct canvas *n, const char *arg)
+quit(const char *arg)
 {
+	struct canvas *n = S.f;
 	(void)arg;
 	pid_t p = n->p->pid;
 	int s = S.count;
@@ -860,8 +872,9 @@ quit(struct canvas *n, const char *arg)
 }
 
 static void
-swap(struct canvas *n, const char *arg)
+swap(const char *arg)
 {
+	struct canvas *n = S.f;
 	struct canvas *t;
 	(void) arg;
 	if( S.count == -1 ) {
@@ -880,8 +893,9 @@ swap(struct canvas *n, const char *arg)
 }
 
 void
-new_tabstop(struct canvas *n, const char *arg)
+new_tabstop(const char *arg)
 {
+	struct canvas *n = S.f;
 	int c = arg ? strtol(arg, NULL, 10) : S.count > -1 ? S.count : 8;
 	n->p->ntabs = 0;
 	(void)pty_size(n->p); /* Update n->p->ws */
@@ -975,7 +989,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 		b = &code_keys[k - KEY_MIN];
 	}
 	if( b && b->act ) {
-		b->act(n, b->arg);
+		b->act(b->arg);
 	} else if( S.mode == passthru && n->p && n->p->fd > 0 ) {
 		char c[MB_LEN_MAX + 1];
 		if( ( r = wctomb(c, k)) > 0 ) {
@@ -1000,7 +1014,7 @@ main_loop(void)
 		fd_set sfds = S.fds;
 
 		if( reshape_flag ) {
-			reshape_root(NULL, NULL);
+			reshape_root(NULL);
 		}
 		draw(S.v);
 		if( winpos(S.werr, 1) ) {
@@ -1095,7 +1109,7 @@ init(void)
 		errx(EXIT_FAILURE, "Unable to create error window");
 	}
 	wattron(S.werr, A_REVERSE);
-	create(NULL, NULL);
+	create(NULL);
 	if( ( S.f = S.v = S.c ) == NULL ) {
 		errx(EXIT_FAILURE, "Unable to create root window");
 	}
