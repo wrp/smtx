@@ -792,20 +792,6 @@ mov(const char *arg)
 }
 
 void
-send(const char *arg)
-{
-	struct canvas *n = S.f;
-	if( n->p && n->p->fd > 0 && arg ) {
-		if( n->p->lnm && *arg == '\r' ) {
-			assert( arg[1] == '\0' );
-			arg = "\r\n";
-		}
-		scrollbottom(n);
-		rewrite(n->p->fd, arg, strlen(arg));
-	}
-}
-
-void
 equalize(const char *arg)
 {
 	(void) arg;
