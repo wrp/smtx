@@ -29,6 +29,25 @@ test_prompt(int fd)
 }
 
 static int
+test_lnm(int fd)
+{
+	/* I'm not exactly sure what happens here.  The whole point
+	of \e[20h is that it should set p->lnm so that \r sequences
+	are converted to \r\n.  But it seems that the master pty
+	under which our main loop is running is receiving \n instead
+	of the \r written here, so we never get to execute the code
+	that is inserting \n after \r.  Probably need to change
+	settings on the master pty
+	*/
+	char buf[1024] = "printf '\\e[20l'\recho foo\rprintf '\\e[20h'\r"
+		"echo bar\r";
+	write(fd, buf, strlen(buf));
+	sprintf(buf, "kill -TERM $SMTX\r");
+	write(fd, buf, strlen(buf));
+	return 0;
+}
+
+static int
 test_navigate(int fd)
 {
 	ssize_t s;
@@ -162,6 +181,7 @@ main(int argc, char *const argv[])
 		F(test1),
 		F(test_navigate),
 		F(test_prompt),
+		F(test_lnm),
 		{ NULL, NULL }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
