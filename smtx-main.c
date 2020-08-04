@@ -581,6 +581,7 @@ wait_child(struct pty *p)
 		p->next = NULL;
 		snprintf(p->status, sizeof p->status, fmt, k);
 		p->id = p->pid;
+		p->pid = -1;
 		reshape_flag = 1;
 	}
 }
@@ -841,6 +842,24 @@ find_canvas(struct canvas *c, int id)
 }
 
 static void
+quit(struct canvas *n, const char *arg)
+{
+	(void)arg;
+	pid_t p = n->p->pid;
+	int s = S.count;
+	switch( s ) {
+	case SIGUSR1 + 128: case SIGUSR2 + 128: case SIGTERM + 128:
+		p = getpid();
+		s = S.count - 128; /* Fall thru */
+	case SIGKILL: case SIGTERM: case SIGUSR1: case SIGHUP:
+	case SIGUSR2: case SIGINT:
+		if( p != -1 && kill(p, s) == -1) {
+			show_err("kill %d, %d", p, s);
+		}
+	}
+}
+
+static void
 swap(struct canvas *n, const char *arg)
 {
 	struct canvas *t;
@@ -900,6 +919,7 @@ build_bindings()
 	add_key(cmd_keys, L'K', resize, "K");
 	add_key(cmd_keys, L'L', resize, "L");
 	add_key(cmd_keys, L'H', resize, "H");
+	add_key(cmd_keys, L'q', quit, NULL);
 	add_key(cmd_keys, L's', swap, NULL);
 	add_key(cmd_keys, L't', new_tabstop, NULL);
 	add_key(cmd_keys, L'W', set_width, NULL);

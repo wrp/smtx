@@ -139,7 +139,7 @@ test_prompt(int fd)
 	if( strcmp( buf, expect ) ) {
 		fprintf(stderr, "unexpected row: %s\n", buf);
 	}
-	sprintf(buf, "kill -TERM $SMTX\r");
+	sprintf(buf, "\07%dq", SIGTERM + 128);
 	write(fd, buf, strlen(buf));
 	return status;
 }
