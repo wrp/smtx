@@ -8,6 +8,7 @@ int rv = EXIT_SUCCESS;
 int child_pipe[2];
 static unsigned describe_layout(char *, size_t, const struct canvas *,
 	int, int);
+static unsigned describe_row(char *desc, size_t siz, WINDOW *w, int row);
 
 static void
 send_cmd(int fd, const char *fmt, ...)
@@ -188,12 +189,20 @@ test1(int fd)
 }
 
 static void
-huphandler(int s)
+handler(int s)
 {
-	(void) s;
 	char buf[256];
-	unsigned len = describe_layout(buf, sizeof buf, S.c, 1, 0);
-	write(child_pipe[1], buf, len);
+	unsigned len = 0;
+	switch(s) {
+	case SIGHUP:
+		len = describe_layout(buf, sizeof buf, S.c, 1, 0);
+		break;
+	case SIGUSR1:
+		len = describe_row(buf, sizeof buf, S.c->p->s->win, S.count);
+	}
+	if( len > 0 ) {
+		write(child_pipe[1], buf, len);
+	}
 }
 
 /* Describe a layout. This may be called in a signal handler */
@@ -220,6 +229,22 @@ describe_layout(char *d, size_t siz, const struct canvas *c, int recurse,
 		}
 	}
 	return len;
+}
+
+static unsigned
+describe_row(char *desc, size_t siz, WINDOW *w, int row)
+{
+	unsigned rv;
+	int y, x, mx;
+	getmaxyx(w, y, mx);
+	mx = mx < (int)siz ? mx : (int)siz - 1;
+	getyx(w, y, x);
+	desc[rv = mx] = '\0';
+	for( ; mx; mx-- ) {
+		desc[mx] = mvwinch(w, row, mx) & A_CHARTEXT;
+	}
+	wmove(w, y, x);
+	return rv;
 }
 
 typedef int test(int);
@@ -283,7 +308,7 @@ execute_test(struct st *v)
 		memset(&sa, 0, sizeof sa);
 		sa.sa_flags = 0;
 		sigemptyset(&sa.sa_mask);
-		sa.sa_handler = huphandler;
+		sa.sa_handler = handler;
 		sigaction(SIGHUP, &sa, NULL);
 		if( close(child_pipe[0])) {
 			err(EXIT_FAILURE, "close read side");
