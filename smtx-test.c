@@ -48,6 +48,16 @@ test_lnm(int fd)
 }
 
 static int
+test_am(int fd)
+{
+	char buf[1024] = "printf '\\e[7l'\rprintf '\\e[7h'\r";
+	write(fd, buf, strlen(buf));
+	sprintf(buf, "kill -TERM $SMTX\r");
+	write(fd, buf, strlen(buf));
+	return 0;
+}
+
+static int
 test_navigate(int fd)
 {
 	ssize_t s;
@@ -182,6 +192,7 @@ main(int argc, char *const argv[])
 		F(test_navigate),
 		F(test_prompt),
 		F(test_lnm),
+		F(test_am),
 		{ NULL, NULL }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
