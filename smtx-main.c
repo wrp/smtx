@@ -840,7 +840,7 @@ find_canvas(struct canvas *c, int id)
 	return r;
 }
 
-void
+static void
 swap(struct canvas *n, const char *arg)
 {
 	struct canvas *t;
