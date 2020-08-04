@@ -48,10 +48,16 @@ test_lnm(int fd)
 }
 
 static int
-test_am(int fd)
+test_reset(int fd)
 {
-	char buf[1024] = "printf '\\e[7l'\rprintf '\\e[7h'\r";
-	write(fd, buf, strlen(buf));
+	int k[] = { 1, 3, 4, 6, 7, 20, 25, 34, 1048, 1049, 47, 1047 };
+	char buf[1024];
+
+	for( unsigned long i = 0; i < sizeof k / sizeof *k; i++ ) {
+		int v = k[i];
+		sprintf(buf, "printf '\\e[%dl'\rprintf '\\e[%dh'\r", v, v);
+		write(fd, buf, strlen(buf));
+	}
 	sprintf(buf, "kill -TERM $SMTX\r");
 	write(fd, buf, strlen(buf));
 	return 0;
@@ -192,7 +198,7 @@ main(int argc, char *const argv[])
 		F(test_navigate),
 		F(test_prompt),
 		F(test_lnm),
-		F(test_am),
+		F(test_reset),
 		{ NULL, NULL }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
