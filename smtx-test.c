@@ -105,6 +105,7 @@ test_navigate(int fd)
 	sprintf(buf, "kill -HUP $SMTX\r");
 	write(fd, buf, strlen(buf));
 	s = read(child_pipe[0], buf, sizeof buf - 1);
+	buf[s] = 0;
 	expect = "11x26@0,0; 11x80@12,0; *0x26@0,27; 0x26@1,27; 0x26@2,27; "
 		"0x26@3,27; 0x26@4,27; 0x26@5,27; 0x26@6,27; 0x26@7,27; "
 		"1x26@8,27; 1x26@10,27; 11x26@0,54";
