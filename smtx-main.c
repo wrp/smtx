@@ -21,7 +21,7 @@
 static struct handler keys[128];
 static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
-static int reshape_flag;
+int reshape_flag;
 
 /* Variables exposed to test suite */
 struct state S = {
@@ -53,7 +53,7 @@ print_errmsg(const char *fmt, va_list ap, int e)
 	}
 }
 
-static void
+void
 show_err(const char *fmt, ...)
 {
 	int e = errno;
@@ -641,21 +641,6 @@ scrollh(const char *arg)
 		}
 		n->manualscroll = 1;
 	}
-}
-
-void
-attach(const char *arg)
-{
-	struct canvas *n = S.f;
-	int target = arg ? strtol(arg, NULL, 10) : S.count;
-	for( struct pty *t = S.p; t; t = t->next ) {
-		if( t->id == target ) {
-			n->p = t;
-			reshape_flag = 1;
-			return;
-		}
-	}
-	show_err("No pty exists with id %d", target);
 }
 
 void

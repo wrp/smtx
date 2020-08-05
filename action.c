@@ -1,6 +1,21 @@
 #include "smtx.h"
 
 void
+attach(const char *arg)
+{
+	struct canvas *n = S.f;
+	int target = arg ? strtol(arg, NULL, 10) : S.count;
+	for( struct pty *t = S.p; t; t = t->next ) {
+		if( t->id == target ) {
+			n->p = t;
+			reshape_flag = 1;
+			return;
+		}
+	}
+	show_err("No pty exists with id %d", target);
+}
+
+void
 send(const char *arg)
 {
 	struct canvas *n = S.f;

@@ -139,11 +139,14 @@ extern int rewrite(int fd, const char *b, size_t n);
 extern void build_bindings(void);
 extern void draw(struct canvas *n);
 extern void scrollbottom(struct canvas *n);
+extern void show_err(const char *fmt, ...);
+extern int reshape_flag;
 
 /* exposed to test suite */
 extern int smtx_main(int, char *const*);
 extern struct state S;
 
+extern action attach;
 extern action transition;
 extern action create;
 extern action equalize;
