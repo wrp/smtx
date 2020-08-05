@@ -95,10 +95,8 @@ test_navigate(int fd)
 		fprintf(stderr, "unexpected layout: %s\n", buf);
 		status = 1;
 	}
-	sprintf(buf, "\07cccccccc\r");
-	write(fd, buf, strlen(buf));
-	sprintf(buf, "kill -HUP $SMTX\r");
-	write(fd, buf, strlen(buf));
+	fdprintf(fd, "\07cccccccc\r");
+	fdprintf(fd, "kill -HUP $SMTX\r");
 	s = read(child_pipe[0], buf, sizeof buf - 1);
 	buf[s] = 0;
 	expect = "11x26@0,0; 11x80@12,0; *0x26@0,27; 0x26@1,27; 0x26@2,27; "
