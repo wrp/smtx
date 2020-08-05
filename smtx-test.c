@@ -13,7 +13,7 @@ static unsigned describe_layout(char *, size_t, const struct canvas *,
 static unsigned describe_row(char *desc, size_t siz, WINDOW *w, int row);
 
 static void
-write_string(int fd, const char *fmt, ...)
+fdprintf(int fd, const char *fmt, ...)
 {
 	char cmd[1024];
 	size_t n;
@@ -31,14 +31,14 @@ test_prompt(int fd)
 	ssize_t s;
 	int status = 0;
 	char buf[1024];
-	write_string(fd, "yes | nl -ba | sed 30q; kill -USR1 $SMTX\r");
+	fdprintf(fd, "yes | nl -ba | sed 30q; kill -USR1 $SMTX\r");
 	s = read(child_pipe[0], buf, sizeof buf - 1);
 	buf[s] = 0;
 	char *expect = "foo";
 	if( strcmp( buf, expect ) ) {
 		fprintf(stderr, "unexpected row: %s\n", buf);
 	}
-	write_string(fd, "\07%dq", SIGTERM + 128);
+	fdprintf(fd, "\07%dq", SIGTERM + 128);
 	return status;
 }
 
@@ -56,11 +56,11 @@ fsleep(double delay)
 static int
 test_lnm(int fd)
 {
-	write_string(fd, "printf '\\e[20h'\r");
+	fdprintf(fd, "printf '\\e[20h'\r");
 	fsleep(.1);
-	write_string(fd, "printf 'foo\\rbar\\r\\n'\r");
-	write_string(fd, "printf '\\e[20l'\r");
-	write_string(fd, "kill -TERM $SMTX\r");
+	fdprintf(fd, "printf 'foo\\rbar\\r\\n'\r");
+	fdprintf(fd, "printf '\\e[20l'\r");
+	fdprintf(fd, "kill -TERM $SMTX\r");
 	return 0;
 }
 
@@ -71,9 +71,9 @@ test_reset(int fd)
 
 	for( unsigned long i = 0; i < sizeof k / sizeof *k; i++ ) {
 		int v = k[i];
-		write_string(fd, "printf '\\e[%dl'\rprintf '\\e[%dh'\r", v, v);
+		fdprintf(fd, "printf '\\e[%dl'\rprintf '\\e[%dh'\r", v, v);
 	}
-	write_string(fd, "kill -TERM $SMTX\r");
+	fdprintf(fd, "kill -TERM $SMTX\r");
 	return 0;
 }
 
@@ -84,9 +84,9 @@ test_navigate(int fd)
 	int status = 0;
 	char buf[1024];
 	assert( '\07' == CTL('g') );
-	write_string(fd, "\07cjkhlC4tCvjkh2slc\r");
+	fdprintf(fd, "\07cjkhlC4tCvjkh2slc\r");
 
-	write_string(fd, "kill -HUP $SMTX\r");
+	fdprintf(fd, "kill -HUP $SMTX\r");
 	s = read(child_pipe[0], buf, sizeof buf - 1);
 	buf[s] = 0;
 	char *expect = "11x26@0,0; 11x80@12,0; *5x26@0,27; "
@@ -110,8 +110,8 @@ test_navigate(int fd)
 		status = 1;
 	}
 
-	write_string(fd, "kill $$\r\007xv\r");
-	write_string(fd, "kill -TERM $SMTX\r");
+	fdprintf(fd, "kill $$\r\007xv\r");
+	fdprintf(fd, "kill -TERM $SMTX\r");
 	return status;
 }
 
@@ -131,7 +131,7 @@ test1(int fd)
 		NULL
 	};
 	for( char **cmd = cmds; *cmd; cmd++ ) {
-		write_string(fd, "%s\r", *cmd);
+		fdprintf(fd, "%s\r", *cmd);
 	}
 	return 0;
 }
