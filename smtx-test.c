@@ -1,8 +1,6 @@
 #include "smtx.h"
 #include <err.h>
 #include <sys/wait.h>
-#include <time.h>
-#include <math.h>
 
 /* Non-intrusive tests that manipulate the master pty. */
 
@@ -42,22 +40,13 @@ test_prompt(int fd)
 	return status;
 }
 
-static void
-fsleep(double delay)
-{
-	struct timespec t;
-	double sec, frac;
-	frac = modf(delay, &sec);
-	t.tv_sec = (int)sec;
-	t.tv_nsec = (int)(frac * 1e9);
-	nanosleep(&t, NULL);
-}
-
 static int
 test_lnm(int fd)
 {
+	int k;
 	fdprintf(fd, "printf '\\e[20h'\r");
-	fsleep(.1);
+	fdprintf(fd, "kill -HUP $SMTX\r");
+	read(child_pipe[0], &k, 1);
 	fdprintf(fd, "printf 'foo\\rbar\\r\\n'\r");
 	fdprintf(fd, "printf '\\e[20l'\r");
 	fdprintf(fd, "kill -TERM $SMTX\r");
