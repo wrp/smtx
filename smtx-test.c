@@ -67,6 +67,17 @@ test_reset(int fd)
 }
 
 static int
+test_attach(int fd)
+{
+	int k;
+	fdprintf(fd, "%ccc3a\r", CTL('g'));
+	fdprintf(fd, "kill -HUP $SMTX\r");
+	read(child_pipe[0], &k, 1);
+	fdprintf(fd, "kill -TERM $SMTX\r");
+	return 0;
+}
+
+static int
 test_navigate(int fd)
 {
 	ssize_t s;
@@ -197,6 +208,7 @@ main(int argc, char *const argv[])
 		F(test_prompt),
 		F(test_lnm),
 		F(test_reset),
+		F(test_attach),
 		{ NULL, NULL }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
