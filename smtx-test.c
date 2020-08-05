@@ -10,6 +10,19 @@ static unsigned describe_layout(char *, size_t, const struct canvas *,
 	int, int);
 static unsigned describe_row(char *desc, size_t siz, WINDOW *w, int row);
 
+static void
+write_string(int fd, const char *fmt, ...)
+{
+	char cmd[1024];
+	size_t n;
+	va_list ap;
+	va_start(ap, fmt);
+	n = vsnprintf(cmd, sizeof cmd, fmt, ap);
+	va_end(ap);
+	assert( n < sizeof cmd );
+	rewrite(fd, cmd, n);
+}
+
 static int
 test_prompt(int fd)
 {
@@ -39,11 +52,11 @@ test_lnm(int fd)
 	that is inserting \n after \r.  Probably need to change
 	settings on the master pty
 	*/
-	char buf[1024] = "printf '\\e[20l'\recho foo\rprintf '\\e[20h'\r"
-		"echo bar\r";
-	write(fd, buf, strlen(buf));
-	sprintf(buf, "kill -TERM $SMTX\r");
-	write(fd, buf, strlen(buf));
+	write_string(fd, "printf '\\e[20h'\r");
+	sleep(1);
+	write_string(fd, "printf 'foo\\rbar\\r\\n'\r");
+	write_string(fd, "printf '\\e[20l'\r");
+	write_string(fd, "kill -TERM $SMTX\r");
 	return 0;
 }
 
