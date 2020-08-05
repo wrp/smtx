@@ -1,6 +1,8 @@
 #include "smtx.h"
 #include <err.h>
 #include <sys/wait.h>
+#include <time.h>
+#include <math.h>
 
 /* Non-intrusive tests that manipulate the master pty. */
 
@@ -41,6 +43,17 @@ test_prompt(int fd)
 	return status;
 }
 
+static void
+fsleep(double delay)
+{
+	struct timespec t;
+	double sec, frac;
+	frac = modf(delay, &sec);
+	t.tv_sec = (int)sec;
+	t.tv_nsec = (int)(frac * 1e9);
+	nanosleep(&t, NULL);
+}
+
 static int
 test_lnm(int fd)
 {
@@ -53,7 +66,7 @@ test_lnm(int fd)
 	settings on the master pty
 	*/
 	write_string(fd, "printf '\\e[20h'\r");
-	sleep(1);
+	fsleep(.1);
 	write_string(fd, "printf 'foo\\rbar\\r\\n'\r");
 	write_string(fd, "printf '\\e[20l'\r");
 	write_string(fd, "kill -TERM $SMTX\r");
