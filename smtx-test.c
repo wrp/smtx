@@ -83,8 +83,7 @@ test_navigate(int fd)
 	ssize_t s;
 	int status = 0;
 	char buf[1024];
-	assert( '\07' == CTL('g') );
-	fdprintf(fd, "\07cjkhlC4tCvjkh2slc\r");
+	fdprintf(fd, "%ccjkhlC4tCvjkh2slc\r", CTL('g'));
 
 	fdprintf(fd, "kill -HUP $SMTX\r");
 	s = read(child_pipe[0], buf, sizeof buf - 1);
