@@ -30,16 +30,15 @@ test_prompt(int fd)
 {
 	ssize_t s;
 	int status = 0;
-	char buf[1024] = "yes | nl -ba | sed 30q; kill -USR1 $SMTX\r";
-	write(fd, buf, strlen(buf));
+	char buf[1024];
+	write_string(fd, "yes | nl -ba | sed 30q; kill -USR1 $SMTX\r");
 	s = read(child_pipe[0], buf, sizeof buf - 1);
 	buf[s] = 0;
 	char *expect = "foo";
 	if( strcmp( buf, expect ) ) {
 		fprintf(stderr, "unexpected row: %s\n", buf);
 	}
-	sprintf(buf, "\07%dq", SIGTERM + 128);
-	write(fd, buf, strlen(buf));
+	write_string(fd, "\07%dq", SIGTERM + 128);
 	return status;
 }
 
@@ -69,15 +68,12 @@ static int
 test_reset(int fd)
 {
 	int k[] = { 1, 3, 4, 6, 7, 20, 25, 34, 1048, 1049, 47, 1047 };
-	char buf[1024];
 
 	for( unsigned long i = 0; i < sizeof k / sizeof *k; i++ ) {
 		int v = k[i];
-		sprintf(buf, "printf '\\e[%dl'\rprintf '\\e[%dh'\r", v, v);
-		write(fd, buf, strlen(buf));
+		write_string(fd, "printf '\\e[%dl'\rprintf '\\e[%dh'\r", v, v);
 	}
-	sprintf(buf, "kill -TERM $SMTX\r");
-	write(fd, buf, strlen(buf));
+	write_string(fd, "kill -TERM $SMTX\r");
 	return 0;
 }
 
@@ -86,12 +82,11 @@ test_navigate(int fd)
 {
 	ssize_t s;
 	int status = 0;
-	char buf[1024] = "\07cjkhlC4tCvjkh2slc\r";
-	assert( buf[0] == CTL('g') );
-	write(fd, buf, strlen(buf));
+	char buf[1024];
+	assert( '\07' == CTL('g') );
+	write_string(fd, "\07cjkhlC4tCvjkh2slc\r");
 
-	sprintf(buf, "kill -HUP $SMTX\r");
-	write(fd, buf, strlen(buf));
+	write_string(fd, "kill -HUP $SMTX\r");
 	s = read(child_pipe[0], buf, sizeof buf - 1);
 	buf[s] = 0;
 	char *expect = "11x26@0,0; 11x80@12,0; *5x26@0,27; "
@@ -115,10 +110,8 @@ test_navigate(int fd)
 		status = 1;
 	}
 
-	sprintf(buf, "kill $$\r\007xv\r");
-	write(fd, buf, strlen(buf));
-	sprintf(buf, "kill -TERM $SMTX\r");
-	write(fd, buf, strlen(buf));
+	write_string(fd, "kill $$\r\007xv\r");
+	write_string(fd, "kill -TERM $SMTX\r");
 	return status;
 }
 
@@ -138,8 +131,7 @@ test1(int fd)
 		NULL
 	};
 	for( char **cmd = cmds; *cmd; cmd++ ) {
-		write(fd, *cmd, strlen(*cmd));
-		write(fd, "\r", 1);
+		write_string(fd, "%s\r", *cmd);
 	}
 	return 0;
 }
