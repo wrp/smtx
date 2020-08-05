@@ -57,14 +57,6 @@ fsleep(double delay)
 static int
 test_lnm(int fd)
 {
-	/* I'm not exactly sure what happens here.  The whole point
-	of \e[20h is that it should set p->lnm so that \r sequences
-	are converted to \r\n.  But it seems that the master pty
-	under which our main loop is running is receiving \n instead
-	of the \r written here, so we never get to execute the code
-	that is inserting \n after \r.  Probably need to change
-	settings on the master pty
-	*/
 	write_string(fd, "printf '\\e[20h'\r");
 	fsleep(.1);
 	write_string(fd, "printf 'foo\\rbar\\r\\n'\r");
