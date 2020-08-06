@@ -949,6 +949,10 @@ handlechar(int r, int k) /* Handle a single input character. */
 	}
 	if( b && b->act ) {
 		b->act(b->arg);
+		if( ! ( b->act == digit || (b->act == transition
+				&& S.binding == &keys) ) ) { /* (1) */
+			S.count = -1;
+		}
 	} else if( S.mode == passthru && n->p && n->p->fd > 0 ) {
 		char c[MB_LEN_MAX + 1];
 		if( ( r = wctomb(c, k)) > 0 ) {
@@ -956,10 +960,11 @@ handlechar(int r, int k) /* Handle a single input character. */
 			rewrite(n->p->fd, c, r);
 		}
 	}
-	if( !b || !(b->act == digit) ) {
-		S.count = -1;
-	}
 }
+/* (1) We do not reset the cmd count when transitioning back to
+ * insert mode so that we can use the count in the test suite.
+ * This is a terrible hack
+ */
 
 static sig_atomic_t terminated;
 static void handle_term(int s) { terminated = s; }
