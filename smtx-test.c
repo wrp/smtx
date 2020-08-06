@@ -100,7 +100,6 @@ test_navigate(int fd)
 	expect = "11x26@0,0; 11x80@12,0; *0x26@0,27; 0x26@1,27; 0x26@2,27; "
 		"0x26@3,27; 0x26@4,27; 0x26@5,27; 0x26@6,27; 0x26@7,27; "
 		"1x26@8,27; 1x26@10,27; 11x26@0,54";
-
 	if( strcmp( buf, expect ) ) {
 		fprintf(stderr, "unexpected layout after squeeze: %s\n", buf);
 		status = 1;
@@ -136,14 +135,15 @@ static void
 handler(int s)
 {
 	char buf[256];
+	int c = S.count == - 1 ? 1 : S.count;
 	unsigned len = 0;
 	switch(s) {
 	case SIGHUP:
-		len = describe_layout(buf, sizeof buf, S.c, 0x01);
+		len = describe_layout(buf, sizeof buf, S.c, c);
 		break;
 	case SIGUSR1:
 		len = describe_row(buf, sizeof buf, S.c->p->s->win,
-			S.c->offset.y + S.c->extent.y - 1);
+			S.c->offset.y + c);
 	}
 	if( len > 0 ) {
 		write(child_pipe[1], buf, len);
