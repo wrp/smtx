@@ -155,7 +155,7 @@ static unsigned
 describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, int flags)
 {
 	int recurse, cursor, id;
-	char *e = d + siz;
+	const char * const e = d + siz;
 	recurse = flags & 0x1;
 	cursor = flags & 0x2;
 	id = flags & 0x4;
