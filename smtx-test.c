@@ -155,30 +155,31 @@ static unsigned
 describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, int flags)
 {
 	int recurse, cursor, id;
+	char *e = d + siz;
 	recurse = flags & 0x1;
 	cursor = flags & 0x2;
 	id = flags & 0x4;
-	unsigned len = snprintf(d, siz, "%s%dx%d@%d,%d",
+	d += snprintf(d, e - d, "%s%dx%d@%d,%d",
 		c == get_focus() ? "*" : "",
 		c->extent.y, c->extent.x, c->origin.y, c->origin.x
 	);
 	if( id && c->p ) {
-		len += snprintf(d + len, siz - len, "(%d)", c->p->id);
+		d += snprintf(d, e - d, "(%d)", c->p->id);
 	}
 	if( cursor && c->p->s ) {
 		int y = 0, x = 0;
 		getyx(c->p->s->win, y, x);
-		len += snprintf(d + len, siz - len, "(%d,%d)%s", y, x,
+		d += snprintf(d, e - d, "(%d,%d)%s", y, x,
 			c->p->s->vis ? "" : "!");
 	}
 	for( int i = 0; i < 2; i ++ ) {
-		if( recurse && len + 3 < siz && c->c[i] ) {
-			d[len++] = ';';
-			d[len++] = ' ';
-			len += describe_layout(d + len, siz - len, c->c[i], flags);
+		if( recurse && e - d > 3 && c->c[i] ) {
+			*d++ = ';';
+			*d++ = ' ';
+			d += describe_layout(d, e - d, c->c[i], flags);
 		}
 	}
-	return len;
+	return siz - ( e - d );
 }
 
 static unsigned
