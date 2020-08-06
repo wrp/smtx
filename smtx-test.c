@@ -23,7 +23,7 @@ fdprintf(int fd, const char *fmt, ...)
 }
 
 static int
-test_prompt(int fd)
+test_row(int fd)
 {
 	ssize_t s;
 	int status = 0;
@@ -213,7 +213,7 @@ main(int argc, char *const argv[])
 	struct st tab[] = {
 		F(test1),
 		F(test_navigate),
-		F(test_prompt),
+		F(test_row),
 		F(test_lnm),
 		F(test_reset),
 		F(test_attach),
