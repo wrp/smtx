@@ -6,7 +6,7 @@
 
 int rv = EXIT_SUCCESS;
 int child_pipe[2];
-static unsigned describe_layout(char *, size_t, const struct canvas *, int);
+static unsigned describe_layout(char *, ptrdiff_t, const struct canvas *, int);
 static unsigned describe_row(char *desc, size_t siz, WINDOW *w, int row);
 
 static void
@@ -152,7 +152,7 @@ handler(int s)
 
 /* Describe a layout. This may be called in a signal handler */
 static unsigned
-describe_layout(char *d, size_t siz, const struct canvas *c, int flags)
+describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, int flags)
 {
 	int recurse, cursor, id;
 	recurse = flags & 0x1;
