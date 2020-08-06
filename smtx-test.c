@@ -27,15 +27,19 @@ test_prompt(int fd)
 {
 	ssize_t s;
 	int status = 0;
+	char expect[81];
 	char buf[1024];
-	fdprintf(fd, "yes | nl -ba | sed 30q; kill -USR1 $SMTX\r");
+	fdprintf(fd, "yes | nl -ba | sed 400q\r");
+	fdprintf(fd, "%c22\rsleep 1\r", CTL('g'));
+	fdprintf(fd, "kill -USR1 $SMTX\r");
 	s = read(child_pipe[0], buf, sizeof buf - 1);
 	buf[s] = 0;
-	char *expect = "foo";
+	snprintf( expect, sizeof expect, "%6d%-74s", 400, "  y");
 	if( strcmp( buf, expect ) ) {
-		fprintf(stderr, "unexpected row: %s\n", buf);
+		fprintf(stderr, "unexpected row: '%s'\n", buf);
+		status = 1;
 	}
-	fdprintf(fd, "\07%dq", SIGTERM + 128);
+	fdprintf(fd, "kill $SMTX\r");
 	return status;
 }
 
@@ -143,7 +147,7 @@ handler(int s)
 		break;
 	case SIGUSR1:
 		len = describe_row(buf, sizeof buf, S.c->p->s->win,
-			S.c->offset.y + c);
+			S.c->offset.y + c - 1);
 	}
 	if( len > 0 ) {
 		write(child_pipe[1], buf, len);
