@@ -6,8 +6,7 @@
 
 int rv = EXIT_SUCCESS;
 int child_pipe[2];
-static unsigned describe_layout(char *, size_t, const struct canvas *,
-	int, int, int);
+static unsigned describe_layout(char *, size_t, const struct canvas *, int);
 static unsigned describe_row(char *desc, size_t siz, WINDOW *w, int row);
 
 static void
@@ -140,7 +139,7 @@ handler(int s)
 	unsigned len = 0;
 	switch(s) {
 	case SIGHUP:
-		len = describe_layout(buf, sizeof buf, S.c, 1, 0, 0);
+		len = describe_layout(buf, sizeof buf, S.c, 0x01);
 		break;
 	case SIGUSR1:
 		len = describe_row(buf, sizeof buf, S.c->p->s->win,
@@ -153,9 +152,12 @@ handler(int s)
 
 /* Describe a layout. This may be called in a signal handler */
 static unsigned
-describe_layout(char *d, size_t siz, const struct canvas *c, int recurse,
-	int cursor, int id)
+describe_layout(char *d, size_t siz, const struct canvas *c, int flags)
 {
+	int recurse, cursor, id;
+	recurse = flags & 0x1;
+	cursor = flags & 0x2;
+	id = flags & 0x4;
 	unsigned len = snprintf(d, siz, "%s%dx%d@%d,%d",
 		c == get_focus() ? "*" : "",
 		c->extent.y, c->extent.x, c->origin.y, c->origin.x
@@ -173,8 +175,7 @@ describe_layout(char *d, size_t siz, const struct canvas *c, int recurse,
 		if( recurse && len + 3 < siz && c->c[i] ) {
 			d[len++] = ';';
 			d[len++] = ' ';
-			len += describe_layout(d + len, siz - len, c->c[i], 1,
-				cursor, id);
+			len += describe_layout(d + len, siz - len, c->c[i], flags);
 		}
 	}
 	return len;
