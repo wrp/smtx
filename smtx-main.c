@@ -949,8 +949,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 	}
 	if( b && b->act ) {
 		b->act(b->arg);
-		if( ! ( b->act == digit || (b->act == transition
-				&& S.binding == &keys) ) ) { /* (1) */
+		if( b->act != digit && S.binding != &keys ) { /* (1) */
 			S.count = -1;
 		}
 	} else if( S.mode == passthru && n->p && n->p->fd > 0 ) {
