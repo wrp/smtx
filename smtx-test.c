@@ -152,9 +152,7 @@ test_attach(int fd)
 static int
 test_navigate(int fd)
 {
-	ssize_t s;
 	int status = 0;
-	char buf[1024];
 	fdprintf(fd, "%ccjkhlC4tCvjkh2slc\r", CTL('g'));
 	status |= check_layout(fd, "%s; %s; %s; %s; %s",
 		"11x26@0,0",
@@ -164,17 +162,12 @@ test_navigate(int fd)
 		"11x26@0,54"
 	);
 	fdprintf(fd, "\07cccccccc\r");
-	fdprintf(fd, "kill -HUP $SMTX\r");
-	s = read(child_pipe[0], buf, sizeof buf - 1);
-	buf[s] = 0;
-	char *expect = "11x26@0,0; 11x80@12,0; *0x26@0,27; 0x26@1,27; 0x26@2,27; "
-		"0x26@3,27; 0x26@4,27; 0x26@5,27; 0x26@6,27; 0x26@7,27; "
-		"1x26@8,27; 1x26@10,27; 11x26@0,54";
-	if( strcmp( buf, expect ) ) {
-		fprintf(stderr, "unexpected layout after squeeze: %s\n", buf);
-		status = 1;
-	}
-
+	status |= check_layout(fd, "%s; %s; %s; %s",
+		"11x26@0,0; 11x80@12,0",
+		"*0x26@0,27",
+		"0x26@1,27; 0x26@2,27; 0x26@3,27; 0x26@4,27; 0x26@5,27",
+		"0x26@6,27; 0x26@7,27; 1x26@8,27; 1x26@10,27; 11x26@0,54"
+	);
 	fdprintf(fd, "kill $$\r\007xv\r");
 	fdprintf(fd, "kill -TERM $SMTX\r");
 	return status;
