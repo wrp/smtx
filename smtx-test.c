@@ -217,17 +217,20 @@ handler(int s)
 static unsigned
 describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, int flags)
 {
-	int recurse, cursor, id;
 	const char * const e = d + siz;
-	recurse = flags & 0x1;
-	cursor = flags & 0x2;
-	id = flags & 0x4;
+	int recurse = flags & 0x1;
+	int cursor = flags & 0x2;
+	int show_id = flags & 0x4;
+	int show_pid = flags & 0x8;
 	d += snprintf(d, e - d, "%s%dx%d@%d,%d",
 		c == get_focus() ? "*" : "",
 		c->extent.y, c->extent.x, c->origin.y, c->origin.x
 	);
-	if( id && c->p ) {
-		d += snprintf(d, e - d, "(%d)", c->p->id);
+	if( show_pid && c->p ) {
+		d += snprintf(d, e - d, "(pid=%d)", c->p->pid);
+	}
+	if( show_id && c->p ) {
+		d += snprintf(d, e - d, "(id=%d)", c->p->id);
 	}
 	if( cursor && c->p->s ) {
 		int y = 0, x = 0;
