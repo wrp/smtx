@@ -22,20 +22,36 @@ fdprintf(int fd, const char *fmt, ...)
 	rewrite(fd, cmd, n);
 }
 
-/* Read from fd until needle is seen. */
+/* Read from fd until needle is seen count non-overlapping times. */
 static void
 grep(int fd, const char *needle, int count)
 {
-	char b;
+	char buf[BUFSIZ];
+	const char *end;
 	const char *n = needle;
-	while( read(fd, &b, 1) == 1 && count > 0) {
-		if( b == *n ) {
+	ssize_t rc = read(fd, buf, sizeof buf);
+	if( rc < 0 ) {
+		 err(EXIT_FAILURE, "read from pty");
+	}
+	end = buf + rc;
+	for( const char *b = buf; b < end && count > 0; ) {
+		if( *b++ == *n ) {
 			if( *++n == '\0' ) {
 				count -= 1;
 				n = needle;
 			}
 		} else {
 			n = needle;
+		}
+		if( b == end ) {
+			ptrdiff_t d = n - needle;
+			memcpy(buf, b - d, d);
+			rc = read(fd, buf + d, sizeof buf - d);
+			if( rc < 0 ) {
+				 err(EXIT_FAILURE, "read from pty");
+			}
+			end = buf + d + rc;
+			b = buf + d;
 		}
 	}
 }
