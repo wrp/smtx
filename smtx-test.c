@@ -22,6 +22,24 @@ fdprintf(int fd, const char *fmt, ...)
 	rewrite(fd, cmd, n);
 }
 
+/* Read from fd until needle is seen. */
+static void
+grep(int fd, const char *needle, int count)
+{
+	char b;
+	const char *n = needle;
+	while( read(fd, &b, 1) == 1 && count > 0) {
+		if( b == *n ) {
+			if( *++n == '\0' ) {
+				count -= 1;
+				n = needle;
+			}
+		} else {
+			n = needle;
+		}
+	}
+}
+
 static int
 test_row(int *fd)
 {
@@ -30,7 +48,8 @@ test_row(int *fd)
 	char expect[81];
 	char buf[1024];
 	fdprintf(*fd, "yes | nl -ba | sed 400q\r");
-	fdprintf(*fd, "%c22\rsleep 1\r", CTL('g'));
+	fdprintf(*fd, "%c21\recho 123456789\n", CTL('g'));
+	grep(*fd, "123456789", 3);
 	fdprintf(*fd, "kill -USR1 $SMTX\r");
 	s = read(child_pipe[0], buf, sizeof buf - 1);
 	buf[s] = 0;
