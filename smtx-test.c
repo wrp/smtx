@@ -348,7 +348,7 @@ execute_test(struct st *v)
 	}
 	if( WIFEXITED(status) && WEXITSTATUS(status) != 0 ) {
 		char iobuf[BUFSIZ], *s = iobuf;
-		fprintf(stderr, "test %s FAILED\n", v->name);
+		fprintf(stderr, "%s child FAILED\n", v->name);
 		ssize_t r = read(fd[0], iobuf, sizeof iobuf - 1);
 		if( r > 0 ) {
 			iobuf[r] = '\0';
@@ -361,6 +361,9 @@ execute_test(struct st *v)
 	} else if( WIFSIGNALED(status) ) {
 		fprintf(stderr, "test %s caught signal %d\n",
 			v->name, WTERMSIG(status));
+	}
+	if( rv ) {
+		fprintf(stderr, "%s FAILED", v->name);
 	}
 	return !rv && WIFEXITED(status) ? WEXITSTATUS(status) : EXIT_FAILURE;
 }
