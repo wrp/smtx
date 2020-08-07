@@ -6,6 +6,7 @@
 
 int rv = EXIT_SUCCESS;
 int c2p[2];
+int p2c[2];
 static unsigned describe_layout(char *, ptrdiff_t, const struct canvas *, int);
 static unsigned describe_row(char *desc, size_t siz, WINDOW *w, int row);
 
@@ -30,11 +31,13 @@ check_layout(int fd, const char *fmt, ...)
 	char expect[1024];
 	int rv = 0;
 	ssize_t s;
+	int flags = 1;
 
 	va_start(ap, fmt);
 	(void)vsnprintf(expect, sizeof expect, fmt, ap);
 	va_end(ap);
 
+	write(p2c[1], &flags, sizeof flags);
 	fdprintf(fd, "kill -HUP $SMTX\r");
 	s = read(c2p[0], buf, sizeof buf - 1);
 	if( s == -1 ) {
@@ -95,12 +98,14 @@ test_row(int fd, pid_t p)
 {
 	(void)p;
 	ssize_t s;
+	int row = 21;
 	int status = 0;
 	char expect[81];
 	char buf[1024];
 	fdprintf(fd, "yes | nl -ba | sed 400q\r");
-	fdprintf(fd, "%c21\recho 123456789\n", CTL('g'));
+	fdprintf(fd, "echo 123456789\n", CTL('g'));
 	grep(fd, "123456789", 3);
+	write(p2c[1], &row, sizeof row);
 	kill(p, SIGUSR1);
 	s = read(c2p[0], buf, sizeof buf - 1);
 	buf[s] = 0;
@@ -117,9 +122,10 @@ static int
 test_lnm(int fd, pid_t p)
 {
 	(void)p;
-	int k;
+	int k = 1;
 	fdprintf(fd, "printf '\\e[20h'\r");
 	fdprintf(fd, "kill -HUP $SMTX\r");
+	write(p2c[1], &k, sizeof k);
 	read(c2p[0], &k, 1);
 	fdprintf(fd, "printf 'foo\\rbar\\r\\n'\r");
 	fdprintf(fd, "printf '\\e[20l'\r");
@@ -144,10 +150,11 @@ test_reset(int fd, pid_t p)
 static int
 test_attach(int fd, pid_t p)
 {
-	int k;
+	int k = 1;
 	(void)p;
 	fdprintf(fd, "%ccc3a\r", CTL('g'));
 	fdprintf(fd, "kill -HUP $SMTX\r");
+	write(p2c[1], &k, sizeof k);
 	read(c2p[0], &k, 1);
 	fdprintf(fd, "kill -TERM $SMTX\r");
 	return 0;
@@ -204,8 +211,9 @@ static void
 handler(int s)
 {
 	char buf[256];
-	int c = S.count == - 1 ? 1 : S.count;
+	int c;
 	unsigned len = 0;
+	read(p2c[0], &c, sizeof c);
 	switch(s) {
 	case SIGHUP:
 		len = describe_layout(buf, sizeof buf, S.c, c);
@@ -314,7 +322,7 @@ execute_test(struct st *v)
 	int status;
 	pid_t pid;
 
-	if( pipe(c2p) ) {
+	if( pipe(c2p) || pipe(p2c)) {
 		err(EXIT_FAILURE, "pipe");
 	}
 	if( openpty(fd, fd + 1, NULL, NULL, NULL) ) {
@@ -339,16 +347,16 @@ execute_test(struct st *v)
 		sa.sa_handler = handler;
 		sigaction(SIGHUP, &sa, NULL);
 		sigaction(SIGUSR1, &sa, NULL);
-		if( close(c2p[0])) {
-			err(EXIT_FAILURE, "close read side");
+		if( close(c2p[0]) || close(p2c[1]) ) {
+			err(EXIT_FAILURE, "close");
 		}
 		exit(smtx_main(1, args + 1));
 	default:
 		if( close(fd[1]) ) {
 			err(EXIT_FAILURE, "close secondary");
 		}
-		if( close(c2p[1])) {
-			err(EXIT_FAILURE, "close write side");
+		if( close(c2p[1]) || close(p2c[0]) ) {
+			err(EXIT_FAILURE, "close");
 		}
 		rv = v->f(fd[0], pid);
 		wait(&status);
