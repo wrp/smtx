@@ -101,7 +101,7 @@ test_row(int fd, pid_t p)
 	fdprintf(fd, "yes | nl -ba | sed 400q\r");
 	fdprintf(fd, "%c21\recho 123456789\n", CTL('g'));
 	grep(fd, "123456789", 3);
-	fdprintf(fd, "kill -USR1 $SMTX\r");
+	kill(p, SIGUSR1);
 	s = read(child_pipe[0], buf, sizeof buf - 1);
 	buf[s] = 0;
 	snprintf( expect, sizeof expect, "%6d%-74s", 400, "  y");
