@@ -91,8 +91,9 @@ grep(int fd, const char *needle, int count)
 }
 
 static int
-test_row(int fd)
+test_row(int fd, pid_t p)
 {
+	(void)p;
 	ssize_t s;
 	int status = 0;
 	char expect[81];
@@ -113,8 +114,9 @@ test_row(int fd)
 }
 
 static int
-test_lnm(int fd)
+test_lnm(int fd, pid_t p)
 {
+	(void)p;
 	int k;
 	fdprintf(fd, "printf '\\e[20h'\r");
 	fdprintf(fd, "kill -HUP $SMTX\r");
@@ -126,9 +128,10 @@ test_lnm(int fd)
 }
 
 static int
-test_reset(int fd)
+test_reset(int fd, pid_t p)
 {
 	int k[] = { 1, 3, 4, 6, 7, 20, 25, 34, 1048, 1049, 47, 1047 };
+	(void)p;
 
 	for( unsigned long i = 0; i < sizeof k / sizeof *k; i++ ) {
 		int v = k[i];
@@ -139,9 +142,10 @@ test_reset(int fd)
 }
 
 static int
-test_attach(int fd)
+test_attach(int fd, pid_t p)
 {
 	int k;
+	(void)p;
 	fdprintf(fd, "%ccc3a\r", CTL('g'));
 	fdprintf(fd, "kill -HUP $SMTX\r");
 	read(child_pipe[0], &k, 1);
@@ -150,8 +154,9 @@ test_attach(int fd)
 }
 
 static int
-test_navigate(int fd)
+test_navigate(int fd, pid_t p)
 {
+	(void)p;
 	int status = 0;
 	fdprintf(fd, "%ccjkhlC4tCvjkh2slc\r", CTL('g'));
 	status |= check_layout(fd, "%s; %s; %s; %s; %s",
@@ -174,8 +179,9 @@ test_navigate(int fd)
 }
 
 static int
-test1(int fd)
+test1(int fd, pid_t p)
 {
+	(void)p;
 	char *cmds[] = {
 		"echo err >&2;",
 		"tput cud 2; tput cuu 2; tput cuf 1",
@@ -264,7 +270,7 @@ describe_row(char *desc, size_t siz, WINDOW *w, int row)
 	return rv;
 }
 
-typedef int test(int);
+typedef int test(int, pid_t);
 struct st { char *name; test *f; };
 static int execute_test(struct st *v);
 #define F(x) { .name = #x, .f = (x) }
@@ -306,6 +312,7 @@ execute_test(struct st *v)
 	char *const args[] = { v->name, v->name, NULL };
 	int fd[2]; /* primary/secondary fd of pty */
 	int status;
+	pid_t pid;
 
 	if( pipe(child_pipe) ) {
 		err(EXIT_FAILURE, "pipe");
@@ -313,7 +320,7 @@ execute_test(struct st *v)
 	if( openpty(fd, fd + 1, NULL, NULL, NULL) ) {
 		err(EXIT_FAILURE, "openpty");
 	}
-	switch( fork() ) {
+	switch( pid = fork() ) {
 	case -1:
 		err(1, "fork");
 		break;
@@ -343,7 +350,7 @@ execute_test(struct st *v)
 		if( close(child_pipe[1])) {
 			err(EXIT_FAILURE, "close write side");
 		}
-		rv = v->f(fd[0]);
+		rv = v->f(fd[0], pid);
 		wait(&status);
 	}
 	if( WIFEXITED(status) && WEXITSTATUS(status) != 0 ) {
