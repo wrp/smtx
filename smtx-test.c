@@ -124,6 +124,7 @@ test_row(int fd, pid_t p)
 	fdprintf(fd, "echo 123456789\n", CTL('g'));
 	grep(fd, "123456789", 3);
 
+	status |= validate_row(p, 20, "%6d%-74s", 399, "  y");
 	status |= validate_row(p, 21, "%6d%-74s", 400, "  y");
 	fdprintf(fd, "kill $SMTX\r");
 	return status;
