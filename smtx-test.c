@@ -5,7 +5,7 @@
 /* Non-intrusive tests that manipulate the master pty. */
 
 int rv = EXIT_SUCCESS;
-int child_pipe[2];
+int c2p[2];
 static unsigned describe_layout(char *, ptrdiff_t, const struct canvas *, int);
 static unsigned describe_row(char *desc, size_t siz, WINDOW *w, int row);
 
@@ -36,7 +36,7 @@ check_layout(int fd, const char *fmt, ...)
 	va_end(ap);
 
 	fdprintf(fd, "kill -HUP $SMTX\r");
-	s = read(child_pipe[0], buf, sizeof buf - 1);
+	s = read(c2p[0], buf, sizeof buf - 1);
 	if( s == -1 ) {
 		fprintf(stderr, "reading from child: %s", strerror(errno));
 		rv = -1;
@@ -102,7 +102,7 @@ test_row(int fd, pid_t p)
 	fdprintf(fd, "%c21\recho 123456789\n", CTL('g'));
 	grep(fd, "123456789", 3);
 	kill(p, SIGUSR1);
-	s = read(child_pipe[0], buf, sizeof buf - 1);
+	s = read(c2p[0], buf, sizeof buf - 1);
 	buf[s] = 0;
 	snprintf( expect, sizeof expect, "%6d%-74s", 400, "  y");
 	if( strcmp( buf, expect ) ) {
@@ -120,7 +120,7 @@ test_lnm(int fd, pid_t p)
 	int k;
 	fdprintf(fd, "printf '\\e[20h'\r");
 	fdprintf(fd, "kill -HUP $SMTX\r");
-	read(child_pipe[0], &k, 1);
+	read(c2p[0], &k, 1);
 	fdprintf(fd, "printf 'foo\\rbar\\r\\n'\r");
 	fdprintf(fd, "printf '\\e[20l'\r");
 	fdprintf(fd, "kill -TERM $SMTX\r");
@@ -148,7 +148,7 @@ test_attach(int fd, pid_t p)
 	(void)p;
 	fdprintf(fd, "%ccc3a\r", CTL('g'));
 	fdprintf(fd, "kill -HUP $SMTX\r");
-	read(child_pipe[0], &k, 1);
+	read(c2p[0], &k, 1);
 	fdprintf(fd, "kill -TERM $SMTX\r");
 	return 0;
 }
@@ -215,7 +215,7 @@ handler(int s)
 			S.c->offset.y + c - 1);
 	}
 	if( len > 0 ) {
-		write(child_pipe[1], buf, len);
+		write(c2p[1], buf, len);
 	}
 }
 
@@ -314,7 +314,7 @@ execute_test(struct st *v)
 	int status;
 	pid_t pid;
 
-	if( pipe(child_pipe) ) {
+	if( pipe(c2p) ) {
 		err(EXIT_FAILURE, "pipe");
 	}
 	if( openpty(fd, fd + 1, NULL, NULL, NULL) ) {
@@ -339,7 +339,7 @@ execute_test(struct st *v)
 		sa.sa_handler = handler;
 		sigaction(SIGHUP, &sa, NULL);
 		sigaction(SIGUSR1, &sa, NULL);
-		if( close(child_pipe[0])) {
+		if( close(c2p[0])) {
 			err(EXIT_FAILURE, "close read side");
 		}
 		exit(smtx_main(1, args + 1));
@@ -347,7 +347,7 @@ execute_test(struct st *v)
 		if( close(fd[1]) ) {
 			err(EXIT_FAILURE, "close secondary");
 		}
-		if( close(child_pipe[1])) {
+		if( close(c2p[1])) {
 			err(EXIT_FAILURE, "close write side");
 		}
 		rv = v->f(fd[0], pid);
