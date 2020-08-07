@@ -94,26 +94,37 @@ grep(int fd, const char *needle, int count)
 }
 
 static int
+validate_row(pid_t p, int row, const char *fmt, ... )
+{
+	int status = 0;
+	char expect[1024];
+	char buf[1024];
+	va_list ap;
+	va_start(ap, fmt);
+	(void)vsnprintf(expect, sizeof expect, fmt, ap);
+	va_end(ap);
+	write(p2c[1], &row, sizeof row);
+	kill(p, SIGUSR1);
+	ssize_t s = read(c2p[0], buf, sizeof buf - 1);
+	buf[s] = 0;
+	if( strcmp( buf, expect ) ) {
+		fprintf(stderr, "unexpected content in row %d\n", row);
+		fprintf(stderr, "received: %s\n", buf);
+		fprintf(stderr, "expected: %s\n", expect);
+		status = 1;
+	}
+	return status;
+}
+
+static int
 test_row(int fd, pid_t p)
 {
-	(void)p;
-	ssize_t s;
-	int row = 21;
 	int status = 0;
-	char expect[81];
-	char buf[1024];
 	fdprintf(fd, "yes | nl -ba | sed 400q\r");
 	fdprintf(fd, "echo 123456789\n", CTL('g'));
 	grep(fd, "123456789", 3);
-	write(p2c[1], &row, sizeof row);
-	kill(p, SIGUSR1);
-	s = read(c2p[0], buf, sizeof buf - 1);
-	buf[s] = 0;
-	snprintf( expect, sizeof expect, "%6d%-74s", 400, "  y");
-	if( strcmp( buf, expect ) ) {
-		fprintf(stderr, "unexpected row: '%s'\n", buf);
-		status = 1;
-	}
+
+	status |= validate_row(p, 21, "%6d%-74s", 400, "  y");
 	fdprintf(fd, "kill $SMTX\r");
 	return status;
 }
