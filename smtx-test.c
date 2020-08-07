@@ -22,19 +22,33 @@ fdprintf(int fd, const char *fmt, ...)
 	rewrite(fd, cmd, n);
 }
 
-/* Read from fd until needle is seen count non-overlapping times. */
+/* Read from fd until needle is seen count non-overlapping times
+ * or end of file.  This is not intended to really check anything,
+ * but is merely a synchronization device to delay the test until
+ * data is seen to verify that the underlying shell has processed
+ * input.
+ */
 static void
 grep(int fd, const char *needle, int count)
 {
 	char buf[BUFSIZ];
-	const char *end;
+	const char *end = buf;
+	const char *b = buf;
 	const char *n = needle;
-	ssize_t rc = read(fd, buf, sizeof buf);
-	if( rc < 0 ) {
-		 err(EXIT_FAILURE, "read from pty");
-	}
-	end = buf + rc;
-	for( const char *b = buf; b < end && count > 0; ) {
+	while( count > 0 ) {
+		if( b == end ) {
+			ptrdiff_t d = n - needle;
+			if( d > 0 ) {
+				memcpy(buf, b - d, d);
+			}
+			size_t rc = read(fd, buf + d, sizeof buf - d);
+			switch( rc ) {
+			case -1: err(EXIT_FAILURE, "read from pty");
+			case 0: return;
+			}
+			end = buf + d + rc;
+			b = buf + d;
+		}
 		if( *b++ == *n ) {
 			if( *++n == '\0' ) {
 				count -= 1;
@@ -42,16 +56,6 @@ grep(int fd, const char *needle, int count)
 			}
 		} else {
 			n = needle;
-		}
-		if( b == end ) {
-			ptrdiff_t d = n - needle;
-			memcpy(buf, b - d, d);
-			rc = read(fd, buf + d, sizeof buf - d);
-			if( rc < 0 ) {
-				 err(EXIT_FAILURE, "read from pty");
-			}
-			end = buf + d + rc;
-			b = buf + d;
 		}
 	}
 }
