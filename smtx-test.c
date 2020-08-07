@@ -263,11 +263,12 @@ execute_test(struct st *v)
 	char *const args[] = { v->name, v->name, NULL };
 	int fd[2]; /* primary/secondary fd of pty */
 	int status;
+	char path[PATH_MAX];
 
 	if( pipe(child_pipe) ) {
 		err(EXIT_FAILURE, "pipe");
 	}
-	if( openpty(fd, fd + 1, NULL, NULL, NULL) ) {
+	if( openpty(fd, fd + 1, path, NULL, NULL) ) {
 		err(EXIT_FAILURE, "openpty");
 	}
 	switch( fork() ) {
@@ -294,6 +295,12 @@ execute_test(struct st *v)
 		}
 		exit(smtx_main(1, args + 1));
 	default:
+		if( close(fd[1]) ) {
+			err(EXIT_FAILURE, "close secondary");
+		}
+		if( (fd[1] = open(path, O_RDONLY)) == -1 ) {
+			err(EXIT_FAILURE, path);
+		}
 		if( close(child_pipe[1])) {
 			err(EXIT_FAILURE, "close write side");
 		}
