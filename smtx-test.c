@@ -32,7 +32,7 @@ check_layout(int fd, const char *fmt, ...)
 	ssize_t s;
 
 	va_start(ap, fmt);
-	vsnprintf(expect, sizeof expect, fmt, ap);
+	(void)vsnprintf(expect, sizeof expect, fmt, ap);
 	va_end(ap);
 
 	fdprintf(fd, "kill -HUP $SMTX\r");
