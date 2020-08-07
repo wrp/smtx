@@ -41,16 +41,16 @@ grep(int fd, const char *needle, int count)
 }
 
 static int
-test_row(int *fd)
+test_row(int fd)
 {
 	ssize_t s;
 	int status = 0;
 	char expect[81];
 	char buf[1024];
-	fdprintf(*fd, "yes | nl -ba | sed 400q\r");
-	fdprintf(*fd, "%c21\recho 123456789\n", CTL('g'));
-	grep(*fd, "123456789", 3);
-	fdprintf(*fd, "kill -USR1 $SMTX\r");
+	fdprintf(fd, "yes | nl -ba | sed 400q\r");
+	fdprintf(fd, "%c21\recho 123456789\n", CTL('g'));
+	grep(fd, "123456789", 3);
+	fdprintf(fd, "kill -USR1 $SMTX\r");
 	s = read(child_pipe[0], buf, sizeof buf - 1);
 	buf[s] = 0;
 	snprintf( expect, sizeof expect, "%6d%-74s", 400, "  y");
@@ -58,56 +58,56 @@ test_row(int *fd)
 		fprintf(stderr, "unexpected row: '%s'\n", buf);
 		status = 1;
 	}
-	fdprintf(*fd, "kill $SMTX\r");
+	fdprintf(fd, "kill $SMTX\r");
 	return status;
 }
 
 static int
-test_lnm(int *fd)
+test_lnm(int fd)
 {
 	int k;
-	fdprintf(*fd, "printf '\\e[20h'\r");
-	fdprintf(*fd, "kill -HUP $SMTX\r");
+	fdprintf(fd, "printf '\\e[20h'\r");
+	fdprintf(fd, "kill -HUP $SMTX\r");
 	read(child_pipe[0], &k, 1);
-	fdprintf(*fd, "printf 'foo\\rbar\\r\\n'\r");
-	fdprintf(*fd, "printf '\\e[20l'\r");
-	fdprintf(*fd, "kill -TERM $SMTX\r");
+	fdprintf(fd, "printf 'foo\\rbar\\r\\n'\r");
+	fdprintf(fd, "printf '\\e[20l'\r");
+	fdprintf(fd, "kill -TERM $SMTX\r");
 	return 0;
 }
 
 static int
-test_reset(int *fd)
+test_reset(int fd)
 {
 	int k[] = { 1, 3, 4, 6, 7, 20, 25, 34, 1048, 1049, 47, 1047 };
 
 	for( unsigned long i = 0; i < sizeof k / sizeof *k; i++ ) {
 		int v = k[i];
-		fdprintf(*fd, "printf '\\e[%dl'\rprintf '\\e[%dh'\r", v, v);
+		fdprintf(fd, "printf '\\e[%dl'\rprintf '\\e[%dh'\r", v, v);
 	}
-	fdprintf(*fd, "kill -TERM $SMTX\r");
+	fdprintf(fd, "kill -TERM $SMTX\r");
 	return 0;
 }
 
 static int
-test_attach(int *fd)
+test_attach(int fd)
 {
 	int k;
-	fdprintf(*fd, "%ccc3a\r", CTL('g'));
-	fdprintf(*fd, "kill -HUP $SMTX\r");
+	fdprintf(fd, "%ccc3a\r", CTL('g'));
+	fdprintf(fd, "kill -HUP $SMTX\r");
 	read(child_pipe[0], &k, 1);
-	fdprintf(*fd, "kill -TERM $SMTX\r");
+	fdprintf(fd, "kill -TERM $SMTX\r");
 	return 0;
 }
 
 static int
-test_navigate(int *fd)
+test_navigate(int fd)
 {
 	ssize_t s;
 	int status = 0;
 	char buf[1024];
-	fdprintf(*fd, "%ccjkhlC4tCvjkh2slc\r", CTL('g'));
+	fdprintf(fd, "%ccjkhlC4tCvjkh2slc\r", CTL('g'));
 
-	fdprintf(*fd, "kill -HUP $SMTX\r");
+	fdprintf(fd, "kill -HUP $SMTX\r");
 	s = read(child_pipe[0], buf, sizeof buf - 1);
 	buf[s] = 0;
 	char *expect = "11x26@0,0; 11x80@12,0; *5x26@0,27; "
@@ -116,8 +116,8 @@ test_navigate(int *fd)
 		fprintf(stderr, "unexpected layout: %s\n", buf);
 		status = 1;
 	}
-	fdprintf(*fd, "\07cccccccc\r");
-	fdprintf(*fd, "kill -HUP $SMTX\r");
+	fdprintf(fd, "\07cccccccc\r");
+	fdprintf(fd, "kill -HUP $SMTX\r");
 	s = read(child_pipe[0], buf, sizeof buf - 1);
 	buf[s] = 0;
 	expect = "11x26@0,0; 11x80@12,0; *0x26@0,27; 0x26@1,27; 0x26@2,27; "
@@ -128,13 +128,13 @@ test_navigate(int *fd)
 		status = 1;
 	}
 
-	fdprintf(*fd, "kill $$\r\007xv\r");
-	fdprintf(*fd, "kill -TERM $SMTX\r");
+	fdprintf(fd, "kill $$\r\007xv\r");
+	fdprintf(fd, "kill -TERM $SMTX\r");
 	return status;
 }
 
 static int
-test1(int *fd)
+test1(int fd)
 {
 	char *cmds[] = {
 		"echo err >&2;",
@@ -149,7 +149,7 @@ test1(int *fd)
 		NULL
 	};
 	for( char **cmd = cmds; *cmd; cmd++ ) {
-		fdprintf(*fd, "%s\r", *cmd);
+		fdprintf(fd, "%s\r", *cmd);
 	}
 	return 0;
 }
@@ -221,7 +221,7 @@ describe_row(char *desc, size_t siz, WINDOW *w, int row)
 	return rv;
 }
 
-typedef int test(int *);
+typedef int test(int);
 struct st { char *name; test *f; };
 static int execute_test(struct st *v);
 #define F(x) { .name = #x, .f = (x) }
@@ -300,7 +300,7 @@ execute_test(struct st *v)
 		if( close(child_pipe[1])) {
 			err(EXIT_FAILURE, "close write side");
 		}
-		rv = v->f(fd);
+		rv = v->f(fd[0]);
 		wait(&status);
 	}
 	if( WIFEXITED(status) && WEXITSTATUS(status) != 0 ) {
