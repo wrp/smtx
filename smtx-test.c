@@ -121,11 +121,26 @@ test_row(int fd, pid_t p)
 {
 	int status = 0;
 	fdprintf(fd, "yes | nl -ba | sed 400q\r");
-	fdprintf(fd, "echo 123456789\n", CTL('g'));
+	fdprintf(fd, "echo 123456789\n");
 	grep(fd, "123456789", 3);
 
 	status |= validate_row(p, 20, "%6d%-74s", 399, "  y");
 	status |= validate_row(p, 21, "%6d%-74s", 400, "  y");
+	fdprintf(fd, "kill $SMTX\r");
+	return status;
+}
+
+static int
+test_cup(int fd, pid_t p)
+{
+	int status = 0;
+	fdprintf(fd, "tput cup 5 50; echo foo\r");
+	fdprintf(fd, "printf '\\n0123456'; tput cub 4; printf '789\\n'\r");
+	fdprintf(fd, "echo unique string\n");
+	grep(fd, "unique string", 3);
+
+	status |= validate_row(p, 6, "%50s%-30s", "", "foo");
+	status |= validate_row(p, 8, "%-80s", "0127896");
 	fdprintf(fd, "kill $SMTX\r");
 	return status;
 }
@@ -305,6 +320,7 @@ main(int argc, char *const argv[])
 		F(test_lnm),
 		F(test_reset),
 		F(test_attach),
+		F(test_cup),
 		{ NULL, NULL }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
