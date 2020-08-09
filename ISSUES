@@ -76,7 +76,6 @@ MAYBE TODO:
 	Register signal handlers for TERM and HUP.  Need to ensure
 	that endwin is called.
 
-	Be able to attach a process to multiple windows.
 	Configure bindings from a startup file or ?
 	Multi-key bindings (?)
 	Pass master fd of a pty through a socket.
