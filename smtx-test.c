@@ -117,35 +117,16 @@ validate_row(pid_t p, int row, const char *fmt, ... )
 }
 
 static int
-test_row(int fd, pid_t p)
+test_attach(int fd, pid_t p)
 {
-	int status = 0;
-	fdprintf(fd, "yes | nl -ba | sed 400q\r");
-	fdprintf(fd, "echo 123456789\n");
-	grep(fd, "123456789", 3);
-
-	status |= validate_row(p, 20, "%6d%-74s", 399, "  y");
-	status |= validate_row(p, 21, "%6d%-74s", 400, "  y");
-	fdprintf(fd, "kill $SMTX\r");
-	return status;
-}
-
-static int
-check_ps1(int fd, pid_t p)
-{
-	int s = 0;
-	fdprintf(fd, "echo unique string\n");
-	grep(fd, "unique string", 3);
-	/* Note: this relies on the above string being written
-	 * before the shell emits its first prompt.  I am unsure
-	 * of the best way to resolve this race.
-	 */
-	if( validate_row(p, 2, "%-80s", "$ unique string")) {
-		s = 1;
-		fprintf(stderr, "PS1 != '$ '.  Tests will fail\n");
-	}
-	fdprintf(fd, "kill $SMTX\r");
-	return s;
+	int k = 1;
+	(void)p;
+	fdprintf(fd, "%ccc3a\r", CTL('g'));
+	fdprintf(fd, "kill -HUP $SMTX\r");
+	write(p2c[1], &k, sizeof k);
+	read(c2p[0], &k, 1);
+	fdprintf(fd, "kill -TERM $SMTX\r");
+	return 0;
 }
 
 static int
@@ -185,33 +166,6 @@ test_lnm(int fd, pid_t p)
 }
 
 static int
-test_reset(int fd, pid_t p)
-{
-	int k[] = { 1, 3, 4, 6, 7, 20, 25, 34, 1048, 1049, 47, 1047 };
-	(void)p;
-
-	for( unsigned long i = 0; i < sizeof k / sizeof *k; i++ ) {
-		int v = k[i];
-		fdprintf(fd, "printf '\\e[%dl'\rprintf '\\e[%dh'\r", v, v);
-	}
-	fdprintf(fd, "kill -TERM $SMTX\r");
-	return 0;
-}
-
-static int
-test_attach(int fd, pid_t p)
-{
-	int k = 1;
-	(void)p;
-	fdprintf(fd, "%ccc3a\r", CTL('g'));
-	fdprintf(fd, "kill -HUP $SMTX\r");
-	write(p2c[1], &k, sizeof k);
-	read(c2p[0], &k, 1);
-	fdprintf(fd, "kill -TERM $SMTX\r");
-	return 0;
-}
-
-static int
 test_navigate(int fd, pid_t p)
 {
 	(void)p;
@@ -234,6 +188,52 @@ test_navigate(int fd, pid_t p)
 	fdprintf(fd, "kill $$\r\007xv\r");
 	fdprintf(fd, "kill -TERM $SMTX\r");
 	return status;
+}
+
+static int
+test_reset(int fd, pid_t p)
+{
+	int k[] = { 1, 3, 4, 6, 7, 20, 25, 34, 1048, 1049, 47, 1047 };
+	(void)p;
+
+	for( unsigned long i = 0; i < sizeof k / sizeof *k; i++ ) {
+		int v = k[i];
+		fdprintf(fd, "printf '\\e[%dl'\rprintf '\\e[%dh'\r", v, v);
+	}
+	fdprintf(fd, "kill -TERM $SMTX\r");
+	return 0;
+}
+
+static int
+test_row(int fd, pid_t p)
+{
+	int status = 0;
+	fdprintf(fd, "yes | nl -ba | sed 400q\r");
+	fdprintf(fd, "echo 123456789\n");
+	grep(fd, "123456789", 3);
+
+	status |= validate_row(p, 20, "%6d%-74s", 399, "  y");
+	status |= validate_row(p, 21, "%6d%-74s", 400, "  y");
+	fdprintf(fd, "kill $SMTX\r");
+	return status;
+}
+
+static int
+check_ps1(int fd, pid_t p)
+{
+	int s = 0;
+	fdprintf(fd, "echo unique string\n");
+	grep(fd, "unique string", 3);
+	/* Note: this relies on the above string being written
+	 * before the shell emits its first prompt.  I am unsure
+	 * of the best way to resolve this race.
+	 */
+	if( validate_row(p, 2, "%-80s", "$ unique string")) {
+		s = 1;
+		fprintf(stderr, "PS1 != '$ '.  Tests will fail\n");
+	}
+	fdprintf(fd, "kill $SMTX\r");
+	return s;
 }
 
 static int
@@ -340,12 +340,12 @@ main(int argc, char *const argv[])
 	struct st tab[] = {
 		F(check_ps1),
 		F(test1),
-		F(test_navigate),
-		F(test_row),
-		F(test_lnm),
-		F(test_reset),
 		F(test_attach),
 		F(test_cup),
+		F(test_lnm),
+		F(test_navigate),
+		F(test_reset),
+		F(test_row),
 		{ NULL, NULL }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
