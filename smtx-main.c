@@ -313,6 +313,17 @@ getterm(void)
 }
 
 static void
+reshape_window(struct pty *p)
+{
+	if( ioctl(p->fd, TIOCSWINSZ, &p->ws) ) {
+		show_err("error changing width of %d", p->id);
+	}
+	if( kill(p->pid, SIGWINCH) ) {
+		show_err("kill %d", (int)p->pid);
+	}
+}
+
+static void
 set_width(const char *arg)
 {
 	struct canvas *n = S.f;
@@ -328,32 +339,20 @@ set_width(const char *arg)
 		resize_pad(&p->pri.win, h, w);
 		resize_pad(&p->alt.win, h, w);
 		extend_tabs(p, p->tabstop);
-		if( ioctl(p->fd, TIOCSWINSZ, &p->ws) ) {
-			show_err("error changing width of %d", p->fd);
-		}
-		if( kill(p->pid, SIGWINCH) ) {
-			show_err("kill %d", (int)p->pid);
-		}
+		reshape_window(p);
 	}
 }
 
 static void
-reshape_window(struct canvas *n)
+set_height(struct canvas *n)
 {
 	struct pty *p = n->p;
 	assert( S.history >= n->extent.y );
-
 	p->ws.ws_row = n->extent.y;
-
 	wsetscrreg(p->pri.win, 0, S.history - 1);
 	wsetscrreg(p->alt.win, 0, n->extent.y - 1);
 	wrefresh(p->s->win);
-	if( ioctl(p->fd, TIOCSWINSZ, &p->ws) ) {
-		show_err("ioctl");
-	}
-	if( kill(p->pid, SIGWINCH) ) {
-		show_err("kill");
-	}
+	reshape_window(p);
 }
 
 void
@@ -400,7 +399,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		if( p ) {
 			bool changed = n->extent.y > p->ws.ws_row;
 			if( p->fd >= 0 && changed ) {
-				reshape_window(n);
+				set_height(n);
 			}
 			if( n->extent.x > p->ws.ws_col ) {
 				int d = n->extent.x - p->ws.ws_col;
