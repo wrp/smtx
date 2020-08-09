@@ -131,6 +131,24 @@ test_row(int fd, pid_t p)
 }
 
 static int
+check_ps1(int fd, pid_t p)
+{
+	int s = 0;
+	fdprintf(fd, "echo unique string\n");
+	grep(fd, "unique string", 3);
+	/* Note: this relies on the above string being written
+	 * before the shell emits its first prompt.  I am unsure
+	 * of the best way to resolve this race.
+	 */
+	if( validate_row(p, 2, "%-80s", "$ unique string")) {
+		s = 1;
+		fprintf(stderr, "PS1 != '$ '.  Tests will fail\n");
+	}
+	fdprintf(fd, "kill $SMTX\r");
+	return s;
+}
+
+static int
 test_cup(int fd, pid_t p)
 {
 	int status = 0;
@@ -320,6 +338,7 @@ main(int argc, char *const argv[])
 {
 	int status = 0;
 	struct st tab[] = {
+		F(check_ps1),
 		F(test1),
 		F(test_navigate),
 		F(test_row),
@@ -330,6 +349,7 @@ main(int argc, char *const argv[])
 		{ NULL, NULL }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
+	unsetenv("ENV");  /* Try to suppress all shell initializtion */
 	setenv("LINES", "24", 1);
 	setenv("COLUMNS", "80", 1);
 	for( v = tab; ( v->f && argc < 2 ) || *++argv; v += 1 ) {
