@@ -188,11 +188,11 @@ test_navigate(int fd, pid_t p)
 		"5x26@6,27",
 		"11x26@0,54"
 	);
-	fdprintf(fd, "\07cccccccc\r");
-	fdprintf(fd, "kill -HUP $SMTX\r");
-	status |= check_layout(0, p, "%s; %s; %s; %s",
-		"11x26@0,0; 11x80@12,0",
-		"*0x26@0,27",
+	fdprintf(fd, "\07cccccccch\r");
+	grep(fd, NULL, 1);
+	status |= check_layout(1, p, "%s; %s; %s; %s",
+		"*11x26@0,0; 11x80@12,0",
+		"0x26@0,27",
 		"0x26@1,27; 0x26@2,27; 0x26@3,27; 0x26@4,27; 0x26@5,27",
 		"0x26@6,27; 0x26@7,27; 1x26@8,27; 1x26@10,27; 11x26@0,54"
 	);
