@@ -28,8 +28,8 @@ fdprintf(int fd, const char *fmt, ...)
 	rewrite(fd, cmd, n);
 }
 
-static int __attribute__((format(printf,3,4)))
-check_layout(int sig, pid_t pid, const char *fmt, ...)
+static int __attribute__((format(printf,2,3)))
+check_layout(pid_t pid, const char *fmt, ...)
 {
 	va_list ap;
 	char buf[1024];
@@ -43,9 +43,7 @@ check_layout(int sig, pid_t pid, const char *fmt, ...)
 	va_end(ap);
 
 	write(p2c[1], &p, sizeof p);
-	if( sig ) {
-		kill(pid, SIGHUP);
-	}
+	kill(pid, SIGHUP);
 	s = read(c2p[0], buf, sizeof buf - 1);
 	if( s == -1 ) {
 		fprintf(stderr, "reading from child: %s", strerror(errno));
@@ -181,7 +179,7 @@ test_navigate(int fd, pid_t p)
 	int status = 0;
 	fdprintf(fd, "%ccjkhlC4tCvjkh2slc\r", CTL('g'));
 	grep(fd, NULL, 1);
-	status |= check_layout(1, p, "%s; %s; %s; %s; %s",
+	status |= check_layout(p, "%s; %s; %s; %s; %s",
 		"11x26@0,0",
 		"11x80@12,0",
 		"*5x26@0,27",
@@ -190,9 +188,8 @@ test_navigate(int fd, pid_t p)
 	);
 	fdprintf(fd, "\07cccccccch\r");
 	grep(fd, NULL, 1);
-	status |= check_layout(1, p, "%s; %s; %s; %s",
-		"*11x26@0,0; 11x80@12,0",
-		"0x26@0,27",
+	status |= check_layout(p, "%s; %s; %s",
+		"*11x26@0,0; 11x80@12,0; 0x26@0,27",
 		"0x26@1,27; 0x26@2,27; 0x26@3,27; 0x26@4,27; 0x26@5,27",
 		"0x26@6,27; 0x26@7,27; 1x26@8,27; 1x26@10,27; 11x26@0,54"
 	);
