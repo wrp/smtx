@@ -7,11 +7,12 @@
 int rv = EXIT_SUCCESS;
 int c2p[2];
 int p2c[2];
-static unsigned describe_layout(char *, ptrdiff_t, const struct canvas *, int);
+static unsigned describe_layout(char *, ptrdiff_t, const struct canvas *,
+	unsigned);
 static unsigned describe_row(char *desc, size_t siz, WINDOW *w, int row);
 
 union param {
-	struct { int flag; } hup;
+	struct { unsigned flag; } hup;
 	struct { int row; } usr1;
 };
 
@@ -179,7 +180,7 @@ test_navigate(int fd, pid_t p)
 	int status = 0;
 	fdprintf(fd, "%ccjkhlC4tCvjkh2slc\r", CTL('g'));
 	grep(fd, NULL, 1);
-	status |= check_layout(p, 1, "%s; %s; %s; %s; %s",
+	status |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
 		"11x26@0,0",
 		"11x80@12,0",
 		"*5x26@0,27",
@@ -188,7 +189,7 @@ test_navigate(int fd, pid_t p)
 	);
 	fdprintf(fd, "\07cccccccch\r");
 	grep(fd, NULL, 1);
-	status |= check_layout(p, 1, "%s; %s; %s",
+	status |= check_layout(p, 0x11, "%s; %s; %s",
 		"*11x26@0,0; 11x80@12,0; 0x26@0,27",
 		"0x26@1,27; 0x26@2,27; 0x26@3,27; 0x26@4,27; 0x26@5,27",
 		"0x26@6,27; 0x26@7,27; 1x26@8,27; 1x26@10,27; 11x26@0,54"
@@ -287,17 +288,20 @@ handler(int s)
 
 /* Describe a layout. This may be called in a signal handler */
 static unsigned
-describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, int flags)
+describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 {
 	const char * const e = d + siz;
 	int recurse = flags & 0x1;
 	int cursor = flags & 0x2;
 	int show_id = flags & 0x4;
 	int show_pid = flags & 0x8;
-	d += snprintf(d, e - d, "%s%dx%d@%d,%d",
-		c == get_focus() ? "*" : "",
-		c->extent.y, c->extent.x, c->origin.y, c->origin.x
-	);
+	int show_pos = flags & 0x10;
+	char *isfocus = c == get_focus() ? "*" : "";
+	d += snprintf(d, e - d, "%s%dx%d", isfocus, c->extent.y, c->extent.x);
+
+	if( show_pos) {
+		d += snprintf(d, e - d, "@%d,%d", c->origin.y, c->origin.x);
+	}
 	if( show_pid && c->p ) {
 		d += snprintf(d, e - d, "(pid=%d)", c->p->pid);
 	}
