@@ -137,8 +137,8 @@ test_cup(int fd, pid_t p)
 	fdprintf(fd, "printf '\\n0123456'; tput cub 4; printf '789\\n'\r");
 	/* Test wrap around. */
 	fdprintf(fd, "printf abc; tput cuf 73; echo 12345678wrapped\r");
-	fdprintf(fd, "echo unique string\n");
-	grep(fd, "unique string", 3);
+	fdprintf(fd, "printf 'unique %%s\\n' string\r");
+	grep(fd, "unique string", 1);
 
 	status |= validate_row(p, 6, "%50s%-30s", "", "foo");
 	status |= validate_row(p, 8, "%-80s", "0127896");
