@@ -209,8 +209,8 @@ test_row(int fd, pid_t p)
 {
 	int status = 0;
 	fdprintf(fd, "yes | nl -ba | sed 400q\r");
-	fdprintf(fd, "echo 123456789\n");
-	grep(fd, "123456789", 3);
+	fdprintf(fd, "printf '12345%%s\\n' 6789\r");
+	grep(fd, "123456789", 1);
 
 	status |= validate_row(p, 20, "%6d%-74s", 399, "  y");
 	status |= validate_row(p, 21, "%6d%-74s", 400, "  y");
@@ -222,8 +222,8 @@ static int
 check_ps1(int fd, pid_t p)
 {
 	int s = 0;
-	fdprintf(fd, "echo unique string\n");
-	grep(fd, "unique string", 3);
+	fdprintf(fd, "printf 'unique %%s\\n' string\r");
+	grep(fd, "unique string", 1);
 	/* Note: this relies on the above string being written
 	 * before the shell emits its first prompt.  I am unsure
 	 * of the best way to resolve this race.
