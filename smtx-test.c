@@ -28,8 +28,8 @@ fdprintf(int fd, const char *fmt, ...)
 	rewrite(fd, cmd, n);
 }
 
-static int
-check_layout(int fd, const char *fmt, ...)
+static int __attribute__((format(printf,3,4)))
+check_layout(int sig, pid_t pid, const char *fmt, ...)
 {
 	va_list ap;
 	char buf[1024];
@@ -43,7 +43,9 @@ check_layout(int fd, const char *fmt, ...)
 	va_end(ap);
 
 	write(p2c[1], &p, sizeof p);
-	fdprintf(fd, "kill -HUP $SMTX\r");
+	if( sig ) {
+		kill(pid, SIGHUP);
+	}
 	s = read(c2p[0], buf, sizeof buf - 1);
 	if( s == -1 ) {
 		fprintf(stderr, "reading from child: %s", strerror(errno));
@@ -172,10 +174,11 @@ test_lnm(int fd, pid_t pid)
 static int
 test_navigate(int fd, pid_t p)
 {
-	(void)p;
 	int status = 0;
 	fdprintf(fd, "%ccjkhlC4tCvjkh2slc\r", CTL('g'));
-	status |= check_layout(fd, "%s; %s; %s; %s; %s",
+	fdprintf(fd, "printf 'unique %%s\\n' string\r");
+	grep(fd, "unique string", 1);
+	status |= check_layout(1, p, "%s; %s; %s; %s; %s",
 		"11x26@0,0",
 		"11x80@12,0",
 		"*5x26@0,27",
@@ -183,7 +186,8 @@ test_navigate(int fd, pid_t p)
 		"11x26@0,54"
 	);
 	fdprintf(fd, "\07cccccccc\r");
-	status |= check_layout(fd, "%s; %s; %s; %s",
+	fdprintf(fd, "kill -HUP $SMTX\r");
+	status |= check_layout(0, p, "%s; %s; %s; %s",
 		"11x26@0,0; 11x80@12,0",
 		"*0x26@0,27",
 		"0x26@1,27; 0x26@2,27; 0x26@3,27; 0x26@4,27; 0x26@5,27",
