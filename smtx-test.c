@@ -10,6 +10,11 @@ int p2c[2];
 static unsigned describe_layout(char *, ptrdiff_t, const struct canvas *, int);
 static unsigned describe_row(char *desc, size_t siz, WINDOW *w, int row);
 
+union param {
+	struct { int flag; } hup;
+	struct { int row; } usr1;
+};
+
 static void __attribute__((format(printf,2,3)))
 fdprintf(int fd, const char *fmt, ...)
 {
@@ -31,13 +36,13 @@ check_layout(int fd, const char *fmt, ...)
 	char expect[1024];
 	int rv = 0;
 	ssize_t s;
-	int flags = 1;
+	union param p = { .hup.flag = 1 };
 
 	va_start(ap, fmt);
 	(void)vsnprintf(expect, sizeof expect, fmt, ap);
 	va_end(ap);
 
-	write(p2c[1], &flags, sizeof flags);
+	write(p2c[1], &p, sizeof p);
 	fdprintf(fd, "kill -HUP $SMTX\r");
 	s = read(c2p[0], buf, sizeof buf - 1);
 	if( s == -1 ) {
@@ -94,17 +99,18 @@ grep(int fd, const char *needle, int count)
 }
 
 static int
-validate_row(pid_t p, int row, const char *fmt, ... )
+validate_row(pid_t pid, int row, const char *fmt, ... )
 {
 	int status = 0;
+	union param p = { .usr1.row = row };
 	char expect[1024];
 	char buf[1024];
 	va_list ap;
 	va_start(ap, fmt);
 	(void)vsnprintf(expect, sizeof expect, fmt, ap);
 	va_end(ap);
-	write(p2c[1], &row, sizeof row);
-	kill(p, SIGUSR1);
+	write(p2c[1], &p, sizeof p);
+	kill(pid, SIGUSR1);
 	ssize_t s = read(c2p[0], buf, sizeof buf - 1);
 	buf[s] = 0;
 	if( strcmp( buf, expect ) ) {
@@ -117,14 +123,13 @@ validate_row(pid_t p, int row, const char *fmt, ... )
 }
 
 static int
-test_attach(int fd, pid_t p)
+test_attach(int fd, pid_t pid)
 {
-	int k = 1;
-	(void)p;
+	union param p = { .hup.flag = 1 };
 	fdprintf(fd, "%ccc3a\r", CTL('g'));
 	fdprintf(fd, "kill -HUP $SMTX\r");
-	write(p2c[1], &k, sizeof k);
-	read(c2p[0], &k, 1);
+	write(p2c[1], &p, sizeof p);
+	read(c2p[0], &pid, 1);
 	fdprintf(fd, "kill -TERM $SMTX\r");
 	return 0;
 }
@@ -151,14 +156,13 @@ test_cup(int fd, pid_t p)
 }
 
 static int
-test_lnm(int fd, pid_t p)
+test_lnm(int fd, pid_t pid)
 {
-	(void)p;
-	int k = 1;
+	union param p = { .hup.flag = 1 };
 	fdprintf(fd, "printf '\\e[20h'\r");
 	fdprintf(fd, "kill -HUP $SMTX\r");
-	write(p2c[1], &k, sizeof k);
-	read(c2p[0], &k, 1);
+	write(p2c[1], &p, sizeof p);
+	read(c2p[0], &pid, 1); /* Read and discard */
 	fdprintf(fd, "printf 'foo\\rbar\\r\\n'\r");
 	fdprintf(fd, "printf '\\e[20l'\r");
 	fdprintf(fd, "kill -TERM $SMTX\r");
@@ -262,16 +266,17 @@ static void
 handler(int s)
 {
 	char buf[256];
-	int c;
+	union param p;
 	unsigned len = 0;
-	read(p2c[0], &c, sizeof c);
 	switch(s) {
 	case SIGHUP:
-		len = describe_layout(buf, sizeof buf, S.c, c);
+		read(p2c[0], &p.hup, sizeof p.hup);
+		len = describe_layout(buf, sizeof buf, S.c, p.hup.flag);
 		break;
 	case SIGUSR1:
+		read(p2c[0], &p.usr1, sizeof p.usr1);
 		len = describe_row(buf, sizeof buf, S.c->p->s->win,
-			S.c->offset.y + c - 1);
+			S.c->offset.y + p.usr1.row - 1);
 	}
 	if( len > 0 ) {
 		write(c2p[1], buf, len);
@@ -376,7 +381,7 @@ execute_test(struct st *v)
 	int status;
 	pid_t pid;
 
-	if( pipe(c2p) || pipe(p2c)) {
+	if( pipe(c2p) || pipe(p2c) ) {
 		err(EXIT_FAILURE, "pipe");
 	}
 	if( openpty(fd, fd + 1, NULL, NULL, NULL) ) {
