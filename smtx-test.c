@@ -228,7 +228,7 @@ check_ps1(int fd, pid_t p)
 	 * before the shell emits its first prompt.  I am unsure
 	 * of the best way to resolve this race.
 	 */
-	if( validate_row(p, 2, "%-80s", "$ unique string")) {
+	if( validate_row(p, 2, "%-80s", "$ unique string") ) {
 		s = 1;
 		fprintf(stderr, "PS1 != '$ '.  Tests will fail\n");
 	}
