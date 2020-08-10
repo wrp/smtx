@@ -271,10 +271,12 @@ handler(int s)
 	char buf[256];
 	union param p;
 	unsigned len = 0;
+	const struct canvas *c;
 	switch(s) {
 	case SIGHUP:
 		read(p2c[0], &p.hup, sizeof p.hup);
-		len = describe_layout(buf, sizeof buf, S.c, p.hup.flag);
+		c = p.hup.flag & 0x1 ? S.c : S.f;
+		len = describe_layout(buf, sizeof buf, c, p.hup.flag);
 		break;
 	case SIGUSR1:
 		read(p2c[0], &p.usr1, sizeof p.usr1);
