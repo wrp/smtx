@@ -10,7 +10,7 @@ int p2c[2];
 static unsigned describe_layout(char *, ptrdiff_t, const struct canvas *, int);
 static unsigned describe_row(char *desc, size_t siz, WINDOW *w, int row);
 
-static void
+static void __attribute__((format(printf,2,3)))
 fdprintf(int fd, const char *fmt, ...)
 {
 	char cmd[1024];
