@@ -71,6 +71,11 @@ check_layout(int sig, pid_t pid, const char *fmt, ...)
 static void
 grep(int fd, const char *needle, int count)
 {
+	if( needle == NULL ) {
+		fdprintf(fd, "printf 'unique %%s\\n' string\r");
+		needle = "unique string";
+	}
+
 	char buf[BUFSIZ];
 	const char *end = buf;
 	const char *b = buf;
@@ -144,8 +149,7 @@ test_cup(int fd, pid_t p)
 	fdprintf(fd, "printf '\\n0123456'; tput cub 4; printf '789\\n'\r");
 	/* Test wrap around. */
 	fdprintf(fd, "printf abc; tput cuf 73; echo 12345678wrapped\r");
-	fdprintf(fd, "printf 'unique %%s\\n' string\r");
-	grep(fd, "unique string", 1);
+	grep(fd, NULL, 1);
 
 	status |= validate_row(p, 6, "%50s%-30s", "", "foo");
 	status |= validate_row(p, 8, "%-80s", "0127896");
@@ -176,8 +180,7 @@ test_navigate(int fd, pid_t p)
 {
 	int status = 0;
 	fdprintf(fd, "%ccjkhlC4tCvjkh2slc\r", CTL('g'));
-	fdprintf(fd, "printf 'unique %%s\\n' string\r");
-	grep(fd, "unique string", 1);
+	grep(fd, NULL, 1);
 	status |= check_layout(1, p, "%s; %s; %s; %s; %s",
 		"11x26@0,0",
 		"11x80@12,0",
@@ -217,8 +220,7 @@ test_row(int fd, pid_t p)
 {
 	int status = 0;
 	fdprintf(fd, "yes | nl -ba | sed 400q\r");
-	fdprintf(fd, "printf '12345%%s\\n' 6789\r");
-	grep(fd, "123456789", 1);
+	grep(fd, NULL, 1);
 
 	status |= validate_row(p, 20, "%6d%-74s", 399, "  y");
 	status |= validate_row(p, 21, "%6d%-74s", 400, "  y");
@@ -230,8 +232,7 @@ static int
 check_ps1(int fd, pid_t p)
 {
 	int s = 0;
-	fdprintf(fd, "printf 'unique %%s\\n' string\r");
-	grep(fd, "unique string", 1);
+	grep(fd, NULL, 1);
 	/* Note: this relies on the above string being written
 	 * before the shell emits its first prompt.  I am unsure
 	 * of the best way to resolve this race.
