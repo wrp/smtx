@@ -121,8 +121,8 @@ validate_row(pid_t pid, int row, const char *fmt, ... )
 	buf[s] = 0;
 	if( strcmp( buf, expect ) ) {
 		fprintf(stderr, "unexpected content in row %d\n", row);
-		fprintf(stderr, "received: %s\n", buf);
-		fprintf(stderr, "expected: %s\n", expect);
+		fprintf(stderr, "received: '%s'\n", buf);
+		fprintf(stderr, "expected: '%s'\n", expect);
 		status = 1;
 	}
 	return status;
