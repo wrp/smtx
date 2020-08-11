@@ -262,6 +262,11 @@ test_width(int fd, pid_t p)
 	rv |= validate_row(p, 1, "%-20s", "ijklmnopqrstuvwxyzab");
 	rv |= validate_row(p, 2, "%-20s", "klmnopqrstuvwxyzabcd");
 
+	fdprintf(fd, "%c180W\rclear; printf '%s\\n'\r", CTL('g'), buf);
+	fdprintf(fd, "printf '%%70sde4d%%s' '' beef\\n\r");
+	grep(fd, "de4dbeef", 1);
+	rv |= validate_row(p, 1, "%-20s", "ijklmnopqrstuvwxyzab");
+
 	fdprintf(fd, "kill $SMTX\r");
 	return rv;
 }
