@@ -227,6 +227,32 @@ test_row(int fd, pid_t p)
 }
 
 static int
+test_width(int fd, pid_t p)
+{
+	int rv = 0;
+	fdprintf(fd, "%ccCCCj\r", CTL('g'));
+	grep(fd, NULL, 1);
+	rv |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
+		"11x20@0,0",
+		"*11x80@12,0",
+		"11x19@0,21",
+		"11x19@0,41",
+		"11x19@0,61"
+	);
+	/* Move up to a window that is now only 20 columns wide and
+	print a string of 50 chars */
+	fdprintf(fd, "%ck\rfor i in 1 2 3 4 5; do ", CTL('g'));
+	fdprintf(fd, "printf '%%s' \"${i}123456789\";");
+	fdprintf(fd, "test \"$i\" = 5 && printf '\\nfoo%%s\\n' bar; done\r");
+	grep(fd, "foobar", 1);
+
+	rv |= validate_row(p, 3, "%-20s", "11234567892123456789");
+
+	fdprintf(fd, "kill $SMTX\r");
+	return rv;
+}
+
+static int
 check_ps1(int fd, pid_t p)
 {
 	int s = 0;
@@ -333,7 +359,7 @@ describe_row(char *desc, size_t siz, const struct canvas *c, int row)
 	unsigned rv;
 	int y, x, mx;
 	getmaxyx(w, y, mx);
-	mx = mx < (int)siz ? mx : (int)siz - 1;
+	mx = MIN3(mx, c->extent.x, (int)siz - 1);
 	getyx(w, y, x);
 	desc[rv = mx] = '\0';
 	for( ; mx >= 0; mx-- ) {
@@ -360,6 +386,7 @@ main(int argc, char *const argv[])
 		F(test_navigate),
 		F(test_reset),
 		F(test_row),
+		F(test_width),
 		{ NULL, NULL }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
