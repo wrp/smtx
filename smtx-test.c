@@ -9,7 +9,7 @@ int c2p[2];
 int p2c[2];
 static unsigned describe_layout(char *, ptrdiff_t, const struct canvas *,
 	unsigned);
-static unsigned describe_row(char *desc, size_t siz, WINDOW *w, int row);
+static unsigned describe_row(char *, size_t, const struct canvas *, int);
 
 union param {
 	struct { unsigned flag; } hup;
@@ -280,7 +280,7 @@ handler(int s)
 		break;
 	case SIGUSR1:
 		read(p2c[0], &p.usr1, sizeof p.usr1);
-		len = describe_row(buf, sizeof buf, S.c->p->s->win,
+		len = describe_row(buf, sizeof buf, S.c,
 			S.c->offset.y + p.usr1.row - 1);
 	}
 	if( len > 0 ) {
@@ -327,8 +327,9 @@ describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 }
 
 static unsigned
-describe_row(char *desc, size_t siz, WINDOW *w, int row)
+describe_row(char *desc, size_t siz, const struct canvas *c, int row)
 {
+	WINDOW *w = c->p->s->win;
 	unsigned rv;
 	int y, x, mx;
 	getmaxyx(w, y, mx);
