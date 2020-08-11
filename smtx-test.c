@@ -230,6 +230,7 @@ static int
 test_width(int fd, pid_t p)
 {
 	int rv = 0;
+	char buf[120];
 	fdprintf(fd, "%ccCCCj\r", CTL('g'));
 	grep(fd, NULL, 1);
 	rv |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
@@ -245,12 +246,20 @@ test_width(int fd, pid_t p)
 	fdprintf(fd, "printf '%%s' \"${i}123456789\";");
 	fdprintf(fd, "test \"$i\" = 5 && printf '\\n  foo%%s\\n' bar; done\r");
 	grep(fd, "foobar", 1);
-
 	rv |= validate_row(p, 3, "%-20s", "11234567892123456789");
 
 	fdprintf(fd, "%c15>\rprintf '%%20sdead%%s' '' beef\r", CTL('g'));
 	grep(fd, "deadbeef", 1);
 	rv |= validate_row(p, 3, "%-20s", "56789312345678941234");
+
+	for( unsigned i = 0; i < sizeof buf - 1; i++ ) {
+		buf[i] = 'a' + i % 26;
+	}
+	buf[sizeof buf - 1] = '\0';
+	fdprintf(fd, "clear; printf '%s\\n'\r", buf);
+	fdprintf(fd, "%c75>\rprintf '%%70sde3d%%s' '' beef\\n\r", CTL('g'));
+	grep(fd, "de3dbeef", 1);
+	rv |= validate_row(p, 1, "%-20s", "ijklmnopqrstuvwxyzab");
 
 	fdprintf(fd, "kill $SMTX\r");
 	return rv;
