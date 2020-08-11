@@ -243,10 +243,14 @@ test_width(int fd, pid_t p)
 	print a string of 50 chars */
 	fdprintf(fd, "%ck\rfor i in 1 2 3 4 5; do ", CTL('g'));
 	fdprintf(fd, "printf '%%s' \"${i}123456789\";");
-	fdprintf(fd, "test \"$i\" = 5 && printf '\\nfoo%%s\\n' bar; done\r");
+	fdprintf(fd, "test \"$i\" = 5 && printf '\\n  foo%%s\\n' bar; done\r");
 	grep(fd, "foobar", 1);
 
 	rv |= validate_row(p, 3, "%-20s", "11234567892123456789");
+
+	fdprintf(fd, "%c15>\rprintf '%%20sdead%%s' '' beef\r", CTL('g'));
+	grep(fd, "deadbeef", 1);
+	rv |= validate_row(p, 3, "%-20s", "56789312345678941234");
 
 	fdprintf(fd, "kill $SMTX\r");
 	return rv;
@@ -359,11 +363,11 @@ describe_row(char *desc, size_t siz, const struct canvas *c, int row)
 	unsigned rv;
 	int y, x, mx;
 	getmaxyx(w, y, mx);
-	mx = MIN3(mx, c->extent.x, (int)siz - 1);
+	mx = MIN3(mx, c->extent.x + c->offset.x, (int)siz - 1);
 	getyx(w, y, x);
-	desc[rv = mx] = '\0';
+	desc[rv = mx - c->offset.x] = '\0';
 	for( ; mx >= c->offset.x; mx-- ) {
-		desc[mx] = mvwinch(w, row, mx) & A_CHARTEXT;
+		desc[mx - c->offset.x] = mvwinch(w, row, mx) & A_CHARTEXT;
 	}
 	wmove(w, y, x);
 	return rv;
