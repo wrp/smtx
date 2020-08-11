@@ -362,7 +362,7 @@ describe_row(char *desc, size_t siz, const struct canvas *c, int row)
 	mx = MIN3(mx, c->extent.x, (int)siz - 1);
 	getyx(w, y, x);
 	desc[rv = mx] = '\0';
-	for( ; mx >= 0; mx-- ) {
+	for( ; mx >= c->offset.x; mx-- ) {
 		desc[mx] = mvwinch(w, row, mx) & A_CHARTEXT;
 	}
 	wmove(w, y, x);
