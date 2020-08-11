@@ -230,7 +230,7 @@ static int
 test_width(int fd, pid_t p)
 {
 	int rv = 0;
-	char buf[120];
+	char buf[161];
 	fdprintf(fd, "%ccCCCj\r", CTL('g'));
 	grep(fd, NULL, 1);
 	rv |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
@@ -260,6 +260,7 @@ test_width(int fd, pid_t p)
 	fdprintf(fd, "%c75>\rprintf '%%70sde3d%%s' '' beef\\n\r", CTL('g'));
 	grep(fd, "de3dbeef", 1);
 	rv |= validate_row(p, 1, "%-20s", "ijklmnopqrstuvwxyzab");
+	rv |= validate_row(p, 2, "%-20s", "klmnopqrstuvwxyzabcd");
 
 	fdprintf(fd, "kill $SMTX\r");
 	return rv;
