@@ -2,6 +2,8 @@
 #include <err.h>
 #include <sys/wait.h>
 
+#define PROMPT "ps1>"
+
 /* Non-intrusive tests that manipulate the master pty. */
 
 int rv = EXIT_SUCCESS;
@@ -85,6 +87,7 @@ grep(int fd, const char *needle, int count)
 			if( d > 0 ) {
 				memcpy(buf, b - d, d);
 			}
+			/* TODO: set a timeout and fail */
 			size_t rc = read(fd, buf + d, sizeof buf - d);
 			switch( rc ) {
 			case -1: err(EXIT_FAILURE, "read from pty");
@@ -144,18 +147,24 @@ static int
 test_cup(int fd, pid_t p)
 {
 	int status = 0;
-	fdprintf(fd, "tput cup 5 50; echo foo\r");
-	fdprintf(fd, "printf '\\n0123456'; tput cub 4; printf '789\\n'\r");
-	/* Test wrap around. */
-	fdprintf(fd, "printf abc; tput cuf 73; echo 12345678wrapped\r");
-	grep(fd, NULL, 1);
+	grep(fd, PROMPT, 1);
+	fdprintf(fd, "tput cup 5 50; echo foo\r"); /* Move down 5 lines */
+	grep(fd, PROMPT, 1);
+	char *cmd = "printf '0123456'; tput cub 4; printf '789\\n'";
+	fdprintf(fd, "%s\r", cmd);
+	grep(fd, PROMPT, 1);
+	char *cmd2 = "printf abc; tput cuf 73; echo 12345678wrapped";
+	fdprintf(fd, "%s\r", cmd2);
+	grep(fd, PROMPT, 1);
+
+	assert( strlen(PROMPT) == 4 ); /* TODO: compute with this */
 
 	status |= validate_row(p, 6, "%50s%-30s", "", "foo");
+	status |= validate_row(p, 7, "%s%-76s", PROMPT, cmd);
 	status |= validate_row(p, 8, "%-80s", "0127896");
-	/* Test wrap around. This assumes PS1='$ ' */
-	const char *ps1 = "$ ";
-	status |= validate_row(p, 9, "%sabc%73s12", ps1, "");
-	status |= validate_row(p, 10, "%-80s", "345678wrapped");
+	status |= validate_row(p, 9, "%s%-76s", PROMPT, cmd2);
+	status |= validate_row(p, 10, "abc%73s1234", "");
+	status |= validate_row(p, 11, "%-80s", "5678wrapped");
 	fdprintf(fd, "kill $SMTX\r");
 	return status;
 }
@@ -257,13 +266,13 @@ test_width(int fd, pid_t p)
 	}
 	buf[sizeof buf - 1] = '\0';
 	fdprintf(fd, "clear; printf '%s\\n'\r", buf);
-	fdprintf(fd, "%c75>\rprintf '%%70sde3d%%s' '' beef\\n\r", CTL('g'));
+	fdprintf(fd, "%c75>\rprintf '%%68sde3d%%s' '' beef\\n\r", CTL('g'));
 	grep(fd, "de3dbeef", 1);
 	rv |= validate_row(p, 1, "%-20s", "ijklmnopqrstuvwxyzab");
 	rv |= validate_row(p, 2, "%-20s", "klmnopqrstuvwxyzabcd");
 
 	fdprintf(fd, "%c180W\rclear; printf '%s\\n'\r", CTL('g'), buf);
-	fdprintf(fd, "printf '%%70sde4d%%s' '' beef\\n\r");
+	fdprintf(fd, "printf '%%68sde4d%%s' '' beef\\n\r");
 	grep(fd, "de4dbeef", 1);
 	rv |= validate_row(p, 1, "%-20s", "ijklmnopqrstuvwxyzab");
 
@@ -275,16 +284,11 @@ static int
 check_ps1(int fd, pid_t p)
 {
 	int s = 0;
-	grep(fd, NULL, 1);
-	/* Note: this relies on the above string being written
-	 * before the shell emits its first prompt.  I am unsure
-	 * of the best way to resolve this race.
-	 */
-	if( validate_row(p, 2, "%-80s", "$ unique string") ) {
-		s = 1;
-		fprintf(stderr, "PS1 != '$ '.  Tests will fail\n");
-	}
+	grep(fd, PROMPT, 1);
+	s |= validate_row(p, 1, "%-80s", PROMPT);
+	/* kill(p, SIGTERM); TODO: understand why this hangs */
 	fdprintf(fd, "kill $SMTX\r");
+
 	return s;
 }
 
@@ -410,6 +414,7 @@ main(int argc, char *const argv[])
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
 	unsetenv("ENV");  /* Try to suppress all shell initializtion */
+	setenv("PS1", PROMPT, 1);
 	setenv("LINES", "24", 1);
 	setenv("COLUMNS", "80", 1);
 	for( v = tab; ( v->f && argc < 2 ) || *++argv; v += 1 ) {
