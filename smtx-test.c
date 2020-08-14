@@ -12,6 +12,7 @@ int p2c[2];
 static unsigned describe_layout(char *, ptrdiff_t, const struct canvas *,
 	unsigned);
 static unsigned describe_row(char *, size_t, const struct canvas *, int);
+static int check_test_status(int rv, int status, int pty, const char *name);
 
 union param {
 	struct { unsigned flag; } hup;
@@ -502,13 +503,19 @@ execute_test(struct st *v)
 		rv = v->f(fd[0], pid);
 		wait(&status);
 	}
+	return check_test_status(rv, status, fd[0], v->name);
+}
+
+static int
+check_test_status(int rv, int status, int pty, const char *name)
+{
 	if( WIFEXITED(status) && WEXITSTATUS(status) != 0 ) {
-		char iobuf[BUFSIZ], *s = iobuf;
-		fprintf(stderr, "%s child FAILED\n", v->name);
-		ssize_t r = read(fd[0], iobuf, sizeof iobuf - 1);
+		char iobuf[BUFSIZ];
+		fprintf(stderr, "%s child FAILED\n", name);
+		ssize_t r = read(pty, iobuf, sizeof iobuf - 1);
 		if( r > 0 ) {
 			iobuf[r] = '\0';
-			for( ; *s; s++ ) {
+			for( char *s = iobuf; *s; s++ ) {
 				if( isprint(*s) || *s == '\n' ) {
 					fputc(*s, stderr);
 				}
@@ -516,10 +523,10 @@ execute_test(struct st *v)
 		}
 	} else if( WIFSIGNALED(status) ) {
 		fprintf(stderr, "test %s caught signal %d\n",
-			v->name, WTERMSIG(status));
+			name, WTERMSIG(status));
 	}
 	if( rv ) {
-		fprintf(stderr, "%s FAILED", v->name);
+		fprintf(stderr, "%s FAILED", name);
 	}
 	return !rv && WIFEXITED(status) ? WEXITSTATUS(status) : EXIT_FAILURE;
 }
