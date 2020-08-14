@@ -63,6 +63,28 @@ check_layout(pid_t pid, int flag, const char *fmt, ...)
 	return rv;
 }
 
+ssize_t
+timed_read(int fd, void *buf, size_t count, int seconds)
+{
+	fd_set set;
+	struct timeval timeout;
+	ssize_t rv = -1;
+
+	FD_ZERO(&set);
+	FD_SET(fd, &set);
+	timeout.tv_sec = seconds;
+	timeout.tv_usec = 0;
+
+	switch( select(fd + 1, &set, NULL, NULL, &timeout) ) {
+	case -1:
+		err(EXIT_FAILURE, "select %d", fd);
+	case 0:
+		err(EXIT_FAILURE, "timeout");
+	default:
+		rv = read(fd, buf, count);
+	}
+	return rv;
+}
 /* Read from fd until needle is seen count non-overlapping times
  * or end of file.  This is not intended to really check anything,
  * but is merely a synchronization device to delay the test until
@@ -88,7 +110,7 @@ grep(int fd, const char *needle, int count)
 				memcpy(buf, b - d, d);
 			}
 			/* TODO: set a timeout and fail */
-			size_t rc = read(fd, buf + d, sizeof buf - d);
+			size_t rc = timed_read(fd, buf + d, sizeof buf - d, 1);
 			switch( rc ) {
 			case -1: err(EXIT_FAILURE, "read from pty");
 			case 0: return;
