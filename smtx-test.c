@@ -110,7 +110,6 @@ grep(int fd, const char *needle, int count)
 			if( d > 0 ) {
 				memcpy(buf, b - d, d);
 			}
-			/* TODO: set a timeout and fail */
 			size_t rc = timed_read(fd, buf + d, sizeof buf - d, 1);
 			switch( rc ) {
 			case -1: err(EXIT_FAILURE, "read from pty");
@@ -418,11 +417,13 @@ describe_row(char *desc, size_t siz, const struct canvas *c, int row)
 typedef int test(int, pid_t);
 struct st { char *name; test *f; };
 static int execute_test(struct st *v);
+static int spawn_test(struct st *v, const char *argv0);
 #define F(x) { .name = #x, .f = (x) }
 int
 main(int argc, char *const argv[])
 {
 	int status = 0;
+	const char *argv0 = argv[0];
 	struct st tab[] = {
 		F(check_ps1),
 		F(test1),
@@ -435,11 +436,6 @@ main(int argc, char *const argv[])
 		F(test_width),
 		{ NULL, NULL }
 	}, *v;
-	setenv("SHELL", "/bin/sh", 1);
-	unsetenv("ENV");  /* Try to suppress all shell initializtion */
-	setenv("PS1", PROMPT, 1);
-	setenv("LINES", "24", 1);
-	setenv("COLUMNS", "80", 1);
 	for( v = tab; ( v->f && argc < 2 ) || *++argv; v += 1 ) {
 		const char *name = *argv;
 		if( argc > 1 ) {
@@ -447,11 +443,67 @@ main(int argc, char *const argv[])
 				;
 		}
 		if( v->f ) {
-			status |= execute_test(v);
+			if( strcmp(v->name, argv0) != 0 ) {
+				status |= spawn_test(v, argv0);
+			} else {
+				status = execute_test(v);
+			}
 		} else {
 			fprintf(stderr, "unknown function: %s\n", name);
 			status = EXIT_FAILURE;
 		}
+	}
+	return status;
+}
+
+/* Initialize a child to run a test.  We re-exec to force argv[0] to
+ * the name of the test so any error messages generated using err()
+ * will have the test name, and to make it easier to pick them out
+ * in the output of ps.
+ */
+static int
+spawn_test(struct st *v, const char *argv0)
+{
+	pid_t pid[3];
+	int status;
+	char *const args[] = { v->name, v->name, NULL };
+	switch( pid[0] = fork() ) {
+	case -1:
+		err(EXIT_FAILURE, "fork");
+	case 0:
+		switch( pid[1] = fork() ) {
+		case -1:
+			err(EXIT_FAILURE, "fork");
+		case 0:
+			execv(argv0, args);
+			err(EXIT_FAILURE, "execv");
+		}
+		switch( pid[2] = fork() ) {
+		case -1:
+			err(EXIT_FAILURE, "fork");
+		case 0:
+			sleep(2);
+			_exit(0);
+		}
+
+		pid_t died = wait(&status);
+		if( died == pid[1] ) {
+			if( kill(pid[2], SIGKILL) )  {
+				perror("kill");
+			}
+			wait(NULL);
+		} else {
+			fprintf(stderr, "%s timed out\n", v->name);
+			if( kill(pid[1], SIGKILL) )  {
+				perror("kill");
+			}
+			wait(&status);
+		}
+		_exit(status);
+	}
+	waitpid(pid[0], &status, 0);
+	if( status ) {
+		fprintf(stderr, "%s FAILED\n", v->name);
 	}
 	return status;
 }
@@ -464,6 +516,11 @@ execute_test(struct st *v)
 	int status;
 	pid_t pid;
 
+	unsetenv("ENV");  /* Suppress all shell initializtion */
+	setenv("SHELL", "/bin/sh", 1);
+	setenv("PS1", PROMPT, 1);
+	setenv("LINES", "24", 1);
+	setenv("COLUMNS", "80", 1);
 	if( pipe(c2p) || pipe(p2c) ) {
 		err(EXIT_FAILURE, "pipe");
 	}
