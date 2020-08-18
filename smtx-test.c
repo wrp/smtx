@@ -308,7 +308,6 @@ check_ps1(int fd, pid_t p)
 	int s = 0;
 	grep(fd, PROMPT, 1);
 	s |= validate_row(p, 1, "%-80s", PROMPT);
-	/* kill(p, SIGTERM); TODO: understand why this hangs */
 	fdprintf(fd, "kill $SMTX\r");
 
 	return s;

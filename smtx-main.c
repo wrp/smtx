@@ -964,13 +964,12 @@ handlechar(int r, int k) /* Handle a single input character. */
  * This is a terrible hack
  */
 
-static sig_atomic_t terminated;
-static void handle_term(int s) { terminated = s; }
+static void handle_term(int s) { (void) s; exit(0); }
 
 static void
 main_loop(void)
 {
-	while( S.c != NULL && terminated != SIGTERM && S.p && S.p->fd > 0 ) {
+	while( S.c != NULL && S.p && S.p->fd > 0 ) {
 		int r;
 		wint_t w = 0;
 		fd_set sfds = S.fds;
