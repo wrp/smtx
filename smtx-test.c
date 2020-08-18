@@ -318,7 +318,7 @@ test1(int fd, pid_t p)
 {
 	(void)p;
 	char *cmds[] = {
-		"echo err >&2;",
+		"echo err >&2",
 		"tput cud 2; tput cuu 2; tput cuf 1",
 		"tput ed; tput bel",
 		"tput hpa 5; tput ri",
@@ -326,9 +326,10 @@ test1(int fd, pid_t p)
 		"tput cub 1; tput dch 1; tput ack",
 		"tput civis; tput cvvis; tput ack",
 		"tabs -5",
-		"exit",
+		"kill $SMTX",
 		NULL
 	};
+	grep(fd, PROMPT, 1);
 	for( char **cmd = cmds; *cmd; cmd++ ) {
 		fdprintf(fd, "%s\r", *cmd);
 	}
