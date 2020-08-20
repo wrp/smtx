@@ -156,13 +156,23 @@ validate_row(pid_t pid, int row, const char *fmt, ... )
 static int
 test_attach(int fd, pid_t pid)
 {
-	union param p = { .hup.flag = 1 };
+	int id;
+	char desc[1024];
+	union param p = { .hup.flag = 5 };
+	int status = 0;
+	grep(fd, PROMPT, 1);
 	fdprintf(fd, "%ccc3a\r", CTL('g'));
 	fdprintf(fd, "kill -HUP $SMTX\r");
 	write(p2c[1], &p, sizeof p);
-	read(c2p[0], &pid, 1);
-	fdprintf(fd, "kill -TERM $SMTX\r");
-	return 0;
+	read(c2p[0], desc, sizeof desc);
+	if( sscanf(desc, "*7x80(id=%*d); 7x80(id=%d);", &id) != 1 ) {
+		fprintf(stderr, "received unexpected: '%s'\n", desc);
+		status = 1;
+	} else {
+		fdprintf(fd, "%c%da\r", CTL('g'), id);
+	}
+	fdprintf(fd, "kill -TERM %d\r", pid);
+	return status;
 }
 
 static int
