@@ -134,6 +134,7 @@ extern void focus(struct canvas *n);
 extern struct canvas * get_focus(void);
 
 extern struct canvas * init(void);
+extern void balance(struct canvas *);
 extern void draw(struct canvas *);
 extern void setupevents(struct vtp *);
 extern int rewrite(int fd, const char *b, size_t n);

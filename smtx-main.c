@@ -517,7 +517,7 @@ draw(struct canvas *n) /* Draw a canvas. */
 	}
 }
 
-static void
+void
 balance(struct canvas *n)
 {
 	int dir = n->typ;
@@ -773,16 +773,6 @@ mov(const char *arg)
 	enum direction dir = *arg == 'k' ? up : *arg == 'j' ? down :
 			*arg == 'h' ? left : *arg == 'l' ? right : nil;
 	( 0 ? navigate_tree : navigate_display)(dir, count);
-}
-
-void
-equalize(const char *arg)
-{
-	(void) arg;
-	struct canvas *n = S.f;
-	assert( n != NULL );
-	balance(n);
-	reshape_flag = 1;
 }
 
 static void

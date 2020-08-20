@@ -16,6 +16,14 @@ attach(const char *arg)
 }
 
 void
+equalize(const char *arg)
+{
+	(void)arg;
+	balance(S.f);
+	reshape_flag = 1;
+}
+
+void
 send(const char *arg)
 {
 	struct canvas *n = S.f;
