@@ -681,32 +681,6 @@ find_window(struct canvas *n, int y, int x)
 	return r;
 }
 
-void
-resize(const char *arg)
-{
-	struct canvas *n = S.f;
-	int typ = strchr("JK", *arg) ? 0 : 1;
-	int dir = strchr("JL", *arg) ? 1 : -1;
-	int count = S.count < 1 ? 1 : S.count;
-	int s = *(typ ? &n->extent.x : &n->extent.y) + 1;
-
-	while( n && n->c[typ] == NULL ) {
-		n = n->parent;
-	}
-	if( !n || !n->c[typ] || n->split_point[typ] == 0 || s < 1) {
-		return;
-	}
-	double full = s / n->split_point[typ];
-	double new = s + count * dir;
-	if( new > 0 ) {
-		n->split_point[typ] = MIN(new / full, 1.0);
-	} else {
-		n->split_point[typ] = 0.0;
-		focus(S.v);
-	}
-	reshape_flag = 1;
-}
-
 enum direction {nil, up, down, left, right};
 static void
 navigate_tree(enum direction dir, int count)
