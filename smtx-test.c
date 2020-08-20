@@ -199,6 +199,27 @@ test_cup(int fd, pid_t p)
 }
 
 static int
+test_resize(int fd, pid_t p)
+{
+	int status = 0;
+	grep(fd, PROMPT, 1);
+	fdprintf(fd, "%cJccC\r:\r", CTL('g'));
+	grep(fd, PROMPT, 1);
+	status |= check_layout(p, 0x1, "*7x40; 7x80; 7x80; 7x39");
+	fdprintf(fd, "%c5J\r:\r", CTL('g'));
+	grep(fd, PROMPT, 1);
+	status |= check_layout(p, 0x1, "*12x40; 4x80; 5x80; 12x39");
+	fdprintf(fd, "%cjj10K\r:\r", CTL('g'));
+	grep(fd, PROMPT, 1);
+	status |= check_layout(p, 0x1, "*12x40; 0x80; 10x80; 12x39");
+	fdprintf(fd, "%ckkl20H\r:\r", CTL('g'));
+	grep(fd, PROMPT, 1);
+	status |= check_layout(p, 0x1, "12x20; 0x80; 10x80; *12x59");
+	fdprintf(fd, "kill -TERM $SMTX\r");
+	return status;
+}
+
+static int
 test_equalize(int fd, pid_t p)
 {
 	int status = 0;
@@ -455,6 +476,7 @@ main(int argc, char *const argv[])
 		F(test_lnm),
 		F(test_navigate),
 		F(test_reset),
+		F(test_resize),
 		F(test_row),
 		F(test_width),
 		{ NULL, NULL }
