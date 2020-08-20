@@ -425,7 +425,6 @@ reshape_root(const char *arg)
 	(void)arg;
 	if( LINES > S.history ) {
 		S.history = LINES;
-		/* TODO: walk the list of pty and reset row counts */
 	}
 	for( struct pty *p = S.p; p; p = p->next ) {
 		p->ws.ws_row = 0;
