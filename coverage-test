@@ -66,8 +66,7 @@ while read name cover; do
 				)"'\@} /\* end uncovered \*/@d' \
 			-e '/#####/!d' \
 			-e '\@/\* uncovered \*/@d' | grep .; then
-		echo The above lines were not executed during testing
-		# RV=1  # Skip this until such time as we actually have coverage
+		echo The above lines of $name.c were not executed during testing
 	fi >&2
 done
 exit $RV
