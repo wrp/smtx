@@ -199,6 +199,21 @@ test_cup(int fd, pid_t p)
 }
 
 static int
+test_equalize(int fd, pid_t p)
+{
+	int status = 0;
+	grep(fd, PROMPT, 1);
+	fdprintf(fd, "%ccc5J\recho foo\r", CTL('g'));
+	grep(fd, PROMPT, 1);
+	status |= check_layout(p, 0x1, "*12x80; 4x80; 5x80");
+	fdprintf(fd, "%c=\recho\r", CTL('g'));
+	grep(fd, PROMPT, 1);
+	status |= check_layout(p, 0x1, "*7x80; 7x80; 7x80");
+	fdprintf(fd, "kill -TERM $SMTX\r");
+	return status;
+}
+
+static int
 test_lnm(int fd, pid_t pid)
 {
 	union param p = { .hup.flag = 1 };
@@ -436,6 +451,7 @@ main(int argc, char *const argv[])
 		F(test1),
 		F(test_attach),
 		F(test_cup),
+		F(test_equalize),
 		F(test_lnm),
 		F(test_navigate),
 		F(test_reset),
