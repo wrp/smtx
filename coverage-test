@@ -35,9 +35,9 @@ if ! test -f smtx-test.gcda; then
 fi
 
 cat << EOF |
-handler 63.06
+handler 62.65
 smtx 100
-smtx-main 79.09
+smtx-main 78.85
 vtparser 80.26
 action 100
 EOF

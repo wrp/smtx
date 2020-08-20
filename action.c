@@ -50,6 +50,18 @@ resize(const char *arg)
 }
 
 void
+scrolln(const char *arg)
+{
+	struct canvas *n = S.f;
+	if( n && n->p && n->p->s && n->p->s->win ) {
+		int count = S.count == -1 ? n->extent.y - 1 : S.count;
+		int top = S.history - n->extent.y;
+		n->offset.y += *arg == '-' ? -count : count;
+		n->offset.y = MIN(MAX(0, n->offset.y), top);
+	}
+}
+
+void
 send(const char *arg)
 {
 	struct canvas *n = S.f;
