@@ -80,7 +80,7 @@ timed_read(int fd, void *buf, size_t count, int seconds)
 	case -1:
 		err(EXIT_FAILURE, "select %d", fd);
 	case 0:
-		err(EXIT_FAILURE, "timeout");
+		errx(EXIT_FAILURE, "timedout");
 	default:
 		rv = read(fd, buf, count);
 	}
@@ -301,6 +301,43 @@ test_row(int fd, pid_t p)
 }
 
 static int
+test_scrollback(int fd, pid_t p)
+{
+	int status = 0;
+	const char *string = "This is a relatively long string!";
+	char trunc[128];
+
+	grep(fd, PROMPT, 1);
+	fdprintf(fd, "%cCC\r:\r", CTL('g'));
+	grep(fd, PROMPT ":", 1);
+	status |= check_layout(p, 0x1, "*23x26; 23x26; 23x26");
+
+	fdprintf(fd, "a='%s'\rPS1=$(printf 'un%%s>' iq)\r", string);
+	fdprintf(fd, "%c100<\r", CTL('g'));
+	grep(fd, "uniq>", 1);
+	fdprintf(fd, "yes \"$a\" | nl |\rsed 50q\r");
+	grep(fd, "uniq>", 1);
+	snprintf(trunc, 19, "%s", string);
+	status |= validate_row(p, 1, "%6d  %-18s", 29, trunc);
+	status |= validate_row(p, 22, "%6d  %-18s", 50, trunc);
+
+	/* Scrollback 3, then move to another term and write a unique string */
+	fdprintf(fd, "%c3bl\rprintf 'foo%%s' bar\r", CTL('g'));
+	grep(fd, "foobar", 1);
+	status |= validate_row(p, 22, "%6d  %-18s", 47, trunc);
+
+	/* Scrollright 8, then move to another term and write a unique string */
+	snprintf(trunc, 27, "%s", string);
+	fdprintf(fd, "%ch8>l\rprintf 'foo%%s' baz\r", CTL('g'));
+	grep(fd, "foobaz", 1);
+	status |= validate_row(p, 14, "%-26s", trunc);
+
+	fdprintf(fd, "kill $SMTX\r");
+
+	return status;
+}
+
+static int
 test_width(int fd, pid_t p)
 {
 	int rv = 0;
@@ -478,6 +515,7 @@ main(int argc, char *const argv[])
 		F(test_reset),
 		F(test_resize),
 		F(test_row),
+		F(test_scrollback),
 		F(test_width),
 		{ NULL, NULL }
 	}, *v;

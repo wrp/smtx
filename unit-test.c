@@ -235,52 +235,6 @@ test_cols(void)
 }
 
 static int
-test_scrollback(void)
-{
-	char cmd[80] = "yes | nl | sed 50q";
-	const char *string = "This is a relatively long string, dragon!";
-	snprintf(cmd, sizeof cmd, "yes %s | nl | sed 50q", string);
-	S.history = 20;
-	struct test_canvas *T = new_test_canvas(10, 80, NULL);
-	check_cmd(T, cmd, NULL);
-	expect_row(0, T, "%6d  %-72s", 43, string);
-	expect_row(7, T, "%6d  %-72s", 50, string);
-	expect_row(8, T, "%-80s", T->ps1, string);
-	S.count = 8;
-	scrolln("-");
-	expect_row(0, T, "%6d  %-72s", 35, string);
-	expect_row(7, T, "%6d  %-72s", 42, string);
-	expect_row(8, T, "%6d  %-72s", 43, string);
-
-	S.count = 3;
-	scrolln("+");
-	expect_row(0, T, "%6d  %-72s", 38, string);
-	expect_row(7, T, "%6d  %-72s", 45, string);
-	expect_row(8, T, "%6d  %-72s", 46, string);
-
-	S.count = 2;
-	/* make the window larger so scrollh is not a no-op */
-	T->c->extent.x = 60;
-	scrollh(">");
-	expect_row(0, T, "%4d  %-72s", 38, string);
-	expect_row(7, T, "%4d  %-72s", 45, string);
-	expect_row(8, T, "%4d  %-72s", 46, string);
-
-	S.count = 1;
-	scrollh("<");
-	expect_row(0, T, "%5d  %-72s", 38, string);
-	expect_row(7, T, "%5d  %-72s", 45, string);
-	expect_row(8, T, "%5d  %-72s", 46, string);
-
-	S.count = -1;
-	scrollh(">");
-	expect_row(0, T, "%-60s", string + 80 - 60 - 8);
-	expect_row(7, T, "%-60s", string + 80 - 60 - 8);
-	expect_row(8, T, "%-60s", string + 80 - 60 - 8);
-	return rv;
-}
-
-static int
 test_ich(void)
 {
 	const char *cmd = "printf abcdefg; tput cub 3; tput ich 5; echo";
@@ -472,7 +426,6 @@ main(int argc, char *const argv[])
 		F(test_vis),
 		F(test_ech),
 		F(test_ich),
-		F(test_scrollback),
 		F(test_nel),
 		F(test_pager),
 		F(test_cols),
