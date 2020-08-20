@@ -95,10 +95,7 @@ timed_read(int fd, void *buf, size_t count, int seconds)
 static void
 grep(int fd, const char *needle, int count)
 {
-	if( needle == NULL ) {
-		fdprintf(fd, "printf 'unique %%s\\n' string\r");
-		needle = "unique string";
-	}
+	assert( needle != NULL );
 
 	char buf[BUFSIZ];
 	const char *end = buf;
@@ -220,7 +217,7 @@ test_navigate(int fd, pid_t p)
 {
 	int status = 0;
 	fdprintf(fd, "%ccjkhlC4tCvjkh2slc\r", CTL('g'));
-	grep(fd, NULL, 1);
+	grep(fd, PROMPT, 1);
 	status |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
 		"11x26@0,0",
 		"11x80@12,0",
@@ -229,7 +226,7 @@ test_navigate(int fd, pid_t p)
 		"11x26@0,54"
 	);
 	fdprintf(fd, "\07cccccccch\r");
-	grep(fd, NULL, 1);
+	grep(fd, PROMPT, 1);
 	status |= check_layout(p, 0x11, "%s; %s; %s",
 		"*11x26@0,0; 11x80@12,0; 0x26@0,27",
 		"0x26@1,27; 0x26@2,27; 0x26@3,27; 0x26@4,27; 0x26@5,27",
@@ -259,7 +256,7 @@ test_row(int fd, pid_t p)
 {
 	int status = 0;
 	fdprintf(fd, "yes | nl -ba | sed 400q\r");
-	grep(fd, NULL, 1);
+	grep(fd, PROMPT, 1);
 
 	status |= validate_row(p, 20, "%6d%-74s", 399, "  y");
 	status |= validate_row(p, 21, "%6d%-74s", 400, "  y");
@@ -273,7 +270,7 @@ test_width(int fd, pid_t p)
 	int rv = 0;
 	char buf[161];
 	fdprintf(fd, "%ccCCCj\r", CTL('g'));
-	grep(fd, NULL, 1);
+	grep(fd, PROMPT, 1);
 	rv |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
 		"11x20@0,0",
 		"*11x80@12,0",
