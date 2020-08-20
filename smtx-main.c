@@ -1026,6 +1026,8 @@ parse_args(int argc, char *const*argv)
 	}
 }
 
+static void endwin_wrap(void) { (void) endwin(); }
+
 struct canvas *
 init(void)
 {
@@ -1047,6 +1049,7 @@ init(void)
 	if( initscr() == NULL ) {
 		exit(EXIT_FAILURE);
 	}
+	atexit(endwin_wrap);
 	raw();
 	noecho();
 	nonl();
@@ -1073,6 +1076,5 @@ smtx_main(int argc, char *const argv[])
 	S.history = MAX(LINES, S.history);
 	init();
 	main_loop();
-	endwin();
 	return EXIT_SUCCESS;
 }
