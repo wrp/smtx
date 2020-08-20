@@ -155,7 +155,6 @@ extern action equalize;
 extern action mov;
 extern action new_tabstop;
 extern action reorient;
-extern action redrawroot;
 extern action resize;
 extern action scrolln;
 extern action scrollh;
