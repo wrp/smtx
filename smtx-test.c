@@ -20,12 +20,8 @@
 #elif HAVE_UTIL_H
 # include <util.h>
 #endif
+#include "smtx-test.h"
 
-extern unsigned describe_layout(char *, ptrdiff_t, unsigned);
-extern unsigned describe_row(char *, size_t, int);
-extern int smtx_main(int, char *const*);
-
-#define CTL(x) ((x) & 0x1f)
 #define PROMPT "ps1>"
 
 /* Non-intrusive tests that manipulate the master pty. */

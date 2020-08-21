@@ -33,9 +33,8 @@
 #include <wchar.h>
 #include <wctype.h>
 
-#define CTL(x) ((x) & 0x1f)
-
 #include "vtparser.h"
+#include "smtx-test.h"
 
 #define DEFAULT_TERMINAL "screen-bce"
 #define DEFAULT_COLOR_TERMINAL "screen-256color-bce"
@@ -75,7 +74,6 @@ enum mode {
 	passthru, /* Unbound keystrokes are passed to focused window */
 	sink      /* Unbound keystrokes are discarded */
 };
-extern int smtx_main(int, char *const*);
 extern struct state S;
 
 struct state {
@@ -129,8 +127,7 @@ struct canvas {
 };
 
 extern struct canvas * get_focus(void);
-extern unsigned describe_layout(char *, ptrdiff_t, unsigned);
-extern unsigned describe_row(char *, size_t, int);
+
 
 #define MAXMAP 0x7f
 extern wchar_t CSET_US[]; /* "USASCII" */
