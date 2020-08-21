@@ -290,13 +290,14 @@ static int
 test_row(int fd, pid_t p)
 {
 	int status = 0;
+	grep(fd, PROMPT, 1);
 	fdprintf(fd, "yes | nl -ba | sed 400q\r");
 	grep(fd, PROMPT, 1);
 
-	status |= validate_row(p, 20, "%6d%-74s", 399, "  y");
-	status |= validate_row(p, 21, "%6d%-74s", 400, "  y");
+	status |= validate_row(p, 21, "%6d%-74s", 399, "  y");
+	status |= validate_row(p, 22, "%6d%-74s", 400, "  y");
+	status |= validate_row(p, 23, "%-80s", PROMPT);
 	fdprintf(fd, "kill $SMTX\r");
-	return 0;
 	return status;
 }
 
