@@ -304,6 +304,16 @@ test_resize(int fd, pid_t p)
 }
 
 static int
+test_ech(int fd, pid_t p)
+{
+	int rv = 0;
+	send_cmd(fd, "printf 012345; tput cub 3; tput ech 1; echo\r");
+	rv |= validate_row(p, 2, "%-80s", "012 45");
+	fdprintf(fd, "exit\r");
+	return rv;
+}
+
+static int
 test_el(int fd, pid_t p)
 {
 	int rv = 0;
@@ -629,6 +639,7 @@ main(int argc, char *const argv[])
 		F(test_attach),
 		F(test_cup),
 		F(test_cursor),
+		F(test_ech),
 		F(test_el),
 		F(test_equalize),
 		F(test_ich),

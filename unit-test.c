@@ -235,15 +235,6 @@ test_cols(void)
 }
 
 static int
-test_ech(void)
-{
-	struct test_canvas *T = new_test_canvas(24, 80, NULL);
-	check_cmd(T, "printf 012345; tput cub 3; tput ech 1; echo", NULL);
-	expect_row(2, T, "012 45%-74s", "");
-	return rv;
-}
-
-static int
 test_pager(void)
 {
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
@@ -301,7 +292,6 @@ main(int argc, char *const argv[])
 	const char *argv0 = argv[0];
 	struct st tab[] = {
 		F(test_description),
-		F(test_ech),
 		F(test_nel),
 		F(test_pager),
 		F(test_cols),
