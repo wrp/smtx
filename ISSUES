@@ -67,22 +67,6 @@ BUGS:
 	As of 61c41fe0f1dd73829315c959b69cf44df2af102f, the test suite hangs
 	on macos
 
-	On macos, you get a segfault when you 'exit' from a second window!
-	$ lldb -c /cores/core.3349
-	(lldb) target create --core "/cores/core.3349"
-	Core file '/cores/core.3349' (x86_64) was loaded.
-	(lldb) bt
-	* thread #1, stop reason = signal SIGSTOP
-	  * frame #0: 0x000000010aece397 smtx`__darwin_fd_isset(_n=-1, _p=0x00007ffee4d373e8) at _fd_def.h:58:9
-	    frame #1: 0x000000010aece2a1 smtx`getinput(f=0x00007ffee4d373e8) at smtx-main.c:594:7
-	    frame #2: 0x000000010aecd206 smtx`main_loop at smtx-main.c:946:3
-	    frame #3: 0x000000010aeccdb1 smtx`smtx_main(argc=1, argv=0x00007ffee4d374f8) at smtx-main.c:1039:2
-	    frame #4: 0x000000010aec94b0 smtx`main(argc=1, argv=0x00007ffee4d374f8) at smtx.c:8:9
-	    frame #5: 0x00007fff68c63cc9 libdyld.dylib`start + 1
-	    frame #6: 0x00007fff68c63cc9 libdyld.dylib`start + 1
-
-
-
 MAYBE TODO:
 	Register signal handlers for TERM and HUP.  Need to ensure
 	that endwin is called.

@@ -332,7 +332,11 @@ test_scrollback(int fd, pid_t p)
 	grep(fd, "foobaz", 1);
 	status |= validate_row(p, 14, "%-26s", trunc);
 
-	fdprintf(fd, "kill $SMTX\r");
+	/* Exit all pty instead of killing.  This was triggering a segfault
+	 * on macos.  The test still times out whether we kill the SMTX
+	 * or exit. */
+	status |= check_layout(p, 0x1, "23x26; *23x26; 23x26");
+	fdprintf(fd, "exit\r%1$cl\rexit\r%1$chh\rexit\r", CTL('g'));
 
 	return status;
 }

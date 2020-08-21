@@ -591,7 +591,7 @@ static void
 getinput(fd_set *f) /* check all pty's for input. */
 {
 	for( struct pty *t = S.p; t; t = t->next ) {
-		if( FD_ISSET(t->fd, f) ) {
+		if( t->fd > 0 && FD_ISSET(t->fd, f) ) {
 			char iobuf[BUFSIZ];
 			ssize_t r = read(t->fd, iobuf, sizeof iobuf);
 			if( r > 0 ) {
