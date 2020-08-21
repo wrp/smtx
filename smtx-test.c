@@ -549,6 +549,12 @@ main(int argc, char *const argv[])
  * in the output of ps.
  */
 static int
+exit_status(int status)
+{
+	return WIFEXITED(status) ? WEXITSTATUS(status) : EXIT_FAILURE;
+}
+
+static int
 spawn_test(struct st *v, const char *argv0)
 {
 	pid_t pid[3];
@@ -586,13 +592,11 @@ spawn_test(struct st *v, const char *argv0)
 			}
 			wait(&status);
 		}
-		_exit(status);
+		_exit(exit_status(status));
 	}
+
 	waitpid(pid[0], &status, 0);
-	if( status ) {
-		fprintf(stderr, "%s FAILED\n", v->name);
-	}
-	return status;
+	return exit_status(status);
 }
 
 static int
@@ -655,7 +659,6 @@ check_test_status(int rv, int status, int pty, const char *name)
 {
 	if( WIFEXITED(status) && WEXITSTATUS(status) != 0 ) {
 		char iobuf[BUFSIZ];
-		fprintf(stderr, "%s child FAILED\n", name);
 		ssize_t r = read(pty, iobuf, sizeof iobuf - 1);
 		if( r > 0 ) {
 			iobuf[r] = '\0';
@@ -670,7 +673,7 @@ check_test_status(int rv, int status, int pty, const char *name)
 			name, WTERMSIG(status));
 	}
 	if( rv ) {
-		fprintf(stderr, "%s FAILED", name);
+		fprintf(stderr, "%s FAILED\n", name);
 	}
-	return !rv && WIFEXITED(status) ? WEXITSTATUS(status) : EXIT_FAILURE;
+	return (!rv && WIFEXITED(status)) ? WEXITSTATUS(status) : EXIT_FAILURE;
 }
