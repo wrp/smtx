@@ -10,8 +10,6 @@
 int rv = EXIT_SUCCESS;
 int c2p[2];
 int p2c[2];
-static unsigned describe_layout(char *, ptrdiff_t, const struct canvas *,
-	unsigned);
 static unsigned describe_row(char *, size_t, const struct canvas *, int);
 static int check_test_status(int rv, int status, int pty, const char *name);
 
@@ -438,12 +436,10 @@ handler(int s)
 	char buf[256];
 	union param p;
 	unsigned len = 0;
-	const struct canvas *c;
 	switch(s) {
 	case SIGHUP:
 		read(p2c[0], &p.hup, sizeof p.hup);
-		c = p.hup.flag & 0x1 ? S.c : S.f;
-		len = describe_layout(buf, sizeof buf, c, p.hup.flag);
+		len = describe_layout(buf, sizeof buf, NULL, p.hup.flag);
 		break;
 	case SIGUSR1:
 		read(p2c[0], &p.usr1, sizeof p.usr1);
@@ -453,44 +449,6 @@ handler(int s)
 	if( len > 0 ) {
 		write(c2p[1], buf, len);
 	}
-}
-
-/* Describe a layout. This may be called in a signal handler */
-static unsigned
-describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
-{
-	const char * const e = d + siz;
-	int recurse = flags & 0x1;
-	int cursor = flags & 0x2;
-	int show_id = flags & 0x4;
-	int show_pid = flags & 0x8;
-	int show_pos = flags & 0x10;
-	char *isfocus = recurse && c == get_focus() ? "*" : "";
-	d += snprintf(d, e - d, "%s%dx%d", isfocus, c->extent.y, c->extent.x);
-
-	if( show_pos) {
-		d += snprintf(d, e - d, "@%d,%d", c->origin.y, c->origin.x);
-	}
-	if( show_pid && c->p ) {
-		d += snprintf(d, e - d, "(pid=%d)", c->p->pid);
-	}
-	if( show_id && c->p ) {
-		d += snprintf(d, e - d, "(id=%d)", c->p->id);
-	}
-	if( cursor && c->p->s ) {
-		int y = 0, x = 0;
-		getyx(c->p->s->win, y, x);
-		d += snprintf(d, e - d, "(%d,%d)%s", y, x,
-			c->p->s->vis ? "" : "!");
-	}
-	for( int i = 0; i < 2; i ++ ) {
-		if( recurse && e - d > 3 && c->c[i] ) {
-			*d++ = ';';
-			*d++ = ' ';
-			d += describe_layout(d, e - d, c->c[i], flags);
-		}
-	}
-	return siz - ( e - d );
 }
 
 static unsigned

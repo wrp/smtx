@@ -131,6 +131,8 @@ struct canvas {
 };
 
 extern struct canvas * get_focus(void);
+extern unsigned describe_layout(char *, ptrdiff_t, const struct canvas *,
+	unsigned);
 
 #ifndef TEST_ONLY
 /* Hidden from test suite */

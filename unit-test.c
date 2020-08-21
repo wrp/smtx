@@ -6,7 +6,7 @@
 
 int rv = EXIT_SUCCESS;
 int child_pipe[2];
-static unsigned describe_layout(char *, size_t, const struct canvas *,
+static unsigned describe_lay(char *, size_t, const struct canvas *,
 	int, int);
 
 static unsigned
@@ -64,7 +64,7 @@ vexpect_layout(const struct canvas *c, const char *fmt, va_list ap)
 	char actual[1024];
 	char expect[1024];
 	const char *a = actual, *b = expect;
-	describe_layout(actual, sizeof actual, c, 1, 1);
+	describe_lay(actual, sizeof actual, c, 1, 1);
 	vsnprintf(expect, sizeof expect, fmt, ap);
 	while( *a && ( *a == *b || *b == '?' ) ) {
 		a += 1;
@@ -385,7 +385,7 @@ observed when the prompt was only one character long.
 
 /* Describe a layout. This may be called in a signal handler */
 static unsigned
-describe_layout(char *d, size_t siz, const struct canvas *c, int recurse,
+describe_lay(char *d, size_t siz, const struct canvas *c, int recurse,
 	int cursor)
 {
 	unsigned len = snprintf(d, siz, "%s%dx%d@%d,%d",
@@ -401,7 +401,7 @@ describe_layout(char *d, size_t siz, const struct canvas *c, int recurse,
 		if( recurse && len + 3 < siz && c->c[i] ) {
 			d[len++] = ';';
 			d[len++] = ' ';
-			len += describe_layout(d + len, siz - len, c->c[i], 1,
+			len += describe_lay(d + len, siz - len, c->c[i], 1,
 				cursor);
 		}
 	}

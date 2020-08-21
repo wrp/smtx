@@ -1039,3 +1039,46 @@ smtx_main(int argc, char *const argv[])
 	main_loop();
 	return EXIT_SUCCESS;
 }
+
+/* Describe a layout. This may be called in a signal handler by the tests*/
+unsigned
+describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
+{
+	const char * const e = d + siz;
+	int recurse = flags & 0x1;
+	int cursor = flags & 0x2;
+	int show_id = flags & 0x4;
+	int show_pid = flags & 0x8;
+	int show_pos = flags & 0x10;
+
+	if( c == NULL ) {
+		c = flags & 0x20 ? S.f : S.c;
+	}
+
+	char *isfocus = recurse && c == get_focus() ? "*" : "";
+	d += snprintf(d, e - d, "%s%dx%d", isfocus, c->extent.y, c->extent.x);
+
+	if( show_pos) {
+		d += snprintf(d, e - d, "@%d,%d", c->origin.y, c->origin.x);
+	}
+	if( show_pid && c->p ) {
+		d += snprintf(d, e - d, "(pid=%d)", c->p->pid);
+	}
+	if( show_id && c->p ) {
+		d += snprintf(d, e - d, "(id=%d)", c->p->id);
+	}
+	if( cursor && c->p->s ) {
+		int y = 0, x = 0;
+		getyx(c->p->s->win, y, x);
+		d += snprintf(d, e - d, "(%d,%d)%s", y, x,
+			c->p->s->vis ? "" : "!");
+	}
+	for( int i = 0; i < 2; i ++ ) {
+		if( recurse && e - d > 3 && c->c[i] ) {
+			*d++ = ';';
+			*d++ = ' ';
+			d += describe_layout(d, e - d, c->c[i], flags);
+		}
+	}
+	return siz - ( e - d );
+}
