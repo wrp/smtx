@@ -506,7 +506,7 @@ static int spawn_test(struct st *v, const char *argv0);
 int
 main(int argc, char *const argv[])
 {
-	int status = 0;
+	int fail_count = 0;
 	const char *argv0 = argv[0];
 	struct st tab[] = {
 		F(check_ps1),
@@ -531,16 +531,20 @@ main(int argc, char *const argv[])
 		}
 		if( v->f ) {
 			if( strcmp(v->name, argv0) != 0 ) {
-				status |= spawn_test(v, argv0);
+				fail_count += spawn_test(v, argv0);
 			} else {
-				status = execute_test(v);
+				return execute_test(v);
 			}
 		} else {
 			fprintf(stderr, "unknown function: %s\n", name);
-			status = EXIT_FAILURE;
+			fail_count += 1;
 		}
 	}
-	return status;
+	if( fail_count ) {
+		fprintf(stderr, "%d test%s failed\n", fail_count,
+			fail_count > 1 ? "s" : "");
+	}
+	return fail_count ? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
 /* Initialize a child to run a test.  We re-exec to force argv[0] to
