@@ -1,3 +1,4 @@
+#define TEST_ONLY
 #include "smtx.h"
 #include <err.h>
 #include <sys/wait.h>
@@ -29,7 +30,17 @@ fdprintf(int fd, const char *fmt, ...)
 	n = vsnprintf(cmd, sizeof cmd, fmt, ap);
 	va_end(ap);
 	assert( n < sizeof cmd );
-	rewrite(fd, cmd, n);
+
+	const char *b = cmd;
+	const char *e = cmd + n;
+	while( b < e ) {
+		ssize_t s = write(fd, b, e - b);
+		if( s < 0 && errno != EINTR ) {
+			fprintf(stderr, "write to pty");
+			break;
+		}
+		b += s < 0 ? 0 : s;
+	}
 }
 
 static int __attribute__((format(printf,3,4)))

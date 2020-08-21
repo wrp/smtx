@@ -33,18 +33,20 @@
 #include <wchar.h>
 #include <wctype.h>
 
+#define CTL(x) ((x) & 0x1f)
+
 #include "vtparser.h"
+
+/* exposed to test suite */
+
 #define DEFAULT_TERMINAL "screen-bce"
 #define DEFAULT_COLOR_TERMINAL "screen-256color-bce"
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define MIN3(a, b, c) ((a) < (b) ? MIN(a, c) : MIN(b, c))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
-#define CTL(x) ((x) & 0x1f)
 
 struct canvas;
-struct pty;
-typedef void(action)(const char *arg);
 struct screen {
 	int sy, sx, vis;
 	short fg, bg, sfg, sbg, sp;
@@ -64,14 +66,20 @@ struct pty {
 	char status[32];
 	struct vtp vp;
 };
-enum mode {
-	passthru, /* Unbound keystrokes are passed to focused window */
-	sink      /* Unbound keystrokes are discarded */
-};
+
+typedef void(action)(const char *arg);
 struct handler {
 	action *act;
 	const char *arg;
 };
+
+enum mode {
+	passthru, /* Unbound keystrokes are passed to focused window */
+	sink      /* Unbound keystrokes are discarded */
+};
+extern int smtx_main(int, char *const*);
+extern struct state S;
+
 struct state {
 	char commandkey;
 	int width;
@@ -90,7 +98,6 @@ struct state {
 };
 
 struct point { int y, x; };
-
 struct canvas {
 	struct point origin; /* position of upper left corner */
 	struct point extent; /* relative position of lower right corner */
@@ -123,6 +130,11 @@ struct canvas {
 	WINDOW *wdiv;  /* Window for divider */
 };
 
+extern struct canvas * get_focus(void);
+
+#ifndef TEST_ONLY
+/* Hidden from test suite */
+
 #define MAXMAP 0x7f
 extern wchar_t CSET_US[]; /* "USASCII" */
 extern wchar_t CSET_UK[]; /* "United Kingdom" */
@@ -132,7 +144,6 @@ extern int id;
 extern const char *term;
 extern void fixcursor(void);
 extern void focus(struct canvas *n);
-extern struct canvas * get_focus(void);
 
 extern struct canvas * init(void);
 extern void balance(struct canvas *);
@@ -143,10 +154,6 @@ extern void build_bindings(void);
 extern void draw(struct canvas *n);
 extern void scrollbottom(struct canvas *n);
 extern void show_err(const char *fmt, ...);
-
-/* exposed to test suite */
-extern int smtx_main(int, char *const*);
-extern struct state S;
 
 extern action attach;
 extern action transition;
@@ -159,3 +166,4 @@ extern action resize;
 extern action scrolln;
 extern action scrollh;
 extern action send;
+#endif /* TEST_ONLY */
