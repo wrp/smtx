@@ -1084,3 +1084,22 @@ describe_layout(char *d, ptrdiff_t siz, unsigned flags)
 {
 	return layout_r(d, siz, flags & 0x20 ? S.f : S.c, flags);
 }
+
+unsigned
+describe_row(char *desc, size_t siz, int row)
+{
+	const struct canvas *c = S.c;
+	WINDOW *w = c->p->s->win;
+	unsigned rv;
+	int y, x, mx;
+	getmaxyx(w, y, mx);
+	mx = MIN3(mx, c->extent.x + c->offset.x, (int)siz - 1);
+	getyx(w, y, x);
+	desc[rv = mx - c->offset.x] = '\0';
+	row += c->offset.y;
+	for( ; mx >= c->offset.x; mx-- ) {
+		desc[mx - c->offset.x] = mvwinch(w, row, mx) & A_CHARTEXT;
+	}
+	wmove(w, y, x);
+	return rv;
+}
