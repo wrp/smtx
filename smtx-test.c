@@ -501,7 +501,7 @@ describe_row(char *desc, size_t siz, const struct canvas *c, int row)
 
 typedef int test(int, pid_t);
 struct st { char *name; test *f; };
-static int execute_test(struct st *v);
+static int execute_test(struct st *, const char *);
 static int spawn_test(struct st *v, const char *argv0);
 #define F(x) { .name = #x, .f = (x) }
 int
@@ -534,7 +534,7 @@ main(int argc, char *const argv[])
 			if( strcmp(v->name, argv0) != 0 ) {
 				fail_count += spawn_test(v, argv0);
 			} else {
-				return execute_test(v);
+				return execute_test(v, argv0);
 			}
 		} else {
 			fprintf(stderr, "unknown function: %s\n", name);
@@ -605,13 +605,14 @@ spawn_test(struct st *v, const char *argv0)
 }
 
 static int
-execute_test(struct st *v)
+execute_test(struct st *v, const char *name)
 {
-	char *const args[] = { v->name, v->name, NULL };
+	char *const args[] = { "smtx", NULL };
 	int fd[2]; /* primary/secondary fd of pty */
 	int status;
 	pid_t pid;
 
+	assert( strcmp(name, v->name) == 0 );
 	unsetenv("ENV");  /* Suppress all shell initializtion */
 	setenv("SHELL", "/bin/sh", 1);
 	setenv("PS1", PROMPT, 1);
@@ -645,7 +646,7 @@ execute_test(struct st *v)
 		if( close(c2p[0]) || close(p2c[1]) ) {
 			err(EXIT_FAILURE, "close");
 		}
-		exit(smtx_main(1, args + 1));
+		exit(smtx_main(1, args));
 	default:
 		if( close(fd[1]) ) {
 			err(EXIT_FAILURE, "close secondary");
