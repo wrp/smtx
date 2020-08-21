@@ -10,7 +10,7 @@ static unsigned describe_lay(char *, size_t, const struct canvas *,
 	int, int);
 
 static unsigned
-describe_row(char *desc, size_t siz, WINDOW *w, int row)
+desc_row(char *desc, size_t siz, WINDOW *w, int row)
 {
 	int oy, ox;
 	unsigned x, mx;
@@ -46,7 +46,7 @@ vexpect_row(int row, int col, WINDOW *w, const char *fmt, va_list ap)
 	char actual[1024];
 	char expect[1024];
 	const char *a = actual + col, *b = expect;
-	describe_row(actual, sizeof actual, w, row);
+	desc_row(actual, sizeof actual, w, row);
 	vsnprintf(expect, sizeof expect, fmt, ap);
 	while( *a && *a++ == *b ) {
 		b += 1;

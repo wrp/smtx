@@ -10,7 +10,6 @@
 int rv = EXIT_SUCCESS;
 int c2p[2];
 int p2c[2];
-static unsigned describe_row(char *, size_t, const struct canvas *, int);
 static int check_test_status(int rv, int status, int pty, const char *name);
 
 union param {
@@ -443,17 +442,17 @@ handler(int s)
 		break;
 	case SIGUSR1:
 		read(p2c[0], &p.usr1, sizeof p.usr1);
-		len = describe_row(buf, sizeof buf, S.c,
-			S.c->offset.y + p.usr1.row - 1);
+		len = describe_row(buf, sizeof buf, p.usr1.row - 1);
 	}
 	if( len > 0 ) {
 		write(c2p[1], buf, len);
 	}
 }
 
-static unsigned
-describe_row(char *desc, size_t siz, const struct canvas *c, int row)
+unsigned
+describe_row(char *desc, size_t siz, int row)
 {
+	const struct canvas *c = S.c;
 	WINDOW *w = c->p->s->win;
 	unsigned rv;
 	int y, x, mx;
@@ -461,6 +460,7 @@ describe_row(char *desc, size_t siz, const struct canvas *c, int row)
 	mx = MIN3(mx, c->extent.x + c->offset.x, (int)siz - 1);
 	getyx(w, y, x);
 	desc[rv = mx - c->offset.x] = '\0';
+	row += c->offset.y;
 	for( ; mx >= c->offset.x; mx-- ) {
 		desc[mx - c->offset.x] = mvwinch(w, row, mx) & A_CHARTEXT;
 	}
