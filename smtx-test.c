@@ -30,11 +30,25 @@ int rv = EXIT_SUCCESS;
 int c2p[2];
 int p2c[2];
 static int check_test_status(int rv, int status, int pty, const char *name);
+static void grep(int fd, const char *needle, int count);
 
 union param {
 	struct { unsigned flag; } hup;
 	struct { int row; } usr1;
 };
+
+static void
+retrywrite(int fd, const char *b, size_t n)
+{
+	const char *e = b + n;
+	while( b < e ) {
+		ssize_t s = write(fd, b, e - b);
+		if( s < 0 && errno != EINTR ) {
+			err(EXIT_FAILURE, "write to pty");
+		}
+		b += s < 0 ? 0 : s;
+	}
+}
 
 static void __attribute__((format(printf,2,3)))
 fdprintf(int fd, const char *fmt, ...)
@@ -46,17 +60,21 @@ fdprintf(int fd, const char *fmt, ...)
 	n = vsnprintf(cmd, sizeof cmd, fmt, ap);
 	va_end(ap);
 	assert( n < sizeof cmd );
+	retrywrite(fd, cmd, n);
+}
 
-	const char *b = cmd;
-	const char *e = cmd + n;
-	while( b < e ) {
-		ssize_t s = write(fd, b, e - b);
-		if( s < 0 && errno != EINTR ) {
-			fprintf(stderr, "write to pty");
-			break;
-		}
-		b += s < 0 ? 0 : s;
-	}
+static void __attribute__((format(printf,2,3)))
+send_cmd(int fd, const char *fmt, ...)
+{
+	char cmd[1024];
+	size_t n;
+	va_list ap;
+	va_start(ap, fmt);
+	n = vsnprintf(cmd, sizeof cmd, fmt, ap);
+	va_end(ap);
+	assert( n < sizeof cmd );
+	retrywrite(fd, cmd, n);
+	grep(fd, PROMPT, 1);
 }
 
 static int __attribute__((format(printf,3,4)))
@@ -345,7 +363,7 @@ test_insert(int fd, pid_t p)
 {
 	int rc = 0;
 	/* smir -- begin insert mode;  rmir -- end insert mode */
-	fdprintf(fd, "printf 0123456; tput cub 3; tput smir; "
+	send_cmd(fd, "printf 0123456; tput cub 3; tput smir; "
 		"echo foo; tput rmir\r");
 	rc |= validate_row(p, 2, "%-80s", "0123foo456");
 	rc |= validate_row(p, 3, "%-80s", PROMPT);
