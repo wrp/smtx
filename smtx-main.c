@@ -1041,8 +1041,8 @@ smtx_main(int argc, char *const argv[])
 }
 
 /* Describe a layout. This may be called in a signal handler by the tests*/
-unsigned
-describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
+static unsigned
+layout_r(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 {
 	const char * const e = d + siz;
 	int recurse = flags & 0x1;
@@ -1050,10 +1050,6 @@ describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 	int show_id = flags & 0x4;
 	int show_pid = flags & 0x8;
 	int show_pos = flags & 0x10;
-
-	if( c == NULL ) {
-		c = flags & 0x20 ? S.f : S.c;
-	}
 
 	char *isfocus = recurse && c == get_focus() ? "*" : "";
 	d += snprintf(d, e - d, "%s%dx%d", isfocus, c->extent.y, c->extent.x);
@@ -1077,8 +1073,14 @@ describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 		if( recurse && e - d > 3 && c->c[i] ) {
 			*d++ = ';';
 			*d++ = ' ';
-			d += describe_layout(d, e - d, c->c[i], flags);
+			d += layout_r(d, e - d, c->c[i], flags);
 		}
 	}
 	return siz - ( e - d );
+}
+
+unsigned
+describe_layout(char *d, ptrdiff_t siz, unsigned flags)
+{
+	return layout_r(d, siz, flags & 0x20 ? S.f : S.c, flags);
 }

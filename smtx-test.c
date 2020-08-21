@@ -439,7 +439,7 @@ handler(int s)
 	switch(s) {
 	case SIGHUP:
 		read(p2c[0], &p.hup, sizeof p.hup);
-		len = describe_layout(buf, sizeof buf, NULL, p.hup.flag);
+		len = describe_layout(buf, sizeof buf, p.hup.flag);
 		break;
 	case SIGUSR1:
 		read(p2c[0], &p.usr1, sizeof p.usr1);
