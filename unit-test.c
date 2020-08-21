@@ -191,22 +191,6 @@ new_test_canvas(int rows, int cols, const char *ps1)
 }
 
 static int
-test_nel(void)
-{
-	setenv("TERM", "smtx", 1);
-	const char *cmd = "tput cud 3; printf foo; tput nel; echo blah";
-	struct test_canvas *T = new_test_canvas(10, 80, NULL);
-	check_cmd(T, cmd, NULL);
-	expect_row(5, T, "%-80s", "foo");
-	expect_row(6, T, "%-80s", "blah");
-	cmd = "printf foobar; tput cub 3; tput el; echo blah";
-	check_cmd(T, cmd, NULL);
-	expect_row(7, T, "%-80s", "fooblah");
-	check_cmd(T, cmd, NULL);
-	return rv;
-}
-
-static int
 test_csr(void)
 {
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
@@ -292,7 +276,6 @@ main(int argc, char *const argv[])
 	const char *argv0 = argv[0];
 	struct st tab[] = {
 		F(test_description),
-		F(test_nel),
 		F(test_pager),
 		F(test_cols),
 		F(test_csr),

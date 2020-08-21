@@ -425,6 +425,25 @@ test_navigate(int fd, pid_t p)
 }
 
 static int
+test_nel(int fd, pid_t p)
+{
+	int rv = 0;
+	/* nel is a newline */
+	const char *cmd = "tput cud 3; printf foo; tput nel; "
+		"printf 'blah%d\\n' 12";
+	fdprintf(fd, "%s\r", cmd);
+	grep(fd, "blah12", 1);
+	rv |= validate_row(p, 5, "%-80s", "foo");
+	rv |= validate_row(p, 6, "%-80s", "blah12");
+	cmd = "printf foobar; tput cub 3; tput el; echo blah";
+	send_cmd(fd, "%s\r", cmd);
+	rv |= validate_row(p, 7, "%s%-*s", PROMPT, 80 - strlen(PROMPT), cmd);
+	rv |= validate_row(p, 8, "%-80s", "fooblah");
+	fdprintf(fd, "exit\r");
+	return rv;
+}
+
+static int
 test_reset(int fd, pid_t p)
 {
 	int k[] = { 1, 3, 4, 6, 7, 20, 25, 34, 1048, 1049, 47, 1047 };
@@ -646,6 +665,7 @@ main(int argc, char *const argv[])
 		F(test_insert),
 		F(test_lnm),
 		F(test_navigate),
+		F(test_nel),
 		F(test_reset),
 		F(test_resize),
 		F(test_row),
@@ -745,6 +765,9 @@ execute_test(struct st *v, const char *name)
 
 	assert( strcmp(name, v->name) == 0 );
 	unsetenv("ENV");  /* Suppress all shell initializtion */
+	if(strcmp(v->name, "test_nel") == 0) {
+		setenv("TERM", "smtx", 1);
+	} /* TODO: figure out reasonable way to handle environ in tests */
 	setenv("SHELL", "/bin/sh", 1);
 	setenv("PS1", PROMPT, 1);
 	setenv("LINES", "24", 1);
