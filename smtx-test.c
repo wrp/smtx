@@ -314,6 +314,21 @@ test_equalize(int fd, pid_t p)
 }
 
 static int
+test_insert(int fd, pid_t p)
+{
+	int rc = 0;
+	grep(fd, PROMPT, 1);
+	/* smir -- begin insert mode;  rmir -- end insert mode */
+	fdprintf(fd, "printf 0123456; tput cub 3; tput smir; "
+		"echo foo; tput rmir\r");
+	grep(fd, PROMPT, 1);
+	rc |= validate_row(p, 2, "%-80s", "0123foo456");
+	rc |= validate_row(p, 3, "%-80s", PROMPT);
+	fdprintf(fd, "exit\r");
+	return rv;
+}
+
+static int
 test_lnm(int fd, pid_t pid)
 {
 	union param p = { .hup.flag = 1 };
@@ -573,6 +588,7 @@ main(int argc, char *const argv[])
 		F(test_cup),
 		F(test_cursor),
 		F(test_equalize),
+		F(test_insert),
 		F(test_lnm),
 		F(test_navigate),
 		F(test_reset),

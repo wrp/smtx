@@ -272,18 +272,6 @@ test_ech(void)
 }
 
 static int
-test_insert(void)
-{
-	int y = 1002;
-	struct test_canvas *T = new_test_canvas(24, 80, NULL);
-	check_cmd(T, "printf 0123456; tput cub 3; tput smir; "
-		"echo foo; tput rmir", "*23x80@0,0(%d,6)", y += 2);
-	expect_row(y - 1001 - 1, T, "0123foo456%-70s", "");
-	expect_row(y - 1001, T, "%-80s", T->ps1);
-	return rv;
-}
-
-static int
 test_el(void)
 {
 	int y = 1002;
@@ -357,7 +345,6 @@ main(int argc, char *const argv[])
 	struct st tab[] = {
 		F(test_el),
 		F(test_description),
-		F(test_insert),
 		F(test_ech),
 		F(test_ich),
 		F(test_nel),
