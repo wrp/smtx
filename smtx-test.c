@@ -220,14 +220,11 @@ static int
 test_cup(int fd, pid_t p)
 {
 	int status = 0;
-	fdprintf(fd, "tput cup 5 50; echo foo\r"); /* Move down 5 lines */
-	grep(fd, PROMPT, 1);
+	send_cmd(fd, "tput cup 5 50; echo foo\r"); /* Move down 5 lines */
 	char *cmd = "printf '0123456'; tput cub 4; printf '789\\n'";
-	fdprintf(fd, "%s\r", cmd);
-	grep(fd, PROMPT, 1);
+	send_cmd(fd, "%s\r", cmd);
 	char *cmd2 = "printf abc; tput cuf 73; echo 12345678wrapped";
-	fdprintf(fd, "%s\r", cmd2);
-	grep(fd, PROMPT, 1);
+	send_cmd(fd, "%s\r", cmd2);
 
 	assert( strlen(PROMPT) == 4 ); /* TODO: compute with this */
 
@@ -245,12 +242,10 @@ static int
 test_cursor(int fd, pid_t p)
 {
 	int rv = 0;
-	fdprintf(fd, "printf '0123456'; tput cub 4\r");
-	grep(fd, PROMPT, 1);
+	send_cmd(fd, "printf '0123456'; tput cub 4\r");
 	rv |= validate_row(p, 2, "012%-77s", PROMPT);
 
-	fdprintf(fd, "tput sc; echo abcdefg; tput rc; echo bar\r");
-	grep(fd, PROMPT, 1);
+	send_cmd(fd, "tput sc; echo abcdefg; tput rc; echo bar\r");
 	rv |= validate_row(p, 3, "%-80s", "bardefg");
 
 	fdprintf(fd, "tput cup 15 50; printf 'foo%%s\\n' baz\r");
@@ -296,17 +291,13 @@ static int
 test_resize(int fd, pid_t p)
 {
 	int status = 0;
-	fdprintf(fd, "%cJccC\r:\r", CTL('g'));
-	grep(fd, PROMPT, 1);
+	send_cmd(fd, "%cJccC\r:\r", CTL('g'));
 	status |= check_layout(p, 0x1, "*7x40; 7x80; 7x80; 7x39");
-	fdprintf(fd, "%c5J\r:\r", CTL('g'));
-	grep(fd, PROMPT, 1);
+	send_cmd(fd, "%c5J\r:\r", CTL('g'));
 	status |= check_layout(p, 0x1, "*12x40; 4x80; 5x80; 12x39");
-	fdprintf(fd, "%cjj10K\r:\r", CTL('g'));
-	grep(fd, PROMPT, 1);
+	send_cmd(fd, "%cjj10K\r:\r", CTL('g'));
 	status |= check_layout(p, 0x1, "*12x40; 0x80; 10x80; 12x39");
-	fdprintf(fd, "%ckkl20H\r:\r", CTL('g'));
-	grep(fd, PROMPT, 1);
+	send_cmd(fd, "%ckkl20H\r:\r", CTL('g'));
 	status |= check_layout(p, 0x1, "12x20; 0x80; 10x80; *12x59");
 	fdprintf(fd, "kill -TERM $SMTX\r");
 	return status;
