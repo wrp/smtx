@@ -422,6 +422,25 @@ test_scrollback(int fd, pid_t p)
 }
 
 static int
+test_vis(int fd, pid_t p)
+{
+	int rv = 0;
+	grep(fd, PROMPT, 1);
+	fdprintf(fd, "tput civis;\r");
+	grep(fd, PROMPT, 1);
+	rv |= validate_row(p, 1, "%-80s", PROMPT "tput civis;");
+	rv |= check_layout(p, 0x3, "*23x80(2,4)!");
+	rv |= validate_row(p, 2, "%-80s", PROMPT);
+
+	fdprintf(fd, "tput cvvis;\r");
+	grep(fd, PROMPT, 1);
+	rv |= check_layout(p, 0x3, "*23x80(3,4)");
+
+	fdprintf(fd, "exit\r");
+	return rv;
+}
+
+static int
 test_vpa(int fd, pid_t p)
 {
 	int rv = 0;
@@ -560,6 +579,7 @@ main(int argc, char *const argv[])
 		F(test_resize),
 		F(test_row),
 		F(test_scrollback),
+		F(test_vis),
 		F(test_vpa),
 		F(test_width),
 		{ NULL, NULL }

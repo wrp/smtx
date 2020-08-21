@@ -263,16 +263,6 @@ test_ich(void)
 }
 
 static int
-test_vis(void)
-{
-	int y = 1002;
-	struct test_canvas *T = new_test_canvas(24, 80, NULL);
-	check_cmd(T, "tput civis", "*23x80@0,0", ++y);
-	check_cmd(T, "tput cvvis", "*23x80@0,0(%d,%d)", ++y, strlen(T->ps1));
-	return rv;
-}
-
-static int
 test_ech(void)
 {
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
@@ -368,7 +358,6 @@ main(int argc, char *const argv[])
 		F(test_el),
 		F(test_description),
 		F(test_insert),
-		F(test_vis),
 		F(test_ech),
 		F(test_ich),
 		F(test_nel),
