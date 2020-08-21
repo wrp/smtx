@@ -304,6 +304,20 @@ test_resize(int fd, pid_t p)
 }
 
 static int
+test_el(int fd, pid_t p)
+{
+	int rv = 0;
+	send_cmd(fd, "printf 01234; tput cub 3; tput el\r");
+	rv |= validate_row(p, 2, "01%-78s", PROMPT);
+
+	send_cmd(fd, "printf 01234; tput cub 3; tput el1; echo\r");
+	rv |= validate_row(p, 3, "   34%75s", "");
+
+	fdprintf(fd, "exit\r");
+	return rv;
+}
+
+static int
 test_equalize(int fd, pid_t p)
 {
 	int status = 0;
@@ -615,6 +629,7 @@ main(int argc, char *const argv[])
 		F(test_attach),
 		F(test_cup),
 		F(test_cursor),
+		F(test_el),
 		F(test_equalize),
 		F(test_ich),
 		F(test_insert),

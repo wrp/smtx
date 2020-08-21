@@ -244,21 +244,6 @@ test_ech(void)
 }
 
 static int
-test_el(void)
-{
-	int y = 1002;
-	struct test_canvas *T = new_test_canvas(24, 80, NULL);
-	check_cmd(T, "printf 01234; tput cub 3; tput el", "*23x80@0,0(%d,%d)",
-		++y, 2 + strlen(T->ps1));
-	expect_row(y - 1001, T, "01%-78s", T->ps1);
-
-	check_cmd(T, "printf 01234; tput cub 3; tput el1; echo",
-		"*23x80@0,0(%d,%d)", y += 2, strlen(T->ps1));
-	expect_row(y - 1001 - 1, T, "   34%75s", "");
-	return rv;
-}
-
-static int
 test_pager(void)
 {
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
@@ -315,7 +300,6 @@ main(int argc, char *const argv[])
 	int status = 0;
 	const char *argv0 = argv[0];
 	struct st tab[] = {
-		F(test_el),
 		F(test_description),
 		F(test_ech),
 		F(test_nel),
