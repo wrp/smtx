@@ -37,8 +37,6 @@
 
 #include "vtparser.h"
 
-/* exposed to test suite */
-
 #define DEFAULT_TERMINAL "screen-bce"
 #define DEFAULT_COLOR_TERMINAL "screen-256color-bce"
 
@@ -134,9 +132,6 @@ extern struct canvas * get_focus(void);
 extern unsigned describe_layout(char *, ptrdiff_t, unsigned);
 extern unsigned describe_row(char *, size_t, int);
 
-#ifndef TEST_ONLY
-/* Hidden from test suite */
-
 #define MAXMAP 0x7f
 extern wchar_t CSET_US[]; /* "USASCII" */
 extern wchar_t CSET_UK[]; /* "United Kingdom" */
@@ -168,4 +163,3 @@ extern action resize;
 extern action scrolln;
 extern action scrollh;
 extern action send;
-#endif /* TEST_ONLY */

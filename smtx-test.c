@@ -1,8 +1,31 @@
-#define TEST_ONLY
-#include "smtx.h"
+#include "config.h"
+#include <assert.h>
+#include <ctype.h>
 #include <err.h>
+#include <errno.h>
+#include <signal.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/select.h>
 #include <sys/wait.h>
+#include <unistd.h>
+#if HAVE_PTY_H
+# include <pty.h>
+# include <utmp.h>
+#elif HAVE_LIBUTIL_H
+# include <libutil.h>
+#elif HAVE_UTIL_H
+# include <util.h>
+#endif
 
+extern unsigned describe_layout(char *, ptrdiff_t, unsigned);
+extern unsigned describe_row(char *, size_t, int);
+extern int smtx_main(int, char *const*);
+
+#define CTL(x) ((x) & 0x1f)
 #define PROMPT "ps1>"
 
 /* Non-intrusive tests that manipulate the master pty. */
