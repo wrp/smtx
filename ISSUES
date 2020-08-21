@@ -67,6 +67,8 @@ BUGS:
 	As of 61c41fe0f1dd73829315c959b69cf44df2af102f, the test suite hangs
 	on macos
 
+	On macos, you get a segfault when you 'exit' from a second window!
+
 MAYBE TODO:
 	Register signal handlers for TERM and HUP.  Need to ensure
 	that endwin is called.
