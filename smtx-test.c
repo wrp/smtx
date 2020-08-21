@@ -508,6 +508,7 @@ int
 main(int argc, char *const argv[])
 {
 	int fail_count = 0;
+	int total_count = 0;
 	const char *argv0 = argv[0];
 	struct st tab[] = {
 		F(check_ps1),
@@ -530,20 +531,20 @@ main(int argc, char *const argv[])
 			for( v = tab; v->name && strcmp(v->name, name); v++ )
 				;
 		}
+		assert( v != NULL );
 		if( v->f ) {
-			if( strcmp(v->name, argv0) != 0 ) {
-				fail_count += spawn_test(v, argv0);
-			} else {
-				return execute_test(v, argv0);
-			}
+			int (*f)(struct st *, const char *);
+			f = strcmp(v->name, argv0) ? spawn_test : execute_test;
+			fail_count += f(v, argv0);
+			total_count += 1;
 		} else {
 			fprintf(stderr, "unknown function: %s\n", name);
 			fail_count += 1;
 		}
 	}
 	if( fail_count ) {
-		fprintf(stderr, "%d test%s failed\n", fail_count,
-			fail_count > 1 ? "s" : "");
+		fprintf(stderr, "%d test%s (of %d) failed\n", fail_count,
+			fail_count > 1 ? "s" : "", total_count);
 	}
 	return fail_count ? EXIT_FAILURE : EXIT_SUCCESS;
 }
@@ -657,7 +658,9 @@ execute_test(struct st *v, const char *name)
 		rv = v->f(fd[0], pid);
 		wait(&status);
 	}
-	return check_test_status(rv, status, fd[0], v->name);
+	status = check_test_status(rv, status, fd[0], v->name);
+	fclose(stderr); /* Prevent redundant output of failures */
+	return status;
 }
 
 static int
