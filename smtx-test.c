@@ -365,6 +365,7 @@ static int
 test_lnm(int fd, pid_t pid)
 {
 	union param p = { .hup.flag = 1 };
+	grep(fd, PROMPT, 1);
 	fdprintf(fd, "printf '\\e[20h'\r");
 	fdprintf(fd, "kill -HUP $SMTX\r");
 	write(p2c[1], &p, sizeof p);
@@ -379,8 +380,9 @@ static int
 test_navigate(int fd, pid_t p)
 {
 	int status = 0;
-	fdprintf(fd, "%ccjkhlC4tCvjkh2slc\r", CTL('g'));
 	grep(fd, PROMPT, 1);
+	fdprintf(fd, "%ccjkhlC4tCvjkh2slc\rprintf 'foo%%s' bar\r", CTL('g'));
+	grep(fd, "foobar", 1);
 	status |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
 		"11x26@0,0",
 		"11x80@12,0",
@@ -404,6 +406,7 @@ test_reset(int fd, pid_t p)
 {
 	int k[] = { 1, 3, 4, 6, 7, 20, 25, 34, 1048, 1049, 47, 1047 };
 	(void)p;
+	grep(fd, PROMPT, 1);
 
 	for( unsigned long i = 0; i < sizeof k / sizeof *k; i++ ) {
 		int v = k[i];
@@ -509,8 +512,9 @@ test_width(int fd, pid_t p)
 {
 	int rv = 0;
 	char buf[161];
-	fdprintf(fd, "%ccCCCj\r", CTL('g'));
 	grep(fd, PROMPT, 1);
+	fdprintf(fd, "%ccCCCj\rprintf 'foo%%s' bar\r", CTL('g'));
+	grep(fd, "foobar", 1);
 	rv |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
 		"11x20@0,0",
 		"*11x80@12,0",
