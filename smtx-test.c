@@ -314,6 +314,39 @@ test_equalize(int fd, pid_t p)
 }
 
 static int
+test_ich(int fd, pid_t p)
+{
+	int rv = 0;
+	const char *cmd = "printf abcdefg; tput cub 3; tput ich 5; echo";
+	grep(fd, PROMPT, 1);
+	fdprintf(fd, "%s\r", cmd);
+	grep(fd, PROMPT, 1);
+	rv |= validate_row(p, 2, "%-80s", "abcd     efg");
+
+	cmd = "yes | nl | sed 6q; tput cuu 3; tput il 3; tput cud 6";
+	fdprintf(fd, "%s\r", cmd);
+	grep(fd, PROMPT, 1);
+	rv |= validate_row(p, 3, "%s%-*s", PROMPT, 80 - strlen(PROMPT), cmd);
+	for( int i=1; i < 4; i++ ) {
+		rv |= validate_row(p, 3 + i, "%6d  y%71s", i, "");
+	}
+	for( int i=4; i < 7; i++ ) {
+		rv |= validate_row(p, 3 + i, "%80s", "");
+	}
+	for( int i=7; i < 10; i++ ) {
+		rv |= validate_row(p, 3 + i, "%6d  y%71s", i - 3, "");
+	}
+	cmd = "yes | nl | sed 6q; tput cuu 5; tput dl 4; tput cud 1";
+	fdprintf(fd, "%s\r", cmd);
+	grep(fd, PROMPT, 1);
+	rv |= validate_row(p, 14, "     %d  y%71s", 1, "");
+	rv |= validate_row(p, 15, "     %d  y%71s", 6, "");
+
+	fdprintf(fd, "exit\r");
+	return rv;
+}
+
+static int
 test_insert(int fd, pid_t p)
 {
 	int rc = 0;
@@ -588,6 +621,7 @@ main(int argc, char *const argv[])
 		F(test_cup),
 		F(test_cursor),
 		F(test_equalize),
+		F(test_ich),
 		F(test_insert),
 		F(test_lnm),
 		F(test_navigate),

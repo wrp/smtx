@@ -235,34 +235,6 @@ test_cols(void)
 }
 
 static int
-test_ich(void)
-{
-	const char *cmd = "printf abcdefg; tput cub 3; tput ich 5; echo";
-	struct test_canvas *T = new_test_canvas(24, 80, NULL);
-	check_cmd(T, cmd, NULL);
-	expect_row(2, T, "abcd     efg%-68s", "");
-	expect_row(3, T, "%-80s", T->ps1);
-	cmd = "yes | nl | sed 6q; tput cuu 3; tput il 3; tput cud 6";
-	check_cmd(T, cmd, "*23x80@0,0(1014,6)");
-	expect_row(3, T, "%s%-74s", T->ps1, cmd);
-	for( int i=1; i < 4; i++ ) {
-		expect_row(3 + i, T, "     %d  y%71s", i, "");
-	}
-	for( int i=4; i < 7; i++ ) {
-		expect_row(3 + i, T, "%80s", "");
-	}
-	for( int i=7; i < 10; i++ ) {
-		expect_row(3 + i, T, "     %d  y%71s", i - 3, "");
-	}
-	expect_row(13, T, "%-80s", T->ps1);
-	cmd = "yes | nl | sed 6q; tput cuu 5; tput dl 4; tput cud 1";
-	check_cmd(T, cmd, NULL);
-	expect_row(14, T, "     %d  y%71s", 1, "");
-	expect_row(15, T, "     %d  y%71s", 6, "");
-	return rv;
-}
-
-static int
 test_ech(void)
 {
 	struct test_canvas *T = new_test_canvas(24, 80, NULL);
@@ -346,7 +318,6 @@ main(int argc, char *const argv[])
 		F(test_el),
 		F(test_description),
 		F(test_ech),
-		F(test_ich),
 		F(test_nel),
 		F(test_pager),
 		F(test_cols),
