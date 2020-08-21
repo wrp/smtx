@@ -330,50 +330,6 @@ test_pager(void)
 	return rv;
 }
 
-static int
-test_cursor(void)
-{
-	int y = 1002;
-	/* many below tests expect ps1 length 6 */
-	struct test_canvas *T = new_test_canvas(24, 80, "uniq> ");
-
-	/* (1) */
-	check_cmd(T, "printf '0123456'; tput cub 4", "*23x80@0,0(%d,9)", ++y);
-	expect_row(y - 1001, T, "012%-77s", T->ps1);
-	check_cmd(T, "tput sc", "*23x80@0,0(%d,6)", ++y);
-	check_cmd(T, "tput rc", "*23x80@0,0(%d,6)", y);
-	y = S.history - 24 + 15;
-	check_cmd(T, "tput cup 15 50;", "*23x80@0,0(%d,56)", ++y);
-	check_cmd(T, "tput clear", "*23x80@0,0(%d,6)", y -= 15);
-	check_cmd(T, "tput ht", "*23x80@0,0(%d,14)", ++y);
-	check_cmd(T, "printf 'a\\tb\\tc\\t'; tput cbt; tput cbt; printf foo",
-		"*23x80@0,0(%d,17)", ++y);
-	expect_row(y - 1001, T, "a       foo%-69s", T->ps1);
-
-	check_cmd(T, "tput cud 6", "*23x80@0,0(%d,6)", y += 1 + 6);
-	check_cmd(T, "printf foobar; tput cub 3; tput dch 1; echo",
-		"*23x80@0,0(%d,6)", y += 2);
-	expect_row(y - 1001 - 1, T, "fooar%75s", " ");
-	expect_row(y - 1001, T, "%-80s", T->ps1);
-
-	check_cmd(T, "printf 012; tput cub 2; tput ich 2; echo",
-		"*23x80@0,0(%d,6)", y += 2);
-	expect_row(y - 1001 - 1, T, "0  12%75s", " ");
-
-	check_cmd(T, "tput cud 6", "*23x80@0,0(%d,6)", y += 1 + 6);
-	check_cmd(T, ":", "*23x80@0,0(%d,6)", ++y);
-	check_cmd(T, ":", "*23x80@0,0(%d,6)", ++y);
-	assert( y == 1023 );
-	check_cmd(T, ":", "*23x80@0,0(%d,6)", y);
-
-	return rv;
-}
-/* (1) I expect the x coordinate of this test to be 6 (the length
-of the prompt, but it consistently comes back 8.  Need to understand
-where the extra 2 characters come from.  This same behavior was
-observed when the prompt was only one character long.
-*/
-
 /* Describe a layout. This may be called in a signal handler */
 static unsigned
 describe_lay(char *d, size_t siz, const struct canvas *c, int recurse,
@@ -409,7 +365,6 @@ main(int argc, char *const argv[])
 	int status = 0;
 	const char *argv0 = argv[0];
 	struct st tab[] = {
-		F(test_cursor),
 		F(test_el),
 		F(test_description),
 		F(test_insert),

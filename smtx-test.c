@@ -226,6 +226,58 @@ test_cup(int fd, pid_t p)
 }
 
 static int
+test_cursor(int fd, pid_t p)
+{
+	int rv = 0;
+	grep(fd, PROMPT, 1);
+	fdprintf(fd, "printf '0123456'; tput cub 4\r");
+	grep(fd, PROMPT, 1);
+	rv |= validate_row(p, 2, "012%-77s", PROMPT);
+
+	fdprintf(fd, "tput sc; echo abcdefg; tput rc; echo bar\r");
+	grep(fd, PROMPT, 1);
+	rv |= validate_row(p, 3, "%-80s", "bardefg");
+
+	fdprintf(fd, "tput cup 15 50; printf 'foo%%s\\n' baz\r");
+	grep(fd, "foobaz", 1);
+	rv |= validate_row(p, 16, "%-50sfoobaz%24s", "", "");
+
+	fdprintf(fd, "tput clear; printf 'foo%%s\n' 37\r");
+	grep(fd, "foo37", 1);
+	rv |= validate_row(p, 1, "%-80s", "foo37");
+
+	fdprintf(fd, "printf foo; tput ht; printf 'bar%%s\\n' 38\r");
+	grep(fd, "bar38", 1);
+	rv |= validate_row(p, 3, "%-80s", "foo     bar38");
+
+	fdprintf(fd, "printf 'a\\tb\\tc\\t'; tput cbt; tput cbt; "
+		"printf 'foo%%s\\n' 39\r");
+	grep(fd, "foo39", 1);
+	rv |= validate_row(p, 5, "%-80s", "a       foo39   c");
+
+#if 0
+	check_cmd(T, "tput cud 6", "*23x80@0,0(%d,6)", y += 1 + 6);
+	check_cmd(T, "printf foobar; tput cub 3; tput dch 1; echo",
+		"*23x80@0,0(%d,6)", y += 2);
+	expect_row(y - 1001 - 1, T, "fooar%75s", " ");
+	expect_row(y - 1001, T, "%-80s", T->ps1);
+
+	check_cmd(T, "printf 012; tput cub 2; tput ich 2; echo",
+		"*23x80@0,0(%d,6)", y += 2);
+	expect_row(y - 1001 - 1, T, "0  12%75s", " ");
+
+	check_cmd(T, "tput cud 6", "*23x80@0,0(%d,6)", y += 1 + 6);
+	check_cmd(T, ":", "*23x80@0,0(%d,6)", ++y);
+	check_cmd(T, ":", "*23x80@0,0(%d,6)", ++y);
+	assert( y == 1023 );
+	check_cmd(T, ":", "*23x80@0,0(%d,6)", y);
+#endif
+	fdprintf(fd, "kill $SMTX\r");
+
+	return rv;
+}
+
+static int
 test_resize(int fd, pid_t p)
 {
 	int status = 0;
@@ -500,6 +552,7 @@ main(int argc, char *const argv[])
 		F(test1),
 		F(test_attach),
 		F(test_cup),
+		F(test_cursor),
 		F(test_equalize),
 		F(test_lnm),
 		F(test_navigate),
