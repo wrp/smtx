@@ -370,6 +370,22 @@ test_scrollback(int fd, pid_t p)
 }
 
 static int
+test_vpa(int fd, pid_t p)
+{
+	int rv = 0;
+	grep(fd, PROMPT, 1);
+	fdprintf(fd, "tput vpa 7; tput hpa 18; echo foo\r");
+	grep(fd, PROMPT, 1);
+	rv |= validate_row(p, 8, "%18sfoo%59s", "", "");
+	rv |= validate_row(p, 9, "%-80s", PROMPT);
+	for( int i = 10; i < 23; i++ ) {
+		rv |= validate_row(p, i, "%80s", "");
+	}
+	fdprintf(fd, "kill $SMTX\r");
+	return rv;
+}
+
+static int
 test_width(int fd, pid_t p)
 {
 	int rv = 0;
@@ -491,6 +507,7 @@ main(int argc, char *const argv[])
 		F(test_resize),
 		F(test_row),
 		F(test_scrollback),
+		F(test_vpa),
 		F(test_width),
 		{ NULL, NULL }
 	}, *v;

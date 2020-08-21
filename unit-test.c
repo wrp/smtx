@@ -331,15 +331,6 @@ test_pager(void)
 }
 
 static int
-test_vpa(void)
-{
-	struct test_canvas *T = new_test_canvas(24, 80, NULL);
-	check_cmd(T, "tput vpa 7; tput hpa 18", "*23x80@0,0(%d,%d)",
-		S.history - 23 + 7, 18 + strlen(T->ps1));
-	return rv;
-}
-
-static int
 test_cursor(void)
 {
 	int y = 1002;
@@ -419,7 +410,6 @@ main(int argc, char *const argv[])
 	const char *argv0 = argv[0];
 	struct st tab[] = {
 		F(test_cursor),
-		F(test_vpa),
 		F(test_el),
 		F(test_description),
 		F(test_insert),
