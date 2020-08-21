@@ -8,7 +8,7 @@ attach(const char *arg)
 	for( struct pty *t = S.p; t; t = t->next ) {
 		if( t->id == target ) {
 			n->p = t;
-			reshape_flag = 1;
+			S.reshape = 1;
 			return;
 		}
 	}
@@ -20,7 +20,7 @@ equalize(const char *arg)
 {
 	(void)arg;
 	balance(S.f);
-	reshape_flag = 1;
+	S.reshape = 1;
 }
 
 void
@@ -46,7 +46,7 @@ resize(const char *arg)
 		n->split_point[typ] = 0.0;
 		focus(S.v);
 	}
-	reshape_flag = 1;
+	S.reshape = 1;
 }
 
 void

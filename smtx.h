@@ -86,6 +86,7 @@ struct state {
 	struct pty *p;    /* Head of list of all pty */
 	fd_set fds;
 	WINDOW *werr;
+	int reshape;
 };
 
 struct point { int y, x; };
@@ -142,7 +143,6 @@ extern void build_bindings(void);
 extern void draw(struct canvas *n);
 extern void scrollbottom(struct canvas *n);
 extern void show_err(const char *fmt, ...);
-extern int reshape_flag;
 
 /* exposed to test suite */
 extern int smtx_main(int, char *const*);

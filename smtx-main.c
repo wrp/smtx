@@ -21,7 +21,6 @@
 static struct handler keys[128];
 static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
-int reshape_flag;
 
 /* Variables exposed to test suite */
 struct state S = {
@@ -430,7 +429,7 @@ reshape_root(const char *arg)
 		p->ws.ws_row = 0;
 	}
 	reshape(S.c, 0, 0, LINES, COLS);
-	reshape_flag = 0;
+	S.reshape = 0;
 }
 
 static void
@@ -462,7 +461,7 @@ prune(const char *arg)
 		n = x->c[!d];
 		freecanvas(x);
 	}
-	reshape_flag = 1;
+	S.reshape = 1;
 }
 
 static void
@@ -584,7 +583,7 @@ wait_child(struct pty *p)
 		snprintf(p->status, sizeof p->status, fmt, k);
 		p->id = p->pid;
 		p->pid = -1;
-		reshape_flag = 1;
+		S.reshape = 1;
 	}
 }
 
@@ -692,7 +691,7 @@ navigate_tree(enum direction dir, int count)
 		}
 	}
 	focus(n);
-	reshape_flag = 1;
+	S.reshape = 1;
 }
 
 static void
@@ -795,7 +794,7 @@ swap(const char *arg)
 		struct pty *tmp = n->p;
 		n->p = t->p;
 		t->p = tmp;
-		reshape_flag = 1;
+		S.reshape = 1;
 	} else {
 		show_err("Cannot find target");
 	}
@@ -925,7 +924,7 @@ main_loop(void)
 		wint_t w = 0;
 		fd_set sfds = S.fds;
 
-		if( reshape_flag ) {
+		if( S.reshape ) {
 			reshape_root(NULL);
 		}
 		draw(S.v);
