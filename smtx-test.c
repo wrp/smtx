@@ -184,7 +184,6 @@ test_attach(int fd, pid_t pid)
 	char desc[1024];
 	union param p = { .hup.flag = 5 };
 	int status = 0;
-	grep(fd, PROMPT, 1);
 	fdprintf(fd, "%ccc3a\r", CTL('g'));
 	fdprintf(fd, "kill -HUP $SMTX\r");
 	write(p2c[1], &p, sizeof p);
@@ -203,7 +202,6 @@ static int
 test_cup(int fd, pid_t p)
 {
 	int status = 0;
-	grep(fd, PROMPT, 1);
 	fdprintf(fd, "tput cup 5 50; echo foo\r"); /* Move down 5 lines */
 	grep(fd, PROMPT, 1);
 	char *cmd = "printf '0123456'; tput cub 4; printf '789\\n'";
@@ -229,7 +227,6 @@ static int
 test_cursor(int fd, pid_t p)
 {
 	int rv = 0;
-	grep(fd, PROMPT, 1);
 	fdprintf(fd, "printf '0123456'; tput cub 4\r");
 	grep(fd, PROMPT, 1);
 	rv |= validate_row(p, 2, "012%-77s", PROMPT);
@@ -281,7 +278,6 @@ static int
 test_resize(int fd, pid_t p)
 {
 	int status = 0;
-	grep(fd, PROMPT, 1);
 	fdprintf(fd, "%cJccC\r:\r", CTL('g'));
 	grep(fd, PROMPT, 1);
 	status |= check_layout(p, 0x1, "*7x40; 7x80; 7x80; 7x39");
@@ -302,7 +298,6 @@ static int
 test_equalize(int fd, pid_t p)
 {
 	int status = 0;
-	grep(fd, PROMPT, 1);
 	fdprintf(fd, "%ccc5J\recho foo\r", CTL('g'));
 	grep(fd, PROMPT, 1);
 	status |= check_layout(p, 0x1, "*12x80; 4x80; 5x80");
@@ -318,7 +313,6 @@ test_ich(int fd, pid_t p)
 {
 	int rv = 0;
 	const char *cmd = "printf abcdefg; tput cub 3; tput ich 5; echo";
-	grep(fd, PROMPT, 1);
 	fdprintf(fd, "%s\r", cmd);
 	grep(fd, PROMPT, 1);
 	rv |= validate_row(p, 2, "%-80s", "abcd     efg");
@@ -350,11 +344,9 @@ static int
 test_insert(int fd, pid_t p)
 {
 	int rc = 0;
-	grep(fd, PROMPT, 1);
 	/* smir -- begin insert mode;  rmir -- end insert mode */
 	fdprintf(fd, "printf 0123456; tput cub 3; tput smir; "
 		"echo foo; tput rmir\r");
-	grep(fd, PROMPT, 1);
 	rc |= validate_row(p, 2, "%-80s", "0123foo456");
 	rc |= validate_row(p, 3, "%-80s", PROMPT);
 	fdprintf(fd, "exit\r");
@@ -365,7 +357,6 @@ static int
 test_lnm(int fd, pid_t pid)
 {
 	union param p = { .hup.flag = 1 };
-	grep(fd, PROMPT, 1);
 	fdprintf(fd, "printf '\\e[20h'\r");
 	fdprintf(fd, "kill -HUP $SMTX\r");
 	write(p2c[1], &p, sizeof p);
@@ -380,7 +371,6 @@ static int
 test_navigate(int fd, pid_t p)
 {
 	int status = 0;
-	grep(fd, PROMPT, 1);
 	fdprintf(fd, "%ccjkhlC4tCvjkh2slc\rprintf 'foo%%s' bar\r", CTL('g'));
 	grep(fd, "foobar", 1);
 	status |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
@@ -406,7 +396,6 @@ test_reset(int fd, pid_t p)
 {
 	int k[] = { 1, 3, 4, 6, 7, 20, 25, 34, 1048, 1049, 47, 1047 };
 	(void)p;
-	grep(fd, PROMPT, 1);
 
 	for( unsigned long i = 0; i < sizeof k / sizeof *k; i++ ) {
 		int v = k[i];
@@ -420,7 +409,6 @@ static int
 test_row(int fd, pid_t p)
 {
 	int status = 0;
-	grep(fd, PROMPT, 1);
 	fdprintf(fd, "yes | nl -ba | sed 400q\r");
 	grep(fd, PROMPT, 1);
 
@@ -438,7 +426,6 @@ test_scrollback(int fd, pid_t p)
 	const char *string = "This is a relatively long string!";
 	char trunc[128];
 
-	grep(fd, PROMPT, 1);
 	fdprintf(fd, "%cCC\r:\r", CTL('g'));
 	grep(fd, PROMPT ":", 1);
 	status |= check_layout(p, 0x1, "*23x26; 23x26; 23x26");
@@ -476,7 +463,6 @@ static int
 test_vis(int fd, pid_t p)
 {
 	int rv = 0;
-	grep(fd, PROMPT, 1);
 	fdprintf(fd, "tput civis;\r");
 	grep(fd, PROMPT, 1);
 	rv |= validate_row(p, 1, "%-80s", PROMPT "tput civis;");
@@ -495,7 +481,6 @@ static int
 test_vpa(int fd, pid_t p)
 {
 	int rv = 0;
-	grep(fd, PROMPT, 1);
 	fdprintf(fd, "tput vpa 7; tput hpa 18; echo foo\r");
 	grep(fd, PROMPT, 1);
 	rv |= validate_row(p, 8, "%18sfoo%59s", "", "");
@@ -512,7 +497,6 @@ test_width(int fd, pid_t p)
 {
 	int rv = 0;
 	char buf[161];
-	grep(fd, PROMPT, 1);
 	fdprintf(fd, "%ccCCCj\rprintf 'foo%%s' bar\r", CTL('g'));
 	grep(fd, "foobar", 1);
 	rv |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
@@ -557,7 +541,6 @@ static int
 check_ps1(int fd, pid_t p)
 {
 	int s = 0;
-	grep(fd, PROMPT, 1);
 	s |= validate_row(p, 1, "%-80s", PROMPT);
 	fdprintf(fd, "kill $SMTX\r");
 
@@ -580,7 +563,6 @@ test1(int fd, pid_t p)
 		"kill $SMTX",
 		NULL
 	};
-	grep(fd, PROMPT, 1);
 	for( char **cmd = cmds; *cmd; cmd++ ) {
 		fdprintf(fd, "%s\r", *cmd);
 	}
@@ -768,6 +750,7 @@ execute_test(struct st *v, const char *name)
 		if( close(c2p[1]) || close(p2c[0]) ) {
 			err(EXIT_FAILURE, "close");
 		}
+		grep(fd[0], PROMPT, 1); /* Wait for shell to initialize */
 		rv = v->f(fd[0], pid);
 		wait(&status);
 	}
