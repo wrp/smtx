@@ -642,47 +642,59 @@ handler(int s)
 }
 
 typedef int test(int, pid_t);
-struct st { char *name; test *f; };
+struct st { char *name; test *f; const char *env; struct st *next; };
 static int execute_test(struct st *, const char *);
 static int spawn_test(struct st *v, const char *argv0);
-#define F(x) { .name = #x, .f = (x) }
+static void
+new_test(char *name, test *f, struct st **h, const char *env)
+{
+	struct st *tmp = *h;
+	struct st *a = *h = malloc(sizeof *a);
+	if( a == NULL ) {
+		err(EXIT_FAILURE, "malloc");
+	};
+	a->next = tmp;
+	a->name = name;
+	a->f = f;
+	a->env = env;
+}
+
+#define F(x) new_test(#x, x, &tab, NULL)
+#define E(x, y) new_test(#x, x, &tab, y)
 int
 main(int argc, char *const argv[])
 {
 	int fail_count = 0;
 	int total_count = 0;
 	const char *argv0 = argv[0];
-	struct st tab[] = {
-		F(check_ps1),
-		F(test1),
-		F(test_attach),
-		F(test_cup),
-		F(test_cursor),
-		F(test_ech),
-		F(test_el),
-		F(test_equalize),
-		F(test_ich),
-		F(test_insert),
-		F(test_lnm),
-		F(test_navigate),
-		F(test_nel),
-		F(test_reset),
-		F(test_resize),
-		F(test_row),
-		F(test_scrollback),
-		F(test_vis),
-		F(test_vpa),
-		F(test_width),
-		{ NULL, NULL }
-	}, *v;
-	for( v = tab; ( v->f && argc < 2 ) || *++argv; v += 1 ) {
+	struct st *tab = NULL, *v;
+	F(check_ps1);
+	F(test1);
+	F(test_attach);
+	F(test_cup);
+	F(test_cursor);
+	F(test_ech);
+	F(test_el);
+	F(test_equalize);
+	F(test_ich);
+	F(test_insert);
+	F(test_lnm);
+	F(test_navigate);
+	F(test_nel);
+	F(test_reset);
+	F(test_resize);
+	F(test_row);
+	F(test_scrollback);
+	F(test_vis);
+	F(test_vpa);
+	F(test_width);
+	for( v = tab; v && ( argc < 2 || *++argv ); v = v ? v->next : NULL ) {
 		const char *name = *argv;
 		if( argc > 1 ) {
-			for( v = tab; v->name && strcmp(v->name, name); v++ )
-				;
+			for( v = tab; v && strcmp(v->name, name); )
+				v = v->next;
 		}
-		assert( v != NULL );
-		if( v->f ) {
+		if( v && v->f ) {
 			int (*f)(struct st *, const char *);
 			f = strcmp(v->name, argv0) ? spawn_test : execute_test;
 			fail_count += f(v, argv0);
