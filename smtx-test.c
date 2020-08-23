@@ -641,26 +641,43 @@ handler(int s)
 	}
 }
 
+static void *
+xrealloc(void *buf, size_t num, size_t siz)
+{
+	buf = realloc(buf, num * siz);
+	if( buf == NULL ) {
+		perror("realloc");
+		exit(EXIT_FAILURE);
+	}
+	return buf;
+}
+
 typedef int test(int, pid_t);
-struct st { char *name; test *f; const char *env; struct st *next; };
+struct st { char *name; test *f; const char **env; struct st *next; };
 static int execute_test(struct st *, const char *);
 static int spawn_test(struct st *v, const char *argv0);
 static void
-new_test(char *name, test *f, struct st **h, const char *env)
+new_test(char *name, test *f, struct st **h, ...)
 {
+	char *env;
+	int env_count = 0;
 	struct st *tmp = *h;
-	struct st *a = *h = malloc(sizeof *a);
-	if( a == NULL ) {
-		err(EXIT_FAILURE, "malloc");
-	};
+	struct st *a = *h = xrealloc(NULL, 1, sizeof *a);
 	a->next = tmp;
 	a->name = name;
 	a->f = f;
-	a->env = env;
+	a->env = NULL;
+	va_list ap;
+	va_start(ap, h);
+	while( (env = va_arg(ap, char *)) != NULL ) {
+		a->env = xrealloc(a->env, env_count + 2, sizeof *a->env);
+		a->env[env_count++] = env;
+		a->env[env_count] = NULL;
+	}
+	va_end(ap);
 }
 
-#define F(x) new_test(#x, x, &tab, NULL)
-#define E(x, y) new_test(#x, x, &tab, y)
+#define F(x, ...) new_test(#x, x, &tab, ##__VA_ARGS__, NULL)
 int
 main(int argc, char *const argv[])
 {
@@ -680,7 +697,7 @@ main(int argc, char *const argv[])
 	F(test_insert);
 	F(test_lnm);
 	F(test_navigate);
-	F(test_nel);
+	F(test_nel, "TERM", "smtx");
 	F(test_reset);
 	F(test_resize);
 	F(test_row);
@@ -777,13 +794,13 @@ execute_test(struct st *v, const char *name)
 
 	assert( strcmp(name, v->name) == 0 );
 	unsetenv("ENV");  /* Suppress all shell initializtion */
-	if(strcmp(v->name, "test_nel") == 0) {
-		setenv("TERM", "smtx", 1);
-	} /* TODO: figure out reasonable way to handle environ in tests */
 	setenv("SHELL", "/bin/sh", 1);
 	setenv("PS1", PROMPT, 1);
 	setenv("LINES", "24", 1);
 	setenv("COLUMNS", "80", 1);
+	for( const char **a = v->env; a && *a; a += 2 ) {
+		setenv(a[0], a[1], 1);
+	}
 	if( pipe(c2p) || pipe(p2c) ) {
 		err(EXIT_FAILURE, "pipe");
 	}
