@@ -443,13 +443,14 @@ static int
 test_lnm(int fd, pid_t pid)
 {
 	union param p = { .hup.flag = 1 };
-	send_str(fd, NULL, "printf '\\e[20h'\r");
-	send_str(fd, NULL, "kill -HUP $SMTX\r");
+	send_txt(fd, "uniq01", "printf '\\e[20huniq%%s' 01");
+	send_txt(fd, NULL, "kill -HUP $SMTX");
 	write(p2c[1], &p, sizeof p);
 	read(c2p[0], &pid, 1); /* Read and discard */
-	send_str(fd, NULL, "printf 'foo\\rbar\\r\\n'\r");
-	send_str(fd, NULL, "printf '\\e[20l'\r");
-	send_str(fd, NULL, "kill -TERM $SMTX\r");
+	send_txt(fd, NULL, "printf 'foo\\rbar\\r\\n'");
+	send_txt(fd, NULL, "printf '\\e[20l'");
+	send_txt(fd, "uniq02", "printf 'uniq%%s' 02");
+	send_txt(fd, NULL, "kill -TERM $SMTX");
 	return 0;
 }
 
