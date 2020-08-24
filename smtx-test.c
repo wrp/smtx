@@ -391,6 +391,30 @@ test_insert(int fd, pid_t p)
 }
 
 static int
+test_layout(int fd, pid_t p)
+{
+	int rv = check_layout(p, 0x13, "*23x80@0,0(1,%zd)", strlen(PROMPT));
+
+	send_cmd(fd, "uniq01", "%c\rprintf 'uniq%%s' 01\r", CTL('g'));
+	rv |= check_layout(p, 0x11, "*23x80@0,0");
+
+	send_cmd(fd, "gnat", "%cc\rprintf 'gn%%s' at\r", CTL('g'));
+	rv |= check_layout(p, 0x11, "*11x80@0,0; 11x80@12,0");
+
+	send_cmd(fd, "foobar", "%cj\rprintf 'foo%%s' bar\r", CTL('g'));
+	rv |= check_layout(p, 0x11, "11x80@0,0; *11x80@12,0");
+
+	send_cmd(fd, "uniq02", "%cC\rprintf 'uniq%%s' 02\r", CTL('g'));
+	rv |= check_layout(p, 0x11, "11x80@0,0; *11x40@12,0; 11x39@12,41");
+
+	send_cmd(fd, "foobaz", "%cl\rprintf 'foo%%s' baz\r", CTL('g'));
+	rv |= check_layout(p, 0x11, "11x80@0,0; 11x40@12,0; *11x39@12,41");
+
+	send_cmd(fd, NULL, "kill $SMTX\r");
+	return rv;
+}
+
+static int
 test_lnm(int fd, pid_t pid)
 {
 	union param p = { .hup.flag = 1 };
@@ -706,6 +730,7 @@ main(int argc, char *const argv[])
 	F(test_equalize);
 	F(test_ich);
 	F(test_insert);
+	F(test_layout);
 	F(test_lnm);
 	F(test_navigate);
 	F(test_nel, "TERM", "smtx");

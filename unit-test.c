@@ -109,25 +109,6 @@ expect_layout(const struct canvas *c, const char *expect, ...)
 	va_end(ap);
 }
 
-static int
-test_description(void)
-{
-	int row = 1001;
-	struct canvas *r = init();
-	expect_layout(r, "*23x80@0,0(%d,0)", row);
-	create("c");
-	expect_layout(r, "*11x80@0,0(%d,0); 11x80@12,0(%d,0)", row, row);
-	mov("j");
-	expect_layout(r, "11x80@0,0(%d,0); *11x80@12,0(%d,0)", row, row);
-	create("C");
-	expect_layout(r, "11x80@0,0(%d,0); *11x40@12,0(%d,0); "
-		"11x39@12,41(%d,0)", row, row, row);
-	mov("l");
-	expect_layout(r, "11x80@0,0(%d,0); 11x40@12,0(%d,0); "
-		"*11x39@12,41(%d,0)", row, row, row);
-	return rv;
-}
-
 static void
 read_until(FILE *fp, const char *s, struct vtp *vp)
 {
@@ -225,7 +206,6 @@ main(int argc, char *const argv[])
 	int status = 0;
 	const char *argv0 = argv[0];
 	struct st tab[] = {
-		F(test_description),
 		{ NULL, NULL }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
