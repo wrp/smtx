@@ -666,14 +666,14 @@ new_test(char *name, test *f, struct st **h, ...)
 	a->next = tmp;
 	a->name = name;
 	a->f = f;
-	a->env = NULL;
+	a->env = xrealloc(a->env, 1, sizeof *a->env);
 	va_list ap;
 	va_start(ap, h);
 	while( (env = va_arg(ap, char *)) != NULL ) {
 		a->env = xrealloc(a->env, env_count + 2, sizeof *a->env);
 		a->env[env_count++] = env;
-		a->env[env_count] = NULL;
 	}
+	a->env[env_count] = NULL;
 	va_end(ap);
 }
 
