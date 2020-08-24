@@ -586,7 +586,7 @@ test_width(int fd, pid_t p)
 {
 	int rv = 0;
 	char buf[161];
-	send_cmd(fd, "foobar", "%ccCCCj\rprintf 'foo%%s' bar\r", CTL('g'));
+	send_cmd(fd, "uniq01", "%ccCCCj\rprintf 'uniq%%s' 01\r", CTL('g'));
 	rv |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
 		"11x20@0,0",
 		"*11x80@12,0",
@@ -598,8 +598,8 @@ test_width(int fd, pid_t p)
 	print a string of 50 chars */
 	send_cmd(fd, NULL, "%ck\rfor i in 1 2 3 4 5; do ", CTL('g'));
 	send_cmd(fd, NULL, "printf '%%s' \"${i}123456789\";");
-	send_cmd(fd, NULL, "test \"$i\" = 5 && printf '\\n  foo%%s\\n' bar;");
-	send_cmd(fd, "foobar", "done\r");
+	send_cmd(fd, NULL, "test \"$i\" = 5 && printf '\\n  uniq%%s\\n' 02;");
+	send_cmd(fd, "uniq02", "done\r");
 	rv |= validate_row(p, 3, "%-20s", "11234567892123456789");
 
 	send_cmd(fd, "dedef", "%c15>\rprintf '%%20sded%%s' '' ef\r", CTL('g'));
