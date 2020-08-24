@@ -280,13 +280,14 @@ static int
 test_cursor(int fd, pid_t p)
 {
 	int rv = 0;
-	send_str(fd, PROMPT, "printf '0123456'; tput cub 4\r");
-	rv |= validate_row(p, 2, "012%-77s", PROMPT);
+	send_txt(fd, "un01", "printf '0123456'; tput cub 4; printf 'un%%s' 01");
+	rv |= validate_row(p, 2, "012un01%-73s", PROMPT);
 
-	send_str(fd, PROMPT, "tput sc; echo abcdefg; tput rc; echo bar\r");
-	rv |= validate_row(p, 3, "%-80s", "bardefg");
+	send_txt(fd, NULL, "tput sc; echo abcdefg; tput rc; echo bar");
+	send_txt(fd, "uniq01", "printf 'uniq%%s' 01");
+	rv |= validate_row(p, 4, "%-80s", "bardefg");
 
-	send_str(fd, "foobaz", "tput cup 15 50; printf 'foo%%s\\n' baz\r");
+	send_txt(fd, "foobaz", "tput cup 15 50; printf 'foo%%s\\n' baz");
 	rv |= validate_row(p, 16, "%-50sfoobaz%24s", "", "");
 
 	send_str(fd, "foo37", "tput clear; printf 'foo%%s\n' 37\r");
