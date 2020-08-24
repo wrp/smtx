@@ -30,7 +30,7 @@ int rv = EXIT_SUCCESS;
 int c2p[2];
 int p2c[2];
 static int check_test_status(int rv, int status, int pty, const char *name);
-static void grep(int fd, const char *needle, int count);
+static void grep(int fd, const char *needle);
 
 union param {
 	struct { unsigned flag; } hup;
@@ -74,7 +74,7 @@ send_cmd(int fd, const char *fmt, ...)
 	va_end(ap);
 	assert( n < sizeof cmd );
 	retrywrite(fd, cmd, n);
-	grep(fd, PROMPT, 1);
+	grep(fd, PROMPT);
 }
 
 static int __attribute__((format(printf,3,4)))
@@ -131,14 +131,14 @@ timed_read(int fd, void *buf, size_t count, int seconds)
 	}
 	return rv;
 }
-/* Read from fd until needle is seen count non-overlapping times
- * or end of file.  This is not intended to really check anything,
+/* Read from fd until needle is seen or end of file.
+ * This is not intended to really check anything,
  * but is merely a synchronization device to delay the test until
  * data is seen to verify that the underlying shell has processed
  * input.
  */
 static void
-grep(int fd, const char *needle, int count)
+grep(int fd, const char *needle)
 {
 	assert( needle != NULL );
 
@@ -146,7 +146,7 @@ grep(int fd, const char *needle, int count)
 	const char *end = buf;
 	const char *b = buf;
 	const char *n = needle;
-	while( count > 0 ) {
+	while( *n != '\0' ) {
 		if( b == end ) {
 			ptrdiff_t d = n - needle;
 			if( d > 0 ) {
@@ -160,12 +160,7 @@ grep(int fd, const char *needle, int count)
 			end = buf + d + rc;
 			b = buf + d;
 		}
-		if( *b++ == *n ) {
-			if( *++n == '\0' ) {
-				count -= 1;
-				n = needle;
-			}
-		} else {
+		if( *b++ != *n++ ) {
 			n = needle;
 		}
 	}
@@ -249,20 +244,20 @@ test_cursor(int fd, pid_t p)
 	rv |= validate_row(p, 3, "%-80s", "bardefg");
 
 	fdprintf(fd, "tput cup 15 50; printf 'foo%%s\\n' baz\r");
-	grep(fd, "foobaz", 1);
+	grep(fd, "foobaz");
 	rv |= validate_row(p, 16, "%-50sfoobaz%24s", "", "");
 
 	fdprintf(fd, "tput clear; printf 'foo%%s\n' 37\r");
-	grep(fd, "foo37", 1);
+	grep(fd, "foo37");
 	rv |= validate_row(p, 1, "%-80s", "foo37");
 
 	fdprintf(fd, "printf foo; tput ht; printf 'bar%%s\\n' 38\r");
-	grep(fd, "bar38", 1);
+	grep(fd, "bar38");
 	rv |= validate_row(p, 3, "%-80s", "foo     bar38");
 
 	fdprintf(fd, "printf 'a\\tb\\tc\\t'; tput cbt; tput cbt; "
 		"printf 'foo%%s\\n' 39\r");
-	grep(fd, "foo39", 1);
+	grep(fd, "foo39");
 	rv |= validate_row(p, 5, "%-80s", "a       foo39   c");
 
 #if 0
@@ -332,10 +327,10 @@ test_equalize(int fd, pid_t p)
 {
 	int status = 0;
 	fdprintf(fd, "%ccc5J\recho foo\r", CTL('g'));
-	grep(fd, PROMPT, 1);
+	grep(fd, PROMPT);
 	status |= check_layout(p, 0x1, "*12x80; 4x80; 5x80");
 	fdprintf(fd, "%c=\recho\r", CTL('g'));
-	grep(fd, PROMPT, 1);
+	grep(fd, PROMPT);
 	status |= check_layout(p, 0x1, "*7x80; 7x80; 7x80");
 	fdprintf(fd, "kill -TERM $SMTX\r");
 	return status;
@@ -347,12 +342,12 @@ test_ich(int fd, pid_t p)
 	int rv = 0;
 	const char *cmd = "printf abcdefg; tput cub 3; tput ich 5; echo";
 	fdprintf(fd, "%s\r", cmd);
-	grep(fd, PROMPT, 1);
+	grep(fd, PROMPT);
 	rv |= validate_row(p, 2, "%-80s", "abcd     efg");
 
 	cmd = "yes | nl | sed 6q; tput cuu 3; tput il 3; tput cud 6";
 	fdprintf(fd, "%s\r", cmd);
-	grep(fd, PROMPT, 1);
+	grep(fd, PROMPT);
 	rv |= validate_row(p, 3, "%s%-*s", PROMPT, 80 - strlen(PROMPT), cmd);
 	for( int i=1; i < 4; i++ ) {
 		rv |= validate_row(p, 3 + i, "%6d  y%71s", i, "");
@@ -365,7 +360,7 @@ test_ich(int fd, pid_t p)
 	}
 	cmd = "yes | nl | sed 6q; tput cuu 5; tput dl 4; tput cud 1";
 	fdprintf(fd, "%s\r", cmd);
-	grep(fd, PROMPT, 1);
+	grep(fd, PROMPT);
 	rv |= validate_row(p, 14, "     %d  y%71s", 1, "");
 	rv |= validate_row(p, 15, "     %d  y%71s", 6, "");
 
@@ -405,7 +400,7 @@ test_navigate(int fd, pid_t p)
 {
 	int status = 0;
 	fdprintf(fd, "%ccjkhlC4tCvjkh2slc\rprintf 'foo%%s' bar\r", CTL('g'));
-	grep(fd, "foobar", 1);
+	grep(fd, "foobar");
 	status |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
 		"11x26@0,0",
 		"11x80@12,0",
@@ -414,7 +409,7 @@ test_navigate(int fd, pid_t p)
 		"11x26@0,54"
 	);
 	fdprintf(fd, "%ccccccccchhk\rprintf 'foo%%s' baz\r", CTL('g'));
-	grep(fd, "foobaz", 1);
+	grep(fd, "foobaz");
 	status |= check_layout(p, 0x11, "%s; %s; %s",
 		"*11x26@0,0; 11x80@12,0; 0x26@0,27",
 		"0x26@1,27; 0x26@2,27; 0x26@3,27; 0x26@4,27; 0x26@5,27",
@@ -432,7 +427,7 @@ test_nel(int fd, pid_t p)
 	const char *cmd = "tput cud 3; printf foo; tput nel; "
 		"printf 'blah%d\\n' 12";
 	fdprintf(fd, "%s\r", cmd);
-	grep(fd, "blah12", 1);
+	grep(fd, "blah12");
 	rv |= validate_row(p, 5, "%-80s", "foo");
 	rv |= validate_row(p, 6, "%-80s", "blah12");
 	cmd = "printf foobar; tput cub 3; tput el; echo blah";
@@ -449,13 +444,13 @@ test_pager(int fd, pid_t p)
 	int rv = 0;
 
 	fdprintf(fd, "yes | nl | sed 500q | more\r");
-	grep(fd, "22", 1);
+	grep(fd, "22");
 	rv |= validate_row(p, 2, "     2%-74s", "  y");
 	rv |= validate_row(p, 10, "    10%-74s", "  y");
 	rv |= validate_row(p, 22, "    22%-74s", "  y");
 	rv |= check_layout(p, 0x1, "*23x80");
 	fdprintf(fd, " ");
-	grep(fd, "44", 1);
+	grep(fd, "44");
 	rv |= validate_row(p, 1,  "    23%-74s", "  y");
 	rv |= validate_row(p, 10, "    32%-74s", "  y");
 	rv |= validate_row(p, 22, "    44%-74s", "  y");
@@ -482,7 +477,7 @@ test_row(int fd, pid_t p)
 {
 	int status = 0;
 	fdprintf(fd, "yes | nl -ba | sed 400q\r");
-	grep(fd, PROMPT, 1);
+	grep(fd, PROMPT);
 
 	status |= validate_row(p, 21, "%6d%-74s", 399, "  y");
 	status |= validate_row(p, 22, "%6d%-74s", 400, "  y");
@@ -499,27 +494,27 @@ test_scrollback(int fd, pid_t p)
 	char trunc[128];
 
 	fdprintf(fd, "%cCC\r:\r", CTL('g'));
-	grep(fd, PROMPT ":", 1);
+	grep(fd, PROMPT ":");
 	status |= check_layout(p, 0x1, "*23x26; 23x26; 23x26");
 
 	fdprintf(fd, "a='%s'\rPS1=$(printf 'un%%s>' iq)\r", string);
 	fdprintf(fd, "%c100<\r", CTL('g'));
-	grep(fd, "uniq>", 1);
+	grep(fd, "uniq>");
 	fdprintf(fd, "yes \"$a\" | nl |\rsed 50q\r");
-	grep(fd, "uniq>", 1);
+	grep(fd, "uniq>");
 	snprintf(trunc, 19, "%s", string);
 	status |= validate_row(p, 1, "%6d  %-18s", 29, trunc);
 	status |= validate_row(p, 22, "%6d  %-18s", 50, trunc);
 
 	/* Scrollback 3, then move to another term and write a unique string */
 	fdprintf(fd, "%c3bl\rprintf 'foo%%s' bar\r", CTL('g'));
-	grep(fd, "foobar", 1);
+	grep(fd, "foobar");
 	status |= validate_row(p, 22, "%6d  %-18s", 47, trunc);
 
 	/* Scrollright 8, then move to another term and write a unique string */
 	snprintf(trunc, 27, "%s", string);
 	fdprintf(fd, "%ch8>l\rprintf 'foo%%s' baz\r", CTL('g'));
-	grep(fd, "foobaz", 1);
+	grep(fd, "foobaz");
 	status |= validate_row(p, 14, "%-26s", trunc);
 
 	/* Exit all pty instead of killing.  This was triggering a segfault
@@ -536,13 +531,13 @@ test_vis(int fd, pid_t p)
 {
 	int rv = 0;
 	fdprintf(fd, "tput civis;\r");
-	grep(fd, PROMPT, 1);
+	grep(fd, PROMPT);
 	rv |= validate_row(p, 1, "%-80s", PROMPT "tput civis;");
 	rv |= check_layout(p, 0x3, "*23x80(2,4)!");
 	rv |= validate_row(p, 2, "%-80s", PROMPT);
 
 	fdprintf(fd, "tput cvvis;\r");
-	grep(fd, PROMPT, 1);
+	grep(fd, PROMPT);
 	rv |= check_layout(p, 0x3, "*23x80(3,4)");
 
 	fdprintf(fd, "exit\r");
@@ -554,7 +549,7 @@ test_vpa(int fd, pid_t p)
 {
 	int rv = 0;
 	fdprintf(fd, "tput vpa 7; tput hpa 18; echo foo\r");
-	grep(fd, PROMPT, 1);
+	grep(fd, PROMPT);
 	rv |= validate_row(p, 8, "%18sfoo%59s", "", "");
 	rv |= validate_row(p, 9, "%-80s", PROMPT);
 	for( int i = 10; i < 23; i++ ) {
@@ -570,7 +565,7 @@ test_width(int fd, pid_t p)
 	int rv = 0;
 	char buf[161];
 	fdprintf(fd, "%ccCCCj\rprintf 'foo%%s' bar\r", CTL('g'));
-	grep(fd, "foobar", 1);
+	grep(fd, "foobar");
 	rv |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
 		"11x20@0,0",
 		"*11x80@12,0",
@@ -583,11 +578,11 @@ test_width(int fd, pid_t p)
 	fdprintf(fd, "%ck\rfor i in 1 2 3 4 5; do ", CTL('g'));
 	fdprintf(fd, "printf '%%s' \"${i}123456789\";");
 	fdprintf(fd, "test \"$i\" = 5 && printf '\\n  foo%%s\\n' bar; done\r");
-	grep(fd, "foobar", 1);
+	grep(fd, "foobar");
 	rv |= validate_row(p, 3, "%-20s", "11234567892123456789");
 
 	fdprintf(fd, "%c15>\rprintf '%%20sdead%%s' '' beef\r", CTL('g'));
-	grep(fd, "deadbeef", 1);
+	grep(fd, "deadbeef");
 	rv |= validate_row(p, 3, "%-20s", "56789312345678941234");
 
 	for( unsigned i = 0; i < sizeof buf - 1; i++ ) {
@@ -596,13 +591,13 @@ test_width(int fd, pid_t p)
 	buf[sizeof buf - 1] = '\0';
 	fdprintf(fd, "clear; printf '%s\\n'\r", buf);
 	fdprintf(fd, "%c75>\rprintf '%%68sde3d%%s' '' beef\\n\r", CTL('g'));
-	grep(fd, "de3dbeef", 1);
+	grep(fd, "de3dbeef");
 	rv |= validate_row(p, 1, "%-20s", "ijklmnopqrstuvwxyzab");
 	rv |= validate_row(p, 2, "%-20s", "klmnopqrstuvwxyzabcd");
 
 	fdprintf(fd, "%c180W\rclear; printf '%s\\n'\r", CTL('g'), buf);
 	fdprintf(fd, "printf '%%68sde4d%%s' '' beef\\n\r");
-	grep(fd, "de4dbeef", 1);
+	grep(fd, "de4dbeef");
 	rv |= validate_row(p, 1, "%-20s", "ijklmnopqrstuvwxyzab");
 
 	fdprintf(fd, "kill $SMTX\r");
@@ -858,7 +853,7 @@ execute_test(struct st *v, const char *name)
 		if( close(c2p[1]) || close(p2c[0]) ) {
 			err(EXIT_FAILURE, "close");
 		}
-		grep(fd[0], PROMPT, 1); /* Wait for shell to initialize */
+		grep(fd[0], PROMPT); /* Wait for shell to initialize */
 		rv = v->f(fd[0], pid);
 		wait(&status);
 	}
