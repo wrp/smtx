@@ -444,6 +444,26 @@ test_nel(int fd, pid_t p)
 }
 
 static int
+test_pager(int fd, pid_t p)
+{
+	int rv = 0;
+
+	fdprintf(fd, "yes | nl | sed 500q | more\r");
+	grep(fd, "22", 1);
+	rv |= validate_row(p, 2, "     2%-74s", "  y");
+	rv |= validate_row(p, 10, "    10%-74s", "  y");
+	rv |= validate_row(p, 22, "    22%-74s", "  y");
+	rv |= check_layout(p, 0x1, "*23x80");
+	fdprintf(fd, " ");
+	grep(fd, "44", 1);
+	rv |= validate_row(p, 1,  "    23%-74s", "  y");
+	rv |= validate_row(p, 10, "    32%-74s", "  y");
+	rv |= validate_row(p, 22, "    44%-74s", "  y");
+	fdprintf(fd, "qexit\r");
+	return rv;
+}
+
+static int
 test_reset(int fd, pid_t p)
 {
 	int k[] = { 1, 3, 4, 6, 7, 20, 25, 34, 1048, 1049, 47, 1047 };
@@ -698,6 +718,7 @@ main(int argc, char *const argv[])
 	F(test_lnm);
 	F(test_navigate);
 	F(test_nel, "TERM", "smtx");
+	F(test_pager);
 	F(test_reset);
 	F(test_resize);
 	F(test_row);

@@ -218,28 +218,6 @@ test_cols(void)
 	return rv;
 }
 
-static int
-test_pager(void)
-{
-	struct test_canvas *T = new_test_canvas(24, 80, NULL);
-	size_t plen = strlen(T->ps1);;
-	char *lay;
-	int fd = fileno(T->fp);
-	char cmd[] = "yes | nl | sed 500q | more\rq";
-
-	rewrite(fd, cmd, sizeof cmd - 1);
-	check_cmd(T, "", "*23x80@0,0(1023,%d)", plen);
-	expect_row(1, T, "     2%-74s", "  y");
-	expect_row(21, T, "    22%-74s", "  y");
-
-	create("c");
-	expect_layout(T->c, lay = "*11x80@0,0(1023,%d); 11x80@12,0(1001,0)",
-		plen);
-	check_cmd(T, cmd, lay, plen);
-	expect_row(9, T, "    10%-74s", "  y");
-	return rv;
-}
-
 /* Describe a layout. This may be called in a signal handler */
 static unsigned
 describe_lay(char *d, size_t siz, const struct canvas *c, int recurse,
@@ -276,7 +254,6 @@ main(int argc, char *const argv[])
 	const char *argv0 = argv[0];
 	struct st tab[] = {
 		F(test_description),
-		F(test_pager),
 		F(test_cols),
 		F(test_csr),
 		{ NULL, NULL }
