@@ -16,6 +16,27 @@ attach(const char *arg)
 }
 
 void
+create(const char *arg)
+{
+	struct canvas *n = S.f;
+	int dir = arg && *arg == 'C' ? 1 : 0;
+	while( n && n->c[dir] != NULL ) {
+		n = n->c[dir]; /* Split last window in a chain. */
+	}
+	struct canvas *v = *( n ? &n->c[dir] : &S.c ) = newcanvas();
+	if( v != NULL ) {
+		v->typ = dir;
+		v->parent = n;
+		balance(v);
+	}
+	/* TODO: we should be able to set S.reshape_root here, but
+	 * doing so causes odd (eg, unexplained) behavior in the tests.
+	 * Need to track down why.
+	 */
+	reshape_root(NULL);
+}
+
+void
 equalize(const char *arg)
 {
 	(void)arg;

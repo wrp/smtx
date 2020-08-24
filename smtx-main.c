@@ -201,7 +201,7 @@ new_pty(int rows, int cols)
 	return p;
 }
 
-static struct canvas *
+struct canvas *
 newcanvas(void)
 {
 	struct canvas *n = calloc(1, sizeof *n);
@@ -406,7 +406,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 	}
 }
 
-static void
+void
 reshape_root(const char *arg)
 {
 	(void)arg;
@@ -522,27 +522,6 @@ balance(struct canvas *n)
 			break;
 		}
 	}
-}
-
-void
-create(const char *arg)
-{
-	struct canvas *n = S.f;
-	int dir = arg && *arg == 'C' ? 1 : 0;
-	while( n && n->c[dir] != NULL ) {
-		n = n->c[dir]; /* Split last window in a chain. */
-	}
-	struct canvas *v = *( n ? &n->c[dir] : &S.c ) = newcanvas();
-	if( v != NULL ) {
-		v->typ = dir;
-		v->parent = n;
-		balance(v);
-	}
-	/* TODO: we should be able to set S.reshape_root here, but
-	 * doing so causes odd (eg, unexplained) behavior in the tests.
-	 * Need to track down why.
-	 */
-	reshape_root(NULL);
 }
 
 static void

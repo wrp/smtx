@@ -139,6 +139,8 @@ extern const char *term;
 extern void fixcursor(void);
 extern void focus(struct canvas *n);
 
+extern struct canvas * newcanvas(void);
+extern void reshape_root(const char *arg);
 extern struct canvas * init(void);
 extern void balance(struct canvas *);
 extern void draw(struct canvas *);
