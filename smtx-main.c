@@ -426,6 +426,7 @@ reshape_root(const char *arg)
 	for( struct pty *p = S.p; p; p = p->next ) {
 		p->ws.ws_row = 0;
 	}
+	resize_pad(&S.werr, 1, COLS);
 	reshape(S.c, 0, 0, LINES, COLS);
 	S.reshape = 0;
 }
@@ -930,8 +931,8 @@ main_loop(void)
 		}
 		draw(S.v);
 		if( winpos(S.werr, 1) ) {
-			int y = LINES - 1, x = MIN(winsiz(S.werr, 1), COLS);
-			pnoutrefresh(S.werr, 0, 0, y, 0, y, x);
+			int y = LINES - 1;
+			pnoutrefresh(S.werr, 0, 0, y, 0, y, COLS);
 		}
 		fixcursor();
 		doupdate();
