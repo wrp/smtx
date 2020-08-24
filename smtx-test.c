@@ -451,8 +451,8 @@ static int
 test_navigate(int fd, pid_t p)
 {
 	int status = 0;
-	send_str(fd, "foobar", "%ccjkhlC4tCvjkh2slc\rprintf 'foo%%s' bar\r",
-		CTL('g'));
+	send_cmd(fd, NULL, "cjkhlCCjkh2slc");
+	send_str(fd, "foobar", "printf 'foo%%s' bar\r");
 	status |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
 		"11x26@0,0",
 		"11x80@12,0",
