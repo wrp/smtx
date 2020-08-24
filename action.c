@@ -50,6 +50,25 @@ resize(const char *arg)
 }
 
 void
+scrollh(const char *arg)
+{
+	struct canvas *n = S.f;
+	if( n && n->p && n->p->s && n->p->s->win ) {
+		int y, x;
+		getmaxyx(n->p->s->win, y, x);
+		(void)y;
+		int count = S.count == -1 ? n->extent.x - 1 : S.count;
+		n->offset.x += *arg == '<' ? -count : count;
+		if( n->offset.x < 0 ) {
+			n->offset.x = 0;
+		} else if( n->offset.x > x - n->extent.x ) {
+			n->offset.x = x - n->extent.x;
+		}
+		n->manualscroll = 1;
+	}
+}
+
+void
 scrolln(const char *arg)
 {
 	struct canvas *n = S.f;

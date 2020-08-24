@@ -241,16 +241,6 @@ winpos(WINDOW *w, int dir)
 	return dir ? x : y;
 }
 
-static int
-winsiz(WINDOW *w, int dir)
-{
-	int y = 0, x = 0;
-	if( w ) {
-		getmaxyx(w, y, x);
-	}
-	return dir ? x : y;
-}
-
 static void
 draw_window(struct canvas *n)
 {
@@ -466,7 +456,9 @@ prune(const char *arg)
 static void
 draw_pane(WINDOW *w, int y, int x)
 {
-	pnoutrefresh(w, 0, 0, y, x, y + winsiz(w, 0) - 1, x + winsiz(w, 1) - 1);
+	int wy, wx;
+	getmaxyx(w, wy, wx);
+	pnoutrefresh(w, 0, 0, y, x, y + wy - 1, x + wx - 1);
 }
 
 static void
@@ -623,23 +615,6 @@ set_view_count(const char *arg)
 		break;
 	}
 	S.reshape = 1;
-}
-
-void
-scrollh(const char *arg)
-{
-	struct canvas *n = S.f;
-	if( n && n->p && n->p->s && n->p->s->win ) {
-		int x = winsiz(n->p->s->win, 1);
-		int count = S.count == -1 ? n->extent.x - 1 : S.count;
-		n->offset.x += *arg == '<' ? -count : count;
-		if( n->offset.x < 0 ) {
-			n->offset.x = 0;
-		} else if( n->offset.x > x - n->extent.x ) {
-			n->offset.x = x - n->extent.x;
-		}
-		n->manualscroll = 1;
-	}
 }
 
 static void
