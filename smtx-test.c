@@ -38,8 +38,13 @@ union param {
 };
 
 static void
-retrywrite(int fd, const char *b, size_t n)
+write_pty(int fd, const char *wait, const char *fmt, va_list ap)
 {
+	char cmd[1024];
+	size_t n;
+	n = vsnprintf(cmd, sizeof cmd, fmt, ap);
+	assert( n < sizeof cmd );
+	const char *b = cmd;
 	const char *e = b + n;
 	while( b < e ) {
 		ssize_t s = write(fd, b, e - b);
@@ -48,22 +53,18 @@ retrywrite(int fd, const char *b, size_t n)
 		}
 		b += s < 0 ? 0 : s;
 	}
+	if( wait != NULL ) {
+		grep(fd, wait);
+	}
 }
 
 static void __attribute__((format(printf,3,4)))
 send_str(int fd, const char *wait, const char *fmt, ...)
 {
-	char cmd[1024];
-	size_t n;
 	va_list ap;
 	va_start(ap, fmt);
-	n = vsnprintf(cmd, sizeof cmd, fmt, ap);
+	write_pty(fd, wait, fmt, ap);
 	va_end(ap);
-	assert( n < sizeof cmd );
-	retrywrite(fd, cmd, n);
-	if( wait != NULL ) {
-		grep(fd, wait);
-	}
 }
 
 static int __attribute__((format(printf,3,4)))
