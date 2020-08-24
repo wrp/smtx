@@ -378,13 +378,13 @@ static int
 test_lnm(int fd, pid_t pid)
 {
 	union param p = { .hup.flag = 1 };
-	fdprintf(fd, "printf '\\e[20h'\r");
-	fdprintf(fd, "kill -HUP $SMTX\r");
+	send_cmd(fd, NULL, "printf '\\e[20h'\r");
+	send_cmd(fd, NULL, "kill -HUP $SMTX\r");
 	write(p2c[1], &p, sizeof p);
 	read(c2p[0], &pid, 1); /* Read and discard */
-	fdprintf(fd, "printf 'foo\\rbar\\r\\n'\r");
-	fdprintf(fd, "printf '\\e[20l'\r");
-	fdprintf(fd, "kill -TERM $SMTX\r");
+	send_cmd(fd, NULL, "printf 'foo\\rbar\\r\\n'\r");
+	send_cmd(fd, NULL, "printf '\\e[20l'\r");
+	send_cmd(fd, NULL, "kill -TERM $SMTX\r");
 	return 0;
 }
 
@@ -392,8 +392,8 @@ static int
 test_navigate(int fd, pid_t p)
 {
 	int status = 0;
-	fdprintf(fd, "%ccjkhlC4tCvjkh2slc\rprintf 'foo%%s' bar\r", CTL('g'));
-	grep(fd, "foobar");
+	send_cmd(fd, "foobar", "%ccjkhlC4tCvjkh2slc\rprintf 'foo%%s' bar\r",
+		CTL('g'));
 	status |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
 		"11x26@0,0",
 		"11x80@12,0",
@@ -401,14 +401,13 @@ test_navigate(int fd, pid_t p)
 		"5x26@6,27",
 		"11x26@0,54"
 	);
-	fdprintf(fd, "%ccccccccchhk\rprintf 'foo%%s' baz\r", CTL('g'));
-	grep(fd, "foobaz");
+	send_cmd(fd, "fobaz", "%ccccccccchhk\rprintf 'fo%%s' baz\r", CTL('g'));
 	status |= check_layout(p, 0x11, "%s; %s; %s",
 		"*11x26@0,0; 11x80@12,0; 0x26@0,27",
 		"0x26@1,27; 0x26@2,27; 0x26@3,27; 0x26@4,27; 0x26@5,27",
 		"0x26@6,27; 0x26@7,27; 1x26@8,27; 1x26@10,27; 11x26@0,54"
 	);
-	fdprintf(fd, "kill $SMTX\r");
+	send_cmd(fd, NULL, "kill $SMTX\r");
 	return status;
 }
 
@@ -419,15 +418,14 @@ test_nel(int fd, pid_t p)
 	/* nel is a newline */
 	const char *cmd = "tput cud 3; printf foo; tput nel; "
 		"printf 'blah%d\\n' 12";
-	fdprintf(fd, "%s\r", cmd);
-	grep(fd, "blah12");
+	send_cmd(fd, "blah12", "%s\r", cmd);
 	rv |= validate_row(p, 5, "%-80s", "foo");
 	rv |= validate_row(p, 6, "%-80s", "blah12");
 	cmd = "printf foobar; tput cub 3; tput el; echo blah";
 	send_cmd(fd, PROMPT, "%s\r", cmd);
 	rv |= validate_row(p, 7, "%s%-*s", PROMPT, 80 - strlen(PROMPT), cmd);
 	rv |= validate_row(p, 8, "%-80s", "fooblah");
-	fdprintf(fd, "exit\r");
+	send_cmd(fd, NULL, "exit\r");
 	return rv;
 }
 
@@ -436,18 +434,16 @@ test_pager(int fd, pid_t p)
 {
 	int rv = 0;
 
-	fdprintf(fd, "yes | nl | sed 500q | more\r");
-	grep(fd, "22");
+	send_cmd(fd, "22", "yes | nl | sed 500q | more\r");
 	rv |= validate_row(p, 2, "     2%-74s", "  y");
 	rv |= validate_row(p, 10, "    10%-74s", "  y");
 	rv |= validate_row(p, 22, "    22%-74s", "  y");
 	rv |= check_layout(p, 0x1, "*23x80");
-	fdprintf(fd, " ");
-	grep(fd, "44");
+	send_cmd(fd, "44", " ");
 	rv |= validate_row(p, 1,  "    23%-74s", "  y");
 	rv |= validate_row(p, 10, "    32%-74s", "  y");
 	rv |= validate_row(p, 22, "    44%-74s", "  y");
-	fdprintf(fd, "qexit\r");
+	send_cmd(fd, NULL, "qexit\r");
 	return rv;
 }
 
@@ -463,7 +459,7 @@ test_reset(int fd, pid_t p)
 		send_cmd(fd, NULL, fmt, v, 'l');
 		send_cmd(fd, NULL, fmt, v, 'h');
 	}
-	fdprintf(fd, "kill -TERM $SMTX\r");
+	send_cmd(fd, NULL, "kill -TERM $SMTX\r");
 	return 0;
 }
 
