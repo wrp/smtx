@@ -233,9 +233,9 @@ test_cols(int fd, pid_t p)
 {
 	/* Ensure that tput correctly identifies the width */
 	int rv;
-	send_str(fd, PROMPT, "tput cols\r");
+	send_txt(fd, "97", "tput cols");
 	rv = validate_row(p, 2, "%-97s", "97");
-	send_str(fd, NULL, "exit\r");
+	send_txt(fd, NULL, "exit");
 	return rv;
 }
 
