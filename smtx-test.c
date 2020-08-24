@@ -24,9 +24,6 @@
 
 #define PROMPT "ps1>"
 
-/* Non-intrusive tests that manipulate the master pty. */
-
-int rv = EXIT_SUCCESS;
 int c2p[2];
 int p2c[2];
 static int check_test_status(int rv, int status, int pty, const char *name);
@@ -415,7 +412,7 @@ test_insert(int fd, pid_t p)
 	rc |= validate_row(p, 2, "%-80s", "0123foo456");
 	rc |= validate_row(p, 3, "%-80s", PROMPT);
 	send_str(fd, NULL, "exit\r");
-	return rv;
+	return rc;
 }
 
 static int
@@ -856,6 +853,7 @@ execute_test(struct st *v, const char *name)
 	char *const args[] = { "smtx", NULL };
 	int fd[2]; /* primary/secondary fd of pty */
 	int status;
+	int rv = 1;
 	pid_t pid;
 
 	assert( strcmp(name, v->name) == 0 );
