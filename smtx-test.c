@@ -212,6 +212,24 @@ test_cols(int fd, pid_t p)
 }
 
 static int
+test_csr(int fd, pid_t p)
+{
+	int rv = 0;
+	/* Change scroll region */
+	send_cmd(fd, PROMPT, "tput csr 6 12\r");
+	send_cmd(fd, PROMPT, "yes | nl | sed 25q\r");
+	for(int i = 2; i <= 6; i++ ) {
+		rv |= validate_row(p, i, "     %d  %-72s", i - 1, "y");
+	}
+	for(int i = 7; i <= 12; i++ ) {
+		rv |= validate_row(p, i, "    %d  %-72s", i + 13, "y");
+	}
+	rv |= validate_row(p, 13, "%-80s", PROMPT);
+	send_cmd(fd, NULL, "exit\r");
+	return rv;
+}
+
+static int
 test_cup(int fd, pid_t p)
 {
 	int status = 0;
@@ -680,6 +698,7 @@ main(int argc, char *const argv[])
 	F(test1);
 	F(test_attach);
 	F(test_cols, "TERM", "smtx", "COLUMNS", "97");
+	F(test_csr);
 	F(test_cup);
 	F(test_cursor);
 	F(test_ech);

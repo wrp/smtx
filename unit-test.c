@@ -190,23 +190,6 @@ new_test_canvas(int rows, int cols, const char *ps1)
 	return T;
 }
 
-static int
-test_csr(void)
-{
-	struct test_canvas *T = new_test_canvas(24, 80, NULL);
-	char *cmd = "tput csr 6 12";
-	check_cmd(T, cmd, NULL);
-	check_cmd(T, "yes | nl | sed 25q", NULL);
-	for(int i = 2; i < 6; i++ ) {
-		expect_row(i, T, "     %d  %-72s", i, "y");
-	}
-	for(int i = 6; i < 12; i++ ) {
-		expect_row(i, T, "    %d  %-72s", i + 14, "y");
-	}
-	expect_row(12, T, "%-80s", T->ps1);
-	return rv;
-}
-
 /* Describe a layout. This may be called in a signal handler */
 static unsigned
 describe_lay(char *d, size_t siz, const struct canvas *c, int recurse,
@@ -243,7 +226,6 @@ main(int argc, char *const argv[])
 	const char *argv0 = argv[0];
 	struct st tab[] = {
 		F(test_description),
-		F(test_csr),
 		{ NULL, NULL }
 	}, *v;
 	setenv("SHELL", "/bin/sh", 1);
