@@ -547,7 +547,10 @@ create(const char *arg)
 		v->parent = n;
 		balance(v);
 	}
-	/* TODO: just set the flag.  Currently that causes test failure. */
+	/* TODO: we should be able to set S.reshape_root here, but
+	 * doing so causes odd (eg, unexplained) behavior in the tests.
+	 * Need to track down why.
+	 */
 	reshape_root(NULL);
 }
 
@@ -620,7 +623,7 @@ set_view_count(const char *arg)
 		S.v = S.c;
 		break;
 	}
-	reshape_root(NULL);
+	S.reshape = 1;
 }
 
 void
