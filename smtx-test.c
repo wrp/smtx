@@ -467,13 +467,12 @@ static int
 test_row(int fd, pid_t p)
 {
 	int status = 0;
-	fdprintf(fd, "yes | nl -ba | sed 400q\r");
-	grep(fd, PROMPT);
+	send_cmd(fd, PROMPT, "yes | nl -ba | sed 400q\r");
 
 	status |= validate_row(p, 21, "%6d%-74s", 399, "  y");
 	status |= validate_row(p, 22, "%6d%-74s", 400, "  y");
 	status |= validate_row(p, 23, "%-80s", PROMPT);
-	fdprintf(fd, "kill $SMTX\r");
+	send_cmd(fd, NULL, "kill $SMTX\r");
 	return status;
 }
 
@@ -484,35 +483,30 @@ test_scrollback(int fd, pid_t p)
 	const char *string = "This is a relatively long string!";
 	char trunc[128];
 
-	fdprintf(fd, "%cCC\r:\r", CTL('g'));
-	grep(fd, PROMPT ":");
+	send_cmd(fd, PROMPT ":", "%cCC\r:\r", CTL('g'));
 	status |= check_layout(p, 0x1, "*23x26; 23x26; 23x26");
 
-	fdprintf(fd, "a='%s'\rPS1=$(printf 'un%%s>' iq)\r", string);
-	fdprintf(fd, "%c100<\r", CTL('g'));
-	grep(fd, "uniq>");
-	fdprintf(fd, "yes \"$a\" | nl |\rsed 50q\r");
-	grep(fd, "uniq>");
+	send_cmd(fd, NULL, "a='%s'\rPS1=$(printf 'un%%s>' iq)\r", string);
+	send_cmd(fd, "uniq>", "%c100<\r", CTL('g'));
+	send_cmd(fd, "uniq>", "yes \"$a\" | nl |\rsed 50q\r");
 	snprintf(trunc, 19, "%s", string);
 	status |= validate_row(p, 1, "%6d  %-18s", 29, trunc);
 	status |= validate_row(p, 22, "%6d  %-18s", 50, trunc);
 
 	/* Scrollback 3, then move to another term and write a unique string */
-	fdprintf(fd, "%c3bl\rprintf 'foo%%s' bar\r", CTL('g'));
-	grep(fd, "foobar");
+	send_cmd(fd, "foobar", "%c3bl\rprintf 'foo%%s' bar\r", CTL('g'));
 	status |= validate_row(p, 22, "%6d  %-18s", 47, trunc);
 
 	/* Scrollright 8, then move to another term and write a unique string */
 	snprintf(trunc, 27, "%s", string);
-	fdprintf(fd, "%ch8>l\rprintf 'foo%%s' baz\r", CTL('g'));
-	grep(fd, "foobaz");
+	send_cmd(fd, "foobaz", "%ch8>l\rprintf 'foo%%s' baz\r", CTL('g'));
 	status |= validate_row(p, 14, "%-26s", trunc);
 
 	/* Exit all pty instead of killing.  This was triggering a segfault
 	 * on macos.  The test still times out whether we kill the SMTX
 	 * or exit. */
 	status |= check_layout(p, 0x1, "23x26; *23x26; 23x26");
-	fdprintf(fd, "exit\r%1$cl\rexit\r%1$chh\rexit\r", CTL('g'));
+	send_cmd(fd, NULL, "exit\r%1$cl\rexit\r%1$chh\rexit\r", CTL('g'));
 
 	return status;
 }
