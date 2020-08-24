@@ -199,17 +199,17 @@ test_attach(int fd, pid_t pid)
 	char desc[1024];
 	union param p = { .hup.flag = 5 };
 	int status = 0;
-	fdprintf(fd, "%ccc3a\r", CTL('g'));
-	fdprintf(fd, "kill -HUP $SMTX\r");
+	send_cmd(fd, NULL, "%ccc3a\r", CTL('g'));
+	send_cmd(fd, NULL, "kill -HUP $SMTX\r");
 	write(p2c[1], &p, sizeof p);
 	read(c2p[0], desc, sizeof desc);
 	if( sscanf(desc, "*7x80(id=%*d); 7x80(id=%d);", &id) != 1 ) {
 		fprintf(stderr, "received unexpected: '%s'\n", desc);
 		status = 1;
 	} else {
-		fdprintf(fd, "%c%da\r", CTL('g'), id);
+		send_cmd(fd, NULL, "%c%da\r", CTL('g'), id);
 	}
-	fdprintf(fd, "kill -TERM %d\r", pid);
+	send_cmd(fd, NULL, "kill -TERM %d\r", pid);
 	return status;
 }
 
@@ -231,7 +231,7 @@ test_cup(int fd, pid_t p)
 	status |= validate_row(p, 9, "%s%-76s", PROMPT, cmd2);
 	status |= validate_row(p, 10, "abc%73s1234", "");
 	status |= validate_row(p, 11, "%-80s", "5678wrapped");
-	fdprintf(fd, "kill $SMTX\r");
+	send_cmd(fd, NULL, "kill $SMTX\r");
 	return status;
 }
 
@@ -245,21 +245,17 @@ test_cursor(int fd, pid_t p)
 	send_cmd(fd, PROMPT, "tput sc; echo abcdefg; tput rc; echo bar\r");
 	rv |= validate_row(p, 3, "%-80s", "bardefg");
 
-	fdprintf(fd, "tput cup 15 50; printf 'foo%%s\\n' baz\r");
-	grep(fd, "foobaz");
+	send_cmd(fd, "foobaz", "tput cup 15 50; printf 'foo%%s\\n' baz\r");
 	rv |= validate_row(p, 16, "%-50sfoobaz%24s", "", "");
 
-	fdprintf(fd, "tput clear; printf 'foo%%s\n' 37\r");
-	grep(fd, "foo37");
+	send_cmd(fd, "foo37", "tput clear; printf 'foo%%s\n' 37\r");
 	rv |= validate_row(p, 1, "%-80s", "foo37");
 
-	fdprintf(fd, "printf foo; tput ht; printf 'bar%%s\\n' 38\r");
-	grep(fd, "bar38");
+	send_cmd(fd, "bar38", "printf foo; tput ht; printf 'bar%%s\\n' 38\r");
 	rv |= validate_row(p, 3, "%-80s", "foo     bar38");
 
-	fdprintf(fd, "printf 'a\\tb\\tc\\t'; tput cbt; tput cbt; "
+	send_cmd(fd, "foo39", "printf 'a\\tb\\tc\\t'; tput cbt; tput cbt; "
 		"printf 'foo%%s\\n' 39\r");
-	grep(fd, "foo39");
 	rv |= validate_row(p, 5, "%-80s", "a       foo39   c");
 
 #if 0
@@ -279,7 +275,7 @@ test_cursor(int fd, pid_t p)
 	assert( y == 1023 );
 	check_cmd(T, ":", "*23x80@0,0(%d,6)", y);
 #endif
-	fdprintf(fd, "kill $SMTX\r");
+	send_cmd(fd, NULL, "kill $SMTX\r");
 
 	return rv;
 }
@@ -296,7 +292,7 @@ test_resize(int fd, pid_t p)
 	status |= check_layout(p, 0x1, "*12x40; 0x80; 10x80; 12x39");
 	send_cmd(fd, PROMPT, "%ckkl20H\r:\r", CTL('g'));
 	status |= check_layout(p, 0x1, "12x20; 0x80; 10x80; *12x59");
-	fdprintf(fd, "kill -TERM $SMTX\r");
+	send_cmd(fd, NULL, "kill -TERM $SMTX\r");
 	return status;
 }
 
@@ -306,7 +302,7 @@ test_ech(int fd, pid_t p)
 	int rv = 0;
 	send_cmd(fd, PROMPT, "printf 012345; tput cub 3; tput ech 1; echo\r");
 	rv |= validate_row(p, 2, "%-80s", "012 45");
-	fdprintf(fd, "exit\r");
+	send_cmd(fd, NULL, "exit\r");
 	return rv;
 }
 
@@ -320,7 +316,7 @@ test_el(int fd, pid_t p)
 	send_cmd(fd, PROMPT, "printf 01234; tput cub 3; tput el1; echo\r");
 	rv |= validate_row(p, 3, "   34%75s", "");
 
-	fdprintf(fd, "exit\r");
+	send_cmd(fd, NULL, "exit\r");
 	return rv;
 }
 
@@ -328,13 +324,11 @@ static int
 test_equalize(int fd, pid_t p)
 {
 	int status = 0;
-	fdprintf(fd, "%ccc5J\recho foo\r", CTL('g'));
-	grep(fd, PROMPT);
+	send_cmd(fd, PROMPT, "%ccc5J\recho foo\r", CTL('g'));
 	status |= check_layout(p, 0x1, "*12x80; 4x80; 5x80");
-	fdprintf(fd, "%c=\recho\r", CTL('g'));
-	grep(fd, PROMPT);
+	send_cmd(fd, PROMPT, "%c=\recho\r", CTL('g'));
 	status |= check_layout(p, 0x1, "*7x80; 7x80; 7x80");
-	fdprintf(fd, "kill -TERM $SMTX\r");
+	send_cmd(fd, NULL, "kill -TERM $SMTX\r");
 	return status;
 }
 
@@ -343,13 +337,11 @@ test_ich(int fd, pid_t p)
 {
 	int rv = 0;
 	const char *cmd = "printf abcdefg; tput cub 3; tput ich 5; echo";
-	fdprintf(fd, "%s\r", cmd);
-	grep(fd, PROMPT);
+	send_cmd(fd, PROMPT, "%s\r", cmd);
 	rv |= validate_row(p, 2, "%-80s", "abcd     efg");
 
 	cmd = "yes | nl | sed 6q; tput cuu 3; tput il 3; tput cud 6";
-	fdprintf(fd, "%s\r", cmd);
-	grep(fd, PROMPT);
+	send_cmd(fd, PROMPT, "%s\r", cmd);
 	rv |= validate_row(p, 3, "%s%-*s", PROMPT, 80 - strlen(PROMPT), cmd);
 	for( int i=1; i < 4; i++ ) {
 		rv |= validate_row(p, 3 + i, "%6d  y%71s", i, "");
@@ -361,12 +353,11 @@ test_ich(int fd, pid_t p)
 		rv |= validate_row(p, 3 + i, "%6d  y%71s", i - 3, "");
 	}
 	cmd = "yes | nl | sed 6q; tput cuu 5; tput dl 4; tput cud 1";
-	fdprintf(fd, "%s\r", cmd);
-	grep(fd, PROMPT);
+	send_cmd(fd, PROMPT, "%s\r", cmd);
 	rv |= validate_row(p, 14, "     %d  y%71s", 1, "");
 	rv |= validate_row(p, 15, "     %d  y%71s", 6, "");
 
-	fdprintf(fd, "exit\r");
+	send_cmd(fd, NULL, "exit\r");
 	return rv;
 }
 
@@ -379,7 +370,7 @@ test_insert(int fd, pid_t p)
 		"echo foo; tput rmir\r");
 	rc |= validate_row(p, 2, "%-80s", "0123foo456");
 	rc |= validate_row(p, 3, "%-80s", PROMPT);
-	fdprintf(fd, "exit\r");
+	send_cmd(fd, NULL, "exit\r");
 	return rv;
 }
 
