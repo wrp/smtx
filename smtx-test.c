@@ -63,8 +63,8 @@ fdprintf(int fd, const char *fmt, ...)
 	retrywrite(fd, cmd, n);
 }
 
-static void __attribute__((format(printf,2,3)))
-send_cmd(int fd, const char *fmt, ...)
+static void __attribute__((format(printf,3,4)))
+send_cmd(int fd, const char *wait, const char *fmt, ...)
 {
 	char cmd[1024];
 	size_t n;
@@ -74,7 +74,9 @@ send_cmd(int fd, const char *fmt, ...)
 	va_end(ap);
 	assert( n < sizeof cmd );
 	retrywrite(fd, cmd, n);
-	grep(fd, PROMPT);
+	if( wait != NULL ) {
+		grep(fd, wait);
+	}
 }
 
 static int __attribute__((format(printf,3,4)))
@@ -215,11 +217,11 @@ static int
 test_cup(int fd, pid_t p)
 {
 	int status = 0;
-	send_cmd(fd, "tput cup 5 50; echo foo\r"); /* Move down 5 lines */
+	send_cmd(fd, PROMPT, "tput cup 5 50; echo foo\r"); /* down 5 lines */
 	char *cmd = "printf '0123456'; tput cub 4; printf '789\\n'";
-	send_cmd(fd, "%s\r", cmd);
+	send_cmd(fd, PROMPT, "%s\r", cmd);
 	char *cmd2 = "printf abc; tput cuf 73; echo 12345678wrapped";
-	send_cmd(fd, "%s\r", cmd2);
+	send_cmd(fd, PROMPT, "%s\r", cmd2);
 
 	assert( strlen(PROMPT) == 4 ); /* TODO: compute with this */
 
@@ -237,10 +239,10 @@ static int
 test_cursor(int fd, pid_t p)
 {
 	int rv = 0;
-	send_cmd(fd, "printf '0123456'; tput cub 4\r");
+	send_cmd(fd, PROMPT, "printf '0123456'; tput cub 4\r");
 	rv |= validate_row(p, 2, "012%-77s", PROMPT);
 
-	send_cmd(fd, "tput sc; echo abcdefg; tput rc; echo bar\r");
+	send_cmd(fd, PROMPT, "tput sc; echo abcdefg; tput rc; echo bar\r");
 	rv |= validate_row(p, 3, "%-80s", "bardefg");
 
 	fdprintf(fd, "tput cup 15 50; printf 'foo%%s\\n' baz\r");
@@ -286,13 +288,13 @@ static int
 test_resize(int fd, pid_t p)
 {
 	int status = 0;
-	send_cmd(fd, "%cJccC\r:\r", CTL('g'));
+	send_cmd(fd, PROMPT, "%cJccC\r:\r", CTL('g'));
 	status |= check_layout(p, 0x1, "*7x40; 7x80; 7x80; 7x39");
-	send_cmd(fd, "%c5J\r:\r", CTL('g'));
+	send_cmd(fd, PROMPT, "%c5J\r:\r", CTL('g'));
 	status |= check_layout(p, 0x1, "*12x40; 4x80; 5x80; 12x39");
-	send_cmd(fd, "%cjj10K\r:\r", CTL('g'));
+	send_cmd(fd, PROMPT, "%cjj10K\r:\r", CTL('g'));
 	status |= check_layout(p, 0x1, "*12x40; 0x80; 10x80; 12x39");
-	send_cmd(fd, "%ckkl20H\r:\r", CTL('g'));
+	send_cmd(fd, PROMPT, "%ckkl20H\r:\r", CTL('g'));
 	status |= check_layout(p, 0x1, "12x20; 0x80; 10x80; *12x59");
 	fdprintf(fd, "kill -TERM $SMTX\r");
 	return status;
@@ -302,7 +304,7 @@ static int
 test_ech(int fd, pid_t p)
 {
 	int rv = 0;
-	send_cmd(fd, "printf 012345; tput cub 3; tput ech 1; echo\r");
+	send_cmd(fd, PROMPT, "printf 012345; tput cub 3; tput ech 1; echo\r");
 	rv |= validate_row(p, 2, "%-80s", "012 45");
 	fdprintf(fd, "exit\r");
 	return rv;
@@ -312,10 +314,10 @@ static int
 test_el(int fd, pid_t p)
 {
 	int rv = 0;
-	send_cmd(fd, "printf 01234; tput cub 3; tput el\r");
+	send_cmd(fd, PROMPT, "printf 01234; tput cub 3; tput el\r");
 	rv |= validate_row(p, 2, "01%-78s", PROMPT);
 
-	send_cmd(fd, "printf 01234; tput cub 3; tput el1; echo\r");
+	send_cmd(fd, PROMPT, "printf 01234; tput cub 3; tput el1; echo\r");
 	rv |= validate_row(p, 3, "   34%75s", "");
 
 	fdprintf(fd, "exit\r");
@@ -373,7 +375,7 @@ test_insert(int fd, pid_t p)
 {
 	int rc = 0;
 	/* smir -- begin insert mode;  rmir -- end insert mode */
-	send_cmd(fd, "printf 0123456; tput cub 3; tput smir; "
+	send_cmd(fd, PROMPT, "printf 0123456; tput cub 3; tput smir; "
 		"echo foo; tput rmir\r");
 	rc |= validate_row(p, 2, "%-80s", "0123foo456");
 	rc |= validate_row(p, 3, "%-80s", PROMPT);
@@ -431,7 +433,7 @@ test_nel(int fd, pid_t p)
 	rv |= validate_row(p, 5, "%-80s", "foo");
 	rv |= validate_row(p, 6, "%-80s", "blah12");
 	cmd = "printf foobar; tput cub 3; tput el; echo blah";
-	send_cmd(fd, "%s\r", cmd);
+	send_cmd(fd, PROMPT, "%s\r", cmd);
 	rv |= validate_row(p, 7, "%s%-*s", PROMPT, 80 - strlen(PROMPT), cmd);
 	rv |= validate_row(p, 8, "%-80s", "fooblah");
 	fdprintf(fd, "exit\r");
