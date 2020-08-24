@@ -201,6 +201,17 @@ test_attach(int fd, pid_t pid)
 }
 
 static int
+test_cols(int fd, pid_t p)
+{
+	/* Ensure that tput correctly identifies the width */
+	int rv;
+	send_cmd(fd, PROMPT, "tput cols\r");
+	rv = validate_row(p, 2, "%-97s", "97");
+	send_cmd(fd, NULL, "exit\r");
+	return rv;
+}
+
+static int
 test_cup(int fd, pid_t p)
 {
 	int status = 0;
@@ -668,6 +679,7 @@ main(int argc, char *const argv[])
 	F(check_ps1);
 	F(test1);
 	F(test_attach);
+	F(test_cols, "TERM", "smtx", "COLUMNS", "97");
 	F(test_cup);
 	F(test_cursor);
 	F(test_ech);

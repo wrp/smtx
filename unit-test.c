@@ -207,17 +207,6 @@ test_csr(void)
 	return rv;
 }
 
-static int
-test_cols(void)
-{
-	/* Ensure that tput correctly identifies the width */
-	setenv("TERM", "smtx", 1);
-	struct test_canvas *T = new_test_canvas(10, 97, NULL);
-	check_cmd(T, "tput cols", NULL);
-	expect_row(2, T, "%-97s", "97");
-	return rv;
-}
-
 /* Describe a layout. This may be called in a signal handler */
 static unsigned
 describe_lay(char *d, size_t siz, const struct canvas *c, int recurse,
@@ -254,7 +243,6 @@ main(int argc, char *const argv[])
 	const char *argv0 = argv[0];
 	struct st tab[] = {
 		F(test_description),
-		F(test_cols),
 		F(test_csr),
 		{ NULL, NULL }
 	}, *v;
