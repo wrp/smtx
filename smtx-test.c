@@ -77,6 +77,15 @@ send_cmd(int fd, const char *wait, const char *fmt, ...)
 }
 
 static void __attribute__((format(printf,3,4)))
+send_txt(int fd, const char *wait, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	write_pty(fd, 0x2, wait, fmt, ap);
+	va_end(ap);
+}
+
+static void __attribute__((format(printf,3,4)))
 send_str(int fd, const char *wait, const char *fmt, ...)
 {
 	va_list ap;
@@ -476,12 +485,13 @@ test_nel(int fd, pid_t p)
 	int rv = 0;
 	/* nel is a newline */
 	const char *cmd = "tput cud 3; printf foo; tput nel; "
-		"printf 'blah%d\\n' 12";
-	send_str(fd, "blah12", "%s\r", cmd);
+		"printf 'uniq%s\\n' 01";
+	send_txt(fd, "uniq01", "%s", cmd);
 	rv |= validate_row(p, 5, "%-80s", "foo");
-	rv |= validate_row(p, 6, "%-80s", "blah12");
-	cmd = "printf foobar; tput cub 3; tput el; echo blah";
-	send_str(fd, PROMPT, "%s\r", cmd);
+	rv |= validate_row(p, 6, "%-80s", "uniq01");
+	cmd = "printf foobar; tput cub 3; tput el; echo blah; "
+		"printf 'uniq%s\\n' 02";
+	send_txt(fd, "uniq02", "%s", cmd);
 	rv |= validate_row(p, 7, "%s%-*s", PROMPT, 80 - strlen(PROMPT), cmd);
 	rv |= validate_row(p, 8, "%-80s", "fooblah");
 	send_str(fd, NULL, "exit\r");
