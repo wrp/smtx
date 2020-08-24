@@ -86,13 +86,12 @@ getshell(void)
 	return s ? s : pwd ? pwd->pw_shell : "/bin/sh";
 }
 
-static int
+static void
 pty_size(struct pty *p)
 {
 	if( p->fd != -1 && ioctl(p->fd, TIOCGWINSZ, &p->ws) ) {
 		show_err("ioctl error getting size of pty %d", p->id);
 	}
-	return p->ws.ws_col;
 }
 
 static void
@@ -333,7 +332,7 @@ set_width(const char *arg)
 	if( w == -1 ) {
 		w = n->extent.x;
 	}
-	if( p->fd > 0 && w != pty_size(p) ) {
+	if( p->fd > 0 && (pty_size(p), w != p->ws.ws_col) ) {
 		p->ws.ws_col = w;
 		resize_pad(&p->pri.win, h, w);
 		resize_pad(&p->alt.win, h, w);
@@ -809,7 +808,7 @@ new_tabstop(const char *arg)
 	struct canvas *n = S.f;
 	int c = arg ? strtol(arg, NULL, 10) : S.count > -1 ? S.count : 8;
 	n->p->ntabs = 0;
-	(void)pty_size(n->p); /* Update n->p->ws */
+	pty_size(n->p); /* Update n->p->ws */
 	extend_tabs(n->p, n->p->tabstop = c);
 }
 
