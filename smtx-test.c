@@ -460,7 +460,7 @@ test_navigate(int fd, pid_t p)
 {
 	int status = 0;
 	send_cmd(fd, NULL, "cjkhlCCjkh2slc");
-	send_str(fd, "foobar", "printf 'foo%%s' bar\r");
+	send_txt(fd, "foobar", "printf 'foo%%s' bar");
 	status |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
 		"11x26@0,0",
 		"11x80@12,0",
@@ -468,13 +468,13 @@ test_navigate(int fd, pid_t p)
 		"5x26@6,27",
 		"11x26@0,54"
 	);
-	send_str(fd, "fobaz", "%ccccccccchhk\rprintf 'fo%%s' baz\r", CTL('g'));
+	send_cmd(fd, "foobaz", "cccccccchhk\rprintf 'foo%%s' baz");
 	status |= check_layout(p, 0x11, "%s; %s; %s",
 		"*11x26@0,0; 11x80@12,0; 0x26@0,27",
 		"0x26@1,27; 0x26@2,27; 0x26@3,27; 0x26@4,27; 0x26@5,27",
 		"0x26@6,27; 0x26@7,27; 1x26@8,27; 1x26@10,27; 11x26@0,54"
 	);
-	send_str(fd, NULL, "kill $SMTX\r");
+	send_txt(fd, NULL, "kill $SMTX");
 	return status;
 }
 
