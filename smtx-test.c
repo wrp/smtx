@@ -319,13 +319,13 @@ static int
 test_resize(int fd, pid_t p)
 {
 	int status = 0;
-	send_str(fd, PROMPT, "%cJccC\r:\r", CTL('g'));
+	send_cmd(fd, PROMPT, "JccC\r:");
 	status |= check_layout(p, 0x1, "*7x40; 7x80; 7x80; 7x39");
-	send_str(fd, PROMPT, "%c5J\r:\r", CTL('g'));
+	send_cmd(fd, PROMPT, "5J\r:");
 	status |= check_layout(p, 0x1, "*12x40; 4x80; 5x80; 12x39");
-	send_str(fd, PROMPT, "%cjj10K\r:\r", CTL('g'));
+	send_cmd(fd, PROMPT, "jj10K\r:");
 	status |= check_layout(p, 0x1, "*12x40; 0x80; 10x80; 12x39");
-	send_str(fd, PROMPT, "%ckkl20H\r:\r", CTL('g'));
+	send_cmd(fd, PROMPT, "kkl20H\r:");
 	status |= check_layout(p, 0x1, "12x20; 0x80; 10x80; *12x59");
 	send_str(fd, NULL, "kill -TERM $SMTX\r");
 	return status;
