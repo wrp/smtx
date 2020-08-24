@@ -38,14 +38,23 @@ union param {
 };
 
 static void
-write_pty(int fd, const char *wait, const char *fmt, va_list ap)
+write_pty(int fd, unsigned flags, const char *wait, const char *fmt, va_list ap)
 {
 	char cmd[1024];
 	size_t n;
-	n = vsnprintf(cmd, sizeof cmd, fmt, ap);
-	assert( n < sizeof cmd );
-	const char *b = cmd;
+	char *b = cmd;
+	if( flags & 0x1 ) {
+		*b++ = CTL('g');
+	}
+	n = vsnprintf(b, sizeof cmd - (b - cmd), fmt, ap);
+	assert( n < sizeof cmd - 3);
+	assert( b[n] == '\0' );
+	if( flags & 0x2 ) {
+		b[n++] = '\r';
+		b[n] = '\0';
+	}
 	const char *e = b + n;
+	b = cmd;
 	while( b < e ) {
 		ssize_t s = write(fd, b, e - b);
 		if( s < 0 && errno != EINTR ) {
@@ -59,11 +68,20 @@ write_pty(int fd, const char *wait, const char *fmt, va_list ap)
 }
 
 static void __attribute__((format(printf,3,4)))
+send_cmd(int fd, const char *wait, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	write_pty(fd, 0x3, wait, fmt, ap);
+	va_end(ap);
+}
+
+static void __attribute__((format(printf,3,4)))
 send_str(int fd, const char *wait, const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
-	write_pty(fd, wait, fmt, ap);
+	write_pty(fd, 0, wait, fmt, ap);
 	va_end(ap);
 }
 
@@ -187,7 +205,7 @@ test_attach(int fd, pid_t pid)
 	char desc[1024];
 	union param p = { .hup.flag = 5 };
 	int status = 0;
-	send_str(fd, NULL, "%ccc3a\r", CTL('g'));
+	send_cmd(fd, NULL, "cc3a");
 	send_str(fd, NULL, "kill -HUP $SMTX\r");
 	write(p2c[1], &p, sizeof p);
 	read(c2p[0], desc, sizeof desc);
@@ -195,7 +213,7 @@ test_attach(int fd, pid_t pid)
 		fprintf(stderr, "received unexpected: '%s'\n", desc);
 		status = 1;
 	} else {
-		send_str(fd, NULL, "%c%da\r", CTL('g'), id);
+		send_cmd(fd, NULL, "%da", id);
 	}
 	send_str(fd, NULL, "kill -TERM %d\r", pid);
 	return status;
