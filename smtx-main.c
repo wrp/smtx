@@ -22,7 +22,6 @@ static struct handler keys[128];
 static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 
-/* Variables exposed to test suite */
 struct state S = {
 	.commandkey = CTL('g'),
 	.width = 80,
@@ -1032,16 +1031,6 @@ init(void)
 	return S.c;
 }
 
-int
-smtx_main(int argc, char *const argv[])
-{
-	parse_args(argc, argv);
-	S.history = MAX(LINES, S.history);
-	init();
-	main_loop();
-	return EXIT_SUCCESS;
-}
-
 /* Describe a layout. This may be called in a signal handler by the tests*/
 static unsigned
 layout_r(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
@@ -1080,6 +1069,17 @@ layout_r(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 		}
 	}
 	return siz - ( e - d );
+}
+
+/* Functions exposed to test suite */
+int
+smtx_main(int argc, char *const argv[])
+{
+	parse_args(argc, argv);
+	S.history = MAX(LINES, S.history);
+	init();
+	main_loop();
+	return EXIT_SUCCESS;
 }
 
 unsigned
