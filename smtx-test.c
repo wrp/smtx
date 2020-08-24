@@ -50,19 +50,6 @@ retrywrite(int fd, const char *b, size_t n)
 	}
 }
 
-static void __attribute__((format(printf,2,3)))
-fdprintf(int fd, const char *fmt, ...)
-{
-	char cmd[1024];
-	size_t n;
-	va_list ap;
-	va_start(ap, fmt);
-	n = vsnprintf(cmd, sizeof cmd, fmt, ap);
-	va_end(ap);
-	assert( n < sizeof cmd );
-	retrywrite(fd, cmd, n);
-}
-
 static void __attribute__((format(printf,3,4)))
 send_cmd(int fd, const char *wait, const char *fmt, ...)
 {
@@ -515,17 +502,15 @@ static int
 test_vis(int fd, pid_t p)
 {
 	int rv = 0;
-	fdprintf(fd, "tput civis;\r");
-	grep(fd, PROMPT);
+	send_cmd(fd, PROMPT, "tput civis;\r");
 	rv |= validate_row(p, 1, "%-80s", PROMPT "tput civis;");
 	rv |= check_layout(p, 0x3, "*23x80(2,4)!");
 	rv |= validate_row(p, 2, "%-80s", PROMPT);
 
-	fdprintf(fd, "tput cvvis;\r");
-	grep(fd, PROMPT);
+	send_cmd(fd, PROMPT, "tput cvvis;\r");
 	rv |= check_layout(p, 0x3, "*23x80(3,4)");
 
-	fdprintf(fd, "exit\r");
+	send_cmd(fd, NULL, "exit\r");
 	return rv;
 }
 
@@ -533,14 +518,13 @@ static int
 test_vpa(int fd, pid_t p)
 {
 	int rv = 0;
-	fdprintf(fd, "tput vpa 7; tput hpa 18; echo foo\r");
-	grep(fd, PROMPT);
+	send_cmd(fd, PROMPT, "tput vpa 7; tput hpa 18; echo foo\r");
 	rv |= validate_row(p, 8, "%18sfoo%59s", "", "");
 	rv |= validate_row(p, 9, "%-80s", PROMPT);
 	for( int i = 10; i < 23; i++ ) {
 		rv |= validate_row(p, i, "%80s", "");
 	}
-	fdprintf(fd, "kill $SMTX\r");
+	send_cmd(fd, NULL, "kill $SMTX\r");
 	return rv;
 }
 
@@ -549,8 +533,7 @@ test_width(int fd, pid_t p)
 {
 	int rv = 0;
 	char buf[161];
-	fdprintf(fd, "%ccCCCj\rprintf 'foo%%s' bar\r", CTL('g'));
-	grep(fd, "foobar");
+	send_cmd(fd, "foobar", "%ccCCCj\rprintf 'foo%%s' bar\r", CTL('g'));
 	rv |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
 		"11x20@0,0",
 		"*11x80@12,0",
@@ -560,32 +543,29 @@ test_width(int fd, pid_t p)
 	);
 	/* Move up to a window that is now only 20 columns wide and
 	print a string of 50 chars */
-	fdprintf(fd, "%ck\rfor i in 1 2 3 4 5; do ", CTL('g'));
-	fdprintf(fd, "printf '%%s' \"${i}123456789\";");
-	fdprintf(fd, "test \"$i\" = 5 && printf '\\n  foo%%s\\n' bar; done\r");
-	grep(fd, "foobar");
+	send_cmd(fd, NULL, "%ck\rfor i in 1 2 3 4 5; do ", CTL('g'));
+	send_cmd(fd, NULL, "printf '%%s' \"${i}123456789\";");
+	send_cmd(fd, NULL, "test \"$i\" = 5 && printf '\\n  foo%%s\\n' bar;");
+	send_cmd(fd, "foobar", "done\r");
 	rv |= validate_row(p, 3, "%-20s", "11234567892123456789");
 
-	fdprintf(fd, "%c15>\rprintf '%%20sdead%%s' '' beef\r", CTL('g'));
-	grep(fd, "deadbeef");
+	send_cmd(fd, "dedef", "%c15>\rprintf '%%20sded%%s' '' ef\r", CTL('g'));
 	rv |= validate_row(p, 3, "%-20s", "56789312345678941234");
 
 	for( unsigned i = 0; i < sizeof buf - 1; i++ ) {
 		buf[i] = 'a' + i % 26;
 	}
 	buf[sizeof buf - 1] = '\0';
-	fdprintf(fd, "clear; printf '%s\\n'\r", buf);
-	fdprintf(fd, "%c75>\rprintf '%%68sde3d%%s' '' beef\\n\r", CTL('g'));
-	grep(fd, "de3dbeef");
+	send_cmd(fd, NULL, "clear; printf '%s\\n'\r%c75>\r", buf, CTL('g'));
+	send_cmd(fd, "de3dbeef", "printf '%%68sde3d%%s' '' beef\\n\r");
 	rv |= validate_row(p, 1, "%-20s", "ijklmnopqrstuvwxyzab");
 	rv |= validate_row(p, 2, "%-20s", "klmnopqrstuvwxyzabcd");
 
-	fdprintf(fd, "%c180W\rclear; printf '%s\\n'\r", CTL('g'), buf);
-	fdprintf(fd, "printf '%%68sde4d%%s' '' beef\\n\r");
-	grep(fd, "de4dbeef");
+	send_cmd(fd, NULL, "%c180W\rclear; printf '%s\\n'\r", CTL('g'), buf);
+	send_cmd(fd, "de4dbeef", "printf '%%68sde4d%%s' '' beef\\n\r");
 	rv |= validate_row(p, 1, "%-20s", "ijklmnopqrstuvwxyzab");
 
-	fdprintf(fd, "kill $SMTX\r");
+	send_cmd(fd, NULL, "kill $SMTX\r");
 	return rv;
 }
 
@@ -594,7 +574,7 @@ check_ps1(int fd, pid_t p)
 {
 	int s = 0;
 	s |= validate_row(p, 1, "%-80s", PROMPT);
-	fdprintf(fd, "kill $SMTX\r");
+	send_cmd(fd, NULL, "kill $SMTX\r");
 
 	return s;
 }
@@ -616,7 +596,7 @@ test1(int fd, pid_t p)
 		NULL
 	};
 	for( char **cmd = cmds; *cmd; cmd++ ) {
-		fdprintf(fd, "%s\r", *cmd);
+		send_cmd(fd, NULL, "%s\r", *cmd);
 	}
 	return 0;
 }
