@@ -459,7 +459,9 @@ test_reset(int fd, pid_t p)
 
 	for( unsigned long i = 0; i < sizeof k / sizeof *k; i++ ) {
 		int v = k[i];
-		fdprintf(fd, "printf '\\e[%dl'\rprintf '\\e[%dh'\r", v, v);
+		const char *fmt =  "printf '\\e[%d%c\r";
+		send_cmd(fd, NULL, fmt, v, 'l');
+		send_cmd(fd, NULL, fmt, v, 'h');
 	}
 	fdprintf(fd, "kill -TERM $SMTX\r");
 	return 0;
