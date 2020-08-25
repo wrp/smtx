@@ -607,7 +607,8 @@ test_swap(int fd, pid_t pid)
 	union param p = { .hup.flag = 5 };
 	send_cmd(fd, NULL, "cCjC");
 	send_txt(fd, "uniq02", "printf 'uniq%%s\\n' 02");
-	send_txt(fd, NULL, "printf 'str%%s\\n' ing; kill -HUP $SMTX");
+	/* Write string2 into lower left canvas */
+	send_txt(fd, NULL, "printf 'str%%s\\n' ing2; kill -HUP $SMTX");
 	write(p2c[1], &p, sizeof p);
 	read(c2p[0], desc, sizeof desc);
 	if( sscanf(desc, "11x40(id=%*d); *11x40(id=%d); "
@@ -616,9 +617,22 @@ test_swap(int fd, pid_t pid)
 		rv = 1;
 	}
 	rv |= validate_row(pid, 4, "%-40s", "");
-	send_cmd(fd, NULL, "k%ds", id);
-	send_txt(fd, "uniq02", "printf 'uniq%%s' 02");
-	rv |= validate_row(pid, 4, "%-40s", "string");
+	/* Move focus to upper left */
+	send_cmd(fd, NULL, "k");
+	send_txt(fd, "uniq01", "printf 'uniq%%s\\n' 01");
+	/* Write string1 to upper left canvas */
+	send_txt(fd, NULL, "printf 'string%%s\\n' 1");
+
+	/* Swap upper left and lower left */
+	send_cmd(fd, NULL, "%ds", id);
+	send_txt(fd, "uniq03", "printf 'uniq%%s\\n' 03");
+	rv |= validate_row(pid, 4, "%-40s", "string2");
+	rv |= validate_row(pid, 6, "%-40s", "uniq03");
+	send_cmd(fd, NULL, "s");
+
+	/* Swap back */
+	send_txt(fd, "uniq04", "printf 'uniq%%s' 04");
+	rv |= validate_row(pid, 4, "%-40s", "string1");
 	send_txt(fd, NULL, "kill -TERM %d", pid);
 	return rv;
 }
