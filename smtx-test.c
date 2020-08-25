@@ -738,6 +738,9 @@ check_ps1(int fd, pid_t p)
 	return s;
 }
 
+/* A bunch of mostly pointless tests for coverage.
+ * TODO: actually verify the results of these.
+ */
 static int
 test1(int fd, pid_t p)
 {
@@ -755,7 +758,7 @@ test1(int fd, pid_t p)
 		NULL
 	};
 	for( char **cmd = cmds; *cmd; cmd++ ) {
-		send_str(fd, NULL, "%s\r", *cmd);
+		send_txt(fd, NULL, "%s", *cmd);
 	}
 	return 0;
 }
