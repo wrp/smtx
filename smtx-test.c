@@ -459,7 +459,7 @@ static int
 test_navigate(int fd, pid_t p)
 {
 	int status = 0;
-	send_cmd(fd, NULL, "cjkhlCCjkh2slc");
+	send_cmd(fd, NULL, "cjkhlCCjkhlc");
 	send_txt(fd, "foobar", "printf 'foo%%s' bar");
 	status |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
 		"11x26@0,0",
