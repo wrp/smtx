@@ -150,6 +150,7 @@ extern void build_bindings(void);
 extern void draw(struct canvas *n);
 extern void scrollbottom(struct canvas *n);
 extern void show_err(const char *fmt, ...);
+extern int err_check(int, const char *, ...);
 
 extern action attach;
 extern action transition;
@@ -157,6 +158,7 @@ extern action create;
 extern action equalize;
 extern action mov;
 extern action new_tabstop;
+extern action quit;
 extern action reorient;
 extern action resize;
 extern action scrolln;

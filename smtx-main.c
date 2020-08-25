@@ -731,30 +731,6 @@ find_canvas(struct canvas *c, int id)
 }
 
 static void
-quit(const char *arg)
-{
-	struct canvas *n = S.f;
-	(void)arg;
-	pid_t p = n->p->pid;
-	int s = S.count;
-	switch( s ) {
-	case SIGUSR1 + 128: case SIGUSR2 + 128: case SIGTERM + 128:
-		p = getpid();
-		s -= 128; /* Fall thru */
-	case SIGKILL: case SIGTERM: case SIGUSR1: case SIGHUP:
-	case SIGUSR2: case SIGINT:
-		if( p != -1 ) {
-			err_check(kill(p, s) == -1, "kill %d, %d", p, s);
-		} else {
-			show_err("invalid process. No signal sent");
-		}
-		break;
-	default:
-		show_err("invalid signal: %d", s);
-	}
-}
-
-static void
 swap(const char *arg)
 {
 	struct canvas *n = S.f;
