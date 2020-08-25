@@ -757,6 +757,13 @@ new_test(char *name, test *f, struct st **h, ...)
 	va_end(ap);
 }
 
+static int
+match_name(const char *a, const char *b)
+{
+	const char *under = strchr(a, '_');
+	return strcmp(a, b) && (!under || strcmp(under + 1, b));
+}
+
 #define F(x, ...) new_test(#x, x, &tab, ##__VA_ARGS__, NULL)
 int
 main(int argc, char *const argv[])
@@ -793,14 +800,14 @@ main(int argc, char *const argv[])
 	for( v = tab; v && ( argc < 2 || *++argv ); v = v ? v->next : NULL ) {
 		const char *name = *argv;
 		if( argc > 1 ) {
-			for( v = tab; v && strcmp(v->name, name); )
+			for( v = tab; v && match_name(v->name, name); )
 				v = v->next;
 		}
+		total_count += 1;
 		if( v && v->f ) {
 			int (*f)(struct st *, const char *);
 			f = strcmp(v->name, argv0) ? spawn_test : execute_test;
 			fail_count += f(v, argv0);
-			total_count += 1;
 		} else {
 			fprintf(stderr, "unknown function: %s\n", name);
 			fail_count += 1;
