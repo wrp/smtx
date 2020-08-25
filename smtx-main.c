@@ -99,7 +99,7 @@ getshell(void)
 	return s ? s : pwd ? pwd->pw_shell : "/bin/sh";
 }
 
-static void
+void
 pty_size(struct pty *p)
 {
 	if( p->fd != -1 && ioctl(p->fd, TIOCGWINSZ, &p->ws) ) {
@@ -107,7 +107,7 @@ pty_size(struct pty *p)
 	}
 }
 
-static void
+void
 extend_tabs(struct pty *p, int tabstop)
 {
 	int w = p->ws.ws_col;
@@ -714,16 +714,6 @@ add_key(struct handler *b, wchar_t k, action act, const char *arg)
 	}
 	b[k].act = act;
 	b[k].arg = arg;
-}
-
-void
-new_tabstop(const char *arg)
-{
-	struct canvas *n = S.f;
-	int c = arg ? strtol(arg, NULL, 10) : S.count > -1 ? S.count : 8;
-	n->p->ntabs = 0;
-	pty_size(n->p); /* Update n->p->ws */
-	extend_tabs(n->p, n->p->tabstop = c);
 }
 
 void

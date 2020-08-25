@@ -59,6 +59,16 @@ find_canvas(struct canvas *c, int id)
 }
 
 void
+new_tabstop(const char *arg)
+{
+	struct canvas *n = S.f;
+	int c = arg ? strtol(arg, NULL, 10) : S.count > -1 ? S.count : 8;
+	n->p->ntabs = 0;
+	pty_size(n->p); /* Update n->p->ws */
+	extend_tabs(n->p, n->p->tabstop = c);
+}
+
+void
 quit(const char *arg)
 {
 	struct canvas *n = S.f;
