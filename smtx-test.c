@@ -212,7 +212,7 @@ test_attach(int fd, pid_t pid)
 	union param p = { .hup.flag = 5 };
 	int status = 0;
 	send_cmd(fd, NULL, "cc3a");
-	send_str(fd, NULL, "kill -HUP $SMTX\r");
+	send_txt(fd, NULL, "kill -HUP $SMTX");
 	write(p2c[1], &p, sizeof p);
 	read(c2p[0], desc, sizeof desc);
 	if( sscanf(desc, "*7x80(id=%*d); 7x80(id=%d);", &id) != 1 ) {
@@ -221,7 +221,7 @@ test_attach(int fd, pid_t pid)
 	} else {
 		send_cmd(fd, NULL, "%da", id);
 	}
-	send_str(fd, NULL, "kill -TERM %d\r", pid);
+	send_txt(fd, NULL, "kill -TERM %d", pid);
 	return status;
 }
 
