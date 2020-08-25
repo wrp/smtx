@@ -516,6 +516,25 @@ test_pager(int fd, pid_t p)
 }
 
 static int
+test_quit(int fd, pid_t p)
+{
+	(void) p;
+	send_cmd(fd, NULL, "%dq", SIGBUS); /* Invalid signal */
+	send_cmd(fd, "exited", "c\rexit"); /* (2) */
+	send_cmd(fd, NULL, "%dq", SIGTERM);  /* Invalid window */
+	send_cmd(fd, NULL, "j");
+	send_txt(fd, PROMPT, "trap \"printf 'uniq%%s' 01\" HUP");
+	send_cmd(fd, "uniq01", "%dq\r", SIGHUP);  /* (1) */
+	send_cmd(fd, NULL, "%dq", SIGTERM + 128);  /* Terminate SMTX */
+	return 0;
+}
+/*
+(1) The extra return seems necessary, as the shell on debian is not
+    firing the trap until the newline is processed
+(2) The string "exited" is expected to appear in the title line
+*/
+
+static int
 test_reset(int fd, pid_t p)
 {
 	int k[] = { 1, 3, 4, 6, 7, 20, 25, 34, 1048, 1049, 47, 1047 };
@@ -763,6 +782,7 @@ main(int argc, char *const argv[])
 	F(test_navigate);
 	F(test_nel, "TERM", "smtx");
 	F(test_pager);
+	F(test_quit);
 	F(test_reset);
 	F(test_resize);
 	F(test_row);
@@ -844,7 +864,6 @@ spawn_test(struct st *v, const char *argv0)
 		}
 		_exit(exit_status(status));
 	}
-
 	waitpid(pid[0], &status, 0);
 	return exit_status(status);
 }

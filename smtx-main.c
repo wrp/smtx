@@ -63,6 +63,20 @@ show_err(const char *fmt, ...)
 }
 
 int
+err_check(int rv, const char *fmt, ...)
+{
+	if( rv ) {
+		int e = errno;
+		va_list ap;
+		va_start(ap, fmt);
+		( S.werr ? set_errmsg : print_errmsg )(fmt, ap, e);
+		va_end(ap);
+		errno = e;
+	}
+	return rv;
+}
+
+int
 rewrite(int fd, const char *b, size_t n)
 {
 	const char *e = b + n;
@@ -726,12 +740,17 @@ quit(const char *arg)
 	switch( s ) {
 	case SIGUSR1 + 128: case SIGUSR2 + 128: case SIGTERM + 128:
 		p = getpid();
-		s = S.count - 128; /* Fall thru */
+		s -= 128; /* Fall thru */
 	case SIGKILL: case SIGTERM: case SIGUSR1: case SIGHUP:
 	case SIGUSR2: case SIGINT:
-		if( p != -1 && kill(p, s) == -1) {
-			show_err("kill %d, %d", p, s);
+		if( p != -1 ) {
+			err_check(kill(p, s) == -1, "kill %d, %d", p, s);
+		} else {
+			show_err("invalid process. No signal sent");
 		}
+		break;
+	default:
+		show_err("invalid signal: %d", s);
 	}
 }
 
