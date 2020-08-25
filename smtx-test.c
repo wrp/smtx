@@ -658,6 +658,27 @@ test_swap(int fd, pid_t pid)
 }
 
 static int
+test_tabstop(int fd, pid_t p)
+{
+	int rv = 0;
+	const char *cmd = "printf 'this\\tis\\ta\\ttest\\n'";
+	send_txt(fd, "this", "%s", cmd);
+	rv |= validate_row(p, 2, "%-80s", "this    is      a       test");
+
+	send_cmd(fd, NULL, "3t");
+	send_txt(fd, "this  is a  test", "%s", cmd);
+	rv |= validate_row(p, 4, "%-80s", "this  is a  test");
+
+	send_cmd(fd, NULL, "t");
+	rv |= validate_row(p, 6, "%-80s", "");
+	send_txt(fd, "this", "%s", cmd);
+	rv |= validate_row(p, 6, "%-80s", "this    is      a       test");
+
+	send_txt(fd, NULL, "kill -TERM %d", p);
+	return rv;
+}
+
+static int
 test_vis(int fd, pid_t p)
 {
 	int rv = 0;
@@ -857,6 +878,7 @@ main(int argc, char *const argv[])
 	F(test_row);
 	F(test_scrollback);
 	F(test_swap);
+	F(test_tabstop);
 	F(test_vis);
 	F(test_vpa);
 	F(test_width);
