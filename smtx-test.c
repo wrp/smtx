@@ -603,7 +603,7 @@ static int
 test_swap(int fd, pid_t pid)
 {
 	int rv = 0;
-	int id;
+	int id[3];
 	char desc[1024];
 	union param p = { .hup.flag = 5 };
 	send_cmd(fd, NULL, "cCjC");
@@ -613,27 +613,46 @@ test_swap(int fd, pid_t pid)
 	write(p2c[1], &p, sizeof p);
 	read(c2p[0], desc, sizeof desc);
 	if( sscanf(desc, "11x40(id=%*d); *11x40(id=%d); "
-			"11x39(id=%*d); 11x39(id=%*d)", &id) != 1 ) {
+			"11x39(id=%*d); 11x39(id=%d)", id, id + 1) != 2 ) {
 		fprintf(stderr, "received unexpected: '%s'\n", desc);
 		rv = 1;
 	}
 	rv |= validate_row(pid, 4, "%-40s", "");
-	/* Move focus to upper left */
-	send_cmd(fd, NULL, "k");
+	send_cmd(fd, NULL, "k"); /* Move to upper left */
 	send_txt(fd, "uniq01", "printf 'uniq%%s\\n' 01");
-	/* Write string1 to upper left canvas */
 	send_txt(fd, NULL, "printf 'string%%s\\n' 1");
 
-	/* Swap upper left and lower left */
-	send_cmd(fd, NULL, "%ds", id);
+	send_cmd(fd, NULL, "1024s");   /* Invalid swap */
+	send_cmd(fd, NULL, "%ds", id[0]); /* Swap upper left and lower left */
 	send_txt(fd, "uniq03", "printf 'uniq%%s\\n' 03");
 	rv |= validate_row(pid, 4, "%-40s", "string2");
 	rv |= validate_row(pid, 6, "%-40s", "uniq03");
-	send_cmd(fd, NULL, "s");
 
 	/* Swap back */
-	send_txt(fd, "uniq04", "printf 'uniq%%s' 04");
+	send_cmd(fd, NULL, "s");
+	send_txt(fd, "uniq04", "printf 'uniq%%s\\n' 04");
 	rv |= validate_row(pid, 4, "%-40s", "string1");
+	rv |= validate_row(pid, 6, "%-40s", "uniq04");
+
+	send_cmd(fd, NULL, "jl");
+	send_txt(fd, "uniq05", "printf '\\nuniq%%s\\n' 05");
+	send_cmd(fd, NULL, "kh");
+	send_txt(fd, "uniq06", "printf 'uniq%%s\\n' 06");
+	rv |= validate_row(pid, 4, "%-40s", "string1");
+	send_cmd(fd, NULL, "%ds", id[1]); /* Swap upper left and lower rt */
+	send_txt(fd, NULL, "printf 'uniq%%s\\n' 07; kill -HUP $SMTX");
+	write(p2c[1], &p, sizeof p);
+	read(c2p[0], desc, sizeof desc);
+
+	if( sscanf(desc, "*11x40(id=%d); 11x40(id=%*d); "
+			"11x39(id=%*d); 11x39(id=%*d)", id + 2) != 1 ) {
+		fprintf(stderr, "received unexpected: '%s'\n", desc);
+		rv = 1;
+	}
+	if( id[2] != id[1] ) {
+		fprintf(stderr, "unexpected id in first window: %s\n", desc);
+		rv = 1;
+	}
 	send_txt(fd, NULL, "kill -TERM %d", pid);
 	return rv;
 }
