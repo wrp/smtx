@@ -468,7 +468,8 @@ test_navigate(int fd, pid_t p)
 		"5x26@6,27",
 		"11x26@0,54"
 	);
-	send_cmd(fd, "foobaz", "cccccccchhk\rprintf 'foo%%s' baz");
+	send_cmd(fd, NULL, "cccccccchhk");
+	send_txt(fd, "foobaz", "printf 'foo%%s' baz");
 	status |= check_layout(p, 0x11, "%s; %s; %s",
 		"*11x26@0,0; 11x80@12,0; 0x26@0,27",
 		"0x26@1,27; 0x26@2,27; 0x26@3,27; 0x26@4,27; 0x26@5,27",
