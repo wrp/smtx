@@ -44,6 +44,20 @@ equalize(const char *arg)
 	S.reshape = 1;
 }
 
+static struct canvas *
+find_canvas(struct canvas *c, int id)
+{
+	struct canvas *r = NULL;
+	if( c ) {
+		if( c->p->id == id ) {
+			r = c;
+		} else if( (r = find_canvas( c->c[0], id)) == NULL ) {
+			r = find_canvas( c->c[1], id);
+		}
+	}
+	return r;
+}
+
 void
 quit(const char *arg)
 {
@@ -140,6 +154,29 @@ send(const char *arg)
 		}
 		rewrite(n->p->fd, arg, strlen(arg));
 		scrollbottom(n);
+	}
+}
+
+void
+swap(const char *arg)
+{
+	struct canvas *n = S.f;
+	struct canvas *t;
+	(void) arg;
+	if( S.count == -1 ) {
+		t = n->c[n->typ];
+		t = t ? t : n->c[!n->typ];
+		t = t ? t : n->parent;
+	} else {
+		t = find_canvas(S.c, S.count);
+	}
+	if( t ) {
+		struct pty *tmp = n->p;
+		n->p = t->p;
+		t->p = tmp;
+		S.reshape = 1;
+	} else {
+		show_err("Cannot find target");
 	}
 }
 

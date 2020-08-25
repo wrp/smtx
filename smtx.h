@@ -164,3 +164,4 @@ extern action resize;
 extern action scrolln;
 extern action scrollh;
 extern action send;
+extern action swap;
