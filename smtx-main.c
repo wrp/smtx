@@ -738,6 +738,8 @@ swap(const char *arg)
 	(void) arg;
 	if( S.count == -1 ) {
 		t = n->c[n->typ];
+		t = t ? t : n->c[!n->typ];
+		t = t ? t : n->parent;
 	} else {
 		t = find_canvas(S.c, S.count);
 	}
