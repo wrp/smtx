@@ -120,9 +120,7 @@ extend_tabs(struct pty *p, int tabstop)
 static void
 delwinnul(WINDOW **w)
 {
-	if( (*w ? delwin(*w) : OK) != OK ) {
-		show_err("Error deleting window");
-	}
+	err_check((*w ? delwin(*w) : OK) != OK, "Error deleting window");
 	*w = NULL;
 }
 
