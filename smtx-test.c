@@ -561,6 +561,7 @@ test_resize_pty(int fd, pid_t p)
 {
 	struct winsize ws = { .ws_row = 60, .ws_col = 80 };
 	char buf[1024];
+	(void)p;
 	ssize_t s;
 
 	send_cmd(fd, NULL, "%dq", SIGUSR2 + 128);
