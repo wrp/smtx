@@ -147,10 +147,7 @@ void
 resize_pad(WINDOW **p, int h, int w)
 {
 	if( *p ) {
-		if( wresize(*p, h, w ) != OK ) {
-			show_err("Error resizing window");
-			delwinnul(p);
-		}
+		err_check(wresize(*p, h, w ) != OK, "Error resizing window");
 	} else if( (*p = newpad(h, w)) != NULL ) {
 		nodelay(*p, TRUE);
 	}
