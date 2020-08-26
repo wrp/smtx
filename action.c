@@ -167,7 +167,7 @@ send(const char *arg)
 	}
 }
 
-static void
+void
 set_width(const char *arg)
 {
 	struct canvas *n = S.f;

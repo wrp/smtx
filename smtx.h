@@ -153,6 +153,8 @@ extern void show_err(const char *fmt, ...);
 extern int err_check(int, const char *, ...);
 extern void extend_tabs(struct pty *p, int tabstop);
 extern void pty_size(struct pty *p);
+extern void resize_pad(WINDOW **, int, int);
+extern void reshape_window(struct pty *);
 
 extern action attach;
 extern action transition;

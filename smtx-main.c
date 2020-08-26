@@ -147,7 +147,7 @@ free_proc(struct pty **pv)
 	}
 }
 
-static void
+void
 resize_pad(WINDOW **p, int h, int w)
 {
 	if( *p ) {
@@ -313,7 +313,7 @@ getterm(void)
 	return t ? t : COLORS > 255 ? DEFAULT_COLOR_TERMINAL : DEFAULT_TERMINAL;
 }
 
-static void
+void
 reshape_window(struct pty *p)
 {
 	if( ioctl(p->fd, TIOCSWINSZ, &p->ws) ) {
