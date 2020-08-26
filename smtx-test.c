@@ -570,6 +570,7 @@ test_resize_pty(int fd, pid_t p)
 	if( ioctl(fd, TIOCSWINSZ, &ws) ) {
 		err(EXIT_FAILURE, "ioctl");
 	}
+	send_cmd(fd, NULL, "%dq", SIGWINCH + 128);
 	send_cmd(fd, NULL, "%dq", SIGUSR2 + 128);
 	s = read(c2p[0], buf, sizeof buf - 1);
 	buf[s] = '\0';

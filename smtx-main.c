@@ -156,9 +156,12 @@ resize_pad(WINDOW **p, int h, int w)
 static int
 new_screens(struct pty *p)
 {
-	assert( S.history >= LINES );
-	int rows = S.history;
-	int cols = MAX(COLS, S.width);
+	int rows, cols;
+
+	getmaxyx(stdscr, rows, cols);
+	rows = MAX(rows, S.history);
+	cols = MAX(cols, S.width);
+
 	resize_pad(&p->pri.win, rows, cols);
 	resize_pad(&p->alt.win, rows, cols);
 	if( ! p->pri.win || !p->alt.win ) {
@@ -212,9 +215,11 @@ struct canvas *
 newcanvas(void)
 {
 	struct canvas *n = calloc(1, sizeof *n);
+	int y, x;
+	getmaxyx(stdscr, y, x);
 	if( !n ) {
 		show_err("calloc");
-	} else if( ( n->p = new_pty(LINES, MAX(COLS, S.width))) == NULL ) {
+	} else if( ( n->p = new_pty(y, MAX(x, S.width))) == NULL ) {
 		free(n);
 		n = NULL;
 	} else {
@@ -393,14 +398,16 @@ void
 reshape_root(const char *arg)
 {
 	(void)arg;
-	if( LINES > S.history ) {
-		S.history = LINES;
+	int y, x;
+	getmaxyx(stdscr, y, x);
+	if( y > S.history ) {
+		S.history = y;
 	}
 	for( struct pty *p = S.p; p; p = p->next ) {
 		p->ws.ws_row = 0;
 	}
-	resize_pad(&S.werr, 1, COLS);
-	reshape(S.c, 0, 0, LINES, COLS);
+	resize_pad(&S.werr, 1, x);
+	reshape(S.c, 0, 0, y, x);
 	S.reshape = 0;
 }
 
@@ -800,8 +807,9 @@ main_loop(void)
 		}
 		draw(S.v);
 		if( winpos(S.werr, 1) ) {
-			int y = LINES - 1;
-			pnoutrefresh(S.werr, 0, 0, y, 0, y, COLS);
+			int y, x;
+			getmaxyx(stdscr, y, x);
+			pnoutrefresh(S.werr, 0, 0, y - 1, 0, y - 1, x);
 		}
 		fixcursor();
 		doupdate();
@@ -865,6 +873,7 @@ init(void)
 {
 	char buf[16];
 	struct sigaction sa;
+	int y, x;
 	memset(&sa, 0, sizeof sa);
 	sa.sa_flags = 0;
 	sigemptyset(&sa.sa_mask);
@@ -881,7 +890,8 @@ init(void)
 	if( initscr() == NULL ) {
 		exit(EXIT_FAILURE);
 	}
-	S.history = MAX(LINES, S.history);
+	getmaxyx(stdscr, y, x);
+	S.history = MAX(y, S.history);
 	atexit(endwin_wrap);
 	raw();
 	noecho();
@@ -890,7 +900,7 @@ init(void)
 	intrflush(NULL, FALSE);
 	start_color();
 	use_default_colors();
-	resize_pad(&S.werr, 1, COLS);
+	resize_pad(&S.werr, 1, x);
 	if( S.werr == NULL ) {
 		errx(EXIT_FAILURE, "Unable to create error window");
 	}
