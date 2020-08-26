@@ -156,7 +156,7 @@ send(const char *arg)
 	if( n->p && n->p->fd > 0 && arg ) {
 		if( n->p->lnm ) {
 			const char *s;
-			while( strchr(s = arg, '\r') ) {
+			while( (s = strchr(arg, '\r')) != NULL ) {
 				rewrite(n->p->fd, arg, s - arg);
 				rewrite(n->p->fd, "\n", 1);
 				arg = s + 1;
