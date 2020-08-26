@@ -101,9 +101,8 @@ getshell(void)
 void
 pty_size(struct pty *p)
 {
-	if( p->fd != -1 && ioctl(p->fd, TIOCGWINSZ, &p->ws) ) {
-		show_err("ioctl error getting size of pty %d", p->id);
-	}
+	err_check(p->fd != -1 && ioctl(p->fd, TIOCGWINSZ, &p->ws),
+		"ioctl error getting size of pty %d", p->id);
 }
 
 void
