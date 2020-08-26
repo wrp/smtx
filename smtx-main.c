@@ -881,6 +881,7 @@ init(void)
 	if( initscr() == NULL ) {
 		exit(EXIT_FAILURE);
 	}
+	S.history = MAX(LINES, S.history);
 	atexit(endwin_wrap);
 	raw();
 	noecho();
@@ -946,7 +947,6 @@ int
 smtx_main(int argc, char *argv[])
 {
 	parse_args(argc, argv);
-	S.history = MAX(LINES, S.history);
 	init();
 	main_loop();
 	return EXIT_SUCCESS;
