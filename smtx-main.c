@@ -80,15 +80,14 @@ int
 rewrite(int fd, const char *b, size_t n)
 {
 	const char *e = b + n;
-	while( b < e ) {
-		ssize_t s = write(fd, b, e - b);
-		if( s < 0 && errno != EINTR ) {
-			show_err("write to fd %d", fd);
-			return -1;
-		}
+	ssize_t s = 0;
+	int rv;
+	if( n > 0 ) do {
+		s = write(fd, b, e - b);
+		rv = err_check(s < 0 && errno != EINTR, "write to fd %d", fd);
 		b += s < 0 ? 0 : s;
-	}
-	return 0;
+	} while( b < e && rv == 0 );
+	return rv;
 }
 
 static const char *
