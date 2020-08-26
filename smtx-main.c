@@ -784,7 +784,7 @@ handlechar(int r, int k) /* Handle a single input character. */
 	}
 	if( b && b->act ) {
 		b->act(b->arg);
-		if( b->act != digit && S.binding != &keys ) { /* (1) */
+		if( b->act != digit ) {
 			S.count = -1;
 		}
 	} else if( S.mode == passthru && n->p && n->p->fd > 0 ) {
@@ -795,10 +795,6 @@ handlechar(int r, int k) /* Handle a single input character. */
 		}
 	}
 }
-/* (1) We do not reset the cmd count when transitioning back to
- * insert mode so that we can use the count in the test suite.
- * This is a terrible hack
- */
 
 static void handle_term(int s) { (void) s; exit(0); }
 
