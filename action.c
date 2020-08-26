@@ -167,6 +167,26 @@ send(const char *arg)
 	}
 }
 
+static void
+set_width(const char *arg)
+{
+	struct canvas *n = S.f;
+	struct pty *p = n->p;
+	assert( S.history >= n->extent.y );
+	int h = S.history;
+	int w = arg ? strtol(arg, NULL, 10) : S.count;
+	if( w == -1 ) {
+		w = n->extent.x;
+	}
+	if( p->fd > 0 && (pty_size(p), w != p->ws.ws_col) ) {
+		p->ws.ws_col = w;
+		resize_pad(&p->pri.win, h, w);
+		resize_pad(&p->alt.win, h, w);
+		extend_tabs(p, p->tabstop);
+		reshape_window(p);
+	}
+}
+
 void
 swap(const char *arg)
 {
