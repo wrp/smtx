@@ -959,6 +959,14 @@ describe_layout(char *d, ptrdiff_t siz, unsigned flags)
 }
 
 unsigned
+describe_state(char *desc, size_t siz)
+{
+	unsigned len = 0;
+	len += snprintf(desc, siz, "history=%d\n", S.history);
+	return len;
+}
+
+unsigned
 describe_row(char *desc, size_t siz, int row)
 {
 	const struct canvas *c = S.c;

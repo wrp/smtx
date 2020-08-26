@@ -551,6 +551,34 @@ test_resize(int fd, pid_t p)
 	return status;
 }
 
+/* Test is called with -s 10 to trigger minimal history.
+ * The main program sets the history to the screen size,
+ * and this test resizes the screen to be larger to test
+ * increase of history.
+ */
+static int
+test_resize_pty(int fd, pid_t p)
+{
+	struct winsize ws = { .ws_row = 60, .ws_col = 80 };
+	char buf[1024];
+	ssize_t s;
+
+	send_cmd(fd, NULL, "%dq", SIGUSR2 + 128);
+	s = read(c2p[0], buf, sizeof buf - 1);
+	buf[s] = '\0';
+	fprintf(stderr, "%s", buf);
+	if( ioctl(fd, TIOCSWINSZ, &ws) ) {
+		err(EXIT_FAILURE, "ioctl");
+	}
+	send_cmd(fd, NULL, "%dq", SIGUSR2 + 128);
+	s = read(c2p[0], buf, sizeof buf - 1);
+	buf[s] = '\0';
+	fprintf(stderr, "%s", buf);
+
+	send_cmd(fd, NULL, "143q"); /* Send SIGTERM */
+	return 0;
+}
+
 static int
 test_row(int fd, pid_t p)
 {
@@ -815,6 +843,10 @@ handler(int s)
 	case SIGUSR1:
 		read(p2c[0], &p.usr1, sizeof p.usr1);
 		len = describe_row(buf, sizeof buf, p.usr1.row - 1);
+		break;
+	case SIGUSR2:
+		len = describe_state(buf, sizeof buf);
+		break;
 	}
 	if( len > 0 ) {
 		write(c2p[1], buf, len);
@@ -915,6 +947,7 @@ main(int argc, char *const argv[])
 	F(test_quit);
 	F(test_reset);
 	F(test_resize);
+	F(test_resize_pty, "args", "-s", "10");
 	F(test_row);
 	F(test_scrollback);
 	F(test_swap);
@@ -1042,6 +1075,7 @@ execute_test(struct st *v, const char *name)
 		sa.sa_handler = handler;
 		sigaction(SIGHUP, &sa, NULL);
 		sigaction(SIGUSR1, &sa, NULL);
+		sigaction(SIGUSR2, &sa, NULL);
 		if( close(c2p[0]) || close(p2c[1]) ) {
 			err(EXIT_FAILURE, "close");
 		}
