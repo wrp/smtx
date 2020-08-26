@@ -7,3 +7,4 @@ echo '{ tput cub 10; tput ich 10; exit; }' | ./smtx || exit
 echo '{ tput cbt 10; exit; }' | ./smtx || exit
 
 ./smtx -v || exit
+./smtx -h | grep -q usage: || exit
