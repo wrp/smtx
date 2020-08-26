@@ -314,12 +314,8 @@ getterm(void)
 void
 reshape_window(struct pty *p)
 {
-	if( ioctl(p->fd, TIOCSWINSZ, &p->ws) ) {
-		show_err("error changing width of %d", p->id);
-	}
-	if( kill(p->pid, SIGWINCH) ) {
-		show_err("kill %d", (int)p->pid);
-	}
+	err_check(ioctl(p->fd, TIOCSWINSZ, &p->ws), "ioctl on %d", p->id);
+	err_check(kill(p->pid, SIGWINCH), "send WINCH to %d", (int)p->pid);
 }
 
 static void
