@@ -833,28 +833,39 @@ xrealloc(void *buf, size_t num, size_t siz)
 }
 
 typedef int test(int, pid_t);
-struct st { char *name; test *f; const char **env; struct st *next; };
+struct st {
+	char *name;
+	test *f;
+	int envc;
+	const char **env;
+	int argc;
+	const char **argv;
+	struct st *next;
+};
 static int execute_test(struct st *, const char *);
 static int spawn_test(struct st *v, const char *argv0);
 static void
 new_test(char *name, test *f, struct st **h, ...)
 {
-	char *env;
-	int env_count = 0;
+	char *arg;
 	struct st *tmp = *h;
 	struct st *a = *h = xrealloc(NULL, 1, sizeof *a);
 	a->next = tmp;
 	a->name = name;
 	a->f = f;
+	a->envc = 0;
+	a->argc = 0;
 	a->env = xrealloc(a->env, 1, sizeof *a->env);
+	a->argv = xrealloc(a->argv, 1, sizeof *a->argv);
 	va_list ap;
 	va_start(ap, h);
-	while( (env = va_arg(ap, char *)) != NULL ) {
-		a->env = xrealloc(a->env, env_count + 2, sizeof *a->env);
-		a->env[env_count++] = env;
+	while( (arg = va_arg(ap, char *)) != NULL ) {
+		a->env = xrealloc(a->env, a->envc + 2, sizeof *a->env);
+		a->env[a->envc++] = arg;
 	}
-	a->env[env_count] = NULL;
 	va_end(ap);
+	a->env[a->envc] = NULL;
+	a->argv[a->argc] = NULL;
 }
 
 static int
