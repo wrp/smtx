@@ -958,7 +958,7 @@ layout_r(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 
 /* Functions exposed to test suite */
 int
-smtx_main(int argc, char *const argv[])
+smtx_main(int argc, char *argv[])
 {
 	parse_args(argc, argv);
 	S.history = MAX(LINES, S.history);

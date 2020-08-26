@@ -837,9 +837,9 @@ struct st {
 	char *name;
 	test *f;
 	int envc;
-	const char **env;
+	char ** env;
 	int argc;
-	const char **argv;
+	char ** argv;
 	struct st *next;
 };
 static int execute_test(struct st *, const char *);
@@ -852,15 +852,16 @@ new_test(char *name, test *f, struct st **h, ...)
 	struct st *a = *h = xrealloc(NULL, 1, sizeof *a);
 	struct {
 		int *c;
-		const char ***v;
+		char ***v;
 	} cv;
 	a->next = tmp;
 	a->name = name;
 	a->f = f;
 	a->envc = 0;
-	a->argc = 0;
-	a->env = xrealloc(a->env, 1, sizeof *a->env);
-	a->argv = xrealloc(a->argv, 1, sizeof *a->argv);
+	a->argc = 1;
+	a->env = xrealloc(NULL, 1, sizeof *a->env);
+	a->argv = xrealloc(NULL, 2, sizeof *a->argv);
+	a->argv[0] = "smtx";
 	cv.c = &a->envc;
 	cv.v = &a->env;
 	va_list ap;
@@ -1002,7 +1003,6 @@ spawn_test(struct st *v, const char *argv0)
 static int
 execute_test(struct st *v, const char *name)
 {
-	char *const args[] = { "smtx", NULL };
 	int fd[2]; /* primary/secondary fd of pty */
 	int status;
 	int rv = 1;
@@ -1014,7 +1014,7 @@ execute_test(struct st *v, const char *name)
 	setenv("PS1", PROMPT, 1);
 	setenv("LINES", "24", 1);
 	setenv("COLUMNS", "80", 1);
-	for( const char **a = v->env; a && *a; a += 2 ) {
+	for( char **a = v->env; a && *a; a += 2 ) {
 		setenv(a[0], a[1], 1);
 	}
 	if( pipe(c2p) || pipe(p2c) ) {
@@ -1045,7 +1045,7 @@ execute_test(struct st *v, const char *name)
 		if( close(c2p[0]) || close(p2c[1]) ) {
 			err(EXIT_FAILURE, "close");
 		}
-		exit(smtx_main(1, args));
+		exit(smtx_main(v->argc, v->argv));
 	default:
 		if( close(fd[1]) ) {
 			err(EXIT_FAILURE, "close secondary");

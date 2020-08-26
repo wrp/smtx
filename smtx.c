@@ -1,7 +1,7 @@
 #include "smtx.h"
 
 int
-main(int argc, char *const*argv)
+main(int argc, char **argv)
 {
 	unsetenv("LINES");
 	unsetenv("COLUMNS");
