@@ -713,7 +713,7 @@ test_width(int fd, pid_t p)
 {
 	int rv = 0;
 	char buf[161];
-	send_str(fd, "uniq01", "%ccCCCj\rprintf 'uniq%%s' 01\r", CTL('g'));
+	send_cmd(fd, "uniq01", "cCCCj\rprintf 'uniq%%s' 01");
 	rv |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
 		"11x20@0,0",
 		"*11x80@12,0",
@@ -729,21 +729,38 @@ test_width(int fd, pid_t p)
 	send_str(fd, "uniq02", "done\r");
 	rv |= validate_row(p, 3, "%-20s", "11234567892123456789");
 
-	send_str(fd, "dedef", "%c15>\rprintf '%%20sded%%s' '' ef\r", CTL('g'));
+	/* Shift right 15 chars */
+	send_cmd(fd, "dedef", "15>\rprintf '%%20sded%%s' '' ef");
 	rv |= validate_row(p, 3, "%-20s", "56789312345678941234");
 
 	for( unsigned i = 0; i < sizeof buf - 1; i++ ) {
 		buf[i] = 'a' + i % 26;
 	}
 	buf[sizeof buf - 1] = '\0';
-	send_str(fd, NULL, "clear; printf '%s\\n'\r%c75>\r", buf, CTL('g'));
-	send_str(fd, "de3dbeef", "printf '%%68sde3d%%s' '' beef\\n\r");
+	/* Clear screen, print 2 rows (160 chars) of alphabet */
+	send_str(fd, NULL, "clear; printf '%s\\n'\r", buf);
+	/* Shift right 75 chars ( now looking at last 20 chars of pty)*/
+	send_cmd(fd, NULL, "75>");
+	/* Print 60 blanks then a string to sync*/
+	send_txt(fd, "de3dbeef", "printf '%%60sde3d%%s' '' beef\\n");
+	/* Verify that the 160 chars of repeated alphabet is at end of rows */
 	rv |= validate_row(p, 1, "%-20s", "ijklmnopqrstuvwxyzab");
 	rv |= validate_row(p, 2, "%-20s", "klmnopqrstuvwxyzabcd");
 
-	send_str(fd, NULL, "%c180W\rclear; printf '%s\\n'\r", CTL('g'), buf);
-	send_str(fd, "de4dbeef", "printf '%%68sde4d%%s' '' beef\\n\r");
+	/* Change width of underlying pty to 180 */
+	send_cmd(fd, NULL, "180W\rclear; printf '%s\\n'", buf);
+	send_txt(fd, "de4dbeef", "printf '%%68sde4d%%s' '' beef\\n");
 	rv |= validate_row(p, 1, "%-20s", "ijklmnopqrstuvwxyzab");
+	send_cmd(fd, NULL, "1>");
+	send_txt(fd, "de5dbeef", "printf '%%68sde5d%%s' '' beef\\n");
+	rv |= validate_row(p, 1, "%-20s", "jklmnopqrstuvwxyzabc");
+
+	/* Change width of underlying pty to match canvas and scroll to start */
+	send_cmd(fd, NULL, "W180<");
+	send_txt(fd, NULL, "clear; printf '%s\\n'", buf);
+	send_txt(fd, "de6dbeef", "printf '%%sde6d%%s' '' beef\\n");
+	rv |= validate_row(p, 1, "%-20s", "abcdefghijklmnopqrst");
+	rv |= validate_row(p, 2, "%-20s", "uvwxyzabcdefghijklmn");
 
 	send_str(fd, NULL, "kill $SMTX\r");
 	return rv;
