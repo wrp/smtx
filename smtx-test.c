@@ -1046,15 +1046,16 @@ execute_test(struct st *v, const char *name)
 	unsetenv("ENV");  /* Suppress all shell initializtion */
 	setenv("SHELL", "/bin/sh", 1);
 	setenv("PS1", PROMPT, 1);
-	setenv("LINES", "24", 1);
-	setenv("COLUMNS", "80", 1);
+	unsetenv("LINES");
+	unsetenv("COLUMNS");
+	struct winsize ws = { .ws_row = 24, .ws_col = 80 };
 	for( char **a = v->env; a && *a; a += 2 ) {
 		setenv(a[0], a[1], 1);
 	}
 	if( pipe(c2p) || pipe(p2c) ) {
 		err(EXIT_FAILURE, "pipe");
 	}
-	if( openpty(fd, fd + 1, NULL, NULL, NULL) ) {
+	if( openpty(fd, fd + 1, NULL, NULL, &ws) ) {
 		err(EXIT_FAILURE, "openpty");
 	}
 	switch( pid = fork() ) {
