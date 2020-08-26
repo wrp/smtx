@@ -81,7 +81,7 @@ rewrite(int fd, const char *b, size_t n)
 {
 	const char *e = b + n;
 	ssize_t s = 0;
-	int rv;
+	int rv = 0;
 	if( n > 0 ) do {
 		s = write(fd, b, e - b);
 		rv = err_check(s < 0 && errno != EINTR, "write to fd %d", fd);
