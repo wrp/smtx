@@ -850,6 +850,10 @@ new_test(char *name, test *f, struct st **h, ...)
 	char *arg;
 	struct st *tmp = *h;
 	struct st *a = *h = xrealloc(NULL, 1, sizeof *a);
+	struct {
+		int *c;
+		const char ***v;
+	} cv;
 	a->next = tmp;
 	a->name = name;
 	a->f = f;
@@ -857,11 +861,18 @@ new_test(char *name, test *f, struct st **h, ...)
 	a->argc = 0;
 	a->env = xrealloc(a->env, 1, sizeof *a->env);
 	a->argv = xrealloc(a->argv, 1, sizeof *a->argv);
+	cv.c = &a->envc;
+	cv.v = &a->env;
 	va_list ap;
 	va_start(ap, h);
 	while( (arg = va_arg(ap, char *)) != NULL ) {
-		a->env = xrealloc(a->env, a->envc + 2, sizeof *a->env);
-		a->env[a->envc++] = arg;
+		if( strcmp(arg, "args") == 0 ) {
+			cv.c = &a->argc;
+			cv.v = &a->argv;
+			continue;
+		}
+		*cv.v = xrealloc(*cv.v, *cv.c + 2, sizeof **cv.v);
+		(*cv.v)[(*cv.c)++] = arg;
 	}
 	va_end(ap);
 	a->env[a->envc] = NULL;
