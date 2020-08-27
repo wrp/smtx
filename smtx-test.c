@@ -22,6 +22,8 @@
 #endif
 #include "smtx-test.h"
 
+/* TODO: always use the p2c/c2p pipes for synchornization. */
+
 #define PROMPT "ps1>"
 
 int c2p[2];
