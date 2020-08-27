@@ -555,6 +555,13 @@ test_resize(int fd, pid_t p)
  * The main program sets the history to the screen size,
  * and this test resizes the screen to be larger to test
  * increase of history.
+ *
+ * This does not currently work.  smtx is not getting a resize,
+ * and I do not currently understand why.  Simplified example
+ * in https://github.com/wrp/examples/tree/master/c/resize-pty
+ * seems to work as expected.  (eg, ioctl is called, ncurses
+ * sees a new window size.)  But in our test smtx is not
+ * seeing a new size.
  */
 static int
 test_resize_pty(int fd, pid_t p)
