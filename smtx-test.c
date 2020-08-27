@@ -109,7 +109,7 @@ check_layout(pid_t pid, int flag, const char *fmt, ...)
 	kill(pid, SIGHUP);
 	s = read(c2p[0], buf, sizeof buf - 1);
 	if( s == -1 ) {
-		fprintf(stderr, "reading from child: %s", strerror(errno));
+		fprintf(stderr, "reading from child: %s\n", strerror(errno));
 		rv = -1;
 	} else {
 		buf[s] = 0;
@@ -551,41 +551,39 @@ test_resize(int fd, pid_t p)
 	return status;
 }
 
-/* Test is called with -s 10 to trigger minimal history.
+/* test_resizepty() is called with -s 10 to trigger minimal history.
  * The main program sets the history to the screen size,
  * and this test resizes the screen to be larger to test
  * increase of history.
- *
- * This does not currently work.  smtx is not getting a resize,
- * and I do not currently understand why.  Simplified example
- * in https://github.com/wrp/examples/tree/master/c/resize-pty
- * seems to work as expected.  (eg, ioctl is called, ncurses
- * sees a new window size.)  But in our test smtx is not
- * seeing a new size.
  */
 static int
-test_resize_pty(int fd, pid_t p)
+test_resizepty(int fd, pid_t p)
 {
-	struct winsize ws = { .ws_row = 60, .ws_col = 80 };
+	int rc = 0;
+	struct winsize ws = { .ws_row = 67, .ws_col = 80 };
 	char buf[1024];
 	(void)p;
 	ssize_t s;
+	int history = 24;
 
-	send_cmd(fd, NULL, "%dq", SIGUSR2 + 128);
-	s = read(c2p[0], buf, sizeof buf - 1);
-	buf[s] = '\0';
-	fprintf(stderr, "%s", buf);
-	if( ioctl(fd, TIOCSWINSZ, &ws) ) {
-		err(EXIT_FAILURE, "ioctl");
+	while( history != 67 ) {
+		if( ioctl(fd, TIOCSWINSZ, &ws) ) {
+			err(EXIT_FAILURE, "ioctl");
+		}
+		send_cmd(fd, NULL, "%dq", SIGUSR2 + 128);
+		s = read(c2p[0], buf, sizeof buf - 1);
+		buf[s] = '\0';
+		if( sscanf(buf, "history=%d", &history) != 1
+			|| ( history != 24 && history != 67 )
+		) {
+			rc = 1;
+			fprintf(stderr, "unexpected response: %s\n", buf);
+			break;
+		}
 	}
-	send_cmd(fd, NULL, "%dq", SIGWINCH + 128);
-	send_cmd(fd, NULL, "%dq", SIGUSR2 + 128);
-	s = read(c2p[0], buf, sizeof buf - 1);
-	buf[s] = '\0';
-	fprintf(stderr, "%s", buf);
 
 	send_cmd(fd, NULL, "143q"); /* Send SIGTERM */
-	return 0;
+	return rc;
 }
 
 static int
@@ -956,7 +954,7 @@ main(int argc, char *const argv[])
 	F(test_quit);
 	F(test_reset);
 	F(test_resize);
-	F(test_resize_pty, "args", "-s", "10");
+	F(test_resizepty, "args", "-s", "10");
 	F(test_row);
 	F(test_scrollback);
 	F(test_swap);

@@ -972,7 +972,15 @@ unsigned
 describe_state(char *desc, size_t siz)
 {
 	unsigned len = 0;
-	len += snprintf(desc, siz, "history=%d\n", S.history);
+	int y, x;
+
+	getmaxyx(stdscr, y, x);
+	len += snprintf(desc, siz, "history=%d, ", S.history);
+	len += snprintf(desc + len, siz - len, "y=%d, x=%d", y, x);
+	if( len < siz ) {
+		desc[len++] = '\n';
+		desc[len] = '\0';
+	}
 	return len;
 }
 
