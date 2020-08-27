@@ -339,7 +339,7 @@ scrollbottom(struct canvas *n)
 	}
 }
 
-static void
+void
 reshape(struct canvas *n, int y, int x, int h, int w)
 {
 	if( n ) {
@@ -392,23 +392,6 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 			resize_pad(&n->bkg, n->extent.y, n->extent.x);
 		}
 	}
-}
-
-void
-reshape_root(const char *arg)
-{
-	(void)arg;
-	int y, x;
-	getmaxyx(stdscr, y, x);
-	if( y > S.history ) {
-		S.history = y;
-	}
-	for( struct pty *p = S.p; p; p = p->next ) {
-		p->ws.ws_row = 0;
-	}
-	resize_pad(&S.werr, 1, x);
-	reshape(S.c, 0, 0, y, x);
-	S.reshape = 0;
 }
 
 static void

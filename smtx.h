@@ -140,7 +140,6 @@ extern void fixcursor(void);
 extern void focus(struct canvas *n);
 
 extern struct canvas * newcanvas(void);
-extern void reshape_root(const char *arg);
 extern struct canvas * init(void);
 extern void balance(struct canvas *);
 extern void draw(struct canvas *);
@@ -155,6 +154,7 @@ extern void extend_tabs(struct pty *p, int tabstop);
 extern void pty_size(struct pty *p);
 extern void resize_pad(WINDOW **, int, int);
 extern void reshape_window(struct pty *);
+extern void reshape(struct canvas *n, int y, int x, int h, int w);
 
 extern action attach;
 extern action transition;
@@ -164,6 +164,7 @@ extern action mov;
 extern action new_tabstop;
 extern action quit;
 extern action reorient;
+extern action reshape_root;
 extern action resize;
 extern action scrolln;
 extern action scrollh;
