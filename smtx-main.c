@@ -51,17 +51,6 @@ print_errmsg(const char *fmt, va_list ap, int e)
 	}
 }
 
-void
-show_err(const char *fmt, ...)
-{
-	int e = errno;
-	va_list ap;
-	va_start(ap, fmt);
-	( S.werr ? set_errmsg : print_errmsg )(fmt, ap, e);
-	va_end(ap);
-	errno = e;
-}
-
 int
 err_check(int rv, const char *fmt, ...)
 {
@@ -192,7 +181,7 @@ new_pty(int rows, int cols)
 			execl(sh, sh, NULL);
 			err(EXIT_FAILURE, "exec SHELL='%s'", sh);
 		} else if( p->pid < 0 || new_screens(p) == -1 ) {
-			show_err("new_pty");
+			err_check(1, "new_pty");
 			free_proc(&p);
 		} else if( p->pid > 0 ) {
 			FD_SET(p->fd, &S.fds);
@@ -218,7 +207,7 @@ newcanvas(void)
 	int y, x;
 	getmaxyx(stdscr, y, x);
 	if( !n ) {
-		show_err("calloc");
+		err_check(1, "calloc");
 	} else if( ( n->p = new_pty(y, MAX(x, S.width))) == NULL ) {
 		free(n);
 		n = NULL;
@@ -503,7 +492,7 @@ wait_child(struct pty *p)
 	int status, k = 0;
 	const char *fmt = "exited %d";
 	switch( waitpid(p->pid, &status, WNOHANG) ) {
-	case -1: show_err("waitpid %d", p->pid);
+	case -1: err_check(1, "waitpid %d", p->pid);
 	case 0: break;
 	default:
 		if( WIFEXITED(status) ) {
@@ -514,9 +503,7 @@ wait_child(struct pty *p)
 			k = WTERMSIG(status);
 		}
 		FD_CLR(p->fd, &S.fds);
-		if( close(p->fd) ) {
-			show_err("close fd %d", p->fd);
-		}
+		err_check(close(p->fd) ,"close fd %d", p->fd);
 		p->fd = -1;
 		struct pty *t, *prev = NULL;
 		for( t = S.p; t; prev = t, t = t->next ) {
@@ -797,9 +784,7 @@ main_loop(void)
 		fixcursor();
 		doupdate();
 		if( select(S.p->fd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
-			if( errno != EINTR ) {
-				show_err("select");
-			}
+			err_check(errno != EINTR , "select");
 			FD_ZERO(&sfds);
 		}
 		while( (r = get_wch(&w)) != ERR ) {
@@ -843,7 +828,7 @@ parse_args(int argc, char *const*argv)
 			break;
 		default:
 			errno = 0;
-			show_err("Unknown option: %c\n", optopt);
+			err_check(1, "Unknown option: %c\n", optopt);
 			exit(EXIT_FAILURE);
 		}
 	}

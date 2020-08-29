@@ -149,7 +149,6 @@ extern int rewrite(int fd, const char *b, size_t n);
 extern void build_bindings(void);
 extern void draw(struct canvas *n);
 extern void scrollbottom(struct canvas *n);
-extern void show_err(const char *fmt, ...);
 extern int err_check(int, const char *, ...);
 extern void extend_tabs(struct pty *p, int tabstop);
 extern void pty_size(struct pty *p);

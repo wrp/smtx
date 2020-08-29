@@ -12,7 +12,7 @@ attach(const char *arg)
 			return;
 		}
 	}
-	show_err("No pty exists with id %d", target);
+	err_check(1, "No pty exists with id %d", target);
 }
 
 void
@@ -84,11 +84,11 @@ quit(const char *arg)
 		if( p != -1 ) {
 			err_check(kill(p, s) == -1, "kill %d, %d", p, s);
 		} else {
-			show_err("invalid process. No signal sent");
+			err_check(1, "invalid process. No signal sent");
 		}
 		break;
 	default:
-		show_err("invalid signal: %d", s);
+		err_check(1, "invalid signal: %d", s);
 	}
 }
 
@@ -223,7 +223,7 @@ swap(const char *arg)
 		t->p = tmp;
 		S.reshape = 1;
 	} else {
-		show_err("Cannot find target");
+		err_check(1, "Cannot find target");
 	}
 }
 
