@@ -441,7 +441,7 @@ draw_title(struct canvas *n, int r)
 		assert( n->p != NULL );
 		mvwprintw(n->wtit, 0, 0, "%d %s %d-%d/%d",
 			n->p->id,
-			n->p->fd > 0 ? getshell() : n->p->status,
+			n->p->fd > 0 ? basename(getshell()) : n->p->status,
 			n->offset.x + 1,
 			n->offset.x + n->extent.x,
 			n->p->ws.ws_col
