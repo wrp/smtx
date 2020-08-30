@@ -423,6 +423,12 @@ draw_pane(WINDOW *w, int y, int x)
 	pnoutrefresh(w, 0, 0, y, x, y + wy - 1, x + wx - 1);
 }
 
+static const char *
+bname(const char *n) {
+	const char *b = strrchr(n, '/');
+	return b ? b + 1 : n;
+}
+
 static void
 draw_title(struct canvas *n, int r)
 {
@@ -430,7 +436,7 @@ draw_title(struct canvas *n, int r)
 		assert( n->p != NULL );
 		mvwprintw(n->wtit, 0, 0, "%d %s %d-%d/%d",
 			n->p->id,
-			n->p->fd > 0 ? basename(getshell()) : n->p->status,
+			n->p->fd > 0 ? bname(getshell()) : n->p->status,
 			n->offset.x + 1,
 			n->offset.x + n->extent.x,
 			n->p->ws.ws_col
