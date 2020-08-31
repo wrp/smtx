@@ -15,7 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-/* Functions which are exposed to the test suite */
+
+/*
+ * The test suite conspicuously avoids including smtx.h so that the
+ * interface is clear.  The functions declared here are the only
+ * access the tests have to the program.
+ */
 
 extern unsigned describe_layout(char *, ptrdiff_t, unsigned);
 extern unsigned describe_row(char *, size_t, int);

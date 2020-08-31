@@ -886,7 +886,20 @@ init(void)
 	return S.c;
 }
 
-/* Describe a layout. This may be called in a signal handler by the tests*/
+int
+smtx_main(int argc, char *argv[])
+{
+	parse_args(argc, argv);
+	init();
+	main_loop();
+	return EXIT_SUCCESS;
+}
+
+/* Descriptive functions used by test suite */
+
+/* Describe a layout. This is called in a signal handler by the tests and
+ * should be reentrant.
+ */
 static unsigned
 layout_r(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 {
@@ -924,16 +937,6 @@ layout_r(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 		}
 	}
 	return siz - ( e - d );
-}
-
-/* Functions exposed to test suite */
-int
-smtx_main(int argc, char *argv[])
-{
-	parse_args(argc, argv);
-	init();
-	main_loop();
-	return EXIT_SUCCESS;
 }
 
 unsigned
