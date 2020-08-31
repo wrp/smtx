@@ -143,8 +143,6 @@ struct canvas {
 	WINDOW *wdiv;  /* Window for divider */
 };
 
-extern struct canvas * get_focus(void);
-
 
 #define MAXMAP 0x7f
 extern wchar_t CSET_US[]; /* "USASCII" */

@@ -219,7 +219,6 @@ newcanvas(void)
 }
 
 void focus(struct canvas *n) { S.f = n ? n : S.v; }
-struct canvas * get_focus(void) { return S.f; }
 
 static void
 freecanvas(struct canvas *n)
@@ -910,7 +909,7 @@ layout_r(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 	int show_pid = flags & 0x8;
 	int show_pos = flags & 0x10;
 
-	char *isfocus = recurse && c == get_focus() ? "*" : "";
+	char *isfocus = recurse && c == S.f ? "*" : "";
 	d += snprintf(d, e - d, "%s%dx%d", isfocus, c->extent.y, c->extent.x);
 
 	if( show_pos) {
