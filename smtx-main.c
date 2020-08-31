@@ -896,9 +896,7 @@ smtx_main(int argc, char *argv[])
 
 /* Descriptive functions used by test suite */
 
-/* Describe a layout. This is called in a signal handler by the tests and
- * should be reentrant.
- */
+/* Describe a layout. This is called in a signal handler by the tests. */
 static unsigned
 layout_r(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 {
@@ -924,9 +922,10 @@ layout_r(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 	if( cursor && c->p->s ) {
 		int y = 0, x = 0;
 		getyx(c->p->s->win, y, x);
-		d += snprintf(d, e - d, "(%d,%d)%s", y - c->offset.y + 1,
-			x - c->offset.x,
-			c->p->s->vis ? "" : "!");
+		y -= c->offset.y - 1;
+		x -= c->offset.x;
+		char *vis = c->p->s->vis ? "" : "!";
+		d += snprintf(d, e - d, "(%d,%d)%s", y, x, vis);
 	}
 	for( int i = 0; i < 2; i ++ ) {
 		if( recurse && e - d > 3 && c->c[i] ) {
