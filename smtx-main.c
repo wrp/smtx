@@ -569,20 +569,13 @@ sendarrow(const char *k)
 	rewrite(n->p->fd, buf, 3);
 }
 
-int
-contains(struct canvas *n, int y, int x)
-{
-	return
-		y >= n->origin.y && y <= n->origin.y + n->extent.y &&
-		x >= n->origin.x && x <= n->origin.x + n->extent.x;
-}
-
 struct canvas *
 find_window(struct canvas *n, int y, int x)
 {
 	struct canvas *r = n;
-	if( n && !contains(n, y, x) ) {
-		if( ( r = find_window(n->c[0], y, x)) == NULL ) {
+	if( n && ( y < n->origin.y || y > n->origin.y + n->extent.y
+			|| x < n->origin.x || x > n->origin.x + n->extent.x) ) {
+		if( (r = find_window(n->c[0], y, x)) == NULL ) {
 			r = find_window(n->c[1], y, x);
 		}
 	}
