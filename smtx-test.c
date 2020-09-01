@@ -762,11 +762,13 @@ static int
 test_vpa(int fd, pid_t p)
 {
 	int rv = 0;
-	send_str(fd, PROMPT, "tput vpa 7; tput hpa 18; echo foo\r");
+	/* vpa: move cursor to row, hpa: move cursor to column */
+	send_txt(fd, "foo", "%s", "tput vpa 7;tput hpa 18;printf 'fo%s\\n' o");
 	rv |= validate_row(p, 8, "%18sfoo%59s", "", "");
-	rv |= validate_row(p, 9, "%-80s", PROMPT);
-	for( int i = 10; i < 23; i++ ) {
-		rv |= validate_row(p, i, "%80s", "");
+	for( int i = 2; i < 23; i++ ) {
+		if( i <8 || i > 9 ) {
+			rv |= validate_row(p, i, "%80s", "");
+		}
 	}
 	send_str(fd, NULL, "kill $SMTX\r");
 	return rv;
