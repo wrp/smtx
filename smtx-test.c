@@ -715,18 +715,19 @@ static int
 test_tabstop(int fd, pid_t p)
 {
 	int rv = 0;
-	const char *cmd = "printf 'this\\tis\\ta\\ttest\\n'";
-	send_txt(fd, "this", "%s", cmd);
-	rv |= validate_row(p, 2, "%-80s", "this    is      a       test");
+	int d = 0;
+	const char *cmd = "printf 'this\\tis\\ta\\ttest%%d\\n' %d";
+	send_txt(fd, "test0", cmd, d);
+	rv |= validate_row(p, 2, "%-80s", "this    is      a       test0");
 
 	send_cmd(fd, NULL, "3t");
-	send_txt(fd, "this  is a  test", "%s", cmd);
-	rv |= validate_row(p, 4, "%-80s", "this  is a  test");
+	send_txt(fd, "test1", cmd, ++d);
+	rv |= validate_row(p, 4, "%-80s", "this  is a  test1");
 
 	send_cmd(fd, NULL, "t");
 	rv |= validate_row(p, 6, "%-80s", "");
-	send_txt(fd, "this", "%s", cmd);
-	rv |= validate_row(p, 6, "%-80s", "this    is      a       test");
+	send_txt(fd, "test2", cmd, ++d);
+	rv |= validate_row(p, 6, "%-80s", "this    is      a       test2");
 
 	send_txt(fd, NULL, "kill -TERM %d", p);
 	return rv;
