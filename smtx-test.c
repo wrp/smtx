@@ -746,15 +746,14 @@ static int
 test_vis(int fd, pid_t p)
 {
 	int rv = 0;
-	send_str(fd, PROMPT, "tput civis;\r");
-	rv |= validate_row(p, 1, "%-80s", PROMPT "tput civis;");
+	send_txt(fd, "uniq1", "%s; %s", "tput civis", "printf 'uniq%s\\n' 1");
 	rv |= check_layout(p, 0x3, "*23x80!");
-	rv |= validate_row(p, 2, "%-80s", PROMPT);
+	rv |= validate_row(p, 2, "%-80s", "uniq1");
 
-	send_str(fd, PROMPT, "tput cvvis;\r");
+	send_txt(fd, "uniq2", "%s; %s", "tput cvvis", "printf 'uniq%s\\n' 2");
 	rv |= check_layout(p, 0x3, "*23x80");
 
-	send_str(fd, NULL, "exit\r");
+	send_txt(fd, NULL, "exit");
 	return rv;
 }
 
