@@ -43,6 +43,7 @@
 #define PROMPT "ps1>"
 
 static int read_timeout = 1;  /* Set to 0 when interactively debugging */
+static int main_timeout = 2;
 int c2p[2];
 int p2c[2];
 static int check_test_status(int rv, int status, int pty, const char *name);
@@ -1035,7 +1036,7 @@ spawn_test(struct st *v, const char *argv0)
 		case -1:
 			err(EXIT_FAILURE, "fork");
 		case 0:
-			sleep(2);
+			sleep(main_timeout);
 			_exit(0);
 		}
 
