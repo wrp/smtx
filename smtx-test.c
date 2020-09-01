@@ -163,11 +163,12 @@ timed_read(int fd, void *buf, size_t count)
 	}
 	return rv;
 }
-/* Read from fd until needle is seen or end of file.
- * This is not intended to really check anything,
- * but is merely a synchronization device to delay the test until
- * data is seen to verify that the underlying shell has processed
- * input.
+
+/*
+ * Read from fd until needle is seen or end of file.  This is not
+ * intended to check anything, but is merely a synchronization device
+ * to delay the test until data is seen to verify that the underlying
+ * shell has processed input.
  */
 static void
 grep(int fd, const char *needle)
@@ -249,7 +250,7 @@ test_cols(int fd, pid_t p)
 	/* Ensure that tput correctly identifies the width */
 	int rv;
 	send_txt(fd, "97", "tput cols");
-	rv = validate_row(p, 2, "%-97s", "97");
+	rv = validate_row(p, 2, "%-92s", "97");
 	send_txt(fd, NULL, "exit");
 	return rv;
 }
@@ -955,7 +956,7 @@ main(int argc, char *const argv[])
 	F(check_ps1);
 	F(test1);
 	F(test_attach);
-	F(test_cols, "TERM", "smtx", "COLUMNS", "97");
+	F(test_cols, "TERM", "smtx", "COLUMNS", "92", "args", "-w", "97");
 	F(test_csr);
 	F(test_cup);
 	F(test_cursor);
@@ -1058,11 +1059,23 @@ spawn_test(struct st *v, const char *argv0)
 	return exit_status(status);
 }
 
+static void
+set_window_size(struct winsize *ws)
+{
+	char *t = getenv("LINES");
+	char *c = getenv("COLUMNS");
+	ws->ws_row = t ? strtol(t, NULL, 10) : 24;
+	ws->ws_col = c ? strtol(c, NULL, 10) : 80;
+	unsetenv("LINES");
+	unsetenv("COLUMNS");
+}
+
 static int
 execute_test(struct st *v, const char *name)
 {
 	int fd[2]; /* primary/secondary fd of pty */
 	int status;
+	struct winsize ws;
 	int rv = 1;
 	pid_t pid;
 
@@ -1072,10 +1085,10 @@ execute_test(struct st *v, const char *name)
 	setenv("PS1", PROMPT, 1);
 	unsetenv("LINES");
 	unsetenv("COLUMNS");
-	struct winsize ws = { .ws_row = 24, .ws_col = 80 };
 	for( char **a = v->env; a && *a; a += 2 ) {
 		setenv(a[0], a[1], 1);
 	}
+	set_window_size(&ws);
 	if( pipe(c2p) || pipe(p2c) ) {
 		err(EXIT_FAILURE, "pipe");
 	}
