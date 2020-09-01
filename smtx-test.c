@@ -304,7 +304,6 @@ test_cursor(int fd, pid_t p)
 {
 	int rv = 0;
 	send_txt(fd, "un01", "printf '0123456'; tput cub 4; printf 'un%%s' 01");
-	rv |= validate_row(p, 2, "012un01%-73s", PROMPT);
 
 	send_txt(fd, NULL, "tput sc; echo abcdefg; tput rc; echo bar");
 	send_txt(fd, "uniq01", "printf 'uniq%%s' 01");
