@@ -42,6 +42,7 @@
 
 #define PROMPT "ps1>"
 
+static int read_timeout = 1;  /* Set to 0 when interactively debugging */
 int c2p[2];
 int p2c[2];
 static int check_test_status(int rv, int status, int pty, const char *name);
@@ -142,18 +143,17 @@ check_layout(pid_t pid, int flag, const char *fmt, ...)
 }
 
 ssize_t
-timed_read(int fd, void *buf, size_t count, int seconds)
+timed_read(int fd, void *buf, size_t count)
 {
 	fd_set set;
-	struct timeval timeout;
+	struct timeval t = { .tv_sec = read_timeout, .tv_usec = 0 };
+	struct timeval *timeout = read_timeout ? &t : NULL;
 	ssize_t rv = -1;
 
 	FD_ZERO(&set);
 	FD_SET(fd, &set);
-	timeout.tv_sec = seconds;
-	timeout.tv_usec = 0;
 
-	switch( select(fd + 1, &set, NULL, NULL, &timeout) ) {
+	switch( select(fd + 1, &set, NULL, NULL, timeout) ) {
 	case -1:
 		err(EXIT_FAILURE, "select %d", fd);
 	case 0:
@@ -184,7 +184,7 @@ grep(int fd, const char *needle)
 			if( d > 0 ) {
 				memcpy(buf, b - d, d);
 			}
-			size_t rc = timed_read(fd, buf + d, sizeof buf - d, 1);
+			size_t rc = timed_read(fd, buf + d, sizeof buf - d);
 			switch( rc ) {
 			case -1: err(EXIT_FAILURE, "read from pty");
 			case 0: return;
