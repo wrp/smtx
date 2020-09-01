@@ -285,21 +285,18 @@ static int
 test_cup(int fd, pid_t p)
 {
 	int status = 0;
-	send_str(fd, PROMPT, "tput cup 5 50; echo foo\r"); /* down 5 lines */
-	char *cmd = "printf '0123456'; tput cub 4; printf '789\\n'";
-	send_str(fd, PROMPT, "%s\r", cmd);
-	char *cmd2 = "printf abc; tput cuf 73; echo 12345678wrapped";
-	send_str(fd, PROMPT, "%s\r", cmd2);
+	/* cup: move to n, m;  cub: back n;  buf: forward n */
+	send_txt(fd, "uniq1", "%s", "tput cup 5 50; printf 'uniq%s\\n' 1");
+	char *cmd = "printf '0123456'; tput cub 4; printf '789\\nuniq%s\\n' 2";
+	send_txt(fd, "uniq2", "%s", cmd);
+	cmd = "printf abc; tput cuf 73; printf '12345678%s\\n' wrapped";
+	send_txt(fd, "5678wrapped", "%s", cmd);
 
-	assert( strlen(PROMPT) == 4 ); /* TODO: compute with this */
-
-	status |= validate_row(p, 6, "%50s%-30s", "", "foo");
-	status |= validate_row(p, 7, "%s%-76s", PROMPT, cmd);
+	status |= validate_row(p, 6, "%50s%-30s", "", "uniq1");
 	status |= validate_row(p, 8, "%-80s", "0127896");
-	status |= validate_row(p, 9, "%s%-76s", PROMPT, cmd2);
-	status |= validate_row(p, 10, "abc%73s1234", "");
-	status |= validate_row(p, 11, "%-80s", "5678wrapped");
-	send_str(fd, NULL, "kill $SMTX\r");
+	status |= validate_row(p, 11, "abc%73s1234", "");
+	status |= validate_row(p, 12, "%-80s", "5678wrapped");
+	send_txt(fd, NULL, "kill $SMTX");
 	return status;
 }
 
