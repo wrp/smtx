@@ -143,22 +143,31 @@ check_layout(pid_t pid, int flag, const char *fmt, ...)
 	return rv;
 }
 
+static void noop(int s) { (void)s; }
 ssize_t
 timed_read(int fd, void *buf, size_t count, const char *n)
 {
 	fd_set set;
 	struct timeval t = { .tv_sec = read_timeout, .tv_usec = 0 };
 	struct timeval *timeout = read_timeout ? &t : NULL;
+	struct sigaction sa;
+	memset(&sa, 0, sizeof sa);
+	sa.sa_flags = 0;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_handler = noop;
+	sigaction(SIGTERM, &sa, NULL);
 
 	FD_ZERO(&set);
 	FD_SET(fd, &set);
 
 	switch( select(fd + 1, &set, NULL, NULL, timeout) ) {
 	case -1:
-		err(EXIT_FAILURE, "select %d", fd);
+		err(EXIT_FAILURE, "select %d waiting for %s", fd, n);
 	case 0:
 		errx(EXIT_FAILURE, "timedout waiting for %s", n);
 	}
+	sa.sa_handler = SIG_DFL;
+	sigaction(SIGTERM, &sa, NULL);
 	return read(fd, buf, count);
 }
 
@@ -1048,7 +1057,7 @@ spawn_test(struct st *v, const char *argv0)
 			wait(NULL);
 		} else {
 			fprintf(stderr, "%s timed out\n", v->name);
-			if( kill(pid[1], SIGKILL) )  {
+			if( kill(pid[1], SIGTERM) )  {
 				perror("kill");
 			}
 			wait(&status);
