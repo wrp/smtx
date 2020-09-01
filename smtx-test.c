@@ -411,10 +411,10 @@ test_insert(int fd, pid_t p)
 {
 	int rc = 0;
 	/* smir -- begin insert mode;  rmir -- end insert mode */
-	send_str(fd, PROMPT, "printf 0123456; tput cub 3; tput smir; "
-		"echo foo; tput rmir\r");
-	rc |= validate_row(p, 2, "%-80s", "0123foo456");
-	rc |= validate_row(p, 3, "%-80s", PROMPT);
+	send_txt(fd, "sync01", "%s", "printf 0123456; tput cub 3; tput smir; "
+		"echo foo; tput rmir; printf 'sync%s\\n' 01");
+	rc |= validate_row(p, 3, "%-80s", "0123foo456");
+	rc |= validate_row(p, 4, "%-80s", "sync01");
 	send_str(fd, NULL, "exit\r");
 	return rc;
 }
