@@ -220,7 +220,7 @@ validate_row(pid_t pid, int row, const char *fmt, ... )
 	va_end(ap);
 	write(p2c[1], &p, sizeof p);
 	kill(pid, SIGUSR1);
-	ssize_t s = read(c2p[0], buf, sizeof buf - 1);
+	ssize_t s = timed_read(c2p[0], buf, sizeof buf - 1, expect);
 	buf[s] = 0;
 	if( strcmp( buf, expect ) ) {
 		fprintf(stderr, "unexpected content in row %d\n", row);
