@@ -583,57 +583,39 @@ find_window(struct canvas *n, int y, int x)
 }
 
 enum direction {nil, up, down, left, right};
-static void
-navigate_tree(enum direction dir, int count)
-{
-	struct canvas *n = S.f;
-	struct canvas *t = S.f;
-	for( ; t && count-- && dir != nil; n = t ? t : n ) {
-		switch( dir ) {
-		case left:
-		case up:
-			t = t->parent;
-			break;
-		case down:
-			t = t->c[0];
-			break;
-		case right:
-			t = t->c[1];
-			break;
-		case nil:
-			;
-		}
-	}
-	focus(n);
-	S.reshape = 1;
-}
 
 static void
-navigate_display(enum direction dir, int count)
+navigate(enum direction dir, int count, int type)
 {
 	struct canvas *n = S.f;
 	struct canvas *t = S.f;
+	struct canvas *q = NULL;
 	int startx = t->origin.x;
 	int starty = t->origin.y + t->extent.y;
-	for( ; t && count-- && dir != nil; n = t ? t : n ) {
+	while( t && count-- && dir != nil ) {
 		struct point target = {starty, startx};
 		switch( dir ) {
 		case up:
 			target.y = t->origin.y - 1;
+			q = t->parent;
 			break;
 		case down:
 			target.y = t->origin.y + t->extent.y + 1;
+			q = t->c[0];
 			break;
 		case right:
 			target.x = t->origin.x + t->extent.x + 1;
+			q = t->c[1];
 			break;
 		case left:
 			target.x = t->origin.x - 1;
+			q = t->parent;
 			break;
 		case nil:
 			;
 		}
-		t = find_window(S.v, target.y, target.x);
+		t = type ? q : find_window(S.v, target.y, target.x);
+		n = t ? t : n;
 	}
 	focus(n);
 }
@@ -646,7 +628,7 @@ mov(const char *arg)
 	int count = S.count < 1 ? 1 : S.count;
 	enum direction dir = *arg == 'k' ? up : *arg == 'j' ? down :
 			*arg == 'h' ? left : *arg == 'l' ? right : nil;
-	( 0 ? navigate_tree : navigate_display)(dir, count);
+	navigate(dir, count, 0);
 }
 
 static void
