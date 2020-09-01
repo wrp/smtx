@@ -944,7 +944,8 @@ describe_state(char *desc, size_t siz)
 
 	getmaxyx(stdscr, y, x);
 	len += snprintf(desc, siz, "history=%d, ", S.history);
-	len += snprintf(desc + len, siz - len, "y=%d, x=%d", y, x);
+	len += snprintf(desc + len, siz - len, "y=%d, x=%d, ", y, x);
+	len += snprintf(desc + len, siz - len, "w=%d", S.width);
 	if( len < siz ) {
 		desc[len++] = '\n';
 		desc[len] = '\0';
