@@ -156,7 +156,7 @@ timed_read(int fd, void *buf, size_t count, const char *n)
 	sa.sa_flags = 0;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = noop;
-	sigaction(SIGTERM, &sa, NULL);
+	sigaction(SIGINT, &sa, NULL);
 
 	FD_ZERO(&set);
 	FD_SET(fd, &set);
@@ -168,7 +168,7 @@ timed_read(int fd, void *buf, size_t count, const char *n)
 		errx(EXIT_FAILURE, "timedout waiting for %s", n);
 	}
 	sa.sa_handler = SIG_DFL;
-	sigaction(SIGTERM, &sa, NULL);
+	sigaction(SIGINT, &sa, NULL);
 	return read(fd, buf, count);
 }
 
@@ -489,7 +489,7 @@ test_navigate(int fd, pid_t p)
 		"0x26@1,27; 0x26@2,27; 0x26@3,27; 0x26@4,27; 0x26@5,27",
 		"0x26@6,27; 0x26@7,27; 1x26@8,27; 1x26@10,27; 11x26@0,54"
 	);
-	send_txt(fd, NULL, "kill $SMTX");
+	send_cmd(fd, NULL, "%dq", SIGTERM + 128);  /* Terminate SMTX */
 	return status;
 }
 
@@ -876,11 +876,11 @@ handler(int s)
 	unsigned len = 0;
 	switch(s) {
 	case SIGHUP:
-		read(p2c[0], &p.hup, sizeof p.hup);
+		timed_read(p2c[0], &p.hup, sizeof p.hup, "sighup");
 		len = describe_layout(buf, sizeof buf, p.hup.flag);
 		break;
 	case SIGUSR1:
-		read(p2c[0], &p.usr1, sizeof p.usr1);
+		timed_read(p2c[0], &p.usr1, sizeof p.usr1, "sigusr1");
 		len = describe_row(buf, sizeof buf, p.usr1.row - 1);
 		break;
 	case SIGUSR2:
@@ -1061,7 +1061,7 @@ spawn_test(struct st *v, const char *argv0)
 			wait(NULL);
 		} else {
 			fprintf(stderr, "%s timed out\n", v->name);
-			if( kill(pid[1], SIGTERM) )  {
+			if( kill(pid[1], SIGINT) )  {
 				perror("kill");
 			}
 			wait(&status);
