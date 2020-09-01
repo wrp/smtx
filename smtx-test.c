@@ -257,7 +257,7 @@ test_cols(int fd, pid_t p)
 {
 	/* Ensure that tput correctly identifies the width */
 	int rv;
-	send_txt(fd, "97", "tput cols");
+	send_txt(fd, "uniq1", "%s", "tput cols; printf 'uniq%s\\n' 1");
 	rv = validate_row(p, 2, "%-92s", "97");
 	send_txt(fd, NULL, "exit");
 	return rv;
