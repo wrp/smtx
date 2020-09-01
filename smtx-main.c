@@ -894,13 +894,8 @@ layout_r(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 	if( show_id && c->p ) {
 		d += snprintf(d, e - d, "(id=%d)", c->p->id);
 	}
-	if( cursor && c->p->s ) {
-		int y = 0, x = 0;
-		getyx(c->p->s->win, y, x);
-		y -= c->offset.y - 1;
-		x -= c->offset.x;
-		char *vis = c->p->s->vis ? "" : "!";
-		d += snprintf(d, e - d, "(%d,%d)%s", y, x, vis);
+	if( cursor && c->p->s && ! c->p->s->vis ) {
+		d += snprintf(d, e - d, "!");
 	}
 	for( int i = 0; i < 2; i ++ ) {
 		if( recurse && e - d > 3 && c->c[i] ) {

@@ -432,7 +432,7 @@ test_insert(int fd, pid_t p)
 static int
 test_layout(int fd, pid_t p)
 {
-	int rv = check_layout(p, 0x13, "*23x80@0,0(1,%zd)", strlen(PROMPT));
+	int rv = check_layout(p, 0x13, "%s", "*23x80@0,0");
 
 	send_str(fd, "uniq01", "%c\rprintf 'uniq%%s' 01\r", CTL('g'));
 	rv |= check_layout(p, 0x11, "*23x80@0,0");
@@ -748,11 +748,11 @@ test_vis(int fd, pid_t p)
 	int rv = 0;
 	send_str(fd, PROMPT, "tput civis;\r");
 	rv |= validate_row(p, 1, "%-80s", PROMPT "tput civis;");
-	rv |= check_layout(p, 0x3, "*23x80(2,4)!");
+	rv |= check_layout(p, 0x3, "*23x80!");
 	rv |= validate_row(p, 2, "%-80s", PROMPT);
 
 	send_str(fd, PROMPT, "tput cvvis;\r");
-	rv |= check_layout(p, 0x3, "*23x80(3,4)");
+	rv |= check_layout(p, 0x3, "*23x80");
 
 	send_str(fd, NULL, "exit\r");
 	return rv;
