@@ -235,9 +235,8 @@ static int
 winpos(WINDOW *w, int dir)
 {
 	int y = 0, x = 0;
-	if( w ) {
-		getyx(w, y, x);
-	}
+	assert(w);
+	getyx(w, y, x);
 	return dir ? x : y;
 }
 
