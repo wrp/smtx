@@ -110,6 +110,7 @@ send_str(int fd, const char *wait, const char *fmt, ...)
 	write_pty(fd, 0, wait, fmt, ap);
 	va_end(ap);
 }
+ssize_t timed_read(int, void *, size_t, const char *);
 
 static int __attribute__((format(printf,3,4)))
 check_layout(pid_t pid, int flag, const char *fmt, ...)
@@ -127,7 +128,7 @@ check_layout(pid_t pid, int flag, const char *fmt, ...)
 
 	write(p2c[1], &p, sizeof p);
 	kill(pid, SIGHUP);
-	s = read(c2p[0], buf, sizeof buf - 1);
+	s = timed_read(c2p[0], buf, sizeof buf - 1, expect);
 	if( s == -1 ) {
 		fprintf(stderr, "reading from child: %s\n", strerror(errno));
 		rv = -1;
