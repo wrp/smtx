@@ -355,13 +355,15 @@ static int
 test_el(int fd, pid_t p)
 {
 	int rv = 0;
-	send_str(fd, PROMPT, "printf 01234; tput cub 3; tput el\r");
-	rv |= validate_row(p, 2, "01%-78s", PROMPT);
+	send_txt(fd, "uniq01", "%s", "printf 01234; tput cub 3; tput el; "
+		"printf 'uniq%s\\n' 01");
+	rv |= validate_row(p, 2, "%-80s", "01uniq01");
 
-	send_str(fd, PROMPT, "printf 01234; tput cub 3; tput el1; echo\r");
-	rv |= validate_row(p, 3, "   34%75s", "");
+	send_txt(fd, "uniq02", "%s", "printf 01234; tput cub 3; tput el1; "
+		"printf '\\nuniq%s' 02");
+	rv |= validate_row(p, 4, "%-80s", "   34");
 
-	send_str(fd, NULL, "exit\r");
+	send_txt(fd, NULL, "exit");
 	return rv;
 }
 
