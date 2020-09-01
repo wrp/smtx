@@ -350,7 +350,11 @@ static int
 test_ech(int fd, pid_t p)
 {
 	int rv = 0;
-	send_str(fd, PROMPT, "printf 012345; tput cub 3; tput ech 1; echo\r");
+	/* ech: erase N characters */
+	send_txt(fd, "uniq1", "%s%s",
+		"printf 012345; tput cub 3; tput ech 1;",
+		"printf '\\nuniq%s\\n' 1"
+	);
 	rv |= validate_row(p, 2, "%-80s", "012 45");
 	send_str(fd, NULL, "exit\r");
 	return rv;
