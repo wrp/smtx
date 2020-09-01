@@ -143,12 +143,11 @@ check_layout(pid_t pid, int flag, const char *fmt, ...)
 }
 
 ssize_t
-timed_read(int fd, void *buf, size_t count)
+timed_read(int fd, void *buf, size_t count, const char *n)
 {
 	fd_set set;
 	struct timeval t = { .tv_sec = read_timeout, .tv_usec = 0 };
 	struct timeval *timeout = read_timeout ? &t : NULL;
-	ssize_t rv = -1;
 
 	FD_ZERO(&set);
 	FD_SET(fd, &set);
@@ -157,11 +156,9 @@ timed_read(int fd, void *buf, size_t count)
 	case -1:
 		err(EXIT_FAILURE, "select %d", fd);
 	case 0:
-		errx(EXIT_FAILURE, "timedout");
-	default:
-		rv = read(fd, buf, count);
+		errx(EXIT_FAILURE, "timedout waiting for %s", n);
 	}
-	return rv;
+	return read(fd, buf, count);
 }
 
 /*
@@ -185,7 +182,7 @@ grep(int fd, const char *needle)
 			if( d > 0 ) {
 				memcpy(buf, b - d, d);
 			}
-			size_t rc = timed_read(fd, buf + d, sizeof buf - d);
+			size_t rc = timed_read(fd, buf + d, sizeof buf - d, n);
 			switch( rc ) {
 			case -1: err(EXIT_FAILURE, "read from pty");
 			case 0: return;
