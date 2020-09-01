@@ -268,15 +268,14 @@ test_csr(int fd, pid_t p)
 {
 	int rv = 0;
 	/* Change scroll region */
-	send_str(fd, PROMPT, "tput csr 6 12\r");
-	send_str(fd, PROMPT, "yes | nl | sed 25q\r");
+	send_txt(fd, "uniq1", "%s;%s", "tput csr 6 12; yes | nl -s: | sed 25q",
+		"printf 'uni%s\\n' q1");
 	for(int i = 2; i <= 6; i++ ) {
-		rv |= validate_row(p, i, "     %d  %-72s", i - 1, "y");
+		rv |= validate_row(p, i, "     %d:%-73s", i, "y");
 	}
-	for(int i = 7; i <= 12; i++ ) {
-		rv |= validate_row(p, i, "    %d  %-72s", i + 13, "y");
+	for(int i = 7; i <= 11; i++ ) {
+		rv |= validate_row(p, i, "    %2d:%-73s", i + 14, "y");
 	}
-	rv |= validate_row(p, 13, "%-80s", PROMPT);
 	send_str(fd, NULL, "exit\r");
 	return rv;
 }
