@@ -492,11 +492,10 @@ test_nel(int fd, pid_t p)
 	send_txt(fd, "uniq01", "%s", cmd);
 	rv |= validate_row(p, 5, "%-80s", "foo");
 	rv |= validate_row(p, 6, "%-80s", "uniq01");
-	cmd = "printf foobar; tput cub 3; tput el; echo blah; "
+	cmd = "printf foobarz012; tput cub 7; echo blah; "
 		"printf 'uniq%s\\n' 02";
 	send_txt(fd, "uniq02", "%s", cmd);
-	rv |= validate_row(p, 7, "%s%-*s", PROMPT, 80 - strlen(PROMPT), cmd);
-	rv |= validate_row(p, 8, "%-80s", "fooblah");
+	rv |= validate_row(p, 8, "%-80s", "fooblah012");
 	send_str(fd, NULL, "exit\r");
 	return rv;
 }
