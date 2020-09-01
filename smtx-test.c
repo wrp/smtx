@@ -379,9 +379,9 @@ static int
 test_equalize(int fd, pid_t p)
 {
 	int status = 0;
-	send_str(fd, PROMPT, "%ccc5J\recho foo\r", CTL('g'));
+	send_cmd(fd, "uniq1", "%s", "cc5J\rprintf uniq%s 1");
 	status |= check_layout(p, 0x1, "*12x80; 4x80; 5x80");
-	send_str(fd, PROMPT, "%c=\recho\r", CTL('g'));
+	send_cmd(fd, "uniq2", "%s", "=\rprintf uniq%s 2");
 	status |= check_layout(p, 0x1, "*7x80; 7x80; 7x80");
 	send_str(fd, NULL, "kill -TERM $SMTX\r");
 	return status;
