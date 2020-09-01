@@ -618,11 +618,12 @@ static int
 test_row(int fd, pid_t p)
 {
 	int status = 0;
-	send_str(fd, PROMPT, "yes | nl -ba | sed 400q\r");
+	send_txt(fd, "uniq1", "%s; %s", "yes | nl -ba | sed 400q",
+		"printf 'uniq%s\\n' 1");
 
-	status |= validate_row(p, 21, "%6d%-74s", 399, "  y");
-	status |= validate_row(p, 22, "%6d%-74s", 400, "  y");
-	status |= validate_row(p, 23, "%-80s", PROMPT);
+	status |= validate_row(p, 20, "%6d%-74s", 399, "  y");
+	status |= validate_row(p, 21, "%6d%-74s", 400, "  y");
+	status |= validate_row(p, 22, "%-80s", "uniq1");
 	send_str(fd, NULL, "kill $SMTX\r");
 	return status;
 }
