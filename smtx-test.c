@@ -568,13 +568,13 @@ static int
 test_resize(int fd, pid_t p)
 {
 	int status = 0;
-	send_cmd(fd, PROMPT, "JccC\r:");
+	send_cmd(fd, "uniq1", "%s\r%s", "JccC", "printf 'uniq%s\\n' 1");
 	status |= check_layout(p, 0x1, "*7x40; 7x80; 7x80; 7x39");
-	send_cmd(fd, PROMPT, "5J\r:");
+	send_cmd(fd, "uniq2", "%s\r%s", "5J", "printf 'uniq%s\\n' 2");
 	status |= check_layout(p, 0x1, "*12x40; 4x80; 5x80; 12x39");
-	send_cmd(fd, PROMPT, "jj10K\r:");
+	send_cmd(fd, "uniq3", "%s\r%s", "jj10K", "printf 'uniq%s\\n' 3");
 	status |= check_layout(p, 0x1, "*12x40; 0x80; 10x80; 12x39");
-	send_cmd(fd, PROMPT, "kkl20H\r:");
+	send_cmd(fd, "uniq4", "%s\r%s", "kkl20H", "printf 'uniq%s\\n' 4");
 	status |= check_layout(p, 0x1, "12x20; 0x80; 10x80; *12x59");
 	send_str(fd, NULL, "kill -TERM $SMTX\r");
 	return status;
