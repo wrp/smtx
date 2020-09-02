@@ -837,16 +837,6 @@ test_width(int fd, pid_t p)
 	return rv;
 }
 
-static int
-check_ps1(int fd, pid_t p)
-{
-	int s = 0;
-	s |= validate_row(p, 1, "%-80s", PROMPT);
-	send_str(fd, NULL, "kill $SMTX\r");
-
-	return s;
-}
-
 /* A bunch of mostly pointless tests for coverage.
  * TODO: actually verify the results of these.
  */
@@ -970,7 +960,6 @@ main(int argc, char *const argv[])
 	int total_count = 0;
 	const char *argv0 = argv[0];
 	struct st *tab = NULL, *v;
-	F(check_ps1);
 	F(test1);
 	F(test_attach);
 	F(test_cols, "TERM", "smtx", "COLUMNS", "92", "args", "-w", "97");
