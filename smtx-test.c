@@ -1146,6 +1146,11 @@ execute_test(struct st *v, const char *name)
 		wait(&status);
 	}
 	status = check_test_status(rv, status, fd[0], v->name);
+
+	char *verbosity = getenv("V");
+	if( verbosity && strtol(verbosity, NULL, 10) > 0 ) {
+		printf("%s: %s\n", v->name, status ? "FAIL" : "pass" );
+	}
 	fclose(stderr); /* Prevent redundant output of failures */
 	return status;
 }
