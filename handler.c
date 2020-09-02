@@ -22,14 +22,15 @@
  */
 
 enum cmd {
-	noop = 0, ack, bell, cbt, cls, cnl, cpl, cr, csr, cub, cud, cuf, cup,
+	ack=1, bell, cbt, cls, cnl, cpl, cr, csr, cub, cud, cuf, cup,
 	cuu, dch, decaln, decid, decreqtparm, dsr, ech, ed, el, hpa, hpr, ht,
 	hts, ich, idl, ind, mode, nel, numkp, pnl, print, rc, rep,
 	ri, ris, sc, scs, sgr, sgr0, so, su, tab, tbc, vis, vpa, vpr
 };
 
 #define CALL(x) tput(v, 0, 0, 0, NULL, x)
-void tput(struct vtp *v, wchar_t w, wchar_t iw,
+void
+tput(struct vtp *v, wchar_t w, wchar_t iw,
 	int argc, int *argv, enum cmd c)
 {
 	int noclear_repc = 0;
@@ -59,8 +60,6 @@ void tput(struct vtp *v, wchar_t w, wchar_t iw,
 	bot += 1 - tos;
 	top = top <= tos ? 0 : top - tos;
 	switch(c) {
-	case noop:
-		return;
 	case bell: /* Terminal bell. */
 		beep();
 		break;
@@ -525,7 +524,6 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		}
 		break;
 	}
-
 	if( !noclear_repc ) {
 		p->repc = 0;
 	}

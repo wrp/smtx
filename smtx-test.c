@@ -862,6 +862,7 @@ test1(int fd, pid_t p)
 	char *cmds[] = {
 		"tput bel; tput ri",
 		"tput tsl; tput fsl; tput dsl",
+		"tput rmkx; tput smkx", /* Keypad on/off */
 		"tput cub 1; tput dch 1; tput ack",
 		"kill $SMTX",
 		NULL
