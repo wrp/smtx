@@ -744,6 +744,10 @@ test_tabstop(int fd, pid_t p)
 	send_txt(fd, "test2", cmd, ++d);
 	rv |= validate_row(p, 6, "%-80s", "this    is      a       test2");
 
+	send_txt(fd, "uniq:", "%s; %s", "tabs -5", "PS1=un'iq:'");
+	send_txt(fd, "test3", cmd, ++d);
+	rv |= validate_row(p, 9, "%-80s", "this is   a    test3");
+
 	send_txt(fd, NULL, "kill -TERM %d", p);
 	return rv;
 }
