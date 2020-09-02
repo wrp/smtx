@@ -32,23 +32,16 @@ struct state S = {
 };
 
 static void
-set_errmsg(const char *fmt, va_list ap, int e)
+set_errmsg(int rv, const char *fmt, va_list ap)
 {
+	(void)rv;
+	int e = errno;
 	wmove(S.werr, 0, 0);
 	vw_printw(S.werr, fmt, ap);
 	if( e ) {
 		wprintw(S.werr, ": %s", strerror(e));
 	}
 	wclrtoeol(S.werr);
-}
-
-static void
-print_errmsg(const char *fmt, va_list ap, int e)
-{
-	vfprintf(stderr, fmt, ap);
-	if( e ) {
-		fprintf(stderr, ": %s", strerror(e));
-	}
 }
 
 int
@@ -58,7 +51,8 @@ err_check(int rv, const char *fmt, ...)
 		int e = errno;
 		va_list ap;
 		va_start(ap, fmt);
-		( S.werr ? set_errmsg : print_errmsg )(fmt, ap, e);
+		errno = e;
+		( S.werr ? set_errmsg : verrx )(rv, fmt, ap);
 		va_end(ap);
 		errno = e;
 	}
@@ -807,7 +801,7 @@ parse_args(int argc, char *const*argv)
 			break;
 		default:
 			errno = 0;
-			err_check(1, "Unknown option: %c\n", optopt);
+			err_check(1, "Unknown option: %c", optopt);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -815,7 +809,7 @@ parse_args(int argc, char *const*argv)
 
 static void endwin_wrap(void) { (void) endwin(); }
 
-struct canvas *
+static void
 init(void)
 {
 	char buf[16];
@@ -834,9 +828,7 @@ init(void)
 	setenv("SMTX_VERSION", VERSION, 1);
 	setlocale(LC_ALL, "");
 	build_bindings();
-	if( initscr() == NULL ) {
-		exit(EXIT_FAILURE);
-	}
+	err_check( initscr() == NULL, "Unable to initialize screen");
 	getmaxyx(stdscr, y, x);
 	S.history = MAX(y, S.history);
 	atexit(endwin_wrap);
@@ -848,15 +840,10 @@ init(void)
 	start_color();
 	use_default_colors();
 	resize_pad(&S.werr, 1, x);
-	if( S.werr == NULL ) {
-		errx(EXIT_FAILURE, "Unable to create error window");
-	}
+	err_check(S.werr == NULL, "Unable to create error window");
 	wattron(S.werr, A_REVERSE);
 	create(NULL);
-	if( ( S.f = S.v = S.c ) == NULL ) {
-		errx(EXIT_FAILURE, "Unable to create root window");
-	}
-	return S.c;
+	err_check( ( S.f = S.v = S.c ) == NULL, "Unable to create root window");
 }
 
 int
