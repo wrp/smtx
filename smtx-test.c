@@ -515,16 +515,21 @@ test_pager(int fd, pid_t p)
 {
 	int rv = 0;
 
-	send_str(fd, "22", "yes | nl | sed 500q | more\r");
-	rv |= validate_row(p, 2, "     2%-74s", "  y");
-	rv |= validate_row(p, 10, "    10%-74s", "  y");
-	rv |= validate_row(p, 22, "    22%-74s", "  y");
+	send_txt(fd, "--More--", "%s; %s",
+		"yes abcd | nl -s: | sed -e '23,44y/abcd/wxyz/' -e 500q | more",
+		"PS1=u'ni'q\\>"
+	);
+	rv |= validate_row(p, 02, "%-80s", "     2:abcd");
+	rv |= validate_row(p, 10, "%-80s", "    10:abcd");
+	rv |= validate_row(p, 22, "%-80s", "    22:abcd");
+	rv |= validate_row(p, 23, "%-80s", "--More--");
 	rv |= check_layout(p, 0x1, "*23x80");
-	send_str(fd, "44", " ");
-	rv |= validate_row(p, 1,  "    23%-74s", "  y");
-	rv |= validate_row(p, 10, "    32%-74s", "  y");
-	rv |= validate_row(p, 22, "    44%-74s", "  y");
-	send_str(fd, NULL, "qexit\r");
+	send_str(fd, "uniq>", "%s", " q");
+	rv |= validate_row(p, 1,  "%-80s", "    23:wxyz");
+	rv |= validate_row(p, 10, "%-80s", "    32:wxyz");
+	rv |= validate_row(p, 22, "%-80s", "    44:wxyz");
+	rv |= validate_row(p, 23, "%-80s", "uniq>");
+	send_txt(fd, NULL, "exit");
 	return rv;
 }
 
@@ -981,7 +986,7 @@ main(int argc, char *const argv[])
 	F(test_lnm);
 	F(test_navigate);
 	F(test_nel, "TERM", "smtx");
-	F(test_pager);
+	F(test_pager ,"MORE", "");
 	F(test_quit);
 	F(test_reset);
 	F(test_resize);
