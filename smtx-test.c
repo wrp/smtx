@@ -849,14 +849,9 @@ test1(int fd, pid_t p)
 {
 	(void)p;
 	char *cmds[] = {
-		"echo err >&2",
-		"tput cud 2; tput cuu 2; tput cuf 1",
-		"tput ed; tput bel",
-		"tput hpa 5; tput ri",
+		"tput ed; tput bel; tput ri",
 		"tput tsl; tput fsl; tput dsl",
 		"tput cub 1; tput dch 1; tput ack",
-		"tput civis; tput cvvis; tput ack",
-		"tabs -5",
 		"kill $SMTX",
 		NULL
 	};
