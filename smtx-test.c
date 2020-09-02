@@ -477,7 +477,7 @@ static int
 test_navigate(int fd, pid_t p)
 {
 	int status = 0;
-	send_cmd(fd, NULL, "cjkhlCCjkhlc");
+	send_cmd(fd, NULL, "cjkhl2Cjkhlc");
 	send_txt(fd, "foobar", "%s", "printf 'foo%s\\n' bar");
 	status |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
 		"11x26@0,0",
@@ -486,7 +486,7 @@ test_navigate(int fd, pid_t p)
 		"5x26@6,27",
 		"11x26@0,54"
 	);
-	send_cmd(fd, NULL, "cccccccchhk");
+	send_cmd(fd, NULL, "8chhk");
 	send_txt(fd, "foobaz", "%s", "printf 'foo%s\\n' baz");
 	status |= check_layout(p, 0x11, "%s; %s; %s",
 		"*11x26@0,0; 11x80@12,0; 0x26@0,27",

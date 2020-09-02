@@ -40,12 +40,15 @@ create(const char *arg)
 	while( n && n->c[dir] != NULL ) {
 		n = n->c[dir]; /* Split last window in a chain. */
 	}
-	struct canvas *v = *( n ? &n->c[dir] : &S.c ) = newcanvas();
-	if( v != NULL ) {
-		v->typ = dir;
-		v->parent = n;
-		balance(v);
+	for( int count = S.count < 1 ? 1 : S.count; count; count -= 1 ) {
+		struct canvas *v = *( n ? &n->c[dir] : &S.c ) = newcanvas();
+		if( v != NULL ) {
+			v->typ = dir;
+			v->parent = n;
+			n = v;
+		}
 	}
+	balance(n);
 	/* TODO: we should be able to set S.reshape_root here, but
 	 * doing so causes odd (eg, unexplained) behavior in the tests.
 	 * Need to track down why.
