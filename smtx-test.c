@@ -644,30 +644,30 @@ test_scrollback(int fd, pid_t p)
 	const char *string = "This is a relatively long string!";
 	char trunc[128];
 
-	send_str(fd, PROMPT ":", "%cCC\r:\r", CTL('g'));
+	send_cmd(fd, PROMPT ":", "CC\r:");
 	status |= check_layout(p, 0x1, "*23x26; 23x26; 23x26");
 
-	send_str(fd, NULL, "a='%s'\rPS1=$(printf 'un%%s>' iq)\r", string);
-	send_str(fd, "uniq>", "%c100<\r", CTL('g'));
-	send_str(fd, "uniq>", "yes \"$a\" | nl |\rsed 50q\r");
+	send_txt(fd, NULL, "a='%s'\rPS1=$(printf 'un%%s>' iq)", string);
+	send_cmd(fd, "uniq>", "100<");
+	send_txt(fd, "uniq>", "yes \"$a\" | nl |\rsed 50q");
 	snprintf(trunc, 19, "%s", string);
 	status |= validate_row(p, 1, "%6d  %-18s", 29, trunc);
 	status |= validate_row(p, 22, "%6d  %-18s", 50, trunc);
 
 	/* Scrollback 3, then move to another term and write a unique string */
-	send_str(fd, "foobar", "%c3bl\rprintf 'foo%%s' bar\r", CTL('g'));
+	send_cmd(fd, "foobar", "3bl\rprintf 'foo%%s' bar");
 	status |= validate_row(p, 22, "%6d  %-18s", 47, trunc);
 
 	/* Scrollright 8, then move to another term and write a unique string */
 	snprintf(trunc, 27, "%s", string);
-	send_str(fd, "foobaz", "%ch8>l\rprintf 'foo%%s' baz\r", CTL('g'));
+	send_cmd(fd, "foobaz", "h8>l\rprintf 'foo%%s' baz");
 	status |= validate_row(p, 14, "%-26s", trunc);
 
 	/* Exit all pty instead of killing.  This was triggering a segfault
 	 * on macos.  The test still times out whether we kill the SMTX
 	 * or exit. */
 	status |= check_layout(p, 0x1, "23x26; *23x26; 23x26");
-	send_str(fd, NULL, "exit\r%1$cl\rexit\r%1$chh\rexit\r", CTL('g'));
+	send_txt(fd, NULL, "exit\r%1$cl\rexit\r%1$chh\rexit", CTL('g'));
 
 	return status;
 }
