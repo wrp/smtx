@@ -207,6 +207,10 @@ grep(int fd, const char *needle)
 	}
 }
 
+/* TODO: allow alternatives.  That is, sometimes there is a race, and
+ * a row has one of two values (depending on if the shell has printed
+ * a prompt).  It might be nice to check that.
+ */
 static int
 validate_row(pid_t pid, int row, const char *fmt, ... )
 {
@@ -768,16 +772,22 @@ test_vis(int fd, pid_t p)
 }
 
 static int
-test_vpa(int fd, pid_t p)
+test_tput(int fd, pid_t p)
 {
 	int rv = 0;
-	/* vpa: move cursor to row, hpa: move cursor to column */
-	send_txt(fd, "foo", "%s", "tput vpa 7;tput hpa 18;printf 'fo%s\\n' o");
-	rv |= validate_row(p, 8, "%18sfoo%59s", "", "");
-	for( int i = 2; i < 23; i++ ) {
-		if( i <8 || i > 9 ) {
-			rv |= validate_row(p, i, "%80s", "");
-		}
+	/* vpa: move cursor to row (0 based), hpa: move cursor to column */
+	send_txt(fd, "xyz", "%s", "tput vpa 7; tput hpa 18; echo x'y'z");
+	rv |= validate_row(p, 8, "%18sxyz%59s", "", "");
+
+	/* ed: clear to end of screen */
+	send_txt(fd, "uniq", "%s; %s; %s",
+		"yes abcdefghijklmnopqrstuvzxyz | sed 25q", /* Fill screen */
+		"tput cup 5 10; tput ed", /* Move and delete to end of screen */
+		"printf 'uniq\\n'"
+	);
+	rv |= validate_row(p, 6, "%-80s", "abcdefghijuniq");
+	for( int i = 8; i < 23; i++ ) {
+		rv |= validate_row(p, i, "%80s", "");
 	}
 	send_str(fd, NULL, "kill $SMTX\r");
 	return rv;
@@ -849,7 +859,7 @@ test1(int fd, pid_t p)
 {
 	(void)p;
 	char *cmds[] = {
-		"tput ed; tput bel; tput ri",
+		"tput bel; tput ri",
 		"tput tsl; tput fsl; tput dsl",
 		"tput cub 1; tput dch 1; tput ack",
 		"kill $SMTX",
@@ -983,8 +993,8 @@ main(int argc, char *const argv[])
 	F(test_scrollback);
 	F(test_swap);
 	F(test_tabstop);
+	F(test_tput);
 	F(test_vis);
-	F(test_vpa);
 	F(test_width);
 	for( v = tab; v && ( argc < 2 || *++argv ); v = v ? v->next : NULL ) {
 		const char *name = *argv;
