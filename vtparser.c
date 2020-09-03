@@ -199,13 +199,13 @@ initstate(struct state *s, void (*entry)(struct vtp *))
 {
 	s->entry = entry;
 	init_action(s, 0, ignore, NULL);
-	init_action(s, 0x7f, ignore, NULL);
+	init_range(s, 0x01, 0x17, docontrol, NULL);
 	init_action(s, 0x18, docontrol, &ground);
+	init_action(s, 0x19, docontrol, NULL);
 	init_action(s, 0x1a, docontrol, &ground);
 	init_action(s, 0x1b, ignore, &escape);
-	init_range(s, 0x01, 0x17, docontrol, NULL);
-	init_action(s, 0x19, docontrol, NULL);
 	init_range(s, 0x1c, 0x1f, docontrol, NULL);
+	init_action(s, 0x7f, ignore, NULL);
 }
 
 static void
