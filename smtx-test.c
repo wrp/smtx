@@ -237,6 +237,19 @@ validate_row(pid_t pid, int row, const char *fmt, ... )
 }
 
 static int
+test_ack(int fd, pid_t pid)
+{
+	/* Expect an \x06 in response to \x05
+	 * I don't completely understand how the \x06 is getting converted
+	 * to "^F"
+	 */
+	(void)pid;
+	send_txt(fd, "^F", "printf '\\005'");
+	send_cmd(fd, NULL, "143q");
+	return 0; /* Test will timeout if it fails */
+}
+
+static int
 test_attach(int fd, pid_t pid)
 {
 	int id;
@@ -998,6 +1011,7 @@ main(int argc, char *const argv[])
 	const char *argv0 = argv[0];
 	struct st *tab = NULL, *v;
 	F(test1);
+	F(test_ack);
 	F(test_attach);
 	F(test_cols, "TERM", "smtx", "COLUMNS", "92", "args", "-w", "97");
 	F(test_csr);
