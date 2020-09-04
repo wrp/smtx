@@ -30,9 +30,12 @@
 #include <string.h>
 #include "vtparser.h"
 
-typedef void (*callback)(struct vtp *p, wchar_t w);
+static int initialized;
+static void init(void);
+
+typedef void (callback)(struct vtp *p, wchar_t w);
 struct action {
-	callback cb;
+	callback *cb;
 	struct state *next;
 };
 struct state{
@@ -50,6 +53,7 @@ reset(struct vtp *v)
 	memset(v->oscbuf, 0, sizeof v->oscbuf);
 }
 
+static callback ignore;
 static void
 ignore(struct vtp *v, wchar_t w)
 {
@@ -57,6 +61,7 @@ ignore(struct vtp *v, wchar_t w)
 	(void)w;
 }
 
+static callback collect;
 static void
 collect(struct vtp *v, wchar_t w)
 {
@@ -65,6 +70,7 @@ collect(struct vtp *v, wchar_t w)
 	}
 }
 
+static callback collectosc;
 static void
 collectosc(struct vtp *v, wchar_t w)
 {
@@ -73,6 +79,7 @@ collectosc(struct vtp *v, wchar_t w)
 	}
 }
 
+static callback param;
 static void
 param(struct vtp *v, wchar_t w)
 {
@@ -85,7 +92,7 @@ param(struct vtp *v, wchar_t w)
 	}
 }
 
-extern VTCALLBACK tput;
+static callback docontrol;
 static void
 docontrol(struct vtp *v, wchar_t w)
 {
@@ -93,6 +100,7 @@ docontrol(struct vtp *v, wchar_t w)
 	tput(v, w, v->inter, 0, NULL, v->cons[w]);
 }
 
+static callback doescape;
 static void
 doescape(struct vtp *v, wchar_t w)
 {
@@ -100,6 +108,7 @@ doescape(struct vtp *v, wchar_t w)
 	tput(v, w, v->inter, v->inter > 0, &v->inter, v->escs[w]);
 }
 
+static callback docsi;
 static void
 docsi(struct vtp *v, wchar_t w)
 {
@@ -107,20 +116,19 @@ docsi(struct vtp *v, wchar_t w)
 	tput(v, w, v->inter, v->narg, v->args, v->csis[w]);
 }
 
+static callback doprint;
 static void
 doprint(struct vtp *v, wchar_t w)
 {
 	tput(v, w, v->inter, 0, NULL, v->print);
 }
 
+static callback doosc;
 static void
 doosc(struct vtp *v, wchar_t w)
 {
 	tput(v, w, v->inter, v->nosc, NULL, v->osc);
 }
-
-static int initialized;
-static void init(void);
 
 void
 vtonevent(struct vtp *vp, enum vtEvent t, wchar_t w, int cb)
