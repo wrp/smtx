@@ -222,20 +222,24 @@ init(void)
 	initialized = 1;
 	initstate(&ground, NULL);
 	init_range(&ground, 0x20, 0x7f, doprint, NULL);
+
 	initstate(&escape, reset);
-	init_action(&escape, 0x21, ignore, &osc_string);
-	init_action(&escape, 0x6b, ignore, &osc_string);
-	init_action(&escape, 0x5d, ignore, &osc_string);
-	init_action(&escape, 0x5e, ignore, &osc_string);
-	init_action(&escape, 0x50, ignore, &osc_string);
-	init_action(&escape, 0x5f, ignore, &osc_string);
-	init_range(&escape, 0x20, 0x2f, collect, &escape_intermediate);
+	init_action(&escape, 0x20, collect, &escape_intermediate);
+	init_action(&escape, 0x21, ignore, &osc_string); /* ! */
+	init_range(&escape, 0x22, 0x2f, collect, &escape_intermediate);
 	init_range(&escape, 0x30, 0x4f, doescape, &ground);
+	init_action(&escape, 0x50, ignore, &osc_string); /* P */
 	init_range(&escape, 0x51, 0x57, doescape, &ground);
-	init_range(&escape, 0x60, 0x7e, doescape, &ground);
+	/* Why is 0x58 ('X') skipped ? (1) */
 	init_range(&escape, 0x59, 0x5a, doescape, &ground);
-	init_action(&escape, 0x5b, ignore, &csi_entry);
-	init_action(&escape, 0x5c, doescape, &ground);
+	init_action(&escape, 0x5b, ignore, &csi_entry);  /* [ */
+	init_action(&escape, 0x5c, doescape, &ground);   /* \ */
+	init_action(&escape, 0x5d, ignore, &osc_string); /* ] */
+	init_action(&escape, 0x5e, ignore, &osc_string); /* ^ */
+	init_action(&escape, 0x5f, ignore, &osc_string); /* _ */
+	init_range(&escape, 0x60, 0x6a, doescape, &ground);
+	init_action(&escape, 0x6b, ignore, &osc_string); /* k */
+	init_range(&escape, 0x6c, 0x7e, doescape, &ground);
 
 	initstate(&escape_intermediate, NULL);
 	init_range(&escape_intermediate, 0x20, 0x2f, collect, NULL);
@@ -270,3 +274,6 @@ init(void)
 	init_action(&osc_string, 0x07, doosc, &ground);
 	init_range(&osc_string, 0x20, 0x7f, collectosc, NULL);
 }
+/*
+ * (1) I suspect this is a bug from mtm
+ */
