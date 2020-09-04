@@ -423,6 +423,7 @@ draw_title(struct canvas *n, int r)
 {
 	if( n->wtit ) {
 		assert( n->p != NULL );
+		wattrset(n->wtit, r ? A_REVERSE : A_NORMAL);
 		mvwprintw(n->wtit, 0, 0, "%d %s %d-%d/%d",
 			n->p->id,
 			n->p->status,
@@ -432,10 +433,6 @@ draw_title(struct canvas *n, int r)
 		);
 		whline(n->wtit, ACS_HLINE, n->extent.x);
 		struct point o = n->origin;
-		int x = winpos(n->wtit, 1);
-		mvwchgat(n->wtit, 0, 0, x, r ? A_REVERSE : A_NORMAL, 0, NULL);
-		wattrset(n->wtit, r ? A_REVERSE : A_NORMAL);
-		mvwhline(n->wtit, 0, x, ACS_HLINE, n->extent.x);
 		draw_pane(n->wtit, o.y + n->extent.y, o.x);
 	}
 }
