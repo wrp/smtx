@@ -824,6 +824,12 @@ test_vis(int fd, pid_t p)
 	send_txt(fd, "uniq2", "%s; %s", "tput cvvis", "printf 'uniq%s\\n' 2");
 	rv |= check_layout(p, 0x3, "*23x80");
 
+	send_txt(fd, "uniq3", "%s", "printf '\\033[?25l u'n'iq3'");
+	rv |= check_layout(p, 0x3, "*23x80!");
+
+	send_txt(fd, "uniq4", "%s", "printf '\\033[?25h u'n'iq4'");
+	rv |= check_layout(p, 0x3, "*23x80");
+
 	send_txt(fd, NULL, "exit");
 	return rv;
 }
