@@ -63,14 +63,15 @@ struct vtp {
 	int csis[MAXCALLBACK];
 };
 
-typedef void (*VTCALLBACK)(
-	struct vtp *v,
-	void *p,
-	wchar_t w,
-	wchar_t iw,
-	int argc,
-	int *argv
+typedef void (VTCALLBACK)(
+	struct vtp *,
+	wchar_t,
+	wchar_t,
+	int,
+	int *,
+	int
 );
+extern VTCALLBACK tput;
 
 typedef enum {
 	VTPARSER_CONTROL,

@@ -20,7 +20,6 @@
 /*
  * The names for handlers come from their ANSI/ECMA/DEC mnemonics.
  */
-
 enum cmd {
 	ack=1, bell, cbt, cls, cnl, cpl, cr, csr, cub, cud, cuf, cup,
 	cuu, dch, decaln, decid, decreqtparm, dsr, ech, ed, el, hpa, hpr, ht,
@@ -31,8 +30,9 @@ enum cmd {
 #define CALL(x) tput(v, 0, 0, 0, NULL, x)
 void
 tput(struct vtp *v, wchar_t w, wchar_t iw,
-	int argc, int *argv, enum cmd c)
+	int argc, int *argv, int handler)
 {
+	enum cmd c = handler;
 	int noclear_repc = 0;
 	int p0[2];               /* First arg, defaulting to 0 or 1 */
 	int p1;                  /* argv[1], defaulting to 1 */

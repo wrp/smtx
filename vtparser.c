@@ -85,7 +85,7 @@ param(struct vtp *v, wchar_t w)
 	}
 }
 
-extern void tput(struct vtp *, wchar_t, wchar_t, int, int *, int);
+extern VTCALLBACK tput;
 static void
 docontrol(struct vtp *v, wchar_t w)
 {
