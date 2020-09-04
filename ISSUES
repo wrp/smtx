@@ -35,9 +35,6 @@ TODO:
 	Perhaps use (e) to edit the file (eg, spawn $EDITOR), then (p)
 	to paste it.
 
-	Ability to set titles.  Make sure this works with tput {hs,tsl,fsl}
-	See https://serverfault.com/a/24534/14764
-
 	List all windows with titles, with ability to navigate.
 
 	Figure out initialization.  Maybe just use a "source" command to read
