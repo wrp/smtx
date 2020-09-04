@@ -916,18 +916,30 @@ describe_state(char *desc, size_t siz)
 unsigned
 describe_row(char *desc, size_t siz, int row)
 {
-	const struct canvas *c = S.c;
-	WINDOW *w = c->p->s->win;
 	unsigned rv;
 	int y, x, mx;
-	getmaxyx(w, y, mx);
-	mx = MIN3(mx, c->extent.x + c->offset.x, (int)siz - 1);
-	getyx(w, y, x);
-	desc[rv = mx - c->offset.x] = '\0';
-	row += c->offset.y;
-	for( ; mx >= c->offset.x; mx-- ) {
-		desc[mx - c->offset.x] = mvwinch(w, row, mx) & A_CHARTEXT;
+
+	const struct canvas *c = S.c;
+	assert( c->offset.x >= 0 );
+
+	if( row < c->extent.y ) {
+		WINDOW *w = c->p->s->win;
+		getmaxyx(w, y, mx);
+		mx = MIN3(mx, c->extent.x + c->offset.x, (int)siz - 1);
+		mx -= c->offset.x;
+		getyx(w, y, x);
+		rv = mx;
+		row += c->offset.y;
+		for( char *d = desc + rv; mx >= 0; mx-- ) {
+			*d-- = mvwinch(w, row, mx + c->offset.x) & A_CHARTEXT;
+		}
+		wmove(w, y, x);
+	} else if( row == c->extent.y ) {
+		WINDOW *w = c->wtit;
+		rv = c->extent.x;
+		for( x = 0; x < c->extent.x; x++ ) {
+			desc[x] = mvwinch(w, 0, x) & A_CHARTEXT;
+		}
 	}
-	wmove(w, y, x);
 	return rv;
 }
