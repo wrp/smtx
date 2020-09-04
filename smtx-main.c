@@ -165,11 +165,13 @@ new_pty(int rows, int cols)
 {
 	struct pty *p = calloc(1, sizeof *p);
 	if( p != NULL ) {
+		const char *sh = getshell();
+		const char *bname = strrchr(sh, '/');
+		bname = bname ? bname + 1 : sh;
 		p->ws.ws_row = rows - 1;
 		p->ws.ws_col = cols;
 		p->pid = forkpty(&p->fd, NULL, NULL, &p->ws);
 		if( p->pid == 0 ) {
-			const char *sh = getshell();
 			setsid();
 			signal(SIGCHLD, SIG_DFL);
 			execl(sh, sh, NULL);
@@ -189,6 +191,7 @@ new_pty(int rows, int cols)
 			}
 			p->next = *t;
 			*t = p;
+			strncpy(p->status, bname, sizeof p->status - 1);
 		}
 	}
 	return p;
@@ -415,12 +418,6 @@ draw_pane(WINDOW *w, int y, int x)
 	pnoutrefresh(w, 0, 0, y, x, y + wy - 1, x + wx - 1);
 }
 
-static const char *
-bname(const char *n) {
-	const char *b = strrchr(n, '/');
-	return b ? b + 1 : n;
-}
-
 static void
 draw_title(struct canvas *n, int r)
 {
@@ -428,7 +425,7 @@ draw_title(struct canvas *n, int r)
 		assert( n->p != NULL );
 		mvwprintw(n->wtit, 0, 0, "%d %s %d-%d/%d",
 			n->p->id,
-			n->p->fd > 0 ? bname(getshell()) : n->p->status,
+			n->p->status,
 			n->offset.x + 1,
 			n->offset.x + n->extent.x,
 			n->p->ws.ws_col

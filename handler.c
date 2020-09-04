@@ -24,7 +24,7 @@ enum cmd {
 	ack=1, bell, cbt, cls, cnl, cpl, cr, csr, cub, cud, cuf, cup,
 	cuu, dch, decaln, decid, decreqtparm, dsr, ech, ed, el, hpa, hpr, ht,
 	hts, ich, idl, ind, mode, nel, numkp, pnl, print, rc, rep,
-	ri, ris, sc, scs, sgr, sgr0, so, su, tab, tbc, vis, vpa, vpr
+	ri, ris, sc, scs, sgr, sgr0, so, su, tab, tbc, tsl, vis, vpa, vpr
 };
 
 #define CALL(x) tput(v, 0, 0, 0, NULL, x)
@@ -33,6 +33,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw,
 	int argc, void *arg, int handler)
 {
 	int *argv = arg;
+	wchar_t *osc;
 	enum cmd c = handler;
 	int noclear_repc = 0;
 	int p0[2];               /* First arg, defaulting to 0 or 1 */
@@ -146,6 +147,14 @@ tput(struct vtp *v, wchar_t w, wchar_t iw,
 		for( i = 0; i < p0[1]; i++ ) {
 			CALL(w == L'Z' ? cbt : ht);
 		}
+		break;
+	case tsl: /* To Status Line */
+		osc = arg;
+		assert( osc[0] == L'2' );
+		for( i = 0, osc += 1; *osc && i < (int)sizeof p->status; ) {
+			p->status[i++] = *osc++;
+		}
+		p->status[i] = '\0';
 		break;
 	case decaln: { /* Screen Alignment Test */
 		chtype e[] = { COLOR_PAIR(0) | 'E', 0 };
@@ -579,6 +588,7 @@ setupevents(struct vtp *v)
 	vtonevent(v, CSI,     L's', sc);
 	vtonevent(v, CSI,     L'u', rc);
 	vtonevent(v, CSI,     L'x', decreqtparm);
+	vtonevent(v, OSC,     L'2', tsl);
 	vtonevent(v, ESCAPE,  L'0', scs);
 	vtonevent(v, ESCAPE,  L'1', scs);
 	vtonevent(v, ESCAPE,  L'2', scs);
