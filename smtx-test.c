@@ -824,27 +824,27 @@ test_width(int fd, pid_t p)
 	}
 	buf[sizeof buf - 1] = '\0';
 	/* Clear screen, print 2 rows (160 chars) of alphabet */
-	send_str(fd, NULL, "clear; printf '%s\\n'\r", buf);
+	send_txt(fd, NULL, "clear; printf '%s\\n'", buf);
 	/* Shift right 75 chars ( now looking at last 20 chars of pty)*/
 	send_cmd(fd, NULL, "75>");
 	/* Print 60 blanks then a string to sync*/
-	send_txt(fd, "de3dbeef", "printf '%%60sde3d%%s' '' beef\\n");
+	send_txt(fd, "de3dbeef", "printf '%%60sde3d%%s' '' beef");
 	/* Verify that the 160 chars of repeated alphabet is at end of rows */
 	rv |= validate_row(p, 1, "%-20s", "ijklmnopqrstuvwxyzab");
 	rv |= validate_row(p, 2, "%-20s", "klmnopqrstuvwxyzabcd");
 
 	/* Change width of underlying pty to 180 */
 	send_cmd(fd, NULL, "180W\rclear; printf '%s\\n'", buf);
-	send_txt(fd, "de4dbeef", "printf '%%68sde4d%%s' '' beef\\n");
+	send_txt(fd, "de4dbeef", "printf '%%68sde4d%%s' '' beef");
 	rv |= validate_row(p, 1, "%-20s", "ijklmnopqrstuvwxyzab");
 	send_cmd(fd, NULL, "1>");
-	send_txt(fd, "de5dbeef", "printf '%%68sde5d%%s' '' beef\\n");
+	send_txt(fd, "de5dbeef", "printf '%%68sde5d%%s' '' beef");
 	rv |= validate_row(p, 1, "%-20s", "jklmnopqrstuvwxyzabc");
 
 	/* Change width of underlying pty to match canvas and scroll to start */
 	send_cmd(fd, NULL, "W180<");
 	send_txt(fd, NULL, "clear; printf '%s\\n'", buf);
-	send_txt(fd, "de6dbeef", "printf '%%sde6d%%s' '' beef\\n");
+	send_txt(fd, "de6dbeef", "printf '%%sde6d%%s' '' beef");
 	rv |= validate_row(p, 1, "%-20s", "abcdefghijklmnopqrst");
 	rv |= validate_row(p, 2, "%-20s", "uvwxyzabcdefghijklmn");
 
