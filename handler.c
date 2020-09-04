@@ -118,15 +118,15 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			wdelch(win);
 		}
 		break;
-	case decaln: { /* Screen Alignment Test */
-		chtype e[] = { COLOR_PAIR(0) | 'E', 0 };
+	case decaln: /* Screen Alignment Test */
 		for( int r = 0; r < my; r++ ) {
+			const chtype e[] = { COLOR_PAIR(0) | 'E', 0 };
 			for( int c = 0; c <= mx; c++ ) {
 				mvwaddchnstr(win, tos + r, c, e, 1);
 			}
 		}
 		wmove(win, py, px);
-	} break;
+	break;
 	case decid: /* Send Terminal Identification */
 		if( w == L'c' ) {
 			if( iw == L'>' ) {
