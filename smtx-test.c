@@ -758,6 +758,32 @@ test_tabstop(int fd, pid_t p)
 }
 
 static int
+test_title(int fd, pid_t p)
+{
+	int rv = 0;
+	char buf[69];
+
+	/* The tail of the title should be ACS_HLINE.
+	 * When the locale is wrong, ACS_HLINE == 'q', but we set the
+	 * locale in smtx-main, so it seems we should set buf to have
+	 * ACS_HLINE & A_CHARTEXT, but that is a space.
+	 * Not entirely sure why the title comes back with 'q', but the
+	 * purpose of this test is to check that the string "foobar" is
+	 * set in the beginning of the title, so I'm going to punt on the
+	 * 'q' for now and just hack this.
+	 */
+	memset(buf, 'q', 68);
+	buf[68] = '\0';
+	rv |= validate_row(p, 24, "1 sh 1-80/80%s", buf);
+	send_txt(fd, "uniq", "printf '\\033]2foobar\\007'; echo u'n'iq");
+	buf[64] = '\0';
+	rv |= validate_row(p, 24, "1 foobar 1-80/80%s", buf);
+
+	send_txt(fd, NULL, "exit");
+	return rv;
+}
+
+static int
 test_vis(int fd, pid_t p)
 {
 	int rv = 0;
@@ -995,6 +1021,7 @@ main(int argc, char *const argv[])
 	F(test_scrollback);
 	F(test_swap);
 	F(test_tabstop);
+	F(test_title);
 	F(test_tput);
 	F(test_vis);
 	F(test_width);
