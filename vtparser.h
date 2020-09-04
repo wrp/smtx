@@ -45,8 +45,7 @@
 
 #define MAXPARAM    16
 #define MAXCALLBACK 128
-#define MAXOSC      100
-#define MAXBUF      100
+#define MAXOSC      128
 
 struct vtp {
 	struct state *s;
