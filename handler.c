@@ -23,16 +23,29 @@
 enum cmd {
 	ack=1, bell, cbt, cls, cnl, cpl, cr, csr, cub, cud, cuf, cup,
 	cuu, dch, decaln, decid, decreqtparm, dsr, ech, ed, el, hpa, hpr, ht,
-	hts, ich, idl, ind, mode, nel, numkp, pnl, print, rc, rep,
-	ri, ris, sc, scs, sgr, sgr0, so, su, tab, tbc, tsl, vis, vpa, vpr
+	hts, ich, idl, ind, mode, nel, numkp, osc, pnl, print, rc, rep,
+	ri, ris, sc, scs, sgr, sgr0, so, su, tab, tbc, vis, vpa, vpr
 };
+
+
+static void
+handle_osc(struct pty *p, char *arg)
+{
+	unsigned i;
+	switch( *arg++ ) {
+	case '2':
+		for( i = 0; *arg && i < sizeof p->status; ) {
+			p->status[i++] = *arg++;
+		}
+		p->status[i] = '\0';
+	}
+}
 
 #define CALL(x) tput(v, 0, 0, 0, NULL, x)
 void
 tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 {
 	int *argv = arg;
-	wchar_t *osc;
 	enum cmd c = handler;
 	int noclear_repc = 0;
 	int p0[2];               /* First arg, defaulting to 0 or 1 */
@@ -276,13 +289,8 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			}
 		}
 		break;
-	case tsl: /* To Status Line */
-		osc = arg;
-		assert( osc[0] == L'2' );
-		for( i = 0, osc += 1; *osc && i < (int)sizeof p->status; ) {
-			p->status[i++] = *osc++;
-		}
-		p->status[i] = '\0';
+	case osc: /* Operating System Command */
+		handle_osc(p, arg);
 		break;
 	case vis: /* Cursor visibility */
 		s->vis = iw == L'6'? 0 : 1;
@@ -587,7 +595,6 @@ setupevents(struct vtp *v)
 	vtonevent(v, CSI,     L's', sc);
 	vtonevent(v, CSI,     L'u', rc);
 	vtonevent(v, CSI,     L'x', decreqtparm);
-	vtonevent(v, OSC,     L'2', tsl);
 	vtonevent(v, ESCAPE,  L'0', scs);
 	vtonevent(v, ESCAPE,  L'1', scs);
 	vtonevent(v, ESCAPE,  L'2', scs);
@@ -605,5 +612,6 @@ setupevents(struct vtp *v)
 	vtonevent(v, ESCAPE,  L'=', numkp);
 	vtonevent(v, ESCAPE,  L'>', numkp);
 	vtonevent(v, PRINT,   0,    print);
+	vtonevent(v, OSC,     0,    osc);
 	tput(v, L'c', 0, 0, NULL, ris);
 }

@@ -53,7 +53,7 @@ struct vtp {
 	int nosc;
 	int args[MAXPARAM];
 	int inter;
-	wchar_t oscbuf[MAXOSC + 1];
+	char oscbuf[MAXOSC + 1];
 	mbstate_t ms;
 	void *p;
 	int print;

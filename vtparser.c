@@ -75,7 +75,7 @@ static void
 collectosc(struct vtp *v, wchar_t w)
 {
 	if( v->nosc < MAXOSC ) {
-		v->oscbuf[v->nosc++] = w;
+		v->oscbuf[v->nosc++] = wctob(w);
 	}
 }
 
