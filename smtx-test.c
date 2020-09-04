@@ -363,6 +363,23 @@ test_cursor(int fd, pid_t p)
 }
 
 static int
+test_decaln(int fd, pid_t p)
+{
+	char e[81] = "EEE";
+	int rv = 0;
+	memset(e, 'E', 80);
+	send_txt(fd, "uniq", "printf '\\033[1048#u'; echo 'u'n'i'q;");
+	rv |= validate_row(p, 1, e);
+	for( int i = 4; i < 24; i++ ) {
+		rv |= validate_row(p, i, e);
+	}
+	memcpy(e, "uniq", 4);
+	rv |= validate_row(p, 2, e);
+	send_str(fd, NULL, "kill $SMTX\r");
+	return rv;
+}
+
+static int
 test_ech(int fd, pid_t p)
 {
 	int rv = 0;
@@ -1017,6 +1034,7 @@ main(int argc, char *const argv[])
 	F(test_csr);
 	F(test_cup);
 	F(test_cursor);
+	F(test_decaln);
 	F(test_ech);
 	F(test_el);
 	F(test_equalize);
