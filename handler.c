@@ -29,8 +29,7 @@ enum cmd {
 
 #define CALL(x) tput(v, 0, 0, 0, NULL, x)
 void
-tput(struct vtp *v, wchar_t w, wchar_t iw,
-	int argc, void *arg, int handler)
+tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 {
 	int *argv = arg;
 	wchar_t *osc;
