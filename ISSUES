@@ -64,7 +64,10 @@ BUGS:
 	fix, but may be a terminfo issue.  It needs to be understood.
 
 	As of 61c41fe0f1dd73829315c959b69cf44df2af102f, the test suite hangs
-	on macos
+	on macos.  Note that all the tests in esctest.py also timeout.  Perhaps
+	this is tickling a macos bug similar to that mentioned in
+	https://daniel.haxx.se/blog/2016/10/11/poll-on-mac-10-12-is-broken/
+
 
 MAYBE TODO:
 	Register signal handlers for TERM and HUP.  Need to ensure
