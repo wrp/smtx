@@ -62,31 +62,31 @@ tput(struct vtp *v, wchar_t w, wchar_t iw,
 	bot += 1 - tos;
 	top = top <= tos ? 0 : top - tos;
 	switch(c) {
+	case ack: /* Acknowledge Enquiry */
+		rewrite(p->fd, "\006", 1);
+		break;
 	case bell: /* Terminal bell. */
 		beep();
 		break;
-	case numkp: /* Application/Numeric Keypad Mode */
-		p->pnm = (w == L'=');
+	case cbt: /* Cursor Backwards Tab */
+		for( i = x - 1; i >= 0 && ! p->tabs[i]; i-- ) {
+			assert( i < p->ntabs );
+		}
+		wmove(win, py, i);
 		break;
-	case vis: /* Cursor visibility */
-		s->vis = iw == L'6'? 0 : 1;
-		break;
-	case cup: /* Cursor Position */
+	case cr: /* Carriage Return */
 		s->xenl = false;
-		wmove(win, tos + (p->decom ? top : 0) + p0[1] - 1, p1 - 1);
+		wmove(win, py, 0);
 		break;
-	case dch: /* Delete Character */
-		for( i = 0; i < p0[1]; i++ ) {
-			wdelch(win);
+	case csr: /* CSR - Change Scrolling Region */
+		t1 = argv && argc > 1 ? argv[1] : my;
+		if( wsetscrreg(win, tos + p0[1] - 1, tos + t1 - 1) == OK ) {
+			CALL(cup);
 		}
 		break;
-	case ich: /* Insert Character */
-		for( i = 0; i < p0[1]; i++ ) {
-			wins_nwstr(win, L" ", 1);
-		}
-		break;
-	case cuu: /* Cursor Up */
-		wmove(win, MAX(py - p0[1], tos + top), x);
+	case cub: /* Cursor Backward */
+		s->xenl = false;
+		wmove(win, py, MAX(x - p0[1], 0));
 		break;
 	case cud: /* Cursor Down */
 		wmove(win, MIN(py + p0[1], tos + bot - 1), x);
@@ -94,20 +94,27 @@ tput(struct vtp *v, wchar_t w, wchar_t iw,
 	case cuf: /* Cursor Forward */
 		wmove(win, py, MIN(x + p0[1], mx - 1));
 		break;
-	case ack: /* Acknowledge Enquiry */
-		rewrite(p->fd, "\006", 1);
+	case cup: /* Cursor Position */
+		s->xenl = false;
+		wmove(win, tos + (p->decom ? top : 0) + p0[1] - 1, p1 - 1);
 		break;
-	case hts: /* Horizontal Tab Set */
-		if( x < p->ntabs && x > 0 ) {
-			p->tabs[x] = true;
+	case cuu: /* Cursor Up */
+		wmove(win, MAX(py - p0[1], tos + top), x);
+		break;
+	case dch: /* Delete Character */
+		for( i = 0; i < p0[1]; i++ ) {
+			wdelch(win);
 		}
 		break;
-	case ri: /* Reverse Index (scroll back) */
-		wgetscrreg(win, &t1, &t2);
-		wsetscrreg(win, t1 >= tos ? t1 : tos, t2);
-		y == top ? wscrl(win, -1) : wmove(win, MAX(tos, py - 1), x);
-		wsetscrreg(win, t1, t2);
-		break;
+	case decaln: { /* Screen Alignment Test */
+		chtype e[] = { COLOR_PAIR(0) | 'E', 0 };
+		for( int r = 0; r < my; r++ ) {
+			for( int c = 0; c <= mx; c++ ) {
+				mvwaddchnstr(win, tos + r, c, e, 1);
+			}
+		}
+		wmove(win, py, px);
+	} break;
 	case decid: /* Send Terminal Identification */
 		if( w == L'c' ) {
 			if( iw == L'>' ) {
@@ -119,23 +126,68 @@ tput(struct vtp *v, wchar_t w, wchar_t iw,
 			rewrite(p->fd, "\033[?6c", 5);
 		}
 		break;
+	case dsr: /* DSR - Device Status Report */
+		if( p0[0] == 6 ) {
+			i = snprintf(buf, sizeof buf, "\033[%d;%dR",
+				(p->decom ? y - top : y) + 1, x + 1);
+		} else {
+			i = snprintf(buf, sizeof buf, "\033[0n");
+		}
+		assert( i < (int)sizeof buf ); /* Assumes INT_MAX < 1e14 */
+		rewrite(p->fd, buf, i);
+		break;
+	case ech: /* Erase Character */
+		#if HAVE_ALLOC_PAIR
+		setcchar(&b, L" ", A_NORMAL, alloc_pair(s->fg, s->bg), NULL);
+		#endif
+		for( i = 0; i < p0[1]; i++ )
+			mvwadd_wchnstr(win, py, x + i, &b, 1);
+		wmove(win, py, px);
+		break;
+	case ed: /* Erase in Display */
+		switch( p0[0] ) {
+		case 2:
+			wmove(win, tos, 0); /* Fall Thru */
+		case 0:
+			wclrtobot(win);
+			break;
+		case 3:
+			werase(win);
+			break;
+		case 1:
+			for( i = tos; i < py; i++ ) {
+				wmove(win, i, 0);
+				wclrtoeol(win);
+			}
+			wmove(win, py, x);
+			tput(v, w, iw, 1, argv, el);
+			break;
+		}
+		wmove(win, py, px);
+		break;
+	case el: /* Erase in Line */
+#if HAVE_ALLOC_PAIR
+		setcchar(&b, L" ", A_NORMAL, alloc_pair(s->fg, s->bg), NULL);
+#endif
+		switch( argc > 0 ? argv[0] : 0 ) {
+		case 2:
+			wmove(win, py, 0); /* Fall Thru */
+		case 0:
+			wclrtoeol(win);
+			break;
+		case 1:
+			for( i = 0; i <= x; i++ ) {
+				mvwadd_wchnstr(win, py, i, &b, 1);
+			}
+			break;
+		}
+		wmove(win, py, x);
+		break;
 	case hpa: /* Cursor Horizontal Absolute */
 		wmove(win, py, MIN(p0[1] - 1, mx - 1));
 		break;
 	case hpr: /* Cursor Horizontal Relative */
 		wmove(win, py, MIN(px + p0[1], mx - 1));
-		break;
-	case vpa: /* Cursor Vertical Absolute */
-		wmove(win, MIN(tos + bot - 1, MAX(tos + top, tos + p0[1] - 1)), x);
-		break;
-	case vpr: /* Cursor Vertical Relative */
-		wmove(win, MIN(tos + bot - 1, MAX(tos + top, py + p0[1])), x);
-		break;
-	case cbt: /* Cursor Backwards Tab */
-		for( i = x - 1; i >= 0 && ! p->tabs[i]; i-- ) {
-			assert( i < p->ntabs );
-		}
-		wmove(win, py, i);
 		break;
 	case ht: /* Horizontal Tab */
 		for( i = x + 1; i < mx - 1 && !p->tabs[i]; i++ ) {
@@ -143,40 +195,28 @@ tput(struct vtp *v, wchar_t w, wchar_t iw,
 		}
 		wmove(win, py, i);
 		break;
-	case tab: /* Tab forwards or backwards */
+	case hts: /* Horizontal Tab Set */
+		if( x < p->ntabs && x > 0 ) {
+			p->tabs[x] = true;
+		}
+		break;
+	case ich: /* Insert Character */
 		for( i = 0; i < p0[1]; i++ ) {
-			CALL(w == L'Z' ? cbt : ht);
+			wins_nwstr(win, L" ", 1);
 		}
 		break;
-	case tsl: /* To Status Line */
-		osc = arg;
-		assert( osc[0] == L'2' );
-		for( i = 0, osc += 1; *osc && i < (int)sizeof p->status; ) {
-			p->status[i++] = *osc++;
-		}
-		p->status[i] = '\0';
+	case idl: /* Insert/Delete Line */
+		/* We don't use insdelln here because it inserts above and
+		   not below, and has a few other edge cases. */
+		i = MIN(p0[1], my - 1 - y);
+		wgetscrreg(win, &t1, &t2);
+		wsetscrreg(win, py, t2);
+		wscrl(win, w == L'L' ? -i : i);
+		wsetscrreg(win, t1, t2);
+		wmove(win, py, 0);
 		break;
-	case decaln: { /* Screen Alignment Test */
-		chtype e[] = { COLOR_PAIR(0) | 'E', 0 };
-		for( int r = 0; r < my; r++ ) {
-			for( int c = 0; c <= mx; c++ ) {
-				mvwaddchnstr(win, tos + r, c, e, 1);
-			}
-		}
-		wmove(win, py, px);
-	} break;
-	case su: /* Scroll Up/Down */
-		wscrl(win, (w == L'T' || w == L'^') ? -p0[1] : p0[1]);
-		break;
-	case sc: /* Save Cursor */
-		s->sx = px;                              /* X position */
-		s->sy = py;                              /* Y position */
-		wattr_get(win, &s->sattr, &s->sp, NULL); /* attrs/color pair */
-		s->sfg = s->fg;                          /* foreground color */
-		s->sbg = s->bg;                          /* background color */
-		s->oxenl = s->xenl;                      /* xenl state */
-		s->saved = true;                         /* data is valid */
-		p->sgc = p->gc; p->sgs = p->gs;          /* character sets */
+	case numkp: /* Application/Numeric Keypad Mode */
+		p->pnm = (w == L'=');
 		break;
 	case rc: /* Restore Cursor */
 		if( iw == L'#' ) {
@@ -201,6 +241,30 @@ tput(struct vtp *v, wchar_t w, wchar_t iw,
 		wbkgrndset(win, &b);
 		#endif
 		break;
+	case ri: /* Reverse Index (scroll back) */
+		wgetscrreg(win, &t1, &t2);
+		wsetscrreg(win, t1 >= tos ? t1 : tos, t2);
+		y == top ? wscrl(win, -1) : wmove(win, MAX(tos, py - 1), x);
+		wsetscrreg(win, t1, t2);
+		break;
+	case sc: /* Save Cursor */
+		s->sx = px;                              /* X position */
+		s->sy = py;                              /* Y position */
+		wattr_get(win, &s->sattr, &s->sp, NULL); /* attrs/color pair */
+		s->sfg = s->fg;                          /* foreground color */
+		s->sbg = s->bg;                          /* background color */
+		s->oxenl = s->xenl;                      /* xenl state */
+		s->saved = true;                         /* data is valid */
+		p->sgc = p->gc; p->sgs = p->gs;          /* character sets */
+		break;
+	case su: /* Scroll Up/Down */
+		wscrl(win, (w == L'T' || w == L'^') ? -p0[1] : p0[1]);
+		break;
+	case tab: /* Tab forwards or backwards */
+		for( i = 0; i < p0[1]; i++ ) {
+			CALL(w == L'Z' ? cbt : ht);
+		}
+		break;
 	case tbc: /* Tabulation Clear */
 		if( p->tabs != NULL ) {
 			switch( argc >= 0 && argv ? argv[0] : 0 ) {
@@ -213,82 +277,22 @@ tput(struct vtp *v, wchar_t w, wchar_t iw,
 			}
 		}
 		break;
-	case cub: /* Cursor Backward */
-		s->xenl = false;
-		wmove(win, py, MAX(x - p0[1], 0));
-		break;
-	case el: /* Erase in Line */
-#if HAVE_ALLOC_PAIR
-		setcchar(&b, L" ", A_NORMAL, alloc_pair(s->fg, s->bg), NULL);
-#endif
-		switch( argc > 0 ? argv[0] : 0 ) {
-		case 2:
-			wmove(win, py, 0); /* Fall Thru */
-		case 0:
-			wclrtoeol(win);
-			break;
-		case 1:
-			for( i = 0; i <= x; i++ ) {
-				mvwadd_wchnstr(win, py, i, &b, 1);
-			}
-			break;
+	case tsl: /* To Status Line */
+		osc = arg;
+		assert( osc[0] == L'2' );
+		for( i = 0, osc += 1; *osc && i < (int)sizeof p->status; ) {
+			p->status[i++] = *osc++;
 		}
-		wmove(win, py, x);
+		p->status[i] = '\0';
 		break;
-	case ed: /* Erase in Display */
-		switch( p0[0] ) {
-		case 2:
-			wmove(win, tos, 0); /* Fall Thru */
-		case 0:
-			wclrtobot(win);
-			break;
-		case 3:
-			werase(win);
-			break;
-		case 1:
-			for( i = tos; i < py; i++ ) {
-				wmove(win, i, 0);
-				wclrtoeol(win);
-			}
-			wmove(win, py, x);
-			tput(v, w, iw, 1, argv, el);
-			break;
-		}
-		wmove(win, py, px);
+	case vis: /* Cursor visibility */
+		s->vis = iw == L'6'? 0 : 1;
 		break;
-	case ech: /* Erase Character */
-		#if HAVE_ALLOC_PAIR
-		setcchar(&b, L" ", A_NORMAL, alloc_pair(s->fg, s->bg), NULL);
-		#endif
-		for( i = 0; i < p0[1]; i++ )
-			mvwadd_wchnstr(win, py, x + i, &b, 1);
-		wmove(win, py, px);
+	case vpa: /* Cursor Vertical Absolute */
+		wmove(win, MIN(tos + bot - 1, MAX(tos + top, tos + p0[1] - 1)), x);
 		break;
-	case dsr: /* DSR - Device Status Report */
-		if( p0[0] == 6 ) {
-			i = snprintf(buf, sizeof buf, "\033[%d;%dR",
-				(p->decom ? y - top : y) + 1, x + 1);
-		} else {
-			i = snprintf(buf, sizeof buf, "\033[0n");
-		}
-		assert( i < (int)sizeof buf ); /* Assumes INT_MAX < 1e14 */
-		rewrite(p->fd, buf, i);
-		break;
-	case idl: /* Insert/Delete Line */
-		/* We don't use insdelln here because it inserts above and
-		   not below, and has a few other edge cases. */
-		i = MIN(p0[1], my - 1 - y);
-		wgetscrreg(win, &t1, &t2);
-		wsetscrreg(win, py, t2);
-		wscrl(win, w == L'L' ? -i : i);
-		wsetscrreg(win, t1, t2);
-		wmove(win, py, 0);
-		break;
-	case csr: /* CSR - Change Scrolling Region */
-		t1 = argv && argc > 1 ? argv[1] : my;
-		if( wsetscrreg(win, tos + p0[1] - 1, tos + t1 - 1) == OK ) {
-			CALL(cup);
-		}
+	case vpr: /* Cursor Vertical Relative */
+		wmove(win, MIN(tos + bot - 1, MAX(tos + top, py + p0[1])), x);
 		break;
 case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 	if( p0[0] ) {
@@ -442,10 +446,6 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 #endif
 		noclear_repc = 1;
 	}
-		break;
-	case cr: /* Carriage Return */
-		s->xenl = false;
-		wmove(win, py, 0);
 		break;
 	case ind: /* Index */
 		y == (bot - 1) ? scroll(win) : wmove(win, py + 1, x);
