@@ -123,7 +123,7 @@ static int initialized;
 static void init(void);
 
 void
-vtonevent(struct vtp *vp, VtEvent t, wchar_t w, int cb)
+vtonevent(struct vtp *vp, enum vtEvent t, wchar_t w, int cb)
 {
 	if( ! initialized ) {
 		init();
