@@ -74,11 +74,11 @@ typedef void (VTCALLBACK)(
 extern VTCALLBACK tput;
 
 enum vtEvent {
-	VTPARSER_CONTROL,
-	VTPARSER_ESCAPE,
-	VTPARSER_CSI,
-	VTPARSER_OSC,
-	VTPARSER_PRINT
+	CONTROL,
+	ESCAPE,
+	CSI,
+	OSC,
+	PRINT
 };
 
 void vtonevent(struct vtp *vp, enum vtEvent t, wchar_t w,  int);

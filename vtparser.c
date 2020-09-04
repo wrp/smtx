@@ -130,11 +130,11 @@ vtonevent(struct vtp *vp, enum vtEvent t, wchar_t w, int cb)
 	}
 	assert( w < MAXCALLBACK );
 	switch( t ) {
-        case VTPARSER_CONTROL: vp->cons[w] = cb; break;
-        case VTPARSER_ESCAPE:  vp->escs[w] = cb; break;
-        case VTPARSER_CSI:     vp->csis[w] = cb; break;
-        case VTPARSER_PRINT:   vp->print   = cb; break;
-        case VTPARSER_OSC:     vp->osc     = cb; break;
+        case CONTROL: vp->cons[w] = cb; break;
+        case ESCAPE:  vp->escs[w] = cb; break;
+        case CSI:     vp->csis[w] = cb; break;
+        case PRINT:   vp->print   = cb; break;
+        case OSC:     vp->osc     = cb; break;
 	}
 }
 
