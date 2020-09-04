@@ -68,7 +68,7 @@ typedef void (VTCALLBACK)(
 	wchar_t,
 	wchar_t,
 	int,
-	int *,
+	void *,
 	int
 );
 extern VTCALLBACK tput;

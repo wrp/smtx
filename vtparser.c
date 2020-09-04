@@ -127,7 +127,7 @@ static callback doosc;
 static void
 doosc(struct vtp *v, wchar_t w)
 {
-	tput(v, w, v->inter, v->nosc, NULL, v->osc);
+	tput(v, w, v->inter, v->nosc, v->oscbuf, v->osc);
 }
 
 void

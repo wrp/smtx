@@ -30,8 +30,9 @@ enum cmd {
 #define CALL(x) tput(v, 0, 0, 0, NULL, x)
 void
 tput(struct vtp *v, wchar_t w, wchar_t iw,
-	int argc, int *argv, int handler)
+	int argc, void *arg, int handler)
 {
+	int *argv = arg;
 	enum cmd c = handler;
 	int noclear_repc = 0;
 	int p0[2];               /* First arg, defaulting to 0 or 1 */
