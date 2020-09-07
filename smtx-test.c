@@ -65,7 +65,9 @@ write_pty(int fd, unsigned flags, const char *wait, const char *fmt, va_list ap)
 		*b++ = CTL('g');
 	}
 	n = vsnprintf(b, sizeof cmd - (b - cmd), fmt, ap);
-	assert( n < sizeof cmd - 3);
+	if( n > sizeof cmd - 4 ) {
+			err(EXIT_FAILURE, "Invalid string in write_pty");
+	}
 	assert( b[n] == '\0' );
 	if( flags & 0x2 ) {
 		b[n++] = '\r';
