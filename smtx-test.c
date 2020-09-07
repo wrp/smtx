@@ -664,7 +664,7 @@ test_row(int fd, pid_t p)
 	status |= validate_row(p, 20, "%6d%-74s", 399, "  y");
 	status |= validate_row(p, 21, "%6d%-74s", 400, "  y");
 	status |= validate_row(p, 22, "%-80s", "uniq1");
-	send_str(fd, NULL, "kill $SMTX\r");
+	send_txt(fd, NULL, "kill $SMTX");
 	return status;
 }
 
@@ -698,7 +698,7 @@ test_scrollback(int fd, pid_t p)
 	 * on macos.  The test still times out whether we kill the SMTX
 	 * or exit. */
 	status |= check_layout(p, 0x1, "23x26; *23x26; 23x26");
-	send_txt(fd, NULL, "exit\r%1$cl\rexit\r%1$chh\rexit", CTL('g'));
+	send_txt(fd, NULL, "kill $SMTX");
 
 	return status;
 }
@@ -871,9 +871,10 @@ test_width(int fd, pid_t p)
 	);
 	/* Move up to a window that is now only 20 columns wide and
 	print a string of 50 chars */
-	send_str(fd, NULL, "%ck\rfor i in 1 2 3 4 5; do ", CTL('g'));
-	send_str(fd, NULL, "printf '%%s' \"${i}123456789\";");
-	send_str(fd, NULL, "test \"$i\" = 5 && printf '\\n  uniq%%s\\n' 02;");
+	send_cmd(fd, NULL, "k");
+	send_str(fd, NULL, "for i in 1 2 3 4 5; do ");
+	send_str(fd, NULL, "printf '%%s' ${i}123456789;");
+	send_str(fd, NULL, "test $i = 5 && printf '\\n  uniq%%s\\n' 02;");
 	send_str(fd, "uniq02", "done\r");
 	rv |= validate_row(p, 3, "%-20s", "11234567892123456789");
 
