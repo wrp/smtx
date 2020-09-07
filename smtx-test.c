@@ -373,6 +373,18 @@ test_dashc(int fd, pid_t p)
 }
 
 static int
+test_dasht(int fd, pid_t p)
+{
+	/* This test exercises -t with a terminal type that should not
+	 * exist in order to test the code path that uses initscr() */
+	int rv;
+	send_cmd(fd, "uniq", "c\recho u'n'i'q'");
+	rv = check_layout(p, 0x1, "*11x80; 11x80");
+	send_txt(fd, NULL, "kill $SMTX");
+	return rv;
+}
+
+static int
 test_decaln(int fd, pid_t p)
 {
 	char e[81] = "EEE";
@@ -1052,6 +1064,7 @@ main(int argc, char *const argv[])
 	F(test_cup);
 	F(test_cursor);
 	F(test_dashc, "args", "-c", "l");
+	F(test_dasht, "args", "-t", "uninstalled_terminal_type");
 	F(test_decaln);
 	F(test_ech);
 	F(test_el);
