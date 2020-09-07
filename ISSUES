@@ -63,7 +63,22 @@ BUGS:
 	As of 61c41fe0f1dd73829315c959b69cf44df2af102f, the test suite hangs
 	on macos.  Note that all the tests in esctest.py also timeout.  Perhaps
 	this is tickling a macos bug similar to that mentioned in
-	https://daniel.haxx.se/blog/2016/10/11/poll-on-mac-10-12-is-broken/
+	https://daniel.haxx.se/blog/2016/10/11/poll-on-mac-10-12-is-broken/,
+	but probably not.
+
+	test_ich consistently fails on macos.  This seems to
+	be an issue with terminfo.  On macos:
+	$ infocmp $TERM | grep '\<dl\>'
+	        dl=\E[%p1%dM, dl1=\E[M, ech=\E[%p1%dX, ed=\E[J, el=\E[K,
+		$ tput dl 5 | xxd
+		00000000: 1b5b 4d                                  .[M
+	but on debian:
+	$ infocmp $TERM | grep '\<dl\>'
+	        dl=\E[%p1%dM, dl1=\E[M, ech=\E[%p1%dX, ed=\E[J, el=\E[K,
+		$ tput dl 5 | xxd
+		00000000: 1b5b 354d                                .[5M
+	tput is not passing the parameter, so test ich on macos only deletes
+	one line.
 
 
 MAYBE TODO:
