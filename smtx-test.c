@@ -940,7 +940,7 @@ handler(int s)
 {
 	char buf[256];
 	union param p;
-	unsigned len = 0;
+	int len = 0;
 	switch(s) {
 	case SIGHUP:
 		timed_read(p2c[0], &p.hup, sizeof p.hup, "sighup");

@@ -852,7 +852,7 @@ smtx_main(int argc, char *argv[])
 /* Descriptive functions used by test suite */
 
 /* Describe a layout. This is called in a signal handler by the tests. */
-static unsigned
+static size_t
 layout_r(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 {
 	const char * const e = d + siz;
@@ -887,16 +887,16 @@ layout_r(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 	return siz - ( e - d );
 }
 
-unsigned
+size_t
 describe_layout(char *d, ptrdiff_t siz, unsigned flags)
 {
 	return layout_r(d, siz, flags & 0x20 ? S.f : S.c, flags);
 }
 
-unsigned
+size_t
 describe_state(char *desc, size_t siz)
 {
-	unsigned len = 0;
+	size_t len = 0;
 	int y, x;
 
 	getmaxyx(stdscr, y, x);
@@ -910,10 +910,10 @@ describe_state(char *desc, size_t siz)
 	return len;
 }
 
-unsigned
+size_t
 describe_row(char *desc, size_t siz, int row)
 {
-	unsigned rv;
+	size_t len = 0;
 	int y, x, mx;
 
 	const struct canvas *c = S.c;
@@ -925,18 +925,18 @@ describe_row(char *desc, size_t siz, int row)
 		mx = MIN3(mx, c->extent.x + c->offset.x, (int)siz - 1);
 		mx -= c->offset.x;
 		getyx(w, y, x);
-		rv = mx;
+		len = mx;
 		row += c->offset.y;
-		for( char *d = desc + rv; mx >= 0; mx-- ) {
+		for( char *d = desc + len; mx >= 0; mx-- ) {
 			*d-- = mvwinch(w, row, mx + c->offset.x) & A_CHARTEXT;
 		}
 		wmove(w, y, x);
 	} else if( row == c->extent.y ) {
 		WINDOW *w = c->wtit;
-		rv = c->extent.x;
+		len = c->extent.x;
 		for( x = 0; x < c->extent.x; x++ ) {
 			desc[x] = mvwinch(w, 0, x) & A_CHARTEXT;
 		}
 	}
-	return rv;
+	return len;
 }
