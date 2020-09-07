@@ -18,6 +18,7 @@
 
 #include "smtx.h"
 
+static char *term = "smtx";
 static struct handler keys[128];
 static struct handler cmd_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
@@ -287,13 +288,6 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
  * changing it breaks the current tests...which
  * are not reliable! TODO: figure this out
  */
-
-static const char *
-getterm(void)
-{
-	const char *t = getenv("TERM");
-	return t ? t : COLORS > 255 ? DEFAULT_COLOR_TERMINAL : DEFAULT_TERMINAL;
-}
 
 void
 reshape_window(struct pty *p)
@@ -785,7 +779,7 @@ parse_args(int argc, char *const*argv)
 			S.history = strtol(optarg, NULL, 10);
 			break;
 		case 't':
-			setenv("TERM", optarg, 1);
+			term = optarg;
 			break;
 		case 'v':
 			printf("%s-%s\n", PACKAGE_NAME, PACKAGE_VERSION);
@@ -809,6 +803,7 @@ init(void)
 	char buf[16];
 	struct sigaction sa;
 	int y, x;
+	SCREEN *new;
 	memset(&sa, 0, sizeof sa);
 	sa.sa_flags = 0;
 	sigemptyset(&sa.sa_mask);
@@ -818,11 +813,15 @@ init(void)
 	FD_SET(STDIN_FILENO, &S.fds);
 	snprintf(buf, sizeof buf - 1, "%d", getpid());
 	setenv("SMTX", buf, 1);
-	setenv("TERM", getterm(), 1);
 	setenv("SMTX_VERSION", VERSION, 1);
 	setlocale(LC_ALL, "");
 	build_bindings();
-	err_check( initscr() == NULL, "Unable to initialize screen");
+	if( (new = newterm(term, stdin, stdout)) == NULL ) {
+		initscr();
+	} else {
+		set_term(new);
+		setenv("TERM", term, 1);
+	}
 	getmaxyx(stdscr, y, x);
 	S.history = MAX(y, S.history);
 	atexit(endwin_wrap);

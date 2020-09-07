@@ -96,10 +96,8 @@ comes with ncurses::
 
 
 Using these terminfo entries allows programs to use the full power of smtx's
-terminal emulation, but it is entirely optional. A primary design goal
-of smtx was for it to be completely usable on systems that didn't have the
-smtx terminfo entry installed. By default, smtx advertises itself as the
-widely-available `screen-bce` terminal type.
+terminal emulation, but it is entirely optional.  If the terminfo file is
+not installed, smtx will use reasonable defaults.
 
 Copyright and License
 =====================

@@ -53,9 +53,6 @@
 #include "vtparser.h"
 #include "smtx-test.h"
 
-#define DEFAULT_TERMINAL "screen-bce"
-#define DEFAULT_COLOR_TERMINAL "screen-256color-bce"
-
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define MIN3(a, b, c) ((a) < (b) ? MIN(a, c) : MIN(b, c))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
@@ -150,7 +147,6 @@ extern wchar_t CSET_UK[]; /* "United Kingdom" */
 extern wchar_t CSET_GRAPH[]; /* Graphics Set One */
 extern int tabstop;
 extern int id;
-extern const char *term;
 extern void fixcursor(void);
 extern void focus(struct canvas *n);
 
