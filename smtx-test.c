@@ -469,19 +469,19 @@ test_layout(int fd, pid_t p)
 {
 	int rv = check_layout(p, 0x13, "%s", "*23x80@0,0");
 
-	send_str(fd, "uniq01", "%c\rprintf 'uniq%%s' 01\r", CTL('g'));
+	send_cmd(fd, "uniq01", "\rprintf 'uniq%%s' 01\r");
 	rv |= check_layout(p, 0x11, "*23x80@0,0");
 
-	send_str(fd, "gnat", "%cc\rprintf 'gn%%s' at\r", CTL('g'));
+	send_cmd(fd, "gnat", "c\rprintf 'gn%%s' at\r");
 	rv |= check_layout(p, 0x11, "*11x80@0,0; 11x80@12,0");
 
-	send_str(fd, "foobar", "%cj\rprintf 'foo%%s' bar\r", CTL('g'));
+	send_cmd(fd, "foobar", "j\rprintf 'foo%%s' bar\r");
 	rv |= check_layout(p, 0x11, "11x80@0,0; *11x80@12,0");
 
-	send_str(fd, "uniq02", "%cC\rprintf 'uniq%%s' 02\r", CTL('g'));
+	send_cmd(fd, "uniq02", "C\rprintf 'uniq%%s' 02\r");
 	rv |= check_layout(p, 0x11, "11x80@0,0; *11x40@12,0; 11x39@12,41");
 
-	send_str(fd, "foobaz", "%cl\rprintf 'foo%%s' baz\r", CTL('g'));
+	send_cmd(fd, "foobaz", "l\rprintf 'foo%%s' baz\r");
 	rv |= check_layout(p, 0x11, "11x80@0,0; 11x40@12,0; *11x39@12,41");
 
 	send_str(fd, NULL, "kill $SMTX\r");
