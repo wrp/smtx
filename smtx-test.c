@@ -357,8 +357,18 @@ test_cursor(int fd, pid_t p)
 	assert( y == 1023 );
 	check_cmd(T, ":", "*23x80@0,0(%d,6)", y);
 #endif
-	send_str(fd, NULL, "kill $SMTX\r");
+	send_txt(fd, NULL, "kill $SMTX");
 
+	return rv;
+}
+
+static int
+test_dashc(int fd, pid_t p)
+{
+	int rv;
+	send_str(fd, "uniq", "%cc\recho u'n'i'q'\r", CTL('l'));
+	rv = check_layout(p, 0x1, "*11x80; 11x80");
+	send_txt(fd, NULL, "kill $SMTX");
 	return rv;
 }
 
@@ -1041,6 +1051,7 @@ main(int argc, char *const argv[])
 	F(test_csr);
 	F(test_cup);
 	F(test_cursor);
+	F(test_dashc, "args", "-c", "l");
 	F(test_decaln);
 	F(test_ech);
 	F(test_el);
