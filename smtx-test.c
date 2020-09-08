@@ -483,6 +483,10 @@ test_el(int fd, pid_t p)
 		"printf '\\nuniq%s' 02");
 	rv |= validate_row(p, 4, "%-80s", "   34");
 
+	/* Delete full line with csi 2K */
+	send_txt(fd, "uniq03", "%s", "printf '01234\\033[2Ku'ni'q03\\n'");
+	rv |= validate_row(p, 6, "%-80s", "     uniq03");
+
 	send_txt(fd, NULL, "exit");
 	return rv;
 }
