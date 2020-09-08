@@ -415,6 +415,16 @@ test_decid(int fd, pid_t p)
 }
 
 static int
+test_dsr(int fd, pid_t p)
+{
+	(void) p;
+	send_txt(fd, "^[[2;1R", "%s", "printf '\\033[6n'");
+	send_txt(fd, "^[[0n", "%s", "\rprintf '\\033[n'");
+	send_txt(fd, NULL, "\rkill $SMTX");
+	return 0;
+}
+
+static int
 test_ech(int fd, pid_t p)
 {
 	int rv = 0;
@@ -1080,6 +1090,7 @@ main(int argc, char *const argv[])
 	F(test_dasht, "args", "-t", "uninstalled_terminal_type");
 	F(test_decaln);
 	F(test_decid);
+	F(test_dsr);
 	F(test_ech);
 	F(test_el);
 	F(test_equalize);
