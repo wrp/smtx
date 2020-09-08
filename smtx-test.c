@@ -439,6 +439,39 @@ test_ech(int fd, pid_t p)
 }
 
 static int
+test_ed(int fd, pid_t p)
+{
+	int rv = 0;
+	send_txt(fd, "uniq", "yes | sed 15q; tput cuu 8; echo u'n'i'q'");
+	rv |= validate_row(p, 8, "%-80s", "y");
+	rv |= validate_row(p, 12, "%-80s", "y");
+	send_txt(fd, "uniq2", "printf '\\033[J'u'n'i'q'2"); /* Clear to end */
+	rv |= validate_row(p, 8, "%-80s", "y");
+	rv |= validate_row(p, 12, "%-80s", "");
+	send_txt(fd, "uniq3", "printf '\\033[2J'u'n'i'q'3"); /* Clear all */
+	rv |= validate_row(p, 8, "%-80s", "");
+	rv |= validate_row(p, 13, "%-80s", "");
+	send_txt(fd, "uniq6", "clear; printf 'un''iq6'");
+	send_txt(fd, "uniq4", "yes | sed 15q; tput cuu 8; echo u'n'i'q4'");
+	for(int i = 2; i < 9; i++ ) {
+		rv |= validate_row(p, i, "%-80s", "y");
+	}
+	send_txt(fd, "uniq5", "printf '\\033[1J'u'n'i'q'5"); /* Clear to top */
+	for(int i = 2; i < 9; i++ ) {
+		rv |= validate_row(p, i, "%-80s", "");
+	}
+	for(int i = 12; i < 15; i++ ) {
+		rv |= validate_row(p, i, "%-80s", "y");
+	}
+	send_txt(fd, "uniq7", "printf '\\033[3J\\033[1;1H'u'n'i'q'7");
+	for(int i = 2; i < 15; i++ ) {
+		rv |= validate_row(p, i, "%-80s", "");
+	}
+	send_txt(fd, NULL, "exit");
+	return rv;
+}
+
+static int
 test_el(int fd, pid_t p)
 {
 	int rv = 0;
@@ -1092,6 +1125,7 @@ main(int argc, char *const argv[])
 	F(test_decid);
 	F(test_dsr);
 	F(test_ech);
+	F(test_ed);
 	F(test_el);
 	F(test_equalize);
 	F(test_ich);
