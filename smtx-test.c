@@ -52,7 +52,7 @@ static void grep(int fd, const char *needle);
 
 union param {
 	struct { unsigned flag; } hup;
-	struct { int row; } usr1;
+	struct { int row; unsigned flag; } usr1;
 };
 
 static void
@@ -120,7 +120,7 @@ get_layout(pid_t pid, int flag, char *layout, size_t siz)
 {
 	int rv = 0;
 	union param p = { .hup.flag = flag };
-	write(p2c[1], &p, sizeof p);
+	write(p2c[1], &p, sizeof p.hup);
 	kill(pid, SIGHUP);
 	ssize_t s = timed_read(c2p[0], layout, siz - 1, "layout");
 	if( s == -1 ) {
@@ -228,14 +228,14 @@ static int
 validate_row(pid_t pid, int row, const char *fmt, ... )
 {
 	int status = 0;
-	union param p = { .usr1.row = row };
+	union param p = { .usr1 = {.row = row, .flag = 0} };
 	char expect[1024];
 	char buf[1024];
 	va_list ap;
 	va_start(ap, fmt);
 	(void)vsnprintf(expect, sizeof expect, fmt, ap);
 	va_end(ap);
-	write(p2c[1], &p, sizeof p);
+	write(p2c[1], &p, sizeof p.usr1);
 	kill(pid, SIGUSR1);
 	ssize_t s = timed_read(c2p[0], buf, sizeof buf - 1, expect);
 	buf[s] = 0;
@@ -864,7 +864,7 @@ test_swap(int fd, pid_t pid)
 	send_txt(fd, "uniq02", "printf 'uniq%%s\\n' 02");
 	/* Write string2 into lower left canvas */
 	send_txt(fd, NULL, "printf 'str%%s\\n' ing2; kill -HUP $SMTX");
-	write(p2c[1], &p, sizeof p);
+	write(p2c[1], &p, sizeof p.hup);
 	read(c2p[0], desc, sizeof desc);
 	if( sscanf(desc, "11x40(id=%*d); *11x40(id=%d); "
 			"11x39(id=%*d); 11x39(id=%d)", id, id + 1) != 2 ) {
@@ -1090,7 +1090,7 @@ handler(int s)
 		break;
 	case SIGUSR1:
 		timed_read(p2c[0], &p.usr1, sizeof p.usr1, "sigusr1");
-		len = describe_row(buf, sizeof buf, p.usr1.row - 1);
+		len = describe_row(buf, sizeof buf, p.usr1.row - 1, 0);
 		break;
 	case SIGUSR2:
 		len = describe_state(buf, sizeof buf);

@@ -914,12 +914,12 @@ describe_state(char *desc, size_t siz)
 }
 
 size_t
-describe_row(char *desc, size_t siz, int row)
+describe_row(char *desc, size_t siz, int row, unsigned flag)
 {
 	size_t len = 0;
 	int y, x, mx;
 
-	const struct canvas *c = S.c;
+	const struct canvas *c = flag & 0x1 ? S.f : S.c;
 	assert( c->offset.x >= 0 );
 
 	if( row < c->extent.y ) {
