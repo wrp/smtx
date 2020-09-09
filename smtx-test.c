@@ -344,10 +344,6 @@ test_cursor(int fd, pid_t p)
 
 #if 0
 	check_cmd(T, "tput cud 6", "*23x80@0,0(%d,6)", y += 1 + 6);
-	check_cmd(T, "printf foobar; tput cub 3; tput dch 1; echo",
-		"*23x80@0,0(%d,6)", y += 2);
-	expect_row(y - 1001 - 1, T, "fooar%75s", " ");
-	expect_row(y - 1001, T, "%-80s", T->ps1);
 
 	check_cmd(T, "printf 012; tput cub 2; tput ich 2; echo",
 		"*23x80@0,0(%d,6)", y += 2);
@@ -382,6 +378,22 @@ test_dasht(int fd, pid_t p)
 	int rv;
 	send_cmd(fd, "uniq", "c\recho u'n'i'q'");
 	rv = check_layout(p, 0x1, "*11x80; 11x80");
+	send_txt(fd, NULL, "kill $SMTX");
+	return rv;
+}
+
+static int
+test_dch(int fd, pid_t p)
+{
+	int rv = 0;
+	/* Print string, move back 3, delete 2, forward 3 */
+	send_txt(fd, "uniq", "%s%s%s%su'n'i'q'\\n'",
+		"printf '1234567", /* Print a string */
+		"\\033[3D",        /* Cursor back 3 */
+		"\\033[2P",        /* Delete 2 */
+		"\\033[1C"         /* Forward 1 */
+	);
+	rv |= validate_row(p, 2, "%-80s", "12347uniq");
 	send_txt(fd, NULL, "kill $SMTX");
 	return rv;
 }
@@ -1115,6 +1127,7 @@ main(int argc, char *const argv[])
 	F(test_cursor);
 	F(test_dashc, "args", "-c", "l");
 	F(test_dasht, "args", "-t", "uninstalled_terminal_type");
+	F(test_dch);
 	F(test_decaln);
 	F(test_decid);
 	F(test_dsr);
