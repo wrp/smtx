@@ -945,7 +945,8 @@ test_tput(int fd, pid_t p)
 	for( int i = 8; i < 23; i++ ) {
 		rv |= validate_row(p, i, "%80s", "");
 	}
-	send_str(fd, NULL, "kill $SMTX\r");
+	/* bel: alert user*/
+	send_txt(fd, NULL, "tput bel; kill $SMTX");
 	return rv;
 }
 
