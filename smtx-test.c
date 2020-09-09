@@ -1008,27 +1008,6 @@ test_width(int fd, pid_t p)
 	return rv;
 }
 
-/* A bunch of mostly pointless tests for coverage.
- * TODO: actually verify the results of these.
- */
-static int
-test1(int fd, pid_t p)
-{
-	(void)p;
-	char *cmds[] = {
-		"tput bel; tput ri",
-		"tput tsl; tput fsl; tput dsl",
-		"tput rmkx; tput smkx", /* Keypad on/off */
-		"tput cub 1; tput dch 1; tput ack",
-		"kill $SMTX",
-		NULL
-	};
-	for( char **cmd = cmds; *cmd; cmd++ ) {
-		send_txt(fd, NULL, "%s", *cmd);
-	}
-	return 0;
-}
-
 static void
 handler(int s)
 {
@@ -1127,7 +1106,6 @@ main(int argc, char *const argv[])
 	int total_count = 0;
 	const char *argv0 = argv[0];
 	struct st *tab = NULL, *v;
-	F(test1);
 	F(test_ack);
 	F(test_attach);
 	F(test_cols, "TERM", "smtx", "COLUMNS", "92", "args", "-w", "97");
