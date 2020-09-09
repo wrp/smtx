@@ -776,6 +776,19 @@ test_resizepty(int fd, pid_t p)
 }
 
 static int
+test_ri(int fd, pid_t p)
+{
+	send_txt(fd, "sync", "printf '%s%s%s%s'",
+		"012345678\\n", /* Print a string */
+		"\\033M",        /* ri to move up one line */
+		"abc\\n",       /* overwrite */
+		"s'y'nc"
+	);
+	int rc = validate_row(p, 2, "%-80s", "abc345678");
+	return rc;
+}
+
+static int
 test_row(int fd, pid_t p)
 {
 	int status = 0;
@@ -1175,6 +1188,7 @@ main(int argc, char *const argv[])
 	F(test_reset);
 	F(test_resize);
 	F(test_resizepty, "args", "-s", "10");
+	F(test_ri);
 	F(test_row);
 	F(test_scrollback);
 	F(test_swap);
@@ -1330,6 +1344,7 @@ execute_test(struct st *v, const char *name)
 		}
 		grep(fd[0], PROMPT); /* Wait for shell to initialize */
 		rv = v->f(fd[0], pid);
+		send_txt(fd[0], NULL, "kill $SMTX");
 		wait(&status);
 	}
 	status = check_test_status(rv, status, fd[0], v->name);
