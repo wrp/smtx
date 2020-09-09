@@ -262,24 +262,30 @@ test_ack(int fd, pid_t pid)
 }
 
 static int
-test_attach(int fd, pid_t pid)
+test_attach(int fd, pid_t p)
 {
 	int id;
 	char desc[1024];
-	union param p = { .hup.flag = 5 };
-	int status = 0;
-	send_cmd(fd, NULL, "cc3a");
-	send_txt(fd, NULL, "kill -HUP $SMTX");
-	write(p2c[1], &p, sizeof p);
-	read(c2p[0], desc, sizeof desc);
-	if( sscanf(desc, "*7x80(id=%*d); 7x80(id=%d);", &id) != 1 ) {
+
+	send_cmd(fd, NULL, "cc1000a");  /* Invalid attach */
+	send_txt(fd, "sync", "echo 's'y'n'c");
+	int rv = validate_row(p, 2, "%-80s", "sync");
+
+	send_cmd(fd, "ps1", "j");
+	send_txt(fd, "other", "echo 'o't'h'er");
+
+	get_layout(p, 5, desc, sizeof desc);
+	if( sscanf(desc, "7x80(id=%*d); *7x80(id=%d);", &id) != 1 ) {
 		fprintf(stderr, "received unexpected: '%s'\n", desc);
-		status = 1;
+		rv = 1;
 	} else {
-		send_cmd(fd, NULL, "%da", id);
+		send_cmd(fd, "uniq", "k%da\recho 'u'ni'q'", id);
 	}
-	send_txt(fd, NULL, "kill -TERM %d", pid);
-	return status;
+	rv |= check_layout(p, 0x1, "*7x80; 7x80; 7x80");
+
+	/* 2nd row of the first window should now be different */
+	rv |= validate_row(p, 2, "%-80s", "other");
+	return rv;
 }
 
 static int
