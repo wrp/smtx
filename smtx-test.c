@@ -126,9 +126,8 @@ get_layout(pid_t pid, int flag, char *layout, size_t siz)
 	if( s == -1 ) {
 		fprintf(stderr, "reading from child: %s\n", strerror(errno));
 		rv = -1;
-	} else {
-		layout[s] = '\0';
 	}
+	layout[s < 0 ? 0 : s] = '\0';
 	return rv;
 }
 
@@ -859,13 +858,13 @@ test_swap(int fd, pid_t pid)
 	int rv = 0;
 	int id[3];
 	char desc[1024];
-	union param p = { .hup.flag = 5 };
+
 	send_cmd(fd, NULL, "cCjC");
 	send_txt(fd, "uniq02", "printf 'uniq%%s\\n' 02");
 	/* Write string2 into lower left canvas */
-	send_txt(fd, NULL, "printf 'str%%s\\n' ing2; kill -HUP $SMTX");
-	write(p2c[1], &p, sizeof p.hup);
-	read(c2p[0], desc, sizeof desc);
+	send_txt(fd, "string2", "printf 'str%%s\\n' ing2");
+
+	get_layout(pid, 5, desc, sizeof desc);
 	if( sscanf(desc, "11x40(id=%*d); *11x40(id=%d); "
 			"11x39(id=%*d); 11x39(id=%d)", id, id + 1) != 2 ) {
 		fprintf(stderr, "received unexpected: '%s'\n", desc);
@@ -894,10 +893,9 @@ test_swap(int fd, pid_t pid)
 	send_txt(fd, "uniq06", "printf 'uniq%%s\\n' 06");
 	rv |= validate_row(pid, 4, "%-40s", "string1");
 	send_cmd(fd, NULL, "%ds", id[1]); /* Swap upper left and lower rt */
-	send_txt(fd, NULL, "printf 'uniq%%s\\n' 07; kill -HUP $SMTX");
-	write(p2c[1], &p, sizeof p);
-	read(c2p[0], desc, sizeof desc);
+	send_txt(fd, "uniq07", "printf 'uniq%%s\\n' 07");
 
+	get_layout(pid, 5, desc, sizeof desc);
 	if( sscanf(desc, "*11x40(id=%d); 11x40(id=%*d); "
 			"11x39(id=%*d); 11x39(id=%*d)", id + 2) != 1 ) {
 		fprintf(stderr, "received unexpected: '%s'\n", desc);
