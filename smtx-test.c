@@ -609,18 +609,22 @@ test_layout(int fd, pid_t p)
 }
 
 static int
-test_lnm(int fd, pid_t pid)
+test_lnm(int fd, pid_t p)
 {
-	union param p = { .hup.flag = 1 };
-	send_txt(fd, "uniq01", "printf '\\e[20huniq%%s' 01");
-	send_txt(fd, NULL, "kill -HUP $SMTX");
-	write(p2c[1], &p, sizeof p);
-	read(c2p[0], &pid, 1); /* Read and discard */
-	send_txt(fd, NULL, "printf 'foo\\rbar\\r\\n'");
-	send_txt(fd, NULL, "printf '\\e[20l'");
-	send_txt(fd, "uniq02", "printf 'uniq%%s' 02");
-	send_txt(fd, NULL, "kill -TERM $SMTX");
-	return 0;
+	send_txt(fd, "sync", "printf '\\e[20hs'y'nc\\n' ");
+	send_txt(fd, "bar", "printf 'foo\\rbar\\n'");
+	int rv = validate_row(p, 2, "%-80s", "sync");
+	/* Line 4 is blank because lnm is on and a newline was inserted */
+	rv |= validate_row(p, 4, "%-80s", "");
+	rv |= validate_row(p, 5, "%-80s", "bar");
+	/* Line 6 contains this command */
+	send_txt(fd, "sync2", "printf '\\e[20lsy'n'c2\\n'");
+	send_txt(fd, "check3", "printf 'foo\\rcheck3\\n'");
+	/* Line 7 is blank because lnm inserts a newline */
+	rv |= validate_row(p, 7, "%-80s", "");
+	rv |= validate_row(p, 8, "%-80s", "sync2");
+	rv |= validate_row(p, 10, "%-80s", "check3");
+	return rv;
 }
 
 static int
