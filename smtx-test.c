@@ -938,18 +938,29 @@ static int
 test_vis(int fd, pid_t p)
 {
 	int rv = 0;
+	/* tput civis to hide cursor */
 	send_txt(fd, "uniq1", "%s; %s", "tput civis", "printf 'uniq%s\\n' 1");
-	rv |= check_layout(p, 0x3, "*23x80!");
-	rv |= validate_row(p, 2, "%-80s", "uniq1");
+	rv |= check_layout(p, 0, "23x80!");
 
+	/* tput cvvis to show cursor */
 	send_txt(fd, "uniq2", "%s; %s", "tput cvvis", "printf 'uniq%s\\n' 2");
-	rv |= check_layout(p, 0x3, "*23x80");
+	rv |= check_layout(p, 0, "23x80");
 
+	/* CSI 25l to hide cursor */
 	send_txt(fd, "uniq3", "%s", "printf '\\033[?25l u'n'iq3'");
-	rv |= check_layout(p, 0x3, "*23x80!");
+	rv |= check_layout(p, 0, "23x80!");
 
+	/* CSI 25h to show cursor */
 	send_txt(fd, "uniq4", "%s", "printf '\\033[?25h u'n'iq4'");
-	rv |= check_layout(p, 0x3, "*23x80");
+	rv |= check_layout(p, 0, "23x80");
+
+	/* CSI 25l to hide cursor */
+	send_txt(fd, "uniq5", "%s", "printf '\\033[?25l u'n'iq5'");
+	rv |= check_layout(p, 0, "23x80!");
+
+	/* esc p to show cursor */
+	send_txt(fd, "uniq6", "%s", "printf '\\033p u'n'iq6'");
+	rv |= check_layout(p, 0, "23x80");
 
 	send_txt(fd, NULL, "exit");
 	return rv;
