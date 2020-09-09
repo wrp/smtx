@@ -674,6 +674,22 @@ test_pager(int fd, pid_t p)
 }
 
 static int
+test_pnm(int fd, pid_t p)
+{
+	int rv = 0;
+	send_txt(fd, "uniq", "printf '\\033>'u'n'i'q\\n'"); /* numkp */
+	rv |= check_layout(p, 0, "23x80#");
+	send_txt(fd, "uniq2", "printf '\\033='u'n'i'q2\\n'"); /* numkp */
+	rv |= check_layout(p, 0, "23x80");
+	send_txt(fd, "uniq3", "printf '\\033[1l'u'n'i'q3\\n'"); /* csi 1l */
+	rv |= check_layout(p, 0, "23x80#");
+	send_txt(fd, "uniq4", "printf '\\033[1h'u'n'i'q4\\n'"); /* csi 1h */
+	rv |= check_layout(p, 0, "23x80");
+	send_txt(fd, NULL, "exit");
+	return rv;
+}
+
+static int
 test_quit(int fd, pid_t p)
 {
 	(void) p;
@@ -1143,6 +1159,7 @@ main(int argc, char *const argv[])
 	F(test_navigate);
 	F(test_nel, "TERM", "smtx");
 	F(test_pager ,"MORE", "");
+	F(test_pnm);
 	F(test_quit);
 	F(test_reset);
 	F(test_resize);
