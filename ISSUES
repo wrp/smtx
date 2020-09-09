@@ -112,3 +112,8 @@ Partially implemented/vague ideas:
 	title bar would show title of windows above, below, to the
 	left, and right.  Then hjkl navigation would stay in full
 	screen mode while going between them.
+
+	Possibly add character in title bar to indicate mode.  Need to make
+	title bar more functional in general, so this thought should probably
+	be consumed by that.  Probably want to be able to send arbitrary
+	format strings in through an escape sequence.
