@@ -115,33 +115,43 @@ send_str(int fd, const char *wait, const char *fmt, ...)
 }
 ssize_t timed_read(int, void *, size_t, const char *);
 
+static int
+get_layout(pid_t pid, int flag, char *layout, size_t siz)
+{
+	int rv = 0;
+	union param p = { .hup.flag = flag };
+	write(p2c[1], &p, sizeof p);
+	kill(pid, SIGHUP);
+	ssize_t s = timed_read(c2p[0], layout, siz - 1, "layout");
+	if( s == -1 ) {
+		fprintf(stderr, "reading from child: %s\n", strerror(errno));
+		rv = -1;
+	} else {
+		layout[s] = '\0';
+	}
+	return rv;
+}
+
+
 static int __attribute__((format(printf,3,4)))
 check_layout(pid_t pid, int flag, const char *fmt, ...)
 {
-	va_list ap;
 	char buf[1024];
+	va_list ap;
 	char expect[1024];
-	int rv = 0;
-	ssize_t s;
-	union param p = { .hup.flag = flag };
+	int rv = -1;
 
 	va_start(ap, fmt);
 	(void)vsnprintf(expect, sizeof expect, fmt, ap);
 	va_end(ap);
 
-	write(p2c[1], &p, sizeof p);
-	kill(pid, SIGHUP);
-	s = timed_read(c2p[0], buf, sizeof buf - 1, expect);
-	if( s == -1 ) {
-		fprintf(stderr, "reading from child: %s\n", strerror(errno));
-		rv = -1;
-	} else {
-		buf[s] = 0;
+	if( get_layout(pid, flag, buf, sizeof buf) == 0 ) {
 		if( strcmp( buf, expect ) ) {
 			fprintf(stderr, "unexpected layout:\n");
 			fprintf(stderr, "received: %s\n", buf);
 			fprintf(stderr, "expected: %s\n", expect);
-			rv = -1;
+		} else {
+			rv = 0;
 		}
 	}
 	return rv;
