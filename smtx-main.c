@@ -856,7 +856,6 @@ layout_r(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 {
 	const char * const e = d + siz;
 	int recurse = flags & 0x1;
-	int cursor = flags & 0x2;
 	int show_id = flags & 0x4;
 	int show_pid = flags & 0x8;
 	int show_pos = flags & 0x10;
@@ -873,7 +872,7 @@ layout_r(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 	if( show_id && c->p ) {
 		d += snprintf(d, e - d, "(id=%d)", c->p->id);
 	}
-	if( cursor && c->p->s && ! c->p->s->vis ) {
+	if( c->p->s && ! c->p->s->vis ) {
 		d += snprintf(d, e - d, "!");
 	}
 	for( int i = 0; i < 2; i ++ ) {
