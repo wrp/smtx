@@ -504,6 +504,17 @@ test_equalize(int fd, pid_t p)
 }
 
 static int
+test_hpr(int fd, pid_t p)
+{
+	int rv = 0;
+	const char *cmd = "printf 'abcd\\033[5aef'gh'ij\\n'";
+	send_txt(fd, "efghij", "%s", cmd);
+	rv |= validate_row(p, 2, "%-80s", "abcd     efghij");
+	send_txt(fd, NULL, "exit");
+	return rv;
+}
+
+static int
 test_ich(int fd, pid_t p)
 {
 	int rv = 0;
@@ -1132,6 +1143,7 @@ main(int argc, char *const argv[])
 	F(test_ed);
 	F(test_el);
 	F(test_equalize);
+	F(test_hpr);
 	F(test_ich);
 	F(test_insert);
 	F(test_layout);
