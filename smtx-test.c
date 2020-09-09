@@ -679,11 +679,11 @@ test_pnm(int fd, pid_t p)
 	int rv = 0;
 	send_txt(fd, "uniq", "printf '\\033>'u'n'i'q\\n'"); /* numkp */
 	rv |= check_layout(p, 0, "23x80#");
-	send_txt(fd, "uniq2", "printf '\\033='u'n'i'q2\\n'"); /* numkp */
+	send_txt(fd, "uniq2", "\rprintf '\\033='u'n'i'q2\\n'"); /* numkp */
 	rv |= check_layout(p, 0, "23x80");
-	send_txt(fd, "uniq3", "printf '\\033[1l'u'n'i'q3\\n'"); /* csi 1l */
+	send_txt(fd, "uniq3", "\rprintf '\\033[1l'u'n'i'q3\\n'"); /* csi 1l */
 	rv |= check_layout(p, 0, "23x80#");
-	send_txt(fd, "uniq4", "printf '\\033[1h'u'n'i'q4\\n'"); /* csi 1h */
+	send_txt(fd, "uniq4", "\rprintf '\\033[1h'u'n'i'q4\\n'"); /* csi 1h */
 	rv |= check_layout(p, 0, "23x80");
 	send_txt(fd, NULL, "exit");
 	return rv;
