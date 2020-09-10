@@ -610,21 +610,27 @@ test_layout(int fd, pid_t p)
 static int
 test_lnm(int fd, pid_t p)
 {
-	send_txt(fd, "sync", "printf '\\e[20hs'y'nc\\n' ");
-	send_txt(fd, "bar", "printf 'foo\\rbar\\n'");
+	send_txt(fd, "sync", "printf '\\e[20hs''ync\\n' "); /* line 1 */
 	int rv = validate_row(p, 2, "%-80s", "sync");
+	send_txt(fd, "barbaz", "printf 'foobaz\\rbar\\n'"); /* line 3 */
 	/* Line 4 is blank because lnm is on and a newline was inserted */
 	rv |= validate_row(p, 4, "%-80s", "");
-	rv |= validate_row(p, 5, "%-80s", "bar");
-	/* Line 6 contains this command */
-	send_txt(fd, "sync2", "printf '\\e[20lsy'n'c2\\n'");
-	send_txt(fd, "check3", "printf 'foo\\rcheck3\\n'");
-	/* Line 7 is blank because lnm inserts a newline */
-	rv |= validate_row(p, 7, "%-80s", "");
+	rv |= validate_row(p, 5, "%-80s", "barbaz");
+	send_txt(fd, "sync2", "printf '\\e[20lsy'n'c2\\n'"); /* line 6 */
+	rv |= validate_row(p, 7, "%-80s", "");  /* Inserted newline (1)*/
 	rv |= validate_row(p, 8, "%-80s", "sync2");
+	send_txt(fd, "check3", "printf 'foo\\rch''eck3\\n'");
 	rv |= validate_row(p, 10, "%-80s", "check3");
 	return rv;
 }
+/*
+ * (1) This is a bit confusing.  The newlines printed by printf do *not*
+ * get manipulated.  The \r inserted by send_txt does.  Since the \r is
+ * written to terminate the printf command, it is replaced with \n\r before
+ * printf is run to disable the insertions.  It is probably just confusing
+ * to retain the \r in the printfs, since they are not really the point, but
+ * we should verify that it is correct behavior to *not* expand them.
+ */
 
 static int
 test_navigate(int fd, pid_t p)
