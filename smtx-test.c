@@ -94,7 +94,7 @@ send_str(int fd, const char *wait, const char *fmt, ...)
 }
 ssize_t timed_read(int, void *, size_t, const char *);
 
-static int
+int
 get_layout(pid_t pid, int flag, char *layout, size_t siz)
 {
 	int rv = 0;
@@ -111,7 +111,7 @@ get_layout(pid_t pid, int flag, char *layout, size_t siz)
 }
 
 
-static int __attribute__((format(printf,3,4)))
+int __attribute__((format(printf,3,4)))
 check_layout(pid_t pid, int flag, const char *fmt, ...)
 {
 	char buf[1024];
@@ -202,7 +202,7 @@ grep(int fd, const char *needle)
  * a row has one of two values (depending on if the shell has printed
  * a prompt).  It might be nice to check that.
  */
-static int
+int
 validate_row(pid_t pid, int row, const char *fmt, ... )
 {
 	int status = 0;
@@ -224,32 +224,6 @@ validate_row(pid_t pid, int row, const char *fmt, ... )
 		status = 1;
 	}
 	return status;
-}
-
-static int
-test_attach(int fd, pid_t p)
-{
-	int id;
-	char desc[1024];
-
-	send_cmd(fd, NULL, "cc1000a");  /* Invalid attach */
-	send_txt(fd, "sync", "printf '\\ns'y'n'c'\\n'");
-	int rv = validate_row(p, 3, "%-80s", "sync");
-
-	send_cmd(fd, "other", "j\rprintf '\\no't'h'er'\\n'");
-
-	get_layout(p, 5, desc, sizeof desc);
-	if( sscanf(desc, "7x80(id=%*d); *7x80(id=%d);", &id) != 1 ) {
-		fprintf(stderr, "received unexpected: '%s'\n", desc);
-		rv = 1;
-	} else {
-		send_cmd(fd, "uniq", "k%da\recho 'u'ni'q'", id);
-	}
-	rv |= check_layout(p, 0x1, "*7x80; 7x80; 7x80");
-
-	/* 2nd row of the first window should now be different */
-	rv |= validate_row(p, 3, "%-80s", "other");
-	return rv;
 }
 
 static int
