@@ -15,28 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "config.h"
-#include <assert.h>
-#include <ctype.h>
-#include <err.h>
-#include <errno.h>
-#include <signal.h>
-#include <stdarg.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <sys/select.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#if HAVE_PTY_H
-# include <pty.h>
-# include <utmp.h>
-#elif HAVE_LIBUTIL_H
-# include <libutil.h>
-#elif HAVE_UTIL_H
-# include <util.h>
-#endif
+#include "unit-test.h"
 #include "smtx-test.h"
 
 /* TODO: always use the p2c/c2p pipes for synchornization. */
@@ -87,7 +66,7 @@ write_pty(int fd, unsigned flags, const char *wait, const char *fmt, va_list ap)
 	}
 }
 
-static void __attribute__((format(printf,3,4)))
+void __attribute__((format(printf,3,4)))
 send_cmd(int fd, const char *wait, const char *fmt, ...)
 {
 	va_list ap;
@@ -96,7 +75,7 @@ send_cmd(int fd, const char *wait, const char *fmt, ...)
 	va_end(ap);
 }
 
-static void __attribute__((format(printf,3,4)))
+void __attribute__((format(printf,3,4)))
 send_txt(int fd, const char *wait, const char *fmt, ...)
 {
 	va_list ap;
@@ -245,19 +224,6 @@ validate_row(pid_t pid, int row, const char *fmt, ... )
 		status = 1;
 	}
 	return status;
-}
-
-static int
-test_ack(int fd, pid_t pid)
-{
-	/* Expect an \x06 in response to \x05
-	 * I don't completely understand how the \x06 is getting converted
-	 * to "^F"
-	 */
-	(void)pid;
-	send_txt(fd, "^F", "printf '\\005'");
-	send_cmd(fd, NULL, "143q");
-	return 0; /* Test will timeout if it fails */
 }
 
 static int
