@@ -13,7 +13,7 @@ smtx_test_SOURCES = smtx-test.c unit-test.c
 
 CLEANFILES = *.gcda *.gcno *.gcov version *.1
 EXTRA_DIST = build-aux/package-version version main-test coverage-test
-noinst_HEADERS = vtparser.h smtx.h smtx-test.h
+noinst_HEADERS = vtparser.h smtx.h smtx-test.h unit-test.h
 
 .PHONY: version
 version:
