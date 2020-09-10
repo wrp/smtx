@@ -267,11 +267,10 @@ test_attach(int fd, pid_t p)
 	char desc[1024];
 
 	send_cmd(fd, NULL, "cc1000a");  /* Invalid attach */
-	send_txt(fd, "sync", "echo 's'y'n'c");
-	int rv = validate_row(p, 2, "%-80s", "sync");
+	send_txt(fd, "sync", "printf '\\ns'y'n'c'\\n'");
+	int rv = validate_row(p, 3, "%-80s", "sync");
 
-	send_cmd(fd, "ps1", "j");
-	send_txt(fd, "other", "echo 'o't'h'er");
+	send_cmd(fd, "other", "j\rprintf '\\no't'h'er'\\n'");
 
 	get_layout(p, 5, desc, sizeof desc);
 	if( sscanf(desc, "7x80(id=%*d); *7x80(id=%d);", &id) != 1 ) {
@@ -283,7 +282,7 @@ test_attach(int fd, pid_t p)
 	rv |= check_layout(p, 0x1, "*7x80; 7x80; 7x80");
 
 	/* 2nd row of the first window should now be different */
-	rv |= validate_row(p, 2, "%-80s", "other");
+	rv |= validate_row(p, 3, "%-80s", "other");
 	return rv;
 }
 
