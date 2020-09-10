@@ -28,5 +28,6 @@ version:
 	mv Makefile.tmp Makefile
 	mv config.h.tmp config.h
 
-install-terminfo: $(top_srcdir)/smtx.ti
-	tic -s -x $(top_srcdir)/smtx.ti
+install-data-hook:
+	mkdir -p $(DESTDIR)$(sysconfdir)/terminfo
+	tic -o $(DESTDIR)$(sysconfdir)/terminfo -s -x $(top_srcdir)/smtx.ti
