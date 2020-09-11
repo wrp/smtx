@@ -15,19 +15,8 @@ CLEANFILES = *.gcda *.gcno *.gcov version *.1
 EXTRA_DIST = build-aux/package-version version main-test coverage-test smtx.ti
 noinst_HEADERS = vtparser.h smtx.h smtx-test.h unit-test.h
 
-.PHONY: version
-version:
-	( cd $(top_srcdir) && build-aux/package-version ) > version;
-
-	## This is a terrible hack.  The proper approach (is to not do
-	## this at all!) is to cd $(top_srcdir) && ./autogen.sh before running
-	## build-aux/package-version, but that is too slow.  Just hack it for now:
-	< Makefile awk 'match($$1,"^(PACKAGE_)*(VERSION|STRING)$$") {$$NF = v} 1' \
-		v=$$(cat version) > Makefile.tmp
-	< config.h awk 'match($$2,"^(PACKAGE_)*VERSION$$") && NF == 3{$$3 = v} 1' \
-		v='"'$$(cat version)'"' > config.h.tmp
-	mv Makefile.tmp Makefile
-	mv config.h.tmp config.h
+version: $(DIST_SOURCES) $(DIST_COMMON)
+	( cd $(top_srcdir) && ./autogen.sh >&2  && build-aux/package-version ) > version;
 
 install-data-hook:
 	mkdir -p $(DESTDIR)$(sysconfdir)/terminfo
