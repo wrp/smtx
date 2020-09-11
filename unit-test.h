@@ -41,3 +41,4 @@ typedef int(test)(int fd, pid_t pid);
 test test_ack;
 test test_attach;
 test test_cols;
+test test_csr;

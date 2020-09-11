@@ -227,23 +227,6 @@ validate_row(pid_t pid, int row, const char *fmt, ... )
 }
 
 static int
-test_csr(int fd, pid_t p)
-{
-	int rv = 0;
-	/* Change scroll region */
-	send_txt(fd, "uniq1", "%s;%s", "tput csr 6 12; yes | nl -s: | sed 25q",
-		"printf 'uni%s\\n' q1");
-	for(int i = 2; i <= 6; i++ ) {
-		rv |= validate_row(p, i, "     %d:%-73s", i, "y");
-	}
-	for(int i = 7; i <= 11; i++ ) {
-		rv |= validate_row(p, i, "    %2d:%-73s", i + 14, "y");
-	}
-	send_str(fd, NULL, "exit\r");
-	return rv;
-}
-
-static int
 test_cup(int fd, pid_t p)
 {
 	int status = 0;
