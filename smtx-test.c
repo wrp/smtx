@@ -227,17 +227,6 @@ validate_row(pid_t pid, int row, const char *fmt, ... )
 }
 
 static int
-test_cols(int fd, pid_t p)
-{
-	/* Ensure that tput correctly identifies the width */
-	int rv;
-	send_txt(fd, "uniq1", "%s", "tput cols; printf 'uniq%s\\n' 1");
-	rv = validate_row(p, 2, "%-92s", "97");
-	send_txt(fd, NULL, "exit");
-	return rv;
-}
-
-static int
 test_csr(int fd, pid_t p)
 {
 	int rv = 0;
@@ -1124,7 +1113,7 @@ main(int argc, char *const argv[])
 	struct st *tab = NULL, *v;
 	F(test_ack);
 	F(test_attach);
-	F(test_cols, "TERM", "smtx", "COLUMNS", "92", "args", "-w", "97");
+	F(test_cols, "COLUMNS", "92", "args", "-w", "97");
 	F(test_csr);
 	F(test_cup);
 	F(test_cursor);

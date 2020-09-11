@@ -40,3 +40,4 @@ check_layout(pid_t pid, int flag, const char *fmt, ...);
 typedef int(test)(int fd, pid_t pid);
 test test_ack;
 test test_attach;
+test test_cols;
