@@ -16,7 +16,7 @@ EXTRA_DIST = build-aux/package-version version main-test coverage-test smtx.ti
 noinst_HEADERS = vtparser.h smtx.h smtx-test.h unit-test.h
 
 version: $(DIST_SOURCES) $(DIST_COMMON)
-	( cd $(top_srcdir) && ./autogen.sh >&2  && build-aux/package-version ) > version;
+	{ cd $(top_srcdir) && ./autogen.sh && build-aux/package-version >&3; } 3> version
 
 install-data-hook:
 	mkdir -p $(DESTDIR)$(sysconfdir)/terminfo
