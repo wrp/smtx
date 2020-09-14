@@ -28,6 +28,9 @@ send_txt(int fd, const char *wait, const char *fmt, ...);
 void __attribute__((format(printf,3,4)))
 send_cmd(int fd, const char *wait, const char *fmt, ...);
 
+void __attribute__((format(printf,3,4)))
+send_str(int fd, const char *wait, const char *fmt, ...);
+
 int __attribute__((format(printf,3,4)))
 validate_row(pid_t pid, int row, const char *fmt, ... );
 

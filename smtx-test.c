@@ -84,7 +84,7 @@ send_txt(int fd, const char *wait, const char *fmt, ...)
 	va_end(ap);
 }
 
-static void __attribute__((format(printf,3,4)))
+void __attribute__((format(printf,3,4)))
 send_str(int fd, const char *wait, const char *fmt, ...)
 {
 	va_list ap;
