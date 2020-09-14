@@ -331,12 +331,12 @@ test_decaln(int fd, pid_t p)
 	int rv = 0;
 	memset(e, 'E', 80);
 	send_txt(fd, "uniq", "printf '\\033[1048#u'; echo 'u'n'i'q;");
-	rv |= validate_row(p, 1, e);
+	rv |= validate_row(p, 1, "%s", e);
 	for( int i = 4; i < 24; i++ ) {
-		rv |= validate_row(p, i, e);
+		rv |= validate_row(p, i, "%s", e);
 	}
 	memcpy(e, "uniq", 4);
-	rv |= validate_row(p, 2, e);
+	rv |= validate_row(p, 2, "%s", e);
 	send_str(fd, NULL, "kill $SMTX\r");
 	return rv;
 }
