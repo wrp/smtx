@@ -28,6 +28,7 @@ int c2p[2];
 int p2c[2];
 static int check_test_status(int rv, int status, int pty, const char *name);
 static void grep(int fd, const char *needle);
+int commandkey = CTL('g');
 
 union param {
 	struct { unsigned flag; } hup;
@@ -95,24 +96,32 @@ send_str(int fd, const char *wait, const char *fmt, ...)
 ssize_t timed_read(int, void *, size_t, const char *);
 
 int
-get_layout(pid_t pid, int flag, char *layout, size_t siz)
+get_layout(int fd, int flag, char *layout, size_t siz)
 {
-	int rv = 0;
-	union param p = { .hup.flag = flag };
-	write(p2c[1], &p, sizeof p.hup);
-	kill(pid, SIGHUP);
-	ssize_t s = timed_read(c2p[0], layout, siz - 1, "layout");
+	char buf[1024];
+	int len;
+	ssize_t s;
+	len = snprintf(buf, sizeof buf, "%c%d%c\r", commandkey, flag, CTL('e'));
+	write(fd, buf, len);
+	grep(fd, "layout: ");
+	do s = timed_read(fd, buf, siz - 1, "layout"); while( s == 0 );
 	if( s == -1 ) {
 		fprintf(stderr, "reading from child: %s\n", strerror(errno));
-		rv = -1;
+		return -1;
 	}
-	layout[s < 0 ? 0 : s] = '\0';
-	return rv;
+	buf[s < 0 ? 0 : s] = '\0';
+	char *e = strchr(buf, ':');
+	if( e ) {
+		*e = '\0';
+		strncpy(layout, buf, siz);
+	} else {
+		layout[0] = '\0';
+	}
+	return 0;
 }
 
-
 int __attribute__((format(printf,3,4)))
-check_layout(pid_t pid, int flag, const char *fmt, ...)
+check_layout(int fd, int flag, const char *fmt, ...)
 {
 	char buf[1024];
 	va_list ap;
@@ -123,7 +132,7 @@ check_layout(pid_t pid, int flag, const char *fmt, ...)
 	(void)vsnprintf(expect, sizeof expect, fmt, ap);
 	va_end(ap);
 
-	if( get_layout(pid, flag, buf, sizeof buf) == 0 ) {
+	if( get_layout(fd, flag, buf, sizeof buf) == 0 ) {
 		if( strcmp( buf, expect ) ) {
 			fprintf(stderr, "unexpected layout:\n");
 			fprintf(stderr, "received: %s\n", buf);
@@ -174,13 +183,13 @@ grep(int fd, const char *needle)
 {
 	assert( needle != NULL );
 
+	size_t rc;
 	char c;
 	const char *n = needle;
 	while( *n != '\0' ) {
-		size_t rc = timed_read(fd, &c, 1, needle);
-		switch( rc ) {
-		case -1: err(EXIT_FAILURE, "read from pty");
-		case 0: return;
+		do rc = timed_read(fd, &c, 1, needle); while( rc == 0 );
+		if( rc == -1 ) {
+			err(EXIT_FAILURE, "read from pty");
 		}
 		if( c != *n++ ) {
 			n = needle;
@@ -280,8 +289,10 @@ static int
 test_dashc(int fd, pid_t p)
 {
 	int rv;
+	(void)p;
+	commandkey = CTL('l');
 	send_str(fd, "uniq", "%cc\recho u'n'i'q'\r", CTL('l'));
-	rv = check_layout(p, 0x1, "*11x80; 11x80");
+	rv = check_layout(fd, 0x1, "*11x80; 11x80");
 	send_txt(fd, NULL, "kill $SMTX");
 	return rv;
 }
@@ -293,7 +304,7 @@ test_dasht(int fd, pid_t p)
 	 * exist in order to test the code path that uses initscr() */
 	int rv;
 	send_cmd(fd, "uniq", "c\recho u'n'i'q'");
-	rv = check_layout(p, 0x1, "*11x80; 11x80");
+	rv = check_layout(fd, 0x1, "*11x80; 11x80");
 	send_txt(fd, NULL, "kill $SMTX");
 	return rv;
 }
@@ -424,9 +435,9 @@ test_equalize(int fd, pid_t p)
 {
 	int status = 0;
 	send_cmd(fd, "uniq1", "%s", "cc5J\rprintf uniq%s 1");
-	status |= check_layout(p, 0x1, "*12x80; 4x80; 5x80");
+	status |= check_layout(fd, 0x1, "*12x80; 4x80; 5x80");
 	send_cmd(fd, "uniq2", "%s", "=\rprintf uniq%s 2");
-	status |= check_layout(p, 0x1, "*7x80; 7x80; 7x80");
+	status |= check_layout(fd, 0x1, "*7x80; 7x80; 7x80");
 	send_str(fd, NULL, "kill -TERM $SMTX\r");
 	return status;
 }
@@ -488,22 +499,22 @@ test_insert(int fd, pid_t p)
 static int
 test_layout(int fd, pid_t p)
 {
-	int rv = check_layout(p, 0x13, "%s", "*23x80@0,0");
+	int rv = check_layout(fd, 0x13, "%s", "*23x80@0,0");
 
 	send_cmd(fd, "uniq01", "\rprintf 'uniq%%s' 01\r");
-	rv |= check_layout(p, 0x11, "*23x80@0,0");
+	rv |= check_layout(fd, 0x11, "*23x80@0,0");
 
 	send_cmd(fd, "gnat", "c\rprintf 'gn%%s' at\r");
-	rv |= check_layout(p, 0x11, "*11x80@0,0; 11x80@12,0");
+	rv |= check_layout(fd, 0x11, "*11x80@0,0; 11x80@12,0");
 
 	send_cmd(fd, "foobar", "j\rprintf 'foo%%s' bar\r");
-	rv |= check_layout(p, 0x11, "11x80@0,0; *11x80@12,0");
+	rv |= check_layout(fd, 0x11, "11x80@0,0; *11x80@12,0");
 
 	send_cmd(fd, "uniq02", "C\rprintf 'uniq%%s' 02\r");
-	rv |= check_layout(p, 0x11, "11x80@0,0; *11x40@12,0; 11x39@12,41");
+	rv |= check_layout(fd, 0x11, "11x80@0,0; *11x40@12,0; 11x39@12,41");
 
 	send_cmd(fd, "foobaz", "l\rprintf 'foo%%s' baz\r");
-	rv |= check_layout(p, 0x11, "11x80@0,0; 11x40@12,0; *11x39@12,41");
+	rv |= check_layout(fd, 0x11, "11x80@0,0; 11x40@12,0; *11x39@12,41");
 
 	send_str(fd, NULL, "kill $SMTX\r");
 	return rv;
@@ -540,7 +551,7 @@ test_navigate(int fd, pid_t p)
 	int status = 0;
 	send_cmd(fd, NULL, "cjkhl2Cjkhlc");
 	send_txt(fd, "foobar", "%s", "printf 'foo%s\\n' bar");
-	status |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
+	status |= check_layout(fd, 0x11, "%s; %s; %s; %s; %s",
 		"11x26@0,0",
 		"11x80@12,0",
 		"*5x26@0,27",
@@ -549,7 +560,7 @@ test_navigate(int fd, pid_t p)
 	);
 	send_cmd(fd, NULL, "8chhk");
 	send_txt(fd, "foobaz", "%s", "printf 'foo%s\\n' baz");
-	status |= check_layout(p, 0x11, "%s; %s; %s",
+	status |= check_layout(fd, 0x11, "%s; %s; %s",
 		"*11x26@0,0; 11x80@12,0; 0x26@0,27",
 		"0x26@1,27; 0x26@2,27; 0x26@3,27; 0x26@4,27; 0x26@5,27",
 		"0x26@6,27; 0x26@7,27; 1x26@8,27; 1x26@10,27; 11x26@0,54"
@@ -589,7 +600,7 @@ test_pager(int fd, pid_t p)
 	rv |= validate_row(p, 10, "%-80s", "    10:abcd");
 	rv |= validate_row(p, 22, "%-80s", "    22:abcd");
 	rv |= validate_row(p, 23, "%-80s", "--More--");
-	rv |= check_layout(p, 0x1, "*23x80");
+	rv |= check_layout(fd, 0x1, "*23x80");
 	send_str(fd, "uniq>", "%s", " q");
 	rv |= validate_row(p, 1,  "%-80s", "    23:wxyz");
 	rv |= validate_row(p, 10, "%-80s", "    32:wxyz");
@@ -604,13 +615,13 @@ test_pnm(int fd, pid_t p)
 {
 	int rv = 0;
 	send_txt(fd, "uniq", "printf '\\033>'u'n'i'q\\n'"); /* numkp */
-	rv |= check_layout(p, 0, "23x80#");
+	rv |= check_layout(fd, 0, "23x80#");
 	send_txt(fd, "uniq2", "\rprintf '\\033='u'n'i'q2\\n'"); /* numkp */
-	rv |= check_layout(p, 0, "23x80");
+	rv |= check_layout(fd, 0, "23x80");
 	send_txt(fd, "uniq3", "\rprintf '\\033[1l'u'n'i'q3\\n'"); /* csi 1l */
-	rv |= check_layout(p, 0, "23x80#");
+	rv |= check_layout(fd, 0, "23x80#");
 	send_txt(fd, "uniq4", "\rprintf '\\033[1h'u'n'i'q4\\n'"); /* csi 1h */
-	rv |= check_layout(p, 0, "23x80");
+	rv |= check_layout(fd, 0, "23x80");
 	send_txt(fd, NULL, "exit");
 	return rv;
 }
@@ -655,13 +666,13 @@ test_resize(int fd, pid_t p)
 {
 	int status = 0;
 	send_cmd(fd, "uniq1", "%s\r%s", "JccC", "printf 'uniq%s\\n' 1");
-	status |= check_layout(p, 0x1, "*7x40; 7x80; 7x80; 7x39");
+	status |= check_layout(fd, 0x1, "*7x40; 7x80; 7x80; 7x39");
 	send_cmd(fd, "uniq2", "%s\r%s", "5J", "printf 'uniq%s\\n' 2");
-	status |= check_layout(p, 0x1, "*12x40; 4x80; 5x80; 12x39");
+	status |= check_layout(fd, 0x1, "*12x40; 4x80; 5x80; 12x39");
 	send_cmd(fd, "uniq3", "%s\r%s", "jj10K", "printf 'uniq%s\\n' 3");
-	status |= check_layout(p, 0x1, "*12x40; 0x80; 10x80; 12x39");
+	status |= check_layout(fd, 0x1, "*12x40; 0x80; 10x80; 12x39");
 	send_cmd(fd, "uniq4", "%s\r%s", "kkl20H", "printf 'uniq%s\\n' 4");
-	status |= check_layout(p, 0x1, "12x20; 0x80; 10x80; *12x59");
+	status |= check_layout(fd, 0x1, "12x20; 0x80; 10x80; *12x59");
 	send_str(fd, NULL, "kill -TERM $SMTX\r");
 	return status;
 }
@@ -735,8 +746,8 @@ test_scrollback(int fd, pid_t p)
 	const char *string = "This is a relatively long string!";
 	char trunc[128];
 
-	send_cmd(fd, PROMPT ":", "CC\r:");
-	status |= check_layout(p, 0x1, "*23x26; 23x26; 23x26");
+	send_cmd(fd, "uniq", "CC\recho u'n'iq");
+	status |= check_layout(fd, 0x1, "*23x26; 23x26; 23x26");
 
 	send_txt(fd, NULL, "a='%s'\rPS1=$(printf 'un%%s>' iq)", string);
 	send_cmd(fd, "uniq>", "100<");
@@ -757,7 +768,7 @@ test_scrollback(int fd, pid_t p)
 	/* Exit all pty instead of killing.  This was triggering a segfault
 	 * on macos.  The test still times out whether we kill the SMTX
 	 * or exit. */
-	status |= check_layout(p, 0x1, "23x26; *23x26; 23x26");
+	status |= check_layout(fd, 0x1, "23x26; *23x26; 23x26");
 	send_txt(fd, NULL, "kill $SMTX");
 
 	return status;
@@ -775,7 +786,7 @@ test_swap(int fd, pid_t pid)
 	/* Write string2 into lower left canvas */
 	send_txt(fd, "string2", "printf 'str%%s\\n' ing2");
 
-	get_layout(pid, 5, desc, sizeof desc);
+	get_layout(fd, 5, desc, sizeof desc);
 	if( sscanf(desc, "11x40(id=%*d); *11x40(id=%d); "
 			"11x39(id=%*d); 11x39(id=%d)", id, id + 1) != 2 ) {
 		fprintf(stderr, "received unexpected: '%s'\n", desc);
@@ -806,7 +817,7 @@ test_swap(int fd, pid_t pid)
 	send_cmd(fd, NULL, "%ds", id[1]); /* Swap upper left and lower rt */
 	send_txt(fd, "uniq07", "printf 'uniq%%s\\n' 07");
 
-	get_layout(pid, 5, desc, sizeof desc);
+	get_layout(fd, 5, desc, sizeof desc);
 	if( sscanf(desc, "*11x40(id=%d); 11x40(id=%*d); "
 			"11x39(id=%*d); 11x39(id=%*d)", id + 2) != 1 ) {
 		fprintf(stderr, "received unexpected: '%s'\n", desc);
@@ -878,27 +889,27 @@ test_vis(int fd, pid_t p)
 	int rv = 0;
 	/* tput civis to hide cursor */
 	send_txt(fd, "uniq1", "%s; %s", "tput civis", "printf 'uniq%s\\n' 1");
-	rv |= check_layout(p, 0, "23x80!");
+	rv |= check_layout(fd, 0, "23x80!");
 
 	/* tput cvvis to show cursor */
 	send_txt(fd, "uniq2", "%s; %s", "tput cvvis", "printf 'uniq%s\\n' 2");
-	rv |= check_layout(p, 0, "23x80");
+	rv |= check_layout(fd, 0, "23x80");
 
 	/* CSI 25l to hide cursor */
 	send_txt(fd, "uniq3", "%s", "printf '\\033[?25l u'n'iq3'");
-	rv |= check_layout(p, 0, "23x80!");
+	rv |= check_layout(fd, 0, "23x80!");
 
 	/* CSI 25h to show cursor */
 	send_txt(fd, "uniq4", "%s", "printf '\\033[?25h u'n'iq4'");
-	rv |= check_layout(p, 0, "23x80");
+	rv |= check_layout(fd, 0, "23x80");
 
 	/* CSI 25l to hide cursor */
 	send_txt(fd, "uniq5", "%s", "printf '\\033[?25l u'n'iq5'");
-	rv |= check_layout(p, 0, "23x80!");
+	rv |= check_layout(fd, 0, "23x80!");
 
 	/* esc p to show cursor */
 	send_txt(fd, "uniq6", "%s", "printf '\\033p u'n'iq6'");
-	rv |= check_layout(p, 0, "23x80");
+	rv |= check_layout(fd, 0, "23x80");
 
 	send_txt(fd, NULL, "exit");
 	return rv;
@@ -933,7 +944,7 @@ test_width(int fd, pid_t p)
 	int rv = 0;
 	char buf[161];
 	send_cmd(fd, "uniq01", "cCCCj\rprintf 'uniq%%s' 01");
-	rv |= check_layout(p, 0x11, "%s; %s; %s; %s; %s",
+	rv |= check_layout(fd, 0x11, "%s; %s; %s; %s; %s",
 		"11x20@0,0",
 		"*11x80@12,0",
 		"11x19@0,21",
@@ -1301,7 +1312,7 @@ check_test_status(int rv, int status, int pty, const char *name)
 			name, WTERMSIG(status));
 	}
 	if( rv ) {
-		fprintf(stderr, "%s FAILED\n", name);
+		fprintf(stderr, "FAILED: %s\n", name);
 	}
 	return (!rv && WIFEXITED(status)) ? WEXITSTATUS(status) : EXIT_FAILURE;
 }

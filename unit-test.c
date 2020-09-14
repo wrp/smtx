@@ -25,14 +25,14 @@ test_attach(int fd, pid_t p)
 
 	send_cmd(fd, "other", "j\rprintf '\\no't'h'er'\\n'");
 
-	get_layout(p, 5, desc, sizeof desc);
+	get_layout(fd, 5, desc, sizeof desc);
 	if( sscanf(desc, "7x80(id=%*d); *7x80(id=%d);", &id) != 1 ) {
 		fprintf(stderr, "received unexpected: '%s'\n", desc);
 		rv = 1;
 	} else {
 		send_cmd(fd, "uniq", "k%da\recho 'u'ni'q'", id);
 	}
-	rv |= check_layout(p, 0x1, "*7x80; 7x80; 7x80");
+	rv |= check_layout(fd, 0x1, "*7x80; 7x80; 7x80");
 
 	/* 2nd row of the first window should now be different */
 	rv |= validate_row(p, 3, "%-80s", "other");

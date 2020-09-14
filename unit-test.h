@@ -35,10 +35,10 @@ int __attribute__((format(printf,3,4)))
 validate_row(pid_t pid, int row, const char *fmt, ... );
 
 int
-get_layout(pid_t pid, int flag, char *layout, size_t siz);
+get_layout(int fd, int flag, char *layout, size_t siz);
 
 int __attribute__((format(printf,3,4)))
-check_layout(pid_t pid, int flag, const char *fmt, ...);
+check_layout(int fd, int flag, const char *fmt, ...);
 
 typedef int(test)(int fd, pid_t pid);
 test test_ack;

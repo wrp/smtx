@@ -623,6 +623,17 @@ add_key(struct handler *b, wchar_t k, action act, const char *arg)
 	b[k].arg = arg;
 }
 
+static void
+show_layout(const char *arg)
+{
+	char buf[1024] = "layout: ";
+	int flag = S.count == -1 ? 1 : S.count;
+	(void)arg;
+	size_t s = describe_layout(buf + 8, sizeof buf - 8, flag);
+	buf[8 + s] = ':';
+	write(1, buf, s + 9);
+}
+
 void
 build_bindings()
 {
@@ -631,6 +642,8 @@ build_bindings()
 	add_key(keys, S.commandkey, transition, NULL);
 	add_key(keys, L'\r', send, "\r");
 	add_key(keys, L'\n', send, "\n");
+
+	add_key(cmd_keys, CTL('e'), show_layout, NULL);
 
 	add_key(cmd_keys, S.commandkey, transition, &S.commandkey);
 	add_key(cmd_keys, L'\r', transition, NULL);
