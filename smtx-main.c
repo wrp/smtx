@@ -634,8 +634,21 @@ show_layout(const char *arg)
 	(void)arg;
 	size_t s = describe_layout(buf + 8, sizeof buf - 8, c, flag);
 	buf[8 + s] = ':';
-	write(1, buf, s + 9);
+	rewrite(1, buf, s + 9);
 }
+
+static size_t describe_row(char *desc, size_t siz, int row);
+static void
+show_row(const char *arg)
+{
+	(void)arg;
+	int row = S.count == -1 ? 1 : S.count;
+	char buf[1024];
+	int k = sprintf(buf, "row %d: ", row);
+	size_t s = describe_row(buf + k, sizeof buf - k, row);
+	rewrite(1, buf, s + k);
+}
+
 
 void
 build_bindings()
@@ -647,6 +660,7 @@ build_bindings()
 	add_key(keys, L'\n', send, "\n");
 
 	add_key(cmd_keys, CTL('e'), show_layout, NULL);
+	add_key(cmd_keys, CTL('f'), show_row, NULL);
 
 	add_key(cmd_keys, S.commandkey, transition, &S.commandkey);
 	add_key(cmd_keys, L'\r', transition, NULL);
@@ -923,13 +937,13 @@ describe_state(char *desc, size_t siz)
 	return len;
 }
 
-size_t
-describe_row(char *desc, size_t siz, int row, unsigned flag)
+static size_t
+describe_row(char *desc, size_t siz, int row)
 {
 	size_t len = 0;
 	int y, x, mx;
 
-	const struct canvas *c = flag & 0x1 ? S.f : S.c;
+	const struct canvas *c = S.c;
 	assert( c->offset.x >= 0 );
 
 	if( row < c->extent.y ) {

@@ -21,7 +21,7 @@ test_attach(int fd, pid_t p)
 
 	send_cmd(fd, NULL, "cc1000a");  /* Invalid attach */
 	send_txt(fd, "sync", "printf '\\ns'y'n'c'\\n'");
-	int rv = validate_row(p, 3, "%-80s", "sync");
+	int rv = validate_row(fd, 3, "%-80s", "sync");
 
 	send_cmd(fd, "other", "j\rprintf '\\no't'h'er'\\n'");
 
@@ -35,7 +35,7 @@ test_attach(int fd, pid_t p)
 	rv |= check_layout(fd, 0x1, "*7x80; 7x80; 7x80");
 
 	/* 2nd row of the first window should now be different */
-	rv |= validate_row(p, 3, "%-80s", "other");
+	rv |= validate_row(fd, 3, "%-80s", "other");
 	return rv;
 }
 
@@ -45,7 +45,7 @@ test_cols(int fd, pid_t p)
 	/* Ensure that tput correctly identifies the width */
 	int rv;
 	send_txt(fd, "uniq1", "%s", "tput cols; printf 'uniq%s\\n' 1");
-	rv = validate_row(p, 2, "%-92s", "97");
+	rv = validate_row(fd, 2, "%-92s", "97");
 	send_txt(fd, NULL, "exit");
 	return rv;
 }
@@ -58,10 +58,10 @@ test_csr(int fd, pid_t p)
 	send_txt(fd, "uniq1", "%s;%s", "tput csr 6 12; yes | nl -s: | sed 25q",
 		"printf 'uni%s\\n' q1");
 	for(int i = 2; i <= 6; i++ ) {
-		rv |= validate_row(p, i, "     %d:%-73s", i, "y");
+		rv |= validate_row(fd, i, "     %d:%-73s", i, "y");
 	}
 	for(int i = 7; i <= 11; i++ ) {
-		rv |= validate_row(p, i, "    %2d:%-73s", i + 14, "y");
+		rv |= validate_row(fd, i, "    %2d:%-73s", i + 14, "y");
 	}
 	send_str(fd, NULL, "exit\r");
 	return rv;

@@ -202,19 +202,28 @@ grep(int fd, const char *needle)
  * a prompt).  It might be nice to check that.
  */
 int
-validate_row(pid_t pid, int row, const char *fmt, ... )
+validate_row(int fd, int row, const char *fmt, ... )
 {
-	int status = 0;
-	union param p = { .usr1 = {.row = row, .flag = 0} };
+	int len;
+	ssize_t s;
 	char expect[1024];
 	char buf[1024];
+	int status = 0;
 	va_list ap;
 	va_start(ap, fmt);
 	(void)vsnprintf(expect, sizeof expect, fmt, ap);
 	va_end(ap);
-	write(p2c[1], &p, sizeof p.usr1);
-	kill(pid, SIGUSR1);
-	ssize_t s = timed_read(c2p[0], buf, sizeof buf - 1, expect);
+
+	row -= 1;
+	len = snprintf(buf, sizeof buf, "%c%d%c\r", commandkey, row, CTL('f'));
+	write(fd, buf, len);
+	sprintf(buf, "row %d: ", row);
+	grep(fd, buf);
+	do s = timed_read(fd, buf, sizeof buf - 1, expect); while( s == 0 );
+	if( s == -1 ) {
+		fprintf(stderr, "reading from child: %s\n", strerror(errno));
+		return -1;
+	}
 	buf[s] = 0;
 	if( strcmp( buf, expect ) ) {
 		fprintf(stderr, "unexpected content in row %d\n", row);
@@ -223,6 +232,7 @@ validate_row(pid_t pid, int row, const char *fmt, ... )
 		status = 1;
 	}
 	return status;
+	return 0;
 }
 
 static int
@@ -236,10 +246,10 @@ test_cup(int fd, pid_t p)
 	cmd = "printf abc; tput cuf 73; printf '12345678%s\\n' wrapped";
 	send_txt(fd, "5678wrapped", "%s", cmd);
 
-	status |= validate_row(p, 6, "%50s%-30s", "", "uniq1");
-	status |= validate_row(p, 8, "%-80s", "0127896");
-	status |= validate_row(p, 11, "abc%73s1234", "");
-	status |= validate_row(p, 12, "%-80s", "5678wrapped");
+	status |= validate_row(fd, 6, "%50s%-30s", "", "uniq1");
+	status |= validate_row(fd, 8, "%-80s", "0127896");
+	status |= validate_row(fd, 11, "abc%73s1234", "");
+	status |= validate_row(fd, 12, "%-80s", "5678wrapped");
 	send_txt(fd, NULL, "kill $SMTX");
 	return status;
 }
@@ -252,20 +262,20 @@ test_cursor(int fd, pid_t p)
 
 	send_txt(fd, NULL, "tput sc; echo abcdefg; tput rc; echo bar");
 	send_txt(fd, "uniq01", "printf 'uniq%%s' 01");
-	rv |= validate_row(p, 4, "%-80s", "bardefg");
+	rv |= validate_row(fd, 4, "%-80s", "bardefg");
 
 	send_txt(fd, "foobaz", "tput cup 15 50; printf 'foo%%s\\n' baz");
-	rv |= validate_row(p, 16, "%-50sfoobaz%24s", "", "");
+	rv |= validate_row(fd, 16, "%-50sfoobaz%24s", "", "");
 
 	send_str(fd, "foo37", "tput clear; printf 'foo%%s\n' 37\r");
-	rv |= validate_row(p, 1, "%-80s", "foo37");
+	rv |= validate_row(fd, 1, "%-80s", "foo37");
 
 	send_str(fd, "bar38", "printf foo; tput ht; printf 'bar%%s\\n' 38\r");
-	rv |= validate_row(p, 3, "%-80s", "foo     bar38");
+	rv |= validate_row(fd, 3, "%-80s", "foo     bar38");
 
 	send_str(fd, "foo39", "printf 'a\\tb\\tc\\t'; tput cbt; tput cbt; "
 		"printf 'foo%%s\\n' 39\r");
-	rv |= validate_row(p, 5, "%-80s", "a       foo39   c");
+	rv |= validate_row(fd, 5, "%-80s", "a       foo39   c");
 
 #if 0
 	check_cmd(T, "tput cud 6", "*23x80@0,0(%d,6)", y += 1 + 6);
@@ -320,7 +330,7 @@ test_dch(int fd, pid_t p)
 		"\\033[2P",        /* Delete 2 */
 		"\\033[1C"         /* Forward 1 */
 	);
-	rv |= validate_row(p, 2, "%-80s", "12347uniq");
+	rv |= validate_row(fd, 2, "%-80s", "12347uniq");
 	send_txt(fd, NULL, "kill $SMTX");
 	return rv;
 }
@@ -332,12 +342,12 @@ test_decaln(int fd, pid_t p)
 	int rv = 0;
 	memset(e, 'E', 80);
 	send_txt(fd, "uniq", "printf '\\033[1048#u'; echo 'u'n'i'q;");
-	rv |= validate_row(p, 1, "%s", e);
+	rv |= validate_row(fd, 1, "%s", e);
 	for( int i = 4; i < 24; i++ ) {
-		rv |= validate_row(p, i, "%s", e);
+		rv |= validate_row(fd, i, "%s", e);
 	}
 	memcpy(e, "uniq", 4);
-	rv |= validate_row(p, 2, "%s", e);
+	rv |= validate_row(fd, 2, "%s", e);
 	send_str(fd, NULL, "kill $SMTX\r");
 	return rv;
 }
@@ -372,7 +382,7 @@ test_ech(int fd, pid_t p)
 		"printf 012345; tput cub 3; tput ech 1;",
 		"printf '\\nuniq%s\\n' 1"
 	);
-	rv |= validate_row(p, 2, "%-80s", "012 45");
+	rv |= validate_row(fd, 2, "%-80s", "012 45");
 	send_str(fd, NULL, "exit\r");
 	return rv;
 }
@@ -382,29 +392,29 @@ test_ed(int fd, pid_t p)
 {
 	int rv = 0;
 	send_txt(fd, "uniq", "yes | sed 15q; tput cuu 8; echo u'n'i'q'");
-	rv |= validate_row(p, 8, "%-80s", "y");
-	rv |= validate_row(p, 12, "%-80s", "y");
+	rv |= validate_row(fd, 8, "%-80s", "y");
+	rv |= validate_row(fd, 12, "%-80s", "y");
 	send_txt(fd, "uniq2", "printf '\\033[J'u'n'i'q'2"); /* Clear to end */
-	rv |= validate_row(p, 8, "%-80s", "y");
-	rv |= validate_row(p, 12, "%-80s", "");
+	rv |= validate_row(fd, 8, "%-80s", "y");
+	rv |= validate_row(fd, 12, "%-80s", "");
 	send_txt(fd, "uniq3", "printf '\\033[2J'u'n'i'q'3"); /* Clear all */
-	rv |= validate_row(p, 8, "%-80s", "");
-	rv |= validate_row(p, 13, "%-80s", "");
+	rv |= validate_row(fd, 8, "%-80s", "");
+	rv |= validate_row(fd, 13, "%-80s", "");
 	send_txt(fd, "uniq6", "clear; printf 'un''iq6'");
 	send_txt(fd, "uniq4", "yes | sed 15q; tput cuu 8; echo u'n'i'q4'");
 	for(int i = 2; i < 9; i++ ) {
-		rv |= validate_row(p, i, "%-80s", "y");
+		rv |= validate_row(fd, i, "%-80s", "y");
 	}
 	send_txt(fd, "uniq5", "printf '\\033[1J'u'n'i'q'5"); /* Clear to top */
 	for(int i = 2; i < 9; i++ ) {
-		rv |= validate_row(p, i, "%-80s", "");
+		rv |= validate_row(fd, i, "%-80s", "");
 	}
 	for(int i = 12; i < 15; i++ ) {
-		rv |= validate_row(p, i, "%-80s", "y");
+		rv |= validate_row(fd, i, "%-80s", "y");
 	}
 	send_txt(fd, "uniq7", "printf '\\033[3J\\033[1;1H'u'n'i'q'7");
 	for(int i = 2; i < 15; i++ ) {
-		rv |= validate_row(p, i, "%-80s", "");
+		rv |= validate_row(fd, i, "%-80s", "");
 	}
 	send_txt(fd, NULL, "exit");
 	return rv;
@@ -416,15 +426,15 @@ test_el(int fd, pid_t p)
 	int rv = 0;
 	send_txt(fd, "uniq01", "%s", "printf 01234; tput cub 3; tput el; "
 		"printf 'uniq%s\\n' 01");
-	rv |= validate_row(p, 2, "%-80s", "01uniq01");
+	rv |= validate_row(fd, 2, "%-80s", "01uniq01");
 
 	send_txt(fd, "uniq02", "%s", "printf 01234; tput cub 3; tput el1; "
 		"printf '\\nuniq%s' 02");
-	rv |= validate_row(p, 4, "%-80s", "   34");
+	rv |= validate_row(fd, 4, "%-80s", "   34");
 
 	/* Delete full line with csi 2K */
 	send_txt(fd, "uniq03", "%s", "printf '01234\\033[2Ku'ni'q03\\n'");
-	rv |= validate_row(p, 6, "%-80s", "     uniq03");
+	rv |= validate_row(fd, 6, "%-80s", "     uniq03");
 
 	send_txt(fd, NULL, "exit");
 	return rv;
@@ -448,7 +458,7 @@ test_hpr(int fd, pid_t p)
 	int rv = 0;
 	const char *cmd = "printf 'abcd\\033[5aef'gh'ij\\n'";
 	send_txt(fd, "efghij", "%s", cmd);
-	rv |= validate_row(p, 2, "%-80s", "abcd     efghij");
+	rv |= validate_row(fd, 2, "%-80s", "abcd     efghij");
 	send_txt(fd, NULL, "exit");
 	return rv;
 }
@@ -460,24 +470,24 @@ test_ich(int fd, pid_t p)
 	/* ich: insert N characters, cub: move back N */
 	const char *cmd = "printf abcdefg; tput cub 3; tput ich 5";
 	send_txt(fd, "uniq1", "%s; %s", cmd, "printf '\\nuni%s\\n' q1");
-	rv |= validate_row(p, 2, "%-80s", "abcd     efg");
+	rv |= validate_row(fd, 2, "%-80s", "abcd     efg");
 
 	cmd = "yes | nl | sed 6q; tput cuu 3; tput il 3; tput cud 6";
 	send_txt(fd, "uniq2", "%s; %s", cmd, "printf uni'%s\\n' q2");
 	for( int i=1; i < 4; i++ ) {
-		rv |= validate_row(p, 4 + i, "%6d  y%71s", i, "");
+		rv |= validate_row(fd, 4 + i, "%6d  y%71s", i, "");
 	}
 	for( int i=4; i < 7; i++ ) {
-		rv |= validate_row(p, 4 + i, "%80s", "");
+		rv |= validate_row(fd, 4 + i, "%80s", "");
 	}
 	for( int i=7; i < 10; i++ ) {
-		rv |= validate_row(p, 4 + i, "%6d  y%71s", i - 3, "");
+		rv |= validate_row(fd, 4 + i, "%6d  y%71s", i - 3, "");
 	}
 	/* dl: delete n lines */
 	cmd = "yes | nl | sed 6q; tput cuu 5; tput dl 4; tput cud 1";
 	send_txt(fd, "uniq3", "%s; %s", cmd, "printf uni'%s\\n' q3");
-	rv |= validate_row(p, 16, "     %d  y%71s", 1, "");
-	rv |= validate_row(p, 17, "     %d  y%71s", 6, "");
+	rv |= validate_row(fd, 16, "     %d  y%71s", 1, "");
+	rv |= validate_row(fd, 17, "     %d  y%71s", 6, "");
 
 	send_txt(fd, NULL, "exit");
 	return rv;
@@ -490,8 +500,8 @@ test_insert(int fd, pid_t p)
 	/* smir -- begin insert mode;  rmir -- end insert mode */
 	send_txt(fd, "sync01", "%s", "printf 0123456; tput cub 3; tput smir; "
 		"echo foo; tput rmir; printf 'sync%s\\n' 01");
-	rc |= validate_row(p, 3, "%-80s", "0123foo456");
-	rc |= validate_row(p, 4, "%-80s", "sync01");
+	rc |= validate_row(fd, 3, "%-80s", "0123foo456");
+	rc |= validate_row(fd, 4, "%-80s", "sync01");
 	send_str(fd, NULL, "exit\r");
 	return rc;
 }
@@ -525,16 +535,16 @@ static int
 test_lnm(int fd, pid_t p)
 {
 	send_txt(fd, "sync", "printf '\\e[20hs''ync\\n' "); /* line 1 */
-	int rv = validate_row(p, 2, "%-80s", "sync");
+	int rv = validate_row(fd, 2, "%-80s", "sync");
 	send_txt(fd, "barbaz", "printf 'foobaz\\rbar\\n'"); /* line 3 */
 	/* Line 4 is blank because lnm is on and a newline was inserted */
-	rv |= validate_row(p, 4, "%-80s", "");
-	rv |= validate_row(p, 5, "%-80s", "barbaz");
+	rv |= validate_row(fd, 4, "%-80s", "");
+	rv |= validate_row(fd, 5, "%-80s", "barbaz");
 	send_txt(fd, "sync2", "printf '\\e[20lsy'n'c2\\n'"); /* line 6 */
-	rv |= validate_row(p, 7, "%-80s", "");  /* Inserted newline (1)*/
-	rv |= validate_row(p, 8, "%-80s", "sync2");
+	rv |= validate_row(fd, 7, "%-80s", "");  /* Inserted newline (1)*/
+	rv |= validate_row(fd, 8, "%-80s", "sync2");
 	send_txt(fd, "check3", "printf 'foo\\rch''eck3\\n'");
-	rv |= validate_row(p, 10, "%-80s", "check3");
+	rv |= validate_row(fd, 10, "%-80s", "check3");
 	return rv;
 }
 /*
@@ -578,12 +588,12 @@ test_nel(int fd, pid_t p)
 	const char *cmd = "tput cud 3; printf foo; tput nel; "
 		"printf 'uniq%s\\n' 01";
 	send_txt(fd, "uniq01", "%s", cmd);
-	rv |= validate_row(p, 5, "%-80s", "foo");
-	rv |= validate_row(p, 6, "%-80s", "uniq01");
+	rv |= validate_row(fd, 5, "%-80s", "foo");
+	rv |= validate_row(fd, 6, "%-80s", "uniq01");
 	cmd = "printf foobarz012; tput cub 7; echo blah; "
 		"printf 'uniq%s\\n' 02";
 	send_txt(fd, "uniq02", "%s", cmd);
-	rv |= validate_row(p, 8, "%-80s", "fooblah012");
+	rv |= validate_row(fd, 8, "%-80s", "fooblah012");
 	send_str(fd, NULL, "exit\r");
 	return rv;
 }
@@ -597,16 +607,16 @@ test_pager(int fd, pid_t p)
 		"yes abcd | nl -s: | sed -e '23,44y/abcd/wxyz/' -e 500q | more",
 		"PS1=u'ni'q\\>"
 	);
-	rv |= validate_row(p, 02, "%-80s", "     2:abcd");
-	rv |= validate_row(p, 10, "%-80s", "    10:abcd");
-	rv |= validate_row(p, 22, "%-80s", "    22:abcd");
-	rv |= validate_row(p, 23, "%-80s", "--More--");
+	rv |= validate_row(fd, 02, "%-80s", "     2:abcd");
+	rv |= validate_row(fd, 10, "%-80s", "    10:abcd");
+	rv |= validate_row(fd, 22, "%-80s", "    22:abcd");
+	rv |= validate_row(fd, 23, "%-80s", "--More--");
 	rv |= check_layout(fd, 0x1, "*23x80");
 	send_str(fd, "uniq>", "%s", " q");
-	rv |= validate_row(p, 1,  "%-80s", "    23:wxyz");
-	rv |= validate_row(p, 10, "%-80s", "    32:wxyz");
-	rv |= validate_row(p, 22, "%-80s", "    44:wxyz");
-	rv |= validate_row(p, 23, "%-80s", "uniq>");
+	rv |= validate_row(fd, 1,  "%-80s", "    23:wxyz");
+	rv |= validate_row(fd, 10, "%-80s", "    32:wxyz");
+	rv |= validate_row(fd, 22, "%-80s", "    44:wxyz");
+	rv |= validate_row(fd, 23, "%-80s", "uniq>");
 	send_txt(fd, NULL, "exit");
 	return rv;
 }
@@ -723,7 +733,7 @@ test_ri(int fd, pid_t p)
 		"abc\\n",       /* overwrite */
 		"s'y'nc"
 	);
-	int rc = validate_row(p, 2, "%-80s", "abc345678");
+	int rc = validate_row(fd, 2, "%-80s", "abc345678");
 	return rc;
 }
 
@@ -734,9 +744,9 @@ test_row(int fd, pid_t p)
 	send_txt(fd, "uniq1", "%s; %s", "yes | nl -ba | sed 400q",
 		"printf 'uniq%s\\n' 1");
 
-	status |= validate_row(p, 20, "%6d%-74s", 399, "  y");
-	status |= validate_row(p, 21, "%6d%-74s", 400, "  y");
-	status |= validate_row(p, 22, "%-80s", "uniq1");
+	status |= validate_row(fd, 20, "%6d%-74s", 399, "  y");
+	status |= validate_row(fd, 21, "%6d%-74s", 400, "  y");
+	status |= validate_row(fd, 22, "%-80s", "uniq1");
 	send_txt(fd, NULL, "kill $SMTX");
 	return status;
 }
@@ -755,17 +765,17 @@ test_scrollback(int fd, pid_t p)
 	send_cmd(fd, "uniq>", "100<");
 	send_txt(fd, "uniq>", "yes \"$a\" | nl |\rsed 50q");
 	snprintf(trunc, 19, "%s", string);
-	status |= validate_row(p, 1, "%6d  %-18s", 29, trunc);
-	status |= validate_row(p, 22, "%6d  %-18s", 50, trunc);
+	status |= validate_row(fd, 1, "%6d  %-18s", 29, trunc);
+	status |= validate_row(fd, 22, "%6d  %-18s", 50, trunc);
 
 	/* Scrollback 3, then move to another term and write a unique string */
 	send_cmd(fd, "foobar", "3bl\rprintf 'foo%%s' bar");
-	status |= validate_row(p, 22, "%6d  %-18s", 47, trunc);
+	status |= validate_row(fd, 22, "%6d  %-18s", 47, trunc);
 
 	/* Scrollright 8, then move to another term and write a unique string */
 	snprintf(trunc, 27, "%s", string);
 	send_cmd(fd, "foobaz", "h8>l\rprintf 'foo%%s' baz");
-	status |= validate_row(p, 14, "%-26s", trunc);
+	status |= validate_row(fd, 14, "%-26s", trunc);
 
 	/* Exit all pty instead of killing.  This was triggering a segfault
 	 * on macos.  The test still times out whether we kill the SMTX
@@ -794,7 +804,7 @@ test_swap(int fd, pid_t pid)
 		fprintf(stderr, "received unexpected: '%s'\n", desc);
 		rv = 1;
 	}
-	rv |= validate_row(pid, 4, "%-40s", "");
+	rv |= validate_row(fd, 4, "%-40s", "");
 	send_cmd(fd, NULL, "k"); /* Move to upper left */
 	send_txt(fd, "uniq01", "printf 'uniq%%s\\n' 01");
 	send_txt(fd, NULL, "printf 'string%%s\\n' 1");
@@ -802,20 +812,20 @@ test_swap(int fd, pid_t pid)
 	send_cmd(fd, NULL, "1024s");   /* Invalid swap */
 	send_cmd(fd, NULL, "%ds", id[0]); /* Swap upper left and lower left */
 	send_txt(fd, "uniq03", "printf 'uniq%%s\\n' 03");
-	rv |= validate_row(pid, 4, "%-40s", "string2");
-	rv |= validate_row(pid, 6, "%-40s", "uniq03");
+	rv |= validate_row(fd, 4, "%-40s", "string2");
+	rv |= validate_row(fd, 6, "%-40s", "uniq03");
 
 	/* Swap back */
 	send_cmd(fd, NULL, "s");
 	send_txt(fd, "uniq04", "printf 'uniq%%s\\n' 04");
-	rv |= validate_row(pid, 4, "%-40s", "string1");
-	rv |= validate_row(pid, 6, "%-40s", "uniq04");
+	rv |= validate_row(fd, 4, "%-40s", "string1");
+	rv |= validate_row(fd, 6, "%-40s", "uniq04");
 
 	send_cmd(fd, NULL, "jl");
 	send_txt(fd, "uniq05", "printf '\\nuniq%%s\\n' 05");
 	send_cmd(fd, NULL, "kh");
 	send_txt(fd, "uniq06", "printf 'uniq%%s\\n' 06");
-	rv |= validate_row(pid, 4, "%-40s", "string1");
+	rv |= validate_row(fd, 4, "%-40s", "string1");
 	send_cmd(fd, NULL, "%ds", id[1]); /* Swap upper left and lower rt */
 	send_txt(fd, "uniq07", "printf 'uniq%%s\\n' 07");
 
@@ -840,20 +850,20 @@ test_tabstop(int fd, pid_t p)
 	int d = 0;
 	const char *cmd = "printf 'this\\tis\\ta\\ttest%%d\\n' %d";
 	send_txt(fd, "test0", cmd, d);
-	rv |= validate_row(p, 2, "%-80s", "this    is      a       test0");
+	rv |= validate_row(fd, 2, "%-80s", "this    is      a       test0");
 
 	send_cmd(fd, NULL, "3t");
 	send_txt(fd, "test1", cmd, ++d);
-	rv |= validate_row(p, 4, "%-80s", "this  is a  test1");
+	rv |= validate_row(fd, 4, "%-80s", "this  is a  test1");
 
 	send_cmd(fd, NULL, "t");
-	rv |= validate_row(p, 6, "%-80s", "");
+	rv |= validate_row(fd, 6, "%-80s", "");
 	send_txt(fd, "test2", cmd, ++d);
-	rv |= validate_row(p, 6, "%-80s", "this    is      a       test2");
+	rv |= validate_row(fd, 6, "%-80s", "this    is      a       test2");
 
 	send_txt(fd, "uniq:", "%s; %s", "tabs -5", "PS1=un'iq:'");
 	send_txt(fd, "test3", cmd, ++d);
-	rv |= validate_row(p, 9, "%-80s", "this is   a    test3");
+	rv |= validate_row(fd, 9, "%-80s", "this is   a    test3");
 
 	send_txt(fd, NULL, "kill -TERM %d", p);
 	return rv;
@@ -876,10 +886,10 @@ test_title(int fd, pid_t p)
 	 */
 	memset(buf, 'q', 68);
 	buf[68] = '\0';
-	rv |= validate_row(p, 24, "1 sh 1-80/80%s", buf);
+	rv |= validate_row(fd, 24, "1 sh 1-80/80%s", buf);
 	send_txt(fd, "uniq", "printf '\\033]2foobar\\007'; echo u'n'iq");
 	buf[64] = '\0';
-	rv |= validate_row(p, 24, "1 foobar 1-80/80%s", buf);
+	rv |= validate_row(fd, 24, "1 foobar 1-80/80%s", buf);
 
 	send_txt(fd, NULL, "exit");
 	return rv;
@@ -924,7 +934,7 @@ test_tput(int fd, pid_t p)
 	int rv = 0;
 	/* vpa: move cursor to row (0 based), hpa: move cursor to column */
 	send_txt(fd, "xyz", "%s", "tput vpa 7; tput hpa 18; echo x'y'z");
-	rv |= validate_row(p, 8, "%18sxyz%59s", "", "");
+	rv |= validate_row(fd, 8, "%18sxyz%59s", "", "");
 
 	/* ed: clear to end of screen */
 	send_txt(fd, "uniq", "%s; %s; %s",
@@ -932,9 +942,9 @@ test_tput(int fd, pid_t p)
 		"tput cup 5 10; tput ed", /* Move and delete to end of screen */
 		"printf 'uniq\\n'"
 	);
-	rv |= validate_row(p, 6, "%-80s", "abcdefghijuniq");
+	rv |= validate_row(fd, 6, "%-80s", "abcdefghijuniq");
 	for( int i = 8; i < 23; i++ ) {
-		rv |= validate_row(p, i, "%80s", "");
+		rv |= validate_row(fd, i, "%80s", "");
 	}
 	/* bel: alert user*/
 	send_txt(fd, NULL, "tput bel; kill $SMTX");
@@ -961,11 +971,11 @@ test_width(int fd, pid_t p)
 	send_str(fd, NULL, "printf '%%s' ${i}123456789;");
 	send_str(fd, NULL, "test $i = 5 && printf '\\n  uniq%%s\\n' 02;");
 	send_str(fd, "uniq02", "done\r");
-	rv |= validate_row(p, 3, "%-20s", "11234567892123456789");
+	rv |= validate_row(fd, 3, "%-20s", "11234567892123456789");
 
 	/* Shift right 15 chars */
 	send_cmd(fd, "dedef", "15>\rprintf '%%20sded%%s' '' ef");
-	rv |= validate_row(p, 3, "%-20s", "56789312345678941234");
+	rv |= validate_row(fd, 3, "%-20s", "56789312345678941234");
 
 	for( unsigned i = 0; i < sizeof buf - 1; i++ ) {
 		buf[i] = 'a' + i % 26;
@@ -978,23 +988,23 @@ test_width(int fd, pid_t p)
 	/* Print 60 blanks then a string to sync*/
 	send_txt(fd, "de3dbeef", "printf '%%60sde3d%%s' '' beef");
 	/* Verify that the 160 chars of repeated alphabet is at end of rows */
-	rv |= validate_row(p, 1, "%-20s", "ijklmnopqrstuvwxyzab");
-	rv |= validate_row(p, 2, "%-20s", "klmnopqrstuvwxyzabcd");
+	rv |= validate_row(fd, 1, "%-20s", "ijklmnopqrstuvwxyzab");
+	rv |= validate_row(fd, 2, "%-20s", "klmnopqrstuvwxyzabcd");
 
 	/* Change width of underlying pty to 180 */
 	send_cmd(fd, NULL, "180W\rclear; printf '%s\\n'", buf);
 	send_txt(fd, "de4dbeef", "printf '%%68sde4d%%s' '' beef");
-	rv |= validate_row(p, 1, "%-20s", "ijklmnopqrstuvwxyzab");
+	rv |= validate_row(fd, 1, "%-20s", "ijklmnopqrstuvwxyzab");
 	send_cmd(fd, NULL, "1>");
 	send_txt(fd, "de5dbeef", "printf '%%68sde5d%%s' '' beef");
-	rv |= validate_row(p, 1, "%-20s", "jklmnopqrstuvwxyzabc");
+	rv |= validate_row(fd, 1, "%-20s", "jklmnopqrstuvwxyzabc");
 
 	/* Change width of underlying pty to match canvas and scroll to start */
 	send_cmd(fd, NULL, "W180<");
 	send_txt(fd, NULL, "clear; printf '%s\\n'", buf);
 	send_txt(fd, "de6dbeef", "printf '%%sde6d%%s' '' beef");
-	rv |= validate_row(p, 1, "%-20s", "abcdefghijklmnopqrst");
-	rv |= validate_row(p, 2, "%-20s", "uvwxyzabcdefghijklmn");
+	rv |= validate_row(fd, 1, "%-20s", "abcdefghijklmnopqrst");
+	rv |= validate_row(fd, 2, "%-20s", "uvwxyzabcdefghijklmn");
 
 	send_str(fd, NULL, "kill $SMTX\r");
 	return rv;
@@ -1004,13 +1014,8 @@ static void
 handler(int s)
 {
 	char buf[256];
-	union param p;
 	int len = 0;
 	switch(s) {
-	case SIGUSR1:
-		timed_read(p2c[0], &p.usr1, sizeof p.usr1, "sigusr1");
-		len = describe_row(buf, sizeof buf, p.usr1.row - 1, 0);
-		break;
 	case SIGUSR2:
 		len = describe_state(buf, sizeof buf);
 		break;
@@ -1263,7 +1268,6 @@ execute_test(struct st *v, const char *name)
 		sa.sa_flags = 0;
 		sigemptyset(&sa.sa_mask);
 		sa.sa_handler = handler;
-		sigaction(SIGUSR1, &sa, NULL);
 		sigaction(SIGUSR2, &sa, NULL);
 		if( close(c2p[0]) || close(p2c[1]) ) {
 			err(EXIT_FAILURE, "close");
