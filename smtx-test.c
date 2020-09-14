@@ -1004,10 +1004,6 @@ handler(int s)
 	union param p;
 	int len = 0;
 	switch(s) {
-	case SIGHUP:
-		timed_read(p2c[0], &p.hup, sizeof p.hup, "sighup");
-		len = describe_layout(buf, sizeof buf, p.hup.flag);
-		break;
 	case SIGUSR1:
 		timed_read(p2c[0], &p.usr1, sizeof p.usr1, "sigusr1");
 		len = describe_row(buf, sizeof buf, p.usr1.row - 1, 0);
@@ -1264,7 +1260,6 @@ execute_test(struct st *v, const char *name)
 		sa.sa_flags = 0;
 		sigemptyset(&sa.sa_mask);
 		sa.sa_handler = handler;
-		sigaction(SIGHUP, &sa, NULL);
 		sigaction(SIGUSR1, &sa, NULL);
 		sigaction(SIGUSR2, &sa, NULL);
 		if( close(c2p[0]) || close(p2c[1]) ) {

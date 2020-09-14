@@ -22,7 +22,6 @@
  * access the tests have to the program.
  */
 
-extern size_t describe_layout(char *, ptrdiff_t, unsigned);
 extern size_t describe_row(char *, size_t, int, unsigned);
 extern size_t describe_state(char *desc, size_t siz);
 extern int smtx_main(int, char **);

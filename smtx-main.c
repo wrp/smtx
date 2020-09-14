@@ -623,6 +623,7 @@ add_key(struct handler *b, wchar_t k, action act, const char *arg)
 	b[k].arg = arg;
 }
 
+static size_t describe_layout(char *d, ptrdiff_t siz, unsigned flags);
 static void
 show_layout(const char *arg)
 {
@@ -903,7 +904,7 @@ layout_r(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 	return siz - ( e - d );
 }
 
-size_t
+static size_t
 describe_layout(char *d, ptrdiff_t siz, unsigned flags)
 {
 	return layout_r(d, siz, flags & 0x20 ? S.f : S.c, flags);
