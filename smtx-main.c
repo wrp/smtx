@@ -623,14 +623,16 @@ add_key(struct handler *b, wchar_t k, action act, const char *arg)
 	b[k].arg = arg;
 }
 
-static size_t describe_layout(char *d, ptrdiff_t siz, unsigned flags);
+static size_t describe_layout(char *d, ptrdiff_t siz, const struct canvas *c,
+	unsigned flags);
 static void
 show_layout(const char *arg)
 {
 	char buf[1024] = "layout: ";
 	int flag = S.count == -1 ? 1 : S.count;
+	struct canvas *c = flag & 0x20 ? S.f : S.c;
 	(void)arg;
-	size_t s = describe_layout(buf + 8, sizeof buf - 8, flag);
+	size_t s = describe_layout(buf + 8, sizeof buf - 8, c, flag);
 	buf[8 + s] = ':';
 	write(1, buf, s + 9);
 }
@@ -866,7 +868,7 @@ smtx_main(int argc, char *argv[])
 
 /* Describe a layout. This is called in a signal handler by the tests. */
 static size_t
-layout_r(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
+describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 {
 	const char * const e = d + siz;
 	int recurse = flags & 0x1;
@@ -898,16 +900,10 @@ layout_r(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 		if( recurse && e - d > 3 && c->c[i] ) {
 			*d++ = ';';
 			*d++ = ' ';
-			d += layout_r(d, e - d, c->c[i], flags);
+			d += describe_layout(d, e - d, c->c[i], flags);
 		}
 	}
 	return siz - ( e - d );
-}
-
-static size_t
-describe_layout(char *d, ptrdiff_t siz, unsigned flags)
-{
-	return layout_r(d, siz, flags & 0x20 ? S.f : S.c, flags);
 }
 
 size_t
