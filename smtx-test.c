@@ -174,25 +174,15 @@ grep(int fd, const char *needle)
 {
 	assert( needle != NULL );
 
-	char buf[BUFSIZ];
-	const char *end = buf;
-	const char *b = buf;
+	char c;
 	const char *n = needle;
 	while( *n != '\0' ) {
-		if( b == end ) {
-			ptrdiff_t d = n - needle;
-			if( d > 0 ) {
-				memcpy(buf, b - d, d);
-			}
-			size_t rc = timed_read(fd, buf + d, sizeof buf - d, n);
-			switch( rc ) {
-			case -1: err(EXIT_FAILURE, "read from pty");
-			case 0: return;
-			}
-			end = buf + d + rc;
-			b = buf + d;
+		size_t rc = timed_read(fd, &c, 1, needle);
+		switch( rc ) {
+		case -1: err(EXIT_FAILURE, "read from pty");
+		case 0: return;
 		}
-		if( *b++ != *n++ ) {
+		if( c != *n++ ) {
 			n = needle;
 		}
 	}
