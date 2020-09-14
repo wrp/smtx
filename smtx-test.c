@@ -183,7 +183,7 @@ grep(int fd, const char *needle)
 {
 	assert( needle != NULL );
 
-	size_t rc;
+	ssize_t rc;
 	char c;
 	const char *n = needle;
 	while( *n != '\0' ) {
@@ -302,9 +302,9 @@ test_dasht(int fd, pid_t p)
 {
 	/* This test exercises -t with a terminal type that should not
 	 * exist in order to test the code path that uses initscr() */
-	int rv;
+	(void)p;
 	send_cmd(fd, "uniq", "c\recho u'n'i'q'");
-	rv = check_layout(fd, 0x1, "*11x80; 11x80");
+	int rv = check_layout(fd, 0x1, "*11x80; 11x80");
 	send_txt(fd, NULL, "kill $SMTX");
 	return rv;
 }
@@ -433,9 +433,9 @@ test_el(int fd, pid_t p)
 static int
 test_equalize(int fd, pid_t p)
 {
-	int status = 0;
+	(void)p;
 	send_cmd(fd, "uniq1", "%s", "cc5J\rprintf uniq%s 1");
-	status |= check_layout(fd, 0x1, "*12x80; 4x80; 5x80");
+	int status = check_layout(fd, 0x1, "*12x80; 4x80; 5x80");
 	send_cmd(fd, "uniq2", "%s", "=\rprintf uniq%s 2");
 	status |= check_layout(fd, 0x1, "*7x80; 7x80; 7x80");
 	send_str(fd, NULL, "kill -TERM $SMTX\r");
@@ -499,6 +499,7 @@ test_insert(int fd, pid_t p)
 static int
 test_layout(int fd, pid_t p)
 {
+	(void)p;
 	int rv = check_layout(fd, 0x13, "%s", "*23x80@0,0");
 
 	send_cmd(fd, "uniq01", "\rprintf 'uniq%%s' 01\r");
@@ -548,10 +549,10 @@ test_lnm(int fd, pid_t p)
 static int
 test_navigate(int fd, pid_t p)
 {
-	int status = 0;
+	(void)p;
 	send_cmd(fd, NULL, "cjkhl2Cjkhlc");
 	send_txt(fd, "foobar", "%s", "printf 'foo%s\\n' bar");
-	status |= check_layout(fd, 0x11, "%s; %s; %s; %s; %s",
+	int status = check_layout(fd, 0x11, "%s; %s; %s; %s; %s",
 		"11x26@0,0",
 		"11x80@12,0",
 		"*5x26@0,27",
@@ -613,9 +614,9 @@ test_pager(int fd, pid_t p)
 static int
 test_pnm(int fd, pid_t p)
 {
-	int rv = 0;
+	(void)p;
 	send_txt(fd, "uniq", "printf '\\033>'u'n'i'q\\n'"); /* numkp */
-	rv |= check_layout(fd, 0, "23x80#");
+	int rv = check_layout(fd, 0, "23x80#");
 	send_txt(fd, "uniq2", "\rprintf '\\033='u'n'i'q2\\n'"); /* numkp */
 	rv |= check_layout(fd, 0, "23x80");
 	send_txt(fd, "uniq3", "\rprintf '\\033[1l'u'n'i'q3\\n'"); /* csi 1l */
@@ -664,6 +665,7 @@ test_reset(int fd, pid_t p)
 static int
 test_resize(int fd, pid_t p)
 {
+	(void)p;
 	int status = 0;
 	send_cmd(fd, "uniq1", "%s\r%s", "JccC", "printf 'uniq%s\\n' 1");
 	status |= check_layout(fd, 0x1, "*7x40; 7x80; 7x80; 7x39");
@@ -886,6 +888,7 @@ test_title(int fd, pid_t p)
 static int
 test_vis(int fd, pid_t p)
 {
+	(void)p;
 	int rv = 0;
 	/* tput civis to hide cursor */
 	send_txt(fd, "uniq1", "%s; %s", "tput civis", "printf 'uniq%s\\n' 1");
