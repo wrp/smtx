@@ -29,6 +29,7 @@ struct state S = {
 	.binding = &keys,
 	.maps = { &keys, &cmd_keys },
 	.history = 1024,
+	.mode = passthru,
 	.count = -1,
 };
 
@@ -767,12 +768,12 @@ main_loop(void)
 			reshape_root(NULL);
 		}
 		draw(S.v);
+		fixcursor();
 		if( winpos(S.werr, 1) ) {
 			int y, x;
 			getmaxyx(stdscr, y, x);
 			pnoutrefresh(S.werr, 0, 0, y - 1, 0, y - 1, x);
 		}
-		fixcursor();
 		doupdate();
 		if( select(S.p->fd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
 			err_check(errno != EINTR , "select");

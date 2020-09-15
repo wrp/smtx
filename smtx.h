@@ -85,6 +85,7 @@ struct handler {
 };
 
 enum mode {
+	cmd,      /* User entering command */
 	passthru, /* Unbound keystrokes are passed to focused window */
 	sink      /* Unbound keystrokes are discarded */
 };
@@ -105,6 +106,8 @@ struct state {
 	fd_set fds;
 	WINDOW *werr;
 	int reshape;
+	char command[1024];
+	char *command_end;
 };
 
 struct point { int y, x; };
