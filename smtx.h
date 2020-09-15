@@ -107,7 +107,7 @@ struct state {
 	WINDOW *werr;
 	int reshape;
 	char command[1024];
-	char *command_end;
+	size_t command_length;
 };
 
 struct point { int y, x; };

@@ -745,12 +745,22 @@ handlechar(int r, int k) /* Handle a single input character. */
 		if( b->act != digit ) {
 			S.count = -1;
 		}
-	} else if( S.mode == passthru && n->p && n->p->fd > 0 ) {
-		char c[MB_LEN_MAX + 1];
-		if( ( r = wctomb(c, k)) > 0 ) {
-			scrollbottom(n);
-			rewrite(n->p->fd, c, r);
+	} else switch( S.mode ) {
+	case cmd:
+		if( S.command_length < sizeof S.command ) {
+			S.command[S.command_length++] = k;
 		}
+		break;
+	case passthru:
+		if( n->p && n->p->fd > 0 ) {
+			char c[MB_LEN_MAX + 1];
+			if( ( r = wctomb(c, k)) > 0 ) {
+				scrollbottom(n);
+				rewrite(n->p->fd, c, r);
+			}
+		}
+	case sink:
+		;
 	}
 }
 
