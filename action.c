@@ -243,7 +243,7 @@ swap(const char *arg)
 		t->p = tmp;
 		S.reshape = 1;
 	} else {
-		err_check(1, "Cannot find target");
+		err_check(1, "Cannot find target canvas");
 	}
 }
 
