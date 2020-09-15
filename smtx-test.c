@@ -1126,6 +1126,7 @@ main(int argc, char *const argv[])
 	F(test_pnm);
 	F(test_quit);
 	F(test_reset);
+	F(test_resend);
 	F(test_resize);
 	F(test_resizepty, "args", "-s", "10");
 	F(test_ri);

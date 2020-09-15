@@ -66,3 +66,12 @@ test_csr(int fd, pid_t p)
 	send_str(fd, NULL, "exit\r");
 	return rv;
 }
+
+int
+test_resend(int fd, pid_t p)
+{
+	send_txt(fd, "uniq", "%1$c%1$c\recho u'n'i'q'", commandkey);
+	int rv = validate_row(fd, 1, "%-80s", "ps1>^G");
+	send_txt(fd, NULL, "exit");
+	return rv;
+}

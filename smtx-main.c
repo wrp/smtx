@@ -656,16 +656,17 @@ build_bindings()
 {
 	assert( KEY_MAX - KEY_MIN < 2048 ); /* Avoid overly large luts */
 
-	add_key(keys, S.commandkey, transition, NULL);
+	add_key(keys, S.commandkey, transition, &S.commandkey);
 	add_key(keys, L'\r', send, "\r");
 	add_key(keys, L'\n', send, "\n");
 
+	add_key(cmd_keys, L':', transition, ":");
 	add_key(cmd_keys, CTL('e'), show_layout, NULL);
 	add_key(cmd_keys, CTL('f'), show_row, NULL);
 
 	add_key(cmd_keys, S.commandkey, transition, &S.commandkey);
-	add_key(cmd_keys, L'\r', transition, NULL);
-	add_key(cmd_keys, L'\n', transition, NULL);
+	add_key(cmd_keys, L'\r', transition, "\r");
+	add_key(cmd_keys, L'\n', transition, "\n");
 	/* TODO: rebind b,f,<,> to hjkl in different binding */
 	add_key(cmd_keys, L'a', attach, NULL);
 	add_key(cmd_keys, L'b', scrolln, "-");

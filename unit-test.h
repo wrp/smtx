@@ -22,6 +22,8 @@
 # include <util.h>
 #endif
 
+extern int commandkey;
+
 void __attribute__((format(printf,3,4)))
 send_txt(int fd, const char *wait, const char *fmt, ...);
 
@@ -45,3 +47,4 @@ test test_ack;
 test test_attach;
 test test_cols;
 test test_csr;
+test test_resend;

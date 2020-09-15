@@ -252,6 +252,10 @@ transition(const char *arg)
 {
 	S.binding = S.maps[ S.binding == S.maps[0] ];
 	wmove(S.werr, 0, 0);
+	if( *arg == S.commandkey ) {
+		if( S.binding == S.maps[0] && S.f->p ) {
+			rewrite(S.f->p->fd, &S.commandkey, 1);
+		}
+	}
 	scrollbottom(S.f);
-	send(arg);
 }
