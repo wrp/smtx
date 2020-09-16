@@ -21,13 +21,14 @@
 static char *term = "smtx";
 static struct handler keys[128];
 static struct handler cmd_keys[128];
+static struct handler edt_keys[128];
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 
 struct state S = {
 	.commandkey = CTL('g'),
 	.width = 80,
 	.binding = &keys,
-	.maps = { &keys, &cmd_keys },
+	.maps = { &keys, &cmd_keys, &edt_keys },
 	.history = 1024,
 	.mode = passthru,
 	.count = -1,
@@ -650,9 +651,8 @@ show_row(const char *arg)
 	rewrite(1, buf, s + k);
 }
 
-
 void
-build_bindings()
+build_bindings(void)
 {
 	assert( KEY_MAX - KEY_MIN < 2048 ); /* Avoid overly large luts */
 
@@ -661,6 +661,7 @@ build_bindings()
 	add_key(keys, L'\n', send, "\n");
 
 	add_key(cmd_keys, L':', transition, ":");
+	add_key(edt_keys, L'\r', transition, "\r");
 	add_key(cmd_keys, CTL('e'), show_layout, NULL);
 	add_key(cmd_keys, CTL('f'), show_row, NULL);
 
@@ -748,8 +749,11 @@ handlechar(int r, int k) /* Handle a single input character. */
 		}
 	} else switch( S.mode ) {
 	case cmd:
-		if( S.command_length < sizeof S.command ) {
+		if( S.command_length < sizeof S.command - 1 ) {
 			S.command[S.command_length++] = k;
+			S.command[S.command_length] = '\0';
+			errno = 0;
+			err_check(1, "%s", S.command);
 		}
 		break;
 	case passthru:

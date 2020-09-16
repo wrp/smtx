@@ -252,10 +252,18 @@ transition(const char *arg)
 {
 	S.binding = S.maps[ S.binding == S.maps[0] ];
 	wmove(S.werr, 0, 0);
+	S.mode = passthru;
 	if( *arg == S.commandkey ) {
 		if( S.binding == S.maps[0] && S.f->p ) {
 			rewrite(S.f->p->fd, &S.commandkey, 1);
 		}
+	} else if( *arg == ':' && S.mode != cmd ) {
+		sprintf(S.command, "%s", ": ");
+		S.command_length = 2;
+		S.binding = S.maps[2];
+		S.mode = cmd;
+		errno = 0;
+		err_check(1, "%s", S.command);
 	}
 	scrollbottom(S.f);
 }
