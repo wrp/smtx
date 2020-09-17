@@ -169,6 +169,7 @@ extern action create;
 extern action equalize;
 extern action mov;
 extern action new_tabstop;
+extern action passthru;
 extern action quit;
 extern action reorient;
 extern action reshape_root;

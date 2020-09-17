@@ -620,6 +620,7 @@ add_key(struct handler *b, wchar_t k, action act, const char *arg)
 		assert( k >= KEY_MIN && k <= KEY_MAX );
 		k -= KEY_MIN;
 	}
+	assert( k >= 0 && k <= KEY_MAX - KEY_MIN );
 	b[k].act = act;
 	b[k].arg = arg;
 }
@@ -650,21 +651,43 @@ show_row(const char *arg)
 	rewrite(1, buf, s + k);
 }
 
-static char incr[128];
+static char int_char[256];
+static const char zero = 0;
 void
 build_bindings(void)
 {
 	assert( KEY_MAX - KEY_MIN < 2048 ); /* Avoid overly large luts */
+	for( unsigned i = 0; i < 128; i += 1 ) {
+		int_char[2 * i] = 1;
+		int_char[2 * i + 1] = i;
+	}
+
+	for( size_t i = 0; i < sizeof S.maps / sizeof *S.maps;  i++ ) {
+		for( wchar_t k = 0; k < 128; k++ ) {
+			add_key(S.maps[i], k, passthru, int_char + 2 * k);
+		}
+	}
+	for( wchar_t k = KEY_MIN; k < KEY_MAX; k++ ) {
+		char c[MB_LEN_MAX + 1];
+		int r = wctomb(c, k);
+		const char *tmp;
+		if( r > 0 ) {
+			assert( r < 128 );
+			char *vtmp = malloc(r + 1);
+			vtmp[0] = r;
+			memcpy(vtmp + 1, c, r);
+			tmp = vtmp;
+		} else {
+			tmp = &zero;
+		}
+		add_key(code_keys, k, passthru, tmp);
+	}
 
 	add_key(keys, S.commandkey, transition, &S.commandkey);
 	add_key(keys, L'\r', send, "\r");
 	add_key(keys, L'\n', send, "\n");
 
 	add_key(cmd_keys, L':', transition, ":");
-	for( wchar_t i = 0; i < 128; i++ ) {
-		incr[i] = i;
-		add_key(edt_keys, i, append_status, incr + i);
-	}
 	add_key(edt_keys, L'\r', transition, "\r");
 	add_key(cmd_keys, CTL('e'), show_layout, NULL);
 	add_key(cmd_keys, CTL('f'), show_row, NULL);
@@ -739,24 +762,28 @@ static void
 handlechar(int r, wint_t k) /* Handle a single input character. */
 {
 	struct handler *b = NULL;
-	struct canvas *n = S.f;
 
 	if( r == OK && k > 0 && k < (int)sizeof *S.binding ) {
 		b = &(*S.binding)[k];
 	} else if( r == KEY_CODE_YES && k >= KEY_MIN && k <= KEY_MAX ) {
 		b = &code_keys[k - KEY_MIN];
 	}
-	if( b && b->act ) {
+	if( b ) {
+		assert( b->act );
 		b->act(b->arg);
 		if( b->act != digit ) {
 			S.count = -1;
 		}
-	} else if( n->p && n->p->fd > 0 ) {
-		char c[MB_LEN_MAX + 1];
-		if( ( r = wctomb(c, k)) > 0 ) {
-			scrollbottom(n);
-			rewrite(n->p->fd, c, r);
-		}
+	}
+}
+
+void
+passthru(const char *arg)
+{
+	struct canvas *n = S.f;
+	if( n->p && n->p->fd > 0 && arg[0] > 0 ) {
+		scrollbottom(n);
+		rewrite(n->p->fd, arg + 1, arg[0]);
 	}
 }
 
