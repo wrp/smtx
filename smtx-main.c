@@ -736,7 +736,7 @@ build_bindings(void)
 }
 
 static void
-handlechar(int r, int k) /* Handle a single input character. */
+handlechar(int r, wint_t k) /* Handle a single input character. */
 {
 	struct handler *b = NULL;
 	struct canvas *n = S.f;
@@ -767,7 +767,7 @@ main_loop(void)
 {
 	while( S.c != NULL && S.p && S.p->fd > 0 ) {
 		int r;
-		wint_t w = 0;
+		wint_t w;
 		fd_set sfds = S.fds;
 
 		if( S.reshape ) {
