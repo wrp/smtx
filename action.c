@@ -18,6 +18,18 @@
 #include "smtx.h"
 
 void
+append_status(const char *arg)
+{
+	char k = *arg;
+	if( S.command_length < sizeof S.command - 1 ) {
+		S.command[S.command_length++] = k;
+		S.command[S.command_length] = '\0';
+		errno = 0;
+		err_check(1, "%s", S.command);
+	}
+}
+
+void
 attach(const char *arg)
 {
 	struct canvas *n = S.f;
@@ -250,18 +262,17 @@ swap(const char *arg)
 void
 transition(const char *arg)
 {
+	int cmd = S.binding == S.maps[1];
 	S.binding = S.maps[ S.binding == S.maps[0] ];
 	wmove(S.werr, 0, 0);
-	S.mode = passthru;
 	if( *arg == S.commandkey ) {
 		if( S.binding == S.maps[0] && S.f->p ) {
 			rewrite(S.f->p->fd, &S.commandkey, 1);
 		}
-	} else if( *arg == ':' && S.mode != cmd ) {
+	} else if( *arg == ':' && cmd ) {
 		sprintf(S.command, "%s", ": ");
 		S.command_length = 2;
 		S.binding = S.maps[2];
-		S.mode = cmd;
 		errno = 0;
 		err_check(1, "%s", S.command);
 	}

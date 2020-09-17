@@ -30,7 +30,6 @@ struct state S = {
 	.binding = &keys,
 	.maps = { &keys, &cmd_keys, &edt_keys },
 	.history = 1024,
-	.mode = passthru,
 	.count = -1,
 };
 
@@ -651,6 +650,7 @@ show_row(const char *arg)
 	rewrite(1, buf, s + k);
 }
 
+static char incr[128];
 void
 build_bindings(void)
 {
@@ -661,6 +661,10 @@ build_bindings(void)
 	add_key(keys, L'\n', send, "\n");
 
 	add_key(cmd_keys, L':', transition, ":");
+	for( wchar_t i = 0; i < 128; i++ ) {
+		incr[i] = i;
+		add_key(edt_keys, i, append_status, incr + i);
+	}
 	add_key(edt_keys, L'\r', transition, "\r");
 	add_key(cmd_keys, CTL('e'), show_layout, NULL);
 	add_key(cmd_keys, CTL('f'), show_row, NULL);
@@ -747,25 +751,12 @@ handlechar(int r, int k) /* Handle a single input character. */
 		if( b->act != digit ) {
 			S.count = -1;
 		}
-	} else switch( S.mode ) {
-	case cmd:
-		if( S.command_length < sizeof S.command - 1 ) {
-			S.command[S.command_length++] = k;
-			S.command[S.command_length] = '\0';
-			errno = 0;
-			err_check(1, "%s", S.command);
+	} else if( n->p && n->p->fd > 0 ) {
+		char c[MB_LEN_MAX + 1];
+		if( ( r = wctomb(c, k)) > 0 ) {
+			scrollbottom(n);
+			rewrite(n->p->fd, c, r);
 		}
-		break;
-	case passthru:
-		if( n->p && n->p->fd > 0 ) {
-			char c[MB_LEN_MAX + 1];
-			if( ( r = wctomb(c, k)) > 0 ) {
-				scrollbottom(n);
-				rewrite(n->p->fd, c, r);
-			}
-		}
-	case sink:
-		;
 	}
 }
 

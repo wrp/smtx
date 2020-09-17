@@ -84,11 +84,6 @@ struct handler {
 	const char *arg;
 };
 
-enum mode {
-	cmd,      /* User entering command */
-	passthru, /* Unbound keystrokes are passed to focused window */
-	sink      /* Unbound keystrokes are discarded */
-};
 extern struct state S;
 
 struct state {
@@ -96,7 +91,6 @@ struct state {
 	int width;
 	int history;      /* Number of lines retained */
 	int count;
-	enum mode mode;
 	struct handler (*binding)[128];
 	void *maps[3];
 	struct canvas *v; /* Root canvas currently displayed */
@@ -168,6 +162,7 @@ extern void resize_pad(WINDOW **, int, int);
 extern void reshape_window(struct pty *);
 extern void reshape(struct canvas *n, int y, int x, int h, int w);
 
+extern action append_status;
 extern action attach;
 extern action transition;
 extern action create;
