@@ -652,7 +652,8 @@ show_row(const char *arg)
 }
 
 static char int_char[256];
-static const char zero = 0;
+static char wc_lut[128 * ( 1 + MB_LEN_MAX )];
+
 void
 build_bindings(void)
 {
@@ -668,19 +669,11 @@ build_bindings(void)
 		}
 	}
 	for( wchar_t k = KEY_MIN; k < KEY_MAX; k++ ) {
-		char c[MB_LEN_MAX + 1];
-		int r = wctomb(c, k);
-		const char *tmp;
-		if( r > 0 ) {
-			assert( r < 128 );
-			char *vtmp = malloc(r + 1);
-			vtmp[0] = r;
-			memcpy(vtmp + 1, c, r);
-			tmp = vtmp;
-		} else {
-			tmp = &zero;
-		}
-		add_key(code_keys, k, passthru, tmp);
+		assert( MB_LEN_MAX < 128 );
+		int i = (k - KEY_MIN) * (1 + MB_LEN_MAX);
+		wc_lut[ i ] = wctomb(wc_lut + i + 1, k);
+
+		add_key(code_keys, k, passthru, wc_lut + i);
 	}
 
 	add_key(keys, S.commandkey, transition, &S.commandkey);
