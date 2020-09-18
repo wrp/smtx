@@ -651,6 +651,17 @@ show_row(const char *arg)
 	rewrite(1, buf, s + k);
 }
 
+/* These lookup tables are used by passthru, which
+ * receive a pointer into these tables.  The tables
+ * are constructed so that passthru gets a read count in the first position,
+ * and writes that many subsequent char to the underlying fd.
+ * That is, int_char[2x] will be set to 1 and int_char[2x+1] == x
+ * This way, passthru reads the 1 and writes 1 char of data.
+ *
+ * wc_lut is built from the output of wctomb, so that for k such that
+ * k % (1 + MB_LEN_MAX) == 0, wc_lut[k] is the value returned by
+ * wctomb( ..., k) and the char after is the resultant multi-byte value.
+ */
 static char int_char[256];
 static char wc_lut[128 * ( 1 + MB_LEN_MAX )];
 
@@ -662,7 +673,6 @@ build_bindings(void)
 		int_char[2 * i] = 1;
 		int_char[2 * i + 1] = i;
 	}
-
 	for( size_t i = 0; i < sizeof S.maps / sizeof *S.maps;  i++ ) {
 		for( wchar_t k = 0; k < 128; k++ ) {
 			add_key(S.maps[i], k, passthru, int_char + 2 * k);
@@ -671,8 +681,9 @@ build_bindings(void)
 	for( wchar_t k = KEY_MIN; k < KEY_MAX; k++ ) {
 		assert( MB_LEN_MAX < 128 );
 		int i = (k - KEY_MIN) * (1 + MB_LEN_MAX);
-		wc_lut[ i ] = wctomb(wc_lut + i + 1, k);
-
+		if( (wc_lut[ i ] = wctomb(wc_lut + i + 1, k)) == -1 ) {
+			wc_lut[i] = 0;
+		}
 		add_key(code_keys, k, passthru, wc_lut + i);
 	}
 
