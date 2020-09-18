@@ -236,7 +236,7 @@ validate_row(int fd, int row, const char *fmt, ... )
 }
 
 static int
-test_cup(int fd, pid_t p)
+test_cup(int fd)
 {
 	int status = 0;
 	/* cup: move to n, m;  cub: back n;  buf: forward n */
@@ -255,7 +255,7 @@ test_cup(int fd, pid_t p)
 }
 
 static int
-test_cursor(int fd, pid_t p)
+test_cursor(int fd)
 {
 	int rv = 0;
 	send_txt(fd, "un01", "printf '0123456'; tput cub 4; printf 'un%%s' 01");
@@ -296,10 +296,9 @@ test_cursor(int fd, pid_t p)
 }
 
 static int
-test_dashc(int fd, pid_t p)
+test_dashc(int fd)
 {
 	int rv;
-	(void)p;
 	commandkey = CTL('l');
 	send_str(fd, "uniq", "%cc\recho u'n'i'q'\r", CTL('l'));
 	rv = check_layout(fd, 0x1, "*11x80; 11x80");
@@ -308,11 +307,10 @@ test_dashc(int fd, pid_t p)
 }
 
 static int
-test_dasht(int fd, pid_t p)
+test_dasht(int fd)
 {
 	/* This test exercises -t with a terminal type that should not
 	 * exist in order to test the code path that uses initscr() */
-	(void)p;
 	send_cmd(fd, "uniq", "c\recho u'n'i'q'");
 	int rv = check_layout(fd, 0x1, "*11x80; 11x80");
 	send_txt(fd, NULL, "kill $SMTX");
@@ -320,7 +318,7 @@ test_dasht(int fd, pid_t p)
 }
 
 static int
-test_dch(int fd, pid_t p)
+test_dch(int fd)
 {
 	int rv = 0;
 	/* Print string, move back 3, delete 2, forward 3 */
@@ -336,7 +334,7 @@ test_dch(int fd, pid_t p)
 }
 
 static int
-test_decaln(int fd, pid_t p)
+test_decaln(int fd)
 {
 	char e[81] = "EEE";
 	int rv = 0;
@@ -353,9 +351,8 @@ test_decaln(int fd, pid_t p)
 }
 
 static int
-test_decid(int fd, pid_t p)
+test_decid(int fd)
 {
-	(void) p;
 	send_txt(fd, "^[[>1;10;0c", "%s", "printf '\\033[>c'");
 	send_txt(fd, "^[[?1;2c", "%s", "\rprintf '\\033[c'");
 	send_txt(fd, "^[[?6c", "%s", "\rprintf '\\033Z'");
@@ -364,9 +361,8 @@ test_decid(int fd, pid_t p)
 }
 
 static int
-test_dsr(int fd, pid_t p)
+test_dsr(int fd)
 {
-	(void) p;
 	send_txt(fd, "^[[2;1R", "%s", "printf '\\033[6n'");
 	send_txt(fd, "^[[0n", "%s", "\rprintf '\\033[n'");
 	send_txt(fd, NULL, "\rkill $SMTX");
@@ -374,7 +370,7 @@ test_dsr(int fd, pid_t p)
 }
 
 static int
-test_ech(int fd, pid_t p)
+test_ech(int fd)
 {
 	int rv = 0;
 	/* ech: erase N characters */
@@ -388,7 +384,7 @@ test_ech(int fd, pid_t p)
 }
 
 static int
-test_ed(int fd, pid_t p)
+test_ed(int fd)
 {
 	int rv = 0;
 	send_txt(fd, "uniq", "yes | sed 15q; tput cuu 8; echo u'n'i'q'");
@@ -421,7 +417,7 @@ test_ed(int fd, pid_t p)
 }
 
 static int
-test_el(int fd, pid_t p)
+test_el(int fd)
 {
 	int rv = 0;
 	send_txt(fd, "uniq01", "%s", "printf 01234; tput cub 3; tput el; "
@@ -441,9 +437,8 @@ test_el(int fd, pid_t p)
 }
 
 static int
-test_equalize(int fd, pid_t p)
+test_equalize(int fd)
 {
-	(void)p;
 	send_cmd(fd, "uniq1", "%s", "cc5J\rprintf uniq%s 1");
 	int status = check_layout(fd, 0x1, "*12x80; 4x80; 5x80");
 	send_cmd(fd, "uniq2", "%s", "=\rprintf uniq%s 2");
@@ -453,7 +448,7 @@ test_equalize(int fd, pid_t p)
 }
 
 static int
-test_hpr(int fd, pid_t p)
+test_hpr(int fd)
 {
 	int rv = 0;
 	const char *cmd = "printf 'abcd\\033[5aef'gh'ij\\n'";
@@ -464,7 +459,7 @@ test_hpr(int fd, pid_t p)
 }
 
 static int
-test_ich(int fd, pid_t p)
+test_ich(int fd)
 {
 	int rv = 0;
 	/* ich: insert N characters, cub: move back N */
@@ -494,7 +489,7 @@ test_ich(int fd, pid_t p)
 }
 
 static int
-test_insert(int fd, pid_t p)
+test_insert(int fd)
 {
 	int rc = 0;
 	/* smir -- begin insert mode;  rmir -- end insert mode */
@@ -507,9 +502,8 @@ test_insert(int fd, pid_t p)
 }
 
 static int
-test_layout(int fd, pid_t p)
+test_layout(int fd)
 {
-	(void)p;
 	int rv = check_layout(fd, 0x13, "%s", "*23x80@0,0");
 
 	send_cmd(fd, "uniq01", "\rprintf 'uniq%%s' 01\r");
@@ -532,7 +526,7 @@ test_layout(int fd, pid_t p)
 }
 
 static int
-test_lnm(int fd, pid_t p)
+test_lnm(int fd)
 {
 	send_txt(fd, "sync", "printf '\\e[20hs''ync\\n' "); /* line 1 */
 	int rv = validate_row(fd, 2, "%-80s", "sync");
@@ -557,9 +551,8 @@ test_lnm(int fd, pid_t p)
  */
 
 static int
-test_navigate(int fd, pid_t p)
+test_navigate(int fd)
 {
-	(void)p;
 	send_cmd(fd, NULL, "cjkhl2Cjkhlc");
 	send_txt(fd, "foobar", "%s", "printf 'foo%s\\n' bar");
 	int status = check_layout(fd, 0x11, "%s; %s; %s; %s; %s",
@@ -581,7 +574,7 @@ test_navigate(int fd, pid_t p)
 }
 
 static int
-test_nel(int fd, pid_t p)
+test_nel(int fd)
 {
 	int rv = 0;
 	/* nel is a newline */
@@ -599,7 +592,7 @@ test_nel(int fd, pid_t p)
 }
 
 static int
-test_pager(int fd, pid_t p)
+test_pager(int fd)
 {
 	int rv = 0;
 
@@ -622,9 +615,8 @@ test_pager(int fd, pid_t p)
 }
 
 static int
-test_pnm(int fd, pid_t p)
+test_pnm(int fd)
 {
-	(void)p;
 	send_txt(fd, "uniq", "printf '\\033>'u'n'i'q\\n'"); /* numkp */
 	int rv = check_layout(fd, 0, "23x80#");
 	send_txt(fd, "uniq2", "\rprintf '\\033='u'n'i'q2\\n'"); /* numkp */
@@ -638,9 +630,8 @@ test_pnm(int fd, pid_t p)
 }
 
 static int
-test_quit(int fd, pid_t p)
+test_quit(int fd)
 {
-	(void) p;
 	send_cmd(fd, NULL, "%dq", SIGBUS); /* Invalid signal */
 	send_cmd(fd, "exited", "c\rexit"); /* (2) */
 	send_cmd(fd, NULL, "%dq", SIGTERM);  /* Invalid window */
@@ -657,10 +648,9 @@ test_quit(int fd, pid_t p)
 */
 
 static int
-test_reset(int fd, pid_t p)
+test_reset(int fd)
 {
 	int k[] = { 1, 3, 4, 6, 7, 20, 25, 34, 1048, 1049, 47, 1047 };
-	(void)p;
 
 	for( unsigned long i = 0; i < sizeof k / sizeof *k; i++ ) {
 		int v = k[i];
@@ -673,9 +663,8 @@ test_reset(int fd, pid_t p)
 }
 
 static int
-test_resize(int fd, pid_t p)
+test_resize(int fd)
 {
-	(void)p;
 	int status = 0;
 	send_cmd(fd, "uniq1", "%s\r%s", "JccC", "printf 'uniq%s\\n' 1");
 	status |= check_layout(fd, 0x1, "*7x40; 7x80; 7x80; 7x39");
@@ -695,12 +684,11 @@ test_resize(int fd, pid_t p)
  * increase of history.
  */
 static int
-test_resizepty(int fd, pid_t p)
+test_resizepty(int fd)
 {
 	int rc = 0;
 	struct winsize ws = { .ws_row = 67, .ws_col = 80 };
 	char buf[1024];
-	(void)p;
 	ssize_t s;
 	int history = 24;
 
@@ -725,7 +713,7 @@ test_resizepty(int fd, pid_t p)
 }
 
 static int
-test_ri(int fd, pid_t p)
+test_ri(int fd)
 {
 	send_txt(fd, "sync", "printf '%s%s%s%s'",
 		"012345678\\n", /* Print a string */
@@ -738,7 +726,7 @@ test_ri(int fd, pid_t p)
 }
 
 static int
-test_row(int fd, pid_t p)
+test_row(int fd)
 {
 	int status = 0;
 	send_txt(fd, "uniq1", "%s; %s", "yes | nl -ba | sed 400q",
@@ -752,7 +740,7 @@ test_row(int fd, pid_t p)
 }
 
 static int
-test_scrollback(int fd, pid_t p)
+test_scrollback(int fd)
 {
 	int status = 0;
 	const char *string = "This is a relatively long string!";
@@ -787,7 +775,7 @@ test_scrollback(int fd, pid_t p)
 }
 
 static int
-test_swap(int fd, pid_t pid)
+test_swap(int fd)
 {
 	int rv = 0;
 	int id[3];
@@ -839,12 +827,12 @@ test_swap(int fd, pid_t pid)
 		fprintf(stderr, "unexpected id in first window: %s\n", desc);
 		rv = 1;
 	}
-	send_txt(fd, NULL, "kill -TERM %d", pid);
+	send_txt(fd, NULL, "kill -TERM $SMTX");
 	return rv;
 }
 
 static int
-test_tabstop(int fd, pid_t p)
+test_tabstop(int fd)
 {
 	int rv = 0;
 	int d = 0;
@@ -865,12 +853,12 @@ test_tabstop(int fd, pid_t p)
 	send_txt(fd, "test3", cmd, ++d);
 	rv |= validate_row(fd, 9, "%-80s", "this is   a    test3");
 
-	send_txt(fd, NULL, "kill -TERM %d", p);
+	send_txt(fd, NULL, "kill -TERM $SMTX");
 	return rv;
 }
 
 static int
-test_title(int fd, pid_t p)
+test_title(int fd)
 {
 	int rv = 0;
 	char buf[69];
@@ -896,9 +884,8 @@ test_title(int fd, pid_t p)
 }
 
 static int
-test_vis(int fd, pid_t p)
+test_vis(int fd)
 {
-	(void)p;
 	int rv = 0;
 	/* tput civis to hide cursor */
 	send_txt(fd, "uniq1", "%s; %s", "tput civis", "printf 'uniq%s\\n' 1");
@@ -929,7 +916,7 @@ test_vis(int fd, pid_t p)
 }
 
 static int
-test_tput(int fd, pid_t p)
+test_tput(int fd)
 {
 	int rv = 0;
 	/* vpa: move cursor to row (0 based), hpa: move cursor to column */
@@ -952,7 +939,7 @@ test_tput(int fd, pid_t p)
 }
 
 static int
-test_width(int fd, pid_t p)
+test_width(int fd)
 {
 	int rv = 0;
 	char buf[161];
@@ -1036,7 +1023,6 @@ xrealloc(void *buf, size_t num, size_t siz)
 	return buf;
 }
 
-typedef int test(int, pid_t);
 struct st {
 	char *name;
 	test *f;
@@ -1234,7 +1220,6 @@ execute_test(struct st *v, const char *name)
 	int status;
 	struct winsize ws;
 	int rv = 1;
-	pid_t pid;
 
 	assert( strcmp(name, v->name) == 0 );
 	unsetenv("ENV");  /* Suppress all shell initializtion */
@@ -1252,7 +1237,7 @@ execute_test(struct st *v, const char *name)
 	if( openpty(fd, fd + 1, NULL, NULL, &ws) ) {
 		err(EXIT_FAILURE, "openpty");
 	}
-	switch( pid = fork() ) {
+	switch( fork() ) {
 	case -1:
 		err(1, "fork");
 		break;
@@ -1282,7 +1267,7 @@ execute_test(struct st *v, const char *name)
 			err(EXIT_FAILURE, "close");
 		}
 		grep(fd[0], PROMPT); /* Wait for shell to initialize */
-		rv = v->f(fd[0], pid);
+		rv = v->f(fd[0]);
 		send_txt(fd[0], NULL, "kill $SMTX");
 		wait(&status);
 	}

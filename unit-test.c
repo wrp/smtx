@@ -1,20 +1,19 @@
 #include "unit-test.h"
 
 int
-test_ack(int fd, pid_t pid)
+test_ack(int fd)
 {
 	/* Expect an \x06 in response to \x05
 	 * I don't completely understand how the \x06 is getting converted
 	 * to "^F"
 	 */
-	(void)pid;
 	send_txt(fd, "^F", "printf '\\005'");
 	send_cmd(fd, NULL, "143q");
 	return 0; /* Test will timeout if it fails */
 }
 
 int
-test_attach(int fd, pid_t p)
+test_attach(int fd)
 {
 	int id;
 	char desc[1024];
@@ -40,7 +39,7 @@ test_attach(int fd, pid_t p)
 }
 
 int
-test_cols(int fd, pid_t p)
+test_cols(int fd)
 {
 	/* Ensure that tput correctly identifies the width */
 	int rv;
@@ -51,7 +50,7 @@ test_cols(int fd, pid_t p)
 }
 
 int
-test_csr(int fd, pid_t p)
+test_csr(int fd)
 {
 	int rv = 0;
 	/* Change scroll region */
@@ -68,7 +67,7 @@ test_csr(int fd, pid_t p)
 }
 
 int
-test_resend(int fd, pid_t p)
+test_resend(int fd)
 {
 	send_txt(fd, "uniq", "%1$c%1$c\recho u'n'i'q'", commandkey);
 	int rv = validate_row(fd, 1, "%-80s", "ps1>^G");

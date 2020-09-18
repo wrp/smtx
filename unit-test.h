@@ -42,7 +42,7 @@ get_layout(int fd, int flag, char *layout, size_t siz);
 int __attribute__((format(printf,3,4)))
 check_layout(int fd, int flag, const char *fmt, ...);
 
-typedef int(test)(int fd, pid_t pid);
+typedef int(test)(int fd);
 test test_ack;
 test test_attach;
 test test_cols;
