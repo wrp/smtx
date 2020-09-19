@@ -230,15 +230,6 @@ freecanvas(struct canvas *n)
 	}
 }
 
-static int
-winpos(WINDOW *w, int dir)
-{
-	int y = 0, x = 0;
-	assert(w);
-	getyx(w, y, x);
-	return dir ? x : y;
-}
-
 static void
 draw_window(struct canvas *n)
 {
@@ -247,7 +238,9 @@ draw_window(struct canvas *n)
 	if( n->p && e.y > 0 && e.x > 0 ) {
 		struct point off = n->offset;
 		if( ! n->manualscroll ) {
-			int x = winpos(n->p->s->win, 1);
+			int x, y;
+			getyx(n->p->s->win, y, x);
+			(void)y;
 			if( x < n->extent.x - 1 ) {
 				n->offset.x = 0;
 			} else if( n->offset.x + n->extent.x < x + 1 ) {
@@ -811,7 +804,7 @@ static void
 main_loop(void)
 {
 	while( S.c != NULL && S.p && S.p->fd > 0 ) {
-		int r;
+		int r, y, x;
 		wint_t w;
 		fd_set sfds = S.fds;
 
@@ -820,8 +813,8 @@ main_loop(void)
 		}
 		draw(S.v);
 		fixcursor();
-		if( winpos(S.werr, 1) ) {
-			int y, x;
+		getyx(S.werr, y, x);
+		if( x > 0 ) {
 			getmaxyx(stdscr, y, x);
 			pnoutrefresh(S.werr, 0, 0, y - 1, 0, y - 1, x);
 		}
