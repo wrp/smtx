@@ -213,7 +213,11 @@ newcanvas(void)
 	return n;
 }
 
-void focus(struct canvas *n) { S.f = n ? n : S.v; }
+void
+focus(struct canvas *n)
+{
+	S.f = n ? n : S.v;
+}
 
 static void
 freecanvas(struct canvas *n)
