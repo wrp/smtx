@@ -120,6 +120,23 @@ get_layout(int fd, int flag, char *layout, size_t siz)
 	return 0;
 }
 
+int
+get_state(int fd, char *state, size_t siz)
+{
+	char buf[64];
+	int len;
+	ssize_t s;
+	len = snprintf(buf, sizeof buf, "%c%c\r", commandkey, CTL('d'));
+	write(fd, buf, len);
+	grep(fd, "state: ");
+	do s = timed_read(fd, state, siz, "state"); while( s == 0 );
+	if( s == -1 ) {
+		fprintf(stderr, "reading from child: %s\n", strerror(errno));
+		return -1;
+	}
+	return 0;
+}
+
 int __attribute__((format(printf,3,4)))
 check_layout(int fd, int flag, const char *fmt, ...)
 {
@@ -689,16 +706,13 @@ test_resizepty(int fd)
 	int rc = 0;
 	struct winsize ws = { .ws_row = 67, .ws_col = 80 };
 	char buf[1024];
-	ssize_t s;
 	int history = 24;
 
 	while( history != 67 ) {
 		if( ioctl(fd, TIOCSWINSZ, &ws) ) {
 			err(EXIT_FAILURE, "ioctl");
 		}
-		send_cmd(fd, NULL, "%dq", SIGUSR2 + 128);
-		s = read(c2p[0], buf, sizeof buf - 1);
-		buf[s] = '\0';
+		get_state(fd, buf, sizeof buf);
 		if( sscanf(buf, "history=%d", &history) != 1
 			|| ( history != 24 && history != 67 )
 		) {

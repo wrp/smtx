@@ -639,6 +639,7 @@ show_layout(const char *arg)
 	rewrite(1, buf, s + 9);
 }
 
+static action show_state;
 static size_t describe_row(char *desc, size_t siz, int row);
 static void
 show_row(const char *arg)
@@ -693,6 +694,7 @@ build_bindings(void)
 
 	add_key(cmd_keys, L':', transition, ":");
 	add_key(edt_keys, L'\r', transition, "\r");
+	add_key(cmd_keys, CTL('d'), show_state, NULL);
 	add_key(cmd_keys, CTL('e'), show_layout, NULL);
 	add_key(cmd_keys, CTL('f'), show_row, NULL);
 
@@ -966,13 +968,27 @@ describe_state(char *desc, size_t siz)
 
 	getmaxyx(stdscr, y, x);
 	len += snprintf(desc, siz, "history=%d, ", S.history);
-	len += snprintf(desc + len, siz - len, "y=%d, x=%d, ", y, x);
-	len += snprintf(desc + len, siz - len, "w=%d", S.width);
-	if( len < siz ) {
-		desc[len++] = '\n';
-		desc[len] = '\0';
+	if( len < siz - 1 ) {
+		len += snprintf(desc + len, siz - len, "y=%d, x=%d, ", y, x);
 	}
+	if( len < siz - 1 ) {
+		len += snprintf(desc + len, siz - len, "w=%d", S.width);
+	}
+	if( len > siz - 1 ) {
+		len = siz - 1;
+	}
+	desc[len++] = '\n';
 	return len;
+}
+
+static void
+show_state(const char *arg)
+{
+	(void)arg;
+	char buf[1024];
+	int k = sprintf(buf, "state: ");
+	size_t s = describe_state(buf + k, sizeof buf - k);
+	rewrite(1, buf, s + k);
 }
 
 static size_t
