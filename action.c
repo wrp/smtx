@@ -250,17 +250,17 @@ swap(const char *arg)
 void
 transition(const char *arg)
 {
-	int cmd = S.binding == S.maps[1];
-	S.binding = S.maps[ S.binding == S.maps[0] ];
+	int cmd = S.mode == S.modes + 1;
+	S.mode = &S.modes[ S.mode == S.modes ];
 	wmove(S.werr, 0, 0);
 	if( *arg == S.commandkey ) {
-		if( S.binding == S.maps[0] && S.f->p ) {
+		if( S.mode == S.modes && S.f->p ) {
 			rewrite(S.f->p->fd, &S.commandkey, 1);
 		}
 	} else if( *arg == ':' && cmd ) {
 		sprintf(S.command, "%s", ": ");
 		S.command_length = 2;
-		S.binding = S.maps[2];
+		S.mode = S.modes + 2;
 		errno = 0;
 		err_check(1, "%s", S.command);
 	}

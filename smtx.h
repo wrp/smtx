@@ -87,18 +87,21 @@ struct handler {
 };
 
 extern struct state S;
+struct mode {
+	struct handler keys[128];
+};
 
 struct state {
 	char commandkey;
 	int width;
 	int history;      /* Number of lines retained */
 	int count;
-	struct handler (*binding)[128];
-	void *maps[3];
-	struct canvas *v; /* Root canvas currently displayed */
-	struct canvas *c; /* Root of tree of all canvas */
-	struct canvas *f; /* Currently focused canvas */;
-	struct pty *p;    /* Head of list of all pty */
+	struct mode modes[3];
+	struct mode *mode; /* The current mode */
+	struct canvas *v;  /* Root canvas currently displayed */
+	struct canvas *c;  /* Root of tree of all canvas */
+	struct canvas *f;  /* Currently focused canvas */;
+	struct pty *p;     /* Head of list of all pty */
 	fd_set fds;
 	WINDOW *werr;
 	int reshape;

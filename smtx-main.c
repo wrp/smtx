@@ -19,16 +19,12 @@
 #include "smtx.h"
 
 static char *term = "smtx";
-static struct handler pty_keys[128];  /* bindings in pty mode */
-static struct handler ctl_keys[128];  /* bindings in control mode */
-static struct handler cmd_keys[128];  /* bindings in command mode */
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 
 struct state S = {
 	.commandkey = CTL('g'),
 	.width = 80,
-	.binding = &pty_keys,
-	.maps = { &pty_keys, &ctl_keys, &cmd_keys },
+	.mode = S.modes,
 	.history = 1024,
 	.count = -1,
 };
@@ -263,7 +259,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 {
 	struct canvas *f = S.f;
 	int x = 0, y = 0;
-	int show = S.binding != &ctl_keys && f->p->s->vis;
+	int show = S.mode == S.modes && f->p->s->vis;
 	if( f->p && f->extent.y && show ) {
 		assert( f->p->s );
 		int top = S.history - f->extent.y;
@@ -446,7 +442,7 @@ void
 draw(struct canvas *n) /* Draw a canvas. */
 {
 	if( n != NULL && n->extent.y > 0 ) {
-		int rev = S.binding == &ctl_keys && n == S.f;
+		int rev = S.mode == &S.modes[1] && n == S.f;
 		draw(n->c[0]);
 		draw(n->c[1]);
 		draw_div(n, rev && !n->extent.x);
@@ -674,9 +670,10 @@ build_bindings(void)
 		int_char[2 * i] = 1;
 		int_char[2 * i + 1] = i;
 	}
-	for( size_t i = 0; i < sizeof S.maps / sizeof *S.maps;  i++ ) {
+	for( size_t i = 0; i < sizeof S.modes / sizeof *S.modes;  i++ ) {
+		struct mode *m = S.modes + i;
 		for( wchar_t k = 0; k < 128; k++ ) {
-			add_key(S.maps[i], k, passthru, int_char + 2 * k);
+			add_key(m->keys, k, passthru, int_char + 2 * k);
 		}
 	}
 	for( wchar_t k = KEY_MIN; k < KEY_MAX; k++ ) {
@@ -688,54 +685,60 @@ build_bindings(void)
 		add_key(code_keys, k, passthru, wc_lut + i);
 	}
 
-	add_key(pty_keys, S.commandkey, transition, &S.commandkey);
-	add_key(pty_keys, L'\r', send, "\r");
-	add_key(pty_keys, L'\n', send, "\n");
+	struct mode *m = S.modes;
+	add_key(m->keys, S.commandkey, transition, &S.commandkey);
+	add_key(m->keys, L'\r', send, "\r");
+	add_key(m->keys, L'\n', send, "\n");
 
-	add_key(ctl_keys, L':', transition, ":");
-	add_key(cmd_keys, L'\r', transition, "\r");
-	add_key(ctl_keys, CTL('d'), show_state, NULL);
-	add_key(ctl_keys, CTL('e'), show_layout, NULL);
-	add_key(ctl_keys, CTL('f'), show_row, NULL);
+	m = S.modes + 1;
+	add_key(m->keys, L':', transition, ":");
+	add_key(m->keys, CTL('d'), show_state, NULL);
+	add_key(m->keys, CTL('e'), show_layout, NULL);
+	add_key(m->keys, CTL('f'), show_row, NULL);
 
-	add_key(ctl_keys, S.commandkey, transition, &S.commandkey);
-	add_key(ctl_keys, L'\r', transition, "\r");
-	add_key(ctl_keys, L'\n', transition, "\n");
+	add_key(m->keys, S.commandkey, transition, &S.commandkey);
+	add_key(m->keys, L'\r', transition, "\r");
+	add_key(m->keys, L'\n', transition, "\n");
 	/* TODO: rebind b,f,<,> to hjkl in different binding */
-	add_key(ctl_keys, L'a', attach, NULL);
-	add_key(ctl_keys, L'b', scrolln, "-");
-	add_key(ctl_keys, L'f', scrolln, "+");
+	add_key(m->keys, L'a', attach, NULL);
+	add_key(m->keys, L'b', scrolln, "-");
+	add_key(m->keys, L'f', scrolln, "+");
 	/* If default bindings for scrollh are changed, edit README.rst */
-	add_key(ctl_keys, L'>', scrollh, ">");
-	add_key(ctl_keys, L'<', scrollh, "<");
+	add_key(m->keys, L'>', scrollh, ">");
+	add_key(m->keys, L'<', scrollh, "<");
 
-	add_key(ctl_keys, L'=', equalize, NULL);
-	add_key(ctl_keys, L'c', create, NULL);
-	add_key(ctl_keys, L'C', create, "C");
-	add_key(ctl_keys, L'j', mov, "j");
-	add_key(ctl_keys, L'k', mov, "k");
-	add_key(ctl_keys, L'l', mov, "l");
-	add_key(ctl_keys, L'h', mov, "h");
-	add_key(ctl_keys, L'J', resize, "J");
-	add_key(ctl_keys, L'K', resize, "K");
-	add_key(ctl_keys, L'L', resize, "L");
-	add_key(ctl_keys, L'H', resize, "H");
-	add_key(ctl_keys, L'q', quit, NULL);
-	add_key(ctl_keys, L's', swap, NULL);
-	add_key(ctl_keys, L't', new_tabstop, NULL);
-	add_key(ctl_keys, L'W', set_width, NULL);
-	add_key(ctl_keys, L'v', set_view_count, NULL);
-	add_key(ctl_keys, L'x', prune, NULL);
-	add_key(ctl_keys, L'0', digit, "0");
-	add_key(ctl_keys, L'1', digit, "1");
-	add_key(ctl_keys, L'2', digit, "2");
-	add_key(ctl_keys, L'3', digit, "3");
-	add_key(ctl_keys, L'4', digit, "4");
-	add_key(ctl_keys, L'5', digit, "5");
-	add_key(ctl_keys, L'6', digit, "6");
-	add_key(ctl_keys, L'7', digit, "7");
-	add_key(ctl_keys, L'8', digit, "8");
-	add_key(ctl_keys, L'9', digit, "9");
+	add_key(m->keys, L'=', equalize, NULL);
+	add_key(m->keys, L'c', create, NULL);
+	add_key(m->keys, L'C', create, "C");
+	add_key(m->keys, L'j', mov, "j");
+	add_key(m->keys, L'k', mov, "k");
+	add_key(m->keys, L'l', mov, "l");
+	add_key(m->keys, L'h', mov, "h");
+	add_key(m->keys, L'J', resize, "J");
+	add_key(m->keys, L'K', resize, "K");
+	add_key(m->keys, L'L', resize, "L");
+	add_key(m->keys, L'H', resize, "H");
+	add_key(m->keys, L'q', quit, NULL);
+	add_key(m->keys, L's', swap, NULL);
+	add_key(m->keys, L't', new_tabstop, NULL);
+	add_key(m->keys, L'W', set_width, NULL);
+	add_key(m->keys, L'v', set_view_count, NULL);
+	add_key(m->keys, L'x', prune, NULL);
+	add_key(m->keys, L'0', digit, "0");
+	add_key(m->keys, L'1', digit, "1");
+	add_key(m->keys, L'2', digit, "2");
+	add_key(m->keys, L'3', digit, "3");
+	add_key(m->keys, L'4', digit, "4");
+	add_key(m->keys, L'5', digit, "5");
+	add_key(m->keys, L'6', digit, "6");
+	add_key(m->keys, L'7', digit, "7");
+	add_key(m->keys, L'8', digit, "8");
+	add_key(m->keys, L'9', digit, "9");
+
+	m = S.modes + 2;
+	add_key(m->keys, L'\r', transition, "\r");
+
+
 	add_key(code_keys, KEY_RESIZE, reshape_root, NULL);
 	add_key(code_keys, KEY_F(1), send, "\033OP");
 	add_key(code_keys, KEY_F(2), send, "\033OQ");
@@ -769,8 +772,8 @@ handlechar(int r, wint_t k) /* Handle a single input character. */
 {
 	struct handler *b = NULL;
 
-	if( r == OK && k > 0 && k < (int)sizeof *S.binding ) {
-		b = &(*S.binding)[k];
+	if( r == OK && k > 0 && k < 128 ) {
+		b = S.mode->keys + k;
 	} else if( r == KEY_CODE_YES && k >= KEY_MIN && k <= KEY_MAX ) {
 		b = &code_keys[k - KEY_MIN];
 	}
