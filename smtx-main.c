@@ -662,6 +662,14 @@ show_row(const char *arg)
 static char int_char[256];
 static char wc_lut[128 * ( 1 + MB_LEN_MAX )];
 
+static void
+initialize_mode(struct mode *m, action a)
+{
+	for( wchar_t k = 0; k < 128; k++ ) {
+		add_key(m->keys, k, a, int_char + 2 * k);
+	}
+}
+
 void
 build_bindings(void)
 {
@@ -669,12 +677,6 @@ build_bindings(void)
 	for( unsigned i = 0; i < 128; i += 1 ) {
 		int_char[2 * i] = 1;
 		int_char[2 * i + 1] = i;
-	}
-	for( size_t i = 0; i < sizeof S.modes / sizeof *S.modes;  i++ ) {
-		struct mode *m = S.modes + i;
-		for( wchar_t k = 0; k < 128; k++ ) {
-			add_key(m->keys, k, passthru, int_char + 2 * k);
-		}
 	}
 	for( wchar_t k = KEY_MIN; k < KEY_MAX; k++ ) {
 		assert( MB_LEN_MAX < 128 );
@@ -686,11 +688,13 @@ build_bindings(void)
 	}
 
 	struct mode *m = S.modes;
+	initialize_mode(m, passthru);
 	add_key(m->keys, S.commandkey, transition, &S.commandkey);
 	add_key(m->keys, L'\r', send, "\r");
 	add_key(m->keys, L'\n', send, "\n");
 
 	m = S.modes + 1;
+	initialize_mode(m, passthru);
 	add_key(m->keys, L':', transition, ":");
 	add_key(m->keys, CTL('d'), show_state, NULL);
 	add_key(m->keys, CTL('e'), show_layout, NULL);
@@ -736,6 +740,7 @@ build_bindings(void)
 	add_key(m->keys, L'9', digit, "9");
 
 	m = S.modes + 2;
+	initialize_mode(m, passthru);
 	add_key(m->keys, L'\r', transition, "\r");
 
 
