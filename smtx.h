@@ -52,8 +52,6 @@
 
 #include "vtparser.h"
 
-/* Declaration of smtx_main is duplicated in the test suite,
- * which does not include this header (for isolation) */
 extern int smtx_main(int, char **);
 #define CTL(x) ((x) & 0x1f)
 

@@ -17,7 +17,6 @@
 #include "config.h"
 #include "unit-test.h"
 
-extern int smtx_main(int, char **);
 #define CTL(x) ((x) & 0x1f)
 
 /* TODO: always use the p2c/c2p pipes for synchornization. */
@@ -1253,7 +1252,8 @@ execute_test(struct st *v, const char *name)
 		if( close(c2p[0]) || close(p2c[1]) ) {
 			err(EXIT_FAILURE, "close");
 		}
-		exit(smtx_main(v->argc, v->argv));
+		execv("./smtx", v->argv);
+		err(EXIT_FAILURE, "execv");
 	default:
 		if( close(fd[1]) ) {
 			err(EXIT_FAILURE, "close secondary");
