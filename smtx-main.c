@@ -694,7 +694,7 @@ build_bindings(void)
 	add_key(m->keys, L'\n', send, "\n");
 
 	m = S.modes + 1;
-	initialize_mode(m, passthru);
+	initialize_mode(m, bad_key);
 	add_key(m->keys, L':', transition, ":");
 	add_key(m->keys, CTL('d'), show_state, NULL);
 	add_key(m->keys, CTL('e'), show_layout, NULL);

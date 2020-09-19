@@ -168,6 +168,7 @@ extern void reshape_window(struct pty *);
 extern void reshape(struct canvas *n, int y, int x, int h, int w);
 
 extern action attach;
+extern action bad_key;
 extern action transition;
 extern action create;
 extern action equalize;

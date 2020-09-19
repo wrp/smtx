@@ -33,6 +33,13 @@ attach(const char *arg)
 }
 
 void
+bad_key(const char *arg)
+{
+	(void)arg;
+	beep();
+}
+
+void
 create(const char *arg)
 {
 	struct canvas *n = S.f;
