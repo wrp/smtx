@@ -1011,21 +1011,6 @@ test_width(int fd)
 	return rv;
 }
 
-static void
-handler(int s)
-{
-	char buf[256];
-	int len = 0;
-	switch(s) {
-	case SIGUSR2:
-		len = describe_state(buf, sizeof buf);
-		break;
-	}
-	if( len > 0 ) {
-		write(c2p[1], buf, len);
-	}
-}
-
 static void *
 xrealloc(void *buf, size_t num, size_t siz)
 {
@@ -1263,12 +1248,6 @@ execute_test(struct st *v, const char *name)
 			err(EXIT_FAILURE, "login_tty");
 		}
 		rv = 0;
-		struct sigaction sa;
-		memset(&sa, 0, sizeof sa);
-		sa.sa_flags = 0;
-		sigemptyset(&sa.sa_mask);
-		sa.sa_handler = handler;
-		sigaction(SIGUSR2, &sa, NULL);
 		if( close(c2p[0]) || close(p2c[1]) ) {
 			err(EXIT_FAILURE, "close");
 		}
