@@ -13,7 +13,7 @@ smtx_test_SOURCES = smtx-test.c unit-test.c
 
 CLEANFILES = *.gcda *.gcno *.gcov version *.1
 EXTRA_DIST = build-aux/package-version version main-test coverage-test smtx.ti
-noinst_HEADERS = vtparser.h smtx.h smtx-test.h unit-test.h
+noinst_HEADERS = vtparser.h smtx.h unit-test.h
 
 version: $(DIST_SOURCES) $(DIST_COMMON)
 	{ cd $(top_srcdir) && ./autogen.sh && build-aux/package-version >&3; } 3> version

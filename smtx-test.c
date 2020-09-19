@@ -16,7 +16,9 @@
  */
 #include "config.h"
 #include "unit-test.h"
-#include "smtx-test.h"
+
+extern int smtx_main(int, char **);
+#define CTL(x) ((x) & 0x1f)
 
 /* TODO: always use the p2c/c2p pipes for synchornization. */
 

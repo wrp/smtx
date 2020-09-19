@@ -51,7 +51,11 @@
 #include <wctype.h>
 
 #include "vtparser.h"
-#include "smtx-test.h"
+
+/* Declaration of smtx_main is duplicated in the test suite,
+ * which does not include this header (for isolation) */
+extern int smtx_main(int, char **);
+#define CTL(x) ((x) & 0x1f)
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define MIN3(a, b, c) ((a) < (b) ? MIN(a, c) : MIN(b, c))
