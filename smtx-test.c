@@ -876,7 +876,7 @@ static int
 test_title(int fd)
 {
 	int rv = 0;
-	char buf[69];
+	char buf[76];
 
 	/* The tail of the title should be ACS_HLINE.
 	 * When the locale is wrong, ACS_HLINE == 'q', but we set the
@@ -887,12 +887,16 @@ test_title(int fd)
 	 * set in the beginning of the title, so I'm going to punt on the
 	 * 'q' for now and just hack this.
 	 */
-	memset(buf, 'q', 68);
-	buf[68] = '\0';
-	rv |= validate_row(fd, 24, "1 sh 1-80/80%s", buf);
+	memset(buf, 'q', 76);
+	buf[75] = '\0';
+	rv |= validate_row(fd, 24, "1 sh %s", buf);
 	send_txt(fd, "uniq", "printf '\\033]2foobar\\007'; echo u'n'iq");
-	buf[64] = '\0';
-	rv |= validate_row(fd, 24, "1 foobar 1-80/80%s", buf);
+	buf[71] = '\0';
+	rv |= validate_row(fd, 24, "1 foobar %s", buf);
+	send_cmd(fd, "unIq", "200W\rprintf '\\033]2qux\\007u'n'I'q");
+
+	buf[66] = '\0';
+	rv |= validate_row(fd, 24, "1 qux 1-80/200%s", buf);
 
 	send_txt(fd, NULL, "exit");
 	return rv;
