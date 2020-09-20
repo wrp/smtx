@@ -29,7 +29,7 @@ int c2p[2];
 int p2c[2];
 static int check_test_status(int rv, int status, int pty, const char *name);
 static void grep(int fd, const char *needle);
-int commandkey = CTL('g');
+int ctlkey = CTL('g');
 
 union param {
 	struct { unsigned flag; } hup;
@@ -102,7 +102,7 @@ get_layout(int fd, int flag, char *layout, size_t siz)
 	char buf[1024];
 	int len;
 	ssize_t s;
-	len = snprintf(buf, sizeof buf, "%c%d%c\r", commandkey, flag, CTL('e'));
+	len = snprintf(buf, sizeof buf, "%c%d%c\r", ctlkey, flag, CTL('e'));
 	write(fd, buf, len);
 	grep(fd, "layout: ");
 	do s = timed_read(fd, buf, siz - 1, "layout"); while( s == 0 );
@@ -127,7 +127,7 @@ get_state(int fd, char *state, size_t siz)
 	char buf[64];
 	int len;
 	ssize_t s;
-	len = snprintf(buf, sizeof buf, "%c%c\r", commandkey, CTL('d'));
+	len = snprintf(buf, sizeof buf, "%c%c\r", ctlkey, CTL('d'));
 	write(fd, buf, len);
 	grep(fd, "state: ");
 	do s = timed_read(fd, state, siz, "state"); while( s == 0 );
@@ -233,7 +233,7 @@ validate_row(int fd, int row, const char *fmt, ... )
 	va_end(ap);
 
 	row -= 1;
-	len = snprintf(buf, sizeof buf, "%c%d%c\r", commandkey, row, CTL('f'));
+	len = snprintf(buf, sizeof buf, "%c%d%c\r", ctlkey, row, CTL('f'));
 	write(fd, buf, len);
 	sprintf(buf, "row %d: ", row);
 	grep(fd, buf);
@@ -317,7 +317,7 @@ static int
 test_dashc(int fd)
 {
 	int rv;
-	commandkey = CTL('l');
+	ctlkey = CTL('l');
 	send_str(fd, "uniq", "%cc\recho u'n'i'q'\r", CTL('l'));
 	rv = check_layout(fd, 0x1, "*11x80; 11x80");
 	send_txt(fd, NULL, "kill $SMTX");

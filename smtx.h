@@ -92,7 +92,7 @@ struct mode {
 };
 
 struct state {
-	char commandkey;
+	char ctlkey;
 	int width;
 	int history;      /* Number of lines retained */
 	int count;

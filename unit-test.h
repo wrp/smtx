@@ -22,7 +22,7 @@
 # include <util.h>
 #endif
 
-extern int commandkey;
+extern int ctlkey;
 
 void __attribute__((format(printf,3,4)))
 send_txt(int fd, const char *wait, const char *fmt, ...);

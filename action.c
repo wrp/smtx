@@ -260,9 +260,9 @@ transition(const char *arg)
 	int cmd = S.mode == S.modes + 1;
 	S.mode = &S.modes[ S.mode == S.modes ];
 	wmove(S.werr, 0, 0);
-	if( *arg == S.commandkey ) {
+	if( *arg == S.ctlkey ) {
 		if( S.mode == S.modes && S.f->p ) {
-			rewrite(S.f->p->fd, &S.commandkey, 1);
+			rewrite(S.f->p->fd, &S.ctlkey, 1);
 		}
 	} else if( *arg == ':' && cmd ) {
 		sprintf(S.command, "%s", ": ");

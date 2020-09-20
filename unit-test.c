@@ -69,7 +69,7 @@ test_csr(int fd)
 int
 test_resend(int fd)
 {
-	send_txt(fd, "uniq", "%1$c%1$c\recho u'n'i'q'", commandkey);
+	send_txt(fd, "uniq", "%1$c%1$c\recho u'n'i'q'", ctlkey);
 	int rv = validate_row(fd, 1, "%-80s", "ps1>^G");
 	send_txt(fd, NULL, "exit");
 	return rv;

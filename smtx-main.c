@@ -22,7 +22,7 @@ static char *term = "smtx";
 static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 
 struct state S = {
-	.commandkey = CTL('g'),
+	.ctlkey = CTL('g'),
 	.width = 80,
 	.mode = S.modes,
 	.history = 1024,
@@ -686,7 +686,7 @@ build_bindings(void)
 
 	struct mode *m = S.modes;
 	initialize_mode(m, passthru);
-	add_key(m->keys, S.commandkey, transition, &S.commandkey);
+	add_key(m->keys, S.ctlkey, transition, &S.ctlkey);
 	add_key(m->keys, L'\r', send, "\r");
 	add_key(m->keys, L'\n', send, "\n");
 
@@ -697,7 +697,7 @@ build_bindings(void)
 	add_key(m->keys, CTL('e'), show_layout, NULL);
 	add_key(m->keys, CTL('f'), show_row, NULL);
 
-	add_key(m->keys, S.commandkey, transition, &S.commandkey);
+	add_key(m->keys, S.ctlkey, transition, &S.ctlkey);
 	add_key(m->keys, L'\r', transition, "\r");
 	add_key(m->keys, L'\n', transition, "\n");
 	/* TODO: rebind b,f,<,> to hjkl in different binding */
@@ -848,7 +848,7 @@ parse_args(int argc, char *const*argv)
 				name ? name + 1 : argv[0]);
 			exit(0);
 		case 'c':
-			S.commandkey = CTL(optarg[0]);
+			S.ctlkey = CTL(optarg[0]);
 			break;
 		case 's':
 			S.history = strtol(optarg, NULL, 10);
