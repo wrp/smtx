@@ -737,7 +737,7 @@ build_bindings(void)
 	add_key(m->keys, L'9', digit, "9");
 
 	m = S.modes + 2;  /* Command mode */
-	initialize_mode(m, passthru);
+	initialize_mode(m, append_command);
 	add_key(m->keys, L'\r', transition, "enter");
 
 

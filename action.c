@@ -18,6 +18,18 @@
 #include "smtx.h"
 
 void
+append_command(const char *arg)
+{
+	assert( *arg == 1 );
+	if( S.command_length < sizeof S.command - 1 ) {
+		S.command[S.command_length++] = arg[1];
+		S.command[S.command_length] = '\0';
+		errno = 0;
+		err_check(1, "%s", S.command);
+	}
+}
+
+void
 attach(const char *arg)
 {
 	struct canvas *n = S.f;
