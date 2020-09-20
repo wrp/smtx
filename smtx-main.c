@@ -684,22 +684,22 @@ build_bindings(void)
 		add_key(code_keys, k, passthru, wc_lut + i);
 	}
 
-	struct mode *m = S.modes;
+	struct mode *m = S.modes;  /* enter(pty) mode */
 	initialize_mode(m, passthru);
-	add_key(m->keys, S.ctlkey, transition, &S.ctlkey);
+	add_key(m->keys, S.ctlkey, transition, "control");
 	add_key(m->keys, L'\r', send, "\r");
 	add_key(m->keys, L'\n', send, "\n");
 
-	m = S.modes + 1;
+	m = S.modes + 1;          /* control mode */
 	initialize_mode(m, bad_key);
-	add_key(m->keys, L':', transition, ":");
+	add_key(m->keys, L':', transition, "command");
 	add_key(m->keys, CTL('d'), show_state, NULL);
 	add_key(m->keys, CTL('e'), show_layout, NULL);
 	add_key(m->keys, CTL('f'), show_row, NULL);
 
-	add_key(m->keys, S.ctlkey, transition, &S.ctlkey);
-	add_key(m->keys, L'\r', transition, "\r");
-	add_key(m->keys, L'\n', transition, "\n");
+	add_key(m->keys, S.ctlkey, transition, "*enter");
+	add_key(m->keys, L'\r', transition, "enter");
+	add_key(m->keys, L'\n', transition, "enter");
 	/* TODO: rebind b,f,<,> to hjkl in different binding */
 	add_key(m->keys, L'a', attach, NULL);
 	add_key(m->keys, L'b', scrolln, "-");
@@ -736,9 +736,9 @@ build_bindings(void)
 	add_key(m->keys, L'8', digit, "8");
 	add_key(m->keys, L'9', digit, "9");
 
-	m = S.modes + 2;
+	m = S.modes + 2;  /* Command mode */
 	initialize_mode(m, passthru);
-	add_key(m->keys, L'\r', transition, "\r");
+	add_key(m->keys, L'\r', transition, "enter");
 
 
 	add_key(code_keys, KEY_RESIZE, reshape_root, NULL);
