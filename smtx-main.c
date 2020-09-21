@@ -254,7 +254,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	struct canvas *f = S.f;
 	int x = 0, y = 0;
 	int show = S.mode == S.modes && f->p->s->vis;
-	if( f->p && f->extent.y && show ) {
+	if( f->p && f->extent.y ) {
 		assert( f->p->s );
 		int top = S.history - f->extent.y;
 		getyx(f->p->s->win, y, x);
@@ -809,13 +809,13 @@ main_loop(void)
 			reshape_root(NULL);
 		}
 		draw(S.v);
-		fixcursor();
 		char *s = *S.errmsg ? S.errmsg : *S.command ? S.command : NULL;
 		if( s ) {
 			mvwprintw(S.werr, 0, 0, "%s", s);
 			wclrtoeol(S.werr);
 			draw_pane(S.werr, LINES - 1, 0);
 		}
+		fixcursor();
 		doupdate();
 		if( select(S.p->fd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
 			err_check(errno != EINTR , "select");
