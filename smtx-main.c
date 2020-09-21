@@ -406,19 +406,18 @@ draw_pane(WINDOW *w, int y, int x)
 static void
 draw_title(struct canvas *n, int r)
 {
-	if( n->wtit ) {
-		assert( n->p != NULL );
-		wattrset(n->wtit, r ? A_REVERSE : A_NORMAL);
-		mvwprintw(n->wtit, 0, 0, "%d %s ", n->p->id, n->p->status);
-		int x = n->offset.x;
-		int w = n->p->ws.ws_col;
-		if( x > 0 || x + n->extent.x < w ) {
-			wprintw(n->wtit, "%d-%d/%d", x + 1, x + n->extent.x, w);
-		}
-		whline(n->wtit, ACS_HLINE, n->extent.x);
-		struct point o = n->origin;
-		draw_pane(n->wtit, o.y + n->extent.y, o.x);
+	assert( n->wtit );
+	assert( n->p );
+	wattrset(n->wtit, r ? A_REVERSE : A_NORMAL);
+	mvwprintw(n->wtit, 0, 0, "%d %s ", n->p->id, n->p->status);
+	int x = n->offset.x;
+	int w = n->p->ws.ws_col;
+	if( x > 0 || x + n->extent.x < w ) {
+		wprintw(n->wtit, "%d-%d/%d ", x + 1, x + n->extent.x, w);
 	}
+	whline(n->wtit, ACS_HLINE, n->extent.x);
+	struct point o = n->origin;
+	draw_pane(n->wtit, o.y + n->extent.y, o.x);
 }
 
 static void

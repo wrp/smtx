@@ -894,8 +894,8 @@ test_title(int fd)
 	rv |= validate_row(fd, 24, "1 foobar %s", buf);
 	send_cmd(fd, "unIq", "200W\rprintf '\\033]2qux\\007u'n'I'q");
 
-	buf[66] = '\0';
-	rv |= validate_row(fd, 24, "1 qux 1-80/200%s", buf);
+	buf[65] = '\0';
+	rv |= validate_row(fd, 24, "1 qux 1-80/200 %s", buf);
 
 	send_txt(fd, NULL, "exit");
 	return rv;
