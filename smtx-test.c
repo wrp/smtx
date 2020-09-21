@@ -232,10 +232,9 @@ validate_row(int fd, int row, const char *fmt, ... )
 	(void)vsnprintf(expect, sizeof expect, fmt, ap);
 	va_end(ap);
 
-	row -= 1;
-	len = snprintf(buf, sizeof buf, "%c%d%c\r", ctlkey, row, CTL('f'));
+	len = snprintf(buf, sizeof buf, "%c%d%c\r", ctlkey, row - 1, CTL('f'));
 	write(fd, buf, len);
-	sprintf(buf, "row %d: ", row);
+	sprintf(buf, "row %d: ", row - 1);
 	grep(fd, buf);
 	do s = timed_read(fd, buf, sizeof buf - 1, expect); while( s == 0 );
 	if( s == -1 ) {
@@ -550,6 +549,9 @@ test_lnm(int fd)
 	int rv = validate_row(fd, 2, "%-80s", "sync");
 	send_txt(fd, "barbaz", "printf 'foobaz\\rbar\\n'"); /* line 3 */
 	/* Line 4 is blank because lnm is on and a newline was inserted */
+	/* There is a race in the test: sometimes lines 4 and 5 get
+	 * swapped.  Cleaarly the printf is writing before the newline
+	 * is inserted.  TODO: track down. */
 	rv |= validate_row(fd, 4, "%-80s", "");
 	rv |= validate_row(fd, 5, "%-80s", "barbaz");
 	send_txt(fd, "sync2", "printf '\\e[20lsy'n'c2\\n'"); /* line 6 */
