@@ -32,14 +32,12 @@ struct state S = {
 static void
 set_errmsg(int rv, const char *fmt, va_list ap)
 {
-	(void)rv;
 	int e = errno;
-	wmove(S.werr, 0, 0);
-	vw_printw(S.werr, fmt, ap);
-	if( e ) {
-		wprintw(S.werr, ": %s", strerror(e));
+	rv = vsnprintf(S.errmsg, sizeof S.errmsg, fmt, ap);
+	if( e && rv < (int)sizeof S.errmsg - 3 ) {
+		strncat(S.errmsg, ": ", sizeof S.errmsg - rv);
+		strncat(S.errmsg, strerror(e), sizeof S.errmsg - rv - 2);
 	}
-	wclrtoeol(S.werr);
 }
 
 int
@@ -803,7 +801,7 @@ static void
 main_loop(void)
 {
 	while( S.c != NULL && S.p && S.p->fd > 0 ) {
-		int r, y, x;
+		int r;
 		wint_t w;
 		fd_set sfds = S.fds;
 
@@ -812,10 +810,10 @@ main_loop(void)
 		}
 		draw(S.v);
 		fixcursor();
-		getyx(S.werr, y, x);
-		if( x > 0 ) {
-			getmaxyx(stdscr, y, x);
-			pnoutrefresh(S.werr, 0, 0, y - 1, 0, y - 1, x);
+		if( S.errmsg[0] ) {
+			mvwprintw(S.werr, 0, 0, "%s", S.errmsg);
+			wclrtoeol(S.werr);
+			draw_pane(S.werr, LINES - 1, 0);
 		}
 		doupdate();
 		if( select(S.p->fd + 1, &sfds, NULL, NULL, NULL) < 0 ) {

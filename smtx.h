@@ -105,7 +105,8 @@ struct state {
 	fd_set fds;
 	WINDOW *werr;
 	int reshape;
-	char command[1024];
+	char command[256];
+	char errmsg[256];
 	size_t command_length;
 };
 

@@ -273,7 +273,7 @@ transition(const char *arg)
 		rewrite(S.f->p->fd, &S.ctlkey, 1);
 		arg += 1;
 	}
-	wmove(S.werr, 0, 0);
+	S.errmsg[0] = 0; /* Clear any existing error message */
 	if( ! strcmp(arg, "enter") ) {
 		S.mode = S.modes;
 	} else if( ! strcmp(arg, "control") ) {
