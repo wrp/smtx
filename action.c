@@ -21,11 +21,10 @@ void
 append_command(const char *arg)
 {
 	assert( *arg == 1 );
-	if( S.command_length < sizeof S.command - 1 ) {
-		S.command[S.command_length++] = arg[1];
-		S.command[S.command_length] = '\0';
-		errno = 0;
-		err_check(1, "%s", S.command);
+	unsigned len = strlen(S.command);
+	if( len < sizeof S.command - 1 ) {
+		S.command[len++] = arg[1];
+		S.command[len] = '\0';
 	}
 }
 
@@ -274,16 +273,14 @@ transition(const char *arg)
 		arg += 1;
 	}
 	S.errmsg[0] = 0; /* Clear any existing error message */
+	S.command[0] = 0;
 	if( ! strcmp(arg, "enter") ) {
 		S.mode = S.modes;
 	} else if( ! strcmp(arg, "control") ) {
 		S.mode = S.modes + 1;
 	} else if( ! strcmp(arg, "command") ) {
 		S.mode = S.modes + 2;
-		sprintf(S.command, "%s", ": ");
-		S.command_length = 2;
-		errno = 0;
-		err_check(1, "%s", S.command);
+		strcat(S.command, ": ");
 	}
 	scrollbottom(S.f);
 }

@@ -107,7 +107,6 @@ struct state {
 	int reshape;
 	char command[256];
 	char errmsg[256];
-	size_t command_length;
 };
 
 struct point { int y, x; };
