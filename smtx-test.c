@@ -549,9 +549,6 @@ test_lnm(int fd)
 	int rv = validate_row(fd, 2, "%-80s", "sync");
 	send_txt(fd, "barbaz", "printf 'foobaz\\rbar\\n'"); /* line 3 */
 	/* Line 4 is blank because lnm is on and a newline was inserted */
-	/* There is a race in the test: sometimes lines 4 and 5 get
-	 * swapped.  Cleaarly the printf is writing before the newline
-	 * is inserted.  TODO: track down. */
 	rv |= validate_row(fd, 4, "%-80s", "");
 	rv |= validate_row(fd, 5, "%-80s", "barbaz");
 	send_txt(fd, "sync2", "printf '\\e[20lsy'n'c2\\n'"); /* line 6 */
