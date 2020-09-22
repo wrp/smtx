@@ -683,7 +683,6 @@ build_bindings(void)
 	initialize_mode(m, passthru);
 	add_key(m->keys, S.ctlkey, transition, "control");
 	add_key(m->keys, L'\r', send, "\r");
-	add_key(m->keys, L'\n', send, "\n");
 
 	m = S.modes + 1;          /* control mode */
 	initialize_mode(m, bad_key);
