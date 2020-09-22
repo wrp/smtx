@@ -211,9 +211,7 @@ send(const char *arg)
 		if( n->p->lnm ) {
 			const char *s;
 			while( (s = strchr(arg, '\r')) != NULL ) {
-				if( s - arg ) {
-					rewrite(n->p->fd, arg, s - arg);
-				}
+				rewrite(n->p->fd, arg, s - arg);
 				rewrite(n->p->fd, "\r\n", 2);
 				arg = s + 1;
 			}
