@@ -48,3 +48,4 @@ test test_attach;
 test test_cols;
 test test_csr;
 test test_resend;
+test test_scrollh;

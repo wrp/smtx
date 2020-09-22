@@ -74,3 +74,45 @@ test_resend(int fd)
 	send_txt(fd, NULL, "exit");
 	return rv;
 }
+
+int
+test_scrollh(int fd)
+{
+	char buf[79];
+	for(unsigned i = 0; i < sizeof buf - 1; i++) {
+		buf[i] = 'a' + i % 26;
+	}
+	buf[sizeof buf - 1] = 0;
+
+	send_txt(fd, "uniq", "tput cols; echo %s'u'n'i'q", buf);
+	int rv = validate_row(fd, 3, "%-26s", "78");
+
+	buf[26] = 0;
+	rv |= validate_row(fd, 4, "%-26s", buf);
+	buf[26] = 'a';
+
+	/* Scroll one tabstop to the right */
+	buf[26 + 8 ] = 0;  /* 8 is default tabstop */
+	send_cmd(fd, "foo", ">\recho '        f'o'o'");
+	rv |= validate_row(fd, 4, "%-26s", buf + 8);
+	buf[26 + 8 ] = 'a' + 8;
+
+	/* Scroll one screen width (26) to the right */
+	send_cmd(fd, "uniq1", "%s", "0>\rprintf '%34s'u'n'i'q'1\\n");
+	buf[26 + 34] = 0;
+	rv |= validate_row(fd, 4, "%-26s", buf + 34);
+	buf[26 + 34] = 'a' + 8;
+
+	/* Scroll 2 to the left */
+	send_cmd(fd, "uniq2", "%s", "2<\rprintf '%32s'u'n'i'q'2\\n");
+	buf[26 + 32] = 0;
+	rv |= validate_row(fd, 4, "%-26s", buf + 32);
+	buf[26 + 32] = 'a' + 6;
+
+	/* Scroll 200 to the right (should stop at 52) */
+	send_cmd(fd, "uniq3", "%s", "200>\rprintf '%52s'u'n'i'q'3\\n");
+	rv |= validate_row(fd, 4, "%-26s", buf + 52);
+
+	send_txt(fd, NULL, "exit");
+	return rv;
+}

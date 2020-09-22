@@ -178,10 +178,9 @@ scrollh(const char *arg)
 {
 	struct canvas *n = S.f;
 	if( n && n->p && n->p->s && n->p->s->win ) {
-		int y, x;
-		getmaxyx(n->p->s->win, y, x);
-		(void)y;
-		int count = S.count == -1 ? n->extent.x - 1 : S.count;
+		int c = S.count, count, x;
+		getmaxyx(n->p->s->win, count, x);
+		count = c == -1 ? n->p->tabstop : c == 0 ? n->extent.x : c;
 		n->offset.x += *arg == '<' ? -count : count;
 		if( n->offset.x < 0 ) {
 			n->offset.x = 0;
