@@ -675,9 +675,8 @@ build_bindings(void)
 	for( wchar_t k = KEY_MIN; k < KEY_MAX; k++ ) {
 		assert( MB_LEN_MAX < 128 );
 		int i = (k - KEY_MIN) * (1 + MB_LEN_MAX);
-		if( (wc_lut[ i ] = wctomb(wc_lut + i + 1, k)) == -1 ) {
-			wc_lut[i] = 0;
-		}
+		int v = wctomb(wc_lut + i + 1, k);
+		wc_lut[ i ] = v == -1 ? 0 : v;
 		add_key(code_keys, k, passthru, wc_lut + i);
 	}
 
