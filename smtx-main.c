@@ -818,7 +818,7 @@ main_loop(void)
 			FD_ZERO(&sfds);
 		}
 		if( FD_ISSET(STDIN_FILENO, &sfds) ) {
-			while( (r = get_wch(&w)) != ERR ) {
+			while( (r = wget_wch(S.f->p->s->win, &w)) != ERR ) {
 				handlechar(r, w);
 			}
 		}
