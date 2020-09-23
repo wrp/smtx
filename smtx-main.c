@@ -136,11 +136,8 @@ resize_pad(WINDOW **p, int h, int w)
 static int
 new_screens(struct pty *p)
 {
-	int rows, cols;
-
-	getmaxyx(stdscr, rows, cols);
-	rows = MAX(rows, S.history);
-	cols = MAX(cols, S.width);
+	int rows = MAX(LINES, S.history);
+	int cols = MAX(COLS, S.width);
 
 	resize_pad(&p->pri.win, rows, cols);
 	resize_pad(&p->alt.win, rows, cols);
@@ -194,11 +191,9 @@ struct canvas *
 newcanvas(void)
 {
 	struct canvas *n = calloc(1, sizeof *n);
-	int y, x;
-	getmaxyx(stdscr, y, x);
 	if( !n ) {
 		err_check(1, "calloc");
-	} else if( ( n->p = new_pty(y, MAX(x, S.width))) == NULL ) {
+	} else if( ( n->p = new_pty(LINES, MAX(COLS, S.width))) == NULL ) {
 		free(n);
 		n = NULL;
 	} else {
@@ -873,7 +868,6 @@ init(void)
 {
 	char buf[16];
 	struct sigaction sa;
-	int y, x;
 	SCREEN *new;
 	memset(&sa, 0, sizeof sa);
 	sa.sa_flags = 0;
@@ -893,8 +887,7 @@ init(void)
 		set_term(new);
 		setenv("TERM", term, 1);
 	}
-	getmaxyx(stdscr, y, x);
-	S.history = MAX(y, S.history);
+	S.history = MAX(LINES, S.history);
 	atexit(endwin_wrap);
 	raw();
 	noecho();
@@ -903,7 +896,7 @@ init(void)
 	intrflush(NULL, FALSE);
 	start_color();
 	use_default_colors();
-	resize_pad(&S.werr, 1, x);
+	resize_pad(&S.werr, 1, COLS);
 	err_check(S.werr == NULL, "Unable to create error window");
 	create(NULL);
 	err_check( ( S.f = S.v = S.c ) == NULL, "Unable to create root window");
@@ -964,12 +957,11 @@ size_t
 describe_state(char *desc, size_t siz)
 {
 	size_t len = 0;
-	int y, x;
 
-	getmaxyx(stdscr, y, x);
 	len += snprintf(desc, siz, "history=%d, ", S.history);
 	if( len < siz - 1 ) {
-		len += snprintf(desc + len, siz - len, "y=%d, x=%d, ", y, x);
+		len += snprintf(desc + len, siz - len, "y=%d, x=%d, ", LINES,
+			COLS);
 	}
 	if( len < siz - 1 ) {
 		len += snprintf(desc + len, siz - len, "w=%d", S.width);
