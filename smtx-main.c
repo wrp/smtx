@@ -808,6 +808,7 @@ main_loop(void)
 		draw(S.v);
 		char *s = *S.errmsg ? S.errmsg : *S.command ? S.command : NULL;
 		if( s ) {
+			(s == S.errmsg ? wattron : wattroff)(S.werr, A_REVERSE);
 			mvwprintw(S.werr, 0, 0, "%s", s);
 			wclrtoeol(S.werr);
 			draw_pane(S.werr, LINES - 1, 0);
@@ -904,7 +905,6 @@ init(void)
 	use_default_colors();
 	resize_pad(&S.werr, 1, x);
 	err_check(S.werr == NULL, "Unable to create error window");
-	wattron(S.werr, A_REVERSE);
 	create(NULL);
 	err_check( ( S.f = S.v = S.c ) == NULL, "Unable to create root window");
 }
