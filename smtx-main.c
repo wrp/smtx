@@ -817,8 +817,10 @@ main_loop(void)
 			err_check(errno != EINTR , "select");
 			FD_ZERO(&sfds);
 		}
-		while( (r = get_wch(&w)) != ERR ) {
-			handlechar(r, w);
+		if( FD_ISSET(STDIN_FILENO, &sfds) ) {
+			while( (r = get_wch(&w)) != ERR ) {
+				handlechar(r, w);
+			}
 		}
 		getinput(&sfds);
 	}
