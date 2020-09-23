@@ -1091,6 +1091,7 @@ main(int argc, char *const argv[])
 	F(test_ack);
 	F(test_attach);
 	F(test_cols, "COLUMNS", "92", "args", "-w", "97");
+	F(test_command);
 	F(test_csr);
 	F(test_cup);
 	F(test_cursor);

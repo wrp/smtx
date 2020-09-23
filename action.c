@@ -82,6 +82,34 @@ equalize(const char *arg)
 	S.reshape = 1;
 }
 
+/* lut of callable functions */
+static struct name_func_siz {
+	const char *name;
+	action *f;
+	size_t s;
+} nfs_lut[] = {
+	{ "bad_key", bad_key, 7 },
+	{ NULL }
+};
+static void
+execute(char *arg)
+{
+	struct name_func_siz *nfs = nfs_lut;
+	for( ; nfs->name; nfs += 1 ) {
+		if( !strncmp(nfs->name, arg, nfs->s) ) {
+			nfs->f(arg + 4);
+			break;
+		}
+	}
+	if( !nfs->name ) {
+		char *space = strchr(arg, ' ');
+		if( space ) {
+			*space = '\0';
+		}
+		err_check(1, "unknown function: %s", arg);
+	}
+}
+
 static struct canvas *
 find_canvas(struct canvas *c, int id)
 {
@@ -272,6 +300,9 @@ transition(const char *arg)
 		arg += 1;
 	}
 	S.errmsg[0] = 0; /* Clear any existing error message */
+	if( S.mode == S.modes + 2 ) {
+		execute(S.command + strlen(": "));
+	}
 	S.command[0] = 0;
 	if( ! strcmp(arg, "enter") ) {
 		S.mode = S.modes;
