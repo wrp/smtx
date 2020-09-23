@@ -127,7 +127,7 @@ resize_pad(WINDOW **p, int h, int w)
 	if( *p ) {
 		err_check(wresize(*p, h, w ) != OK, "Error resizing window");
 	} else if( (*p = newpad(h, w)) != NULL ) {
-		err_check(nodelay(*p, TRUE) != OK, "Error setting delay");
+		wtimeout(*p, 0);
 	}
 }
 
