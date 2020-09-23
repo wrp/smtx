@@ -128,6 +128,8 @@ resize_pad(WINDOW **p, int h, int w)
 		err_check(wresize(*p, h, w ) != OK, "Error resizing window");
 	} else if( (*p = newpad(h, w)) != NULL ) {
 		wtimeout(*p, 0);
+		scrollok(*p, TRUE);
+		keypad(*p, TRUE);
 	}
 }
 
@@ -145,10 +147,6 @@ new_screens(struct pty *p)
 	if( ! p->pri.win || !p->alt.win ) {
 		return -1;
 	}
-	scrollok(p->pri.win, TRUE);
-	scrollok(p->alt.win, TRUE);
-	keypad(p->pri.win, TRUE);
-	keypad(p->alt.win, TRUE);
 	p->s = &p->pri;
 	p->vp.p = p;
 	setupevents(&p->vp);
