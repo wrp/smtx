@@ -134,13 +134,10 @@ resize_pad(WINDOW **p, int h, int w)
 }
 
 static int
-new_screens(struct pty *p)
+new_screens(struct pty *p, int cols)
 {
-	int rows = MAX(LINES, S.history);
-	int cols = MAX(COLS, S.width);
-
-	resize_pad(&p->pri.win, rows, cols);
-	resize_pad(&p->alt.win, rows, cols);
+	resize_pad(&p->pri.win, S.history, cols);
+	resize_pad(&p->alt.win, S.history, cols);
 	if( ! p->pri.win || !p->alt.win ) {
 		return -1;
 	}
@@ -154,6 +151,7 @@ static struct pty *
 new_pty(int rows, int cols)
 {
 	struct pty *p = calloc(1, sizeof *p);
+	assert( rows <= S.history );
 	if( p != NULL ) {
 		const char *sh = getshell();
 		const char *bname = strrchr(sh, '/');
@@ -166,7 +164,7 @@ new_pty(int rows, int cols)
 			signal(SIGCHLD, SIG_DFL);
 			execl(sh, sh, NULL);
 			err(EXIT_FAILURE, "exec SHELL='%s'", sh);
-		} else if( p->pid < 0 || new_screens(p) == -1 ) {
+		} else if( p->pid < 0 || new_screens(p, cols) == -1 ) {
 			err_check(1, "new_pty");
 			free_proc(&p);
 		} else if( p->pid > 0 ) {
