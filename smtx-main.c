@@ -270,7 +270,11 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 /* (1) Checking f->offset.y < top really does not make any
  * sense.  This test *should* be y < f->offset.y, but
  * changing it breaks the current tests...which
- * are not reliable! TODO: figure this out
+ * are not reliable! TODO: figure this out (hint, the
+ * problem probably stems from f->offset.y == 0 for a
+ * new canvas which does not yet have any data written to it.
+ * To clean this up, we just need to clean up all of the new_pty/new_canvas
+ * cruft.
  */
 
 void
