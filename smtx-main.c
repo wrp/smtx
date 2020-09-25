@@ -908,7 +908,7 @@ smtx_main(int argc, char *argv[])
 
 /* Descriptive functions used by test suite */
 
-/* Describe a layout. This is called in a signal handler by the tests. */
+/* Describe a layout. */
 static size_t
 describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 {
