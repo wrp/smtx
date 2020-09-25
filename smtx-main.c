@@ -782,12 +782,17 @@ passthru(const char *arg)
 	}
 }
 
-static void handle_term(int s) { (void) s; exit(0); }
+static volatile sig_atomic_t interrupted;
+static void
+handle_term(int s)
+{
+	interrupted = s;
+}
 
 static void
 main_loop(void)
 {
-	while( S.c != NULL && S.p && S.p->fd > 0 ) {
+	while( S.c != NULL && S.p && S.p->fd > 0 && ! interrupted ) {
 		int r;
 		wint_t w;
 		fd_set sfds = S.fds;
@@ -858,8 +863,6 @@ parse_args(int argc, char *const*argv)
 	}
 }
 
-static void endwin_wrap(void) { (void) endwin(); }
-
 static void
 init(void)
 {
@@ -885,7 +888,6 @@ init(void)
 		setenv("TERM", term, 1);
 	}
 	S.history = MAX(LINES, S.history);
-	atexit(endwin_wrap);
 	raw();
 	noecho();
 	nonl();
@@ -905,6 +907,10 @@ smtx_main(int argc, char *argv[])
 	parse_args(argc, argv);
 	init();
 	main_loop();
+	endwin();
+	if( interrupted ) {
+		write(STDERR_FILENO, "\nterminated\n", 12);
+	}
 	return EXIT_SUCCESS;
 }
 
