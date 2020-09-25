@@ -299,7 +299,7 @@ transition(const char *arg)
 	}
 	S.errmsg[0] = 0; /* Clear any existing error message */
 	if( S.mode == S.modes + 2 ) {
-		execute(S.command + strlen(": "));
+		execute(S.command);
 	}
 	S.command[0] = 0;
 	if( ! strcmp(arg, "enter") ) {
@@ -308,7 +308,6 @@ transition(const char *arg)
 		S.mode = S.modes + 1;
 	} else if( ! strcmp(arg, "command") ) {
 		S.mode = S.modes + 2;
-		strcat(S.command, ": ");
 	}
 	scrollbottom(S.f);
 }

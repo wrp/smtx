@@ -801,10 +801,11 @@ main_loop(void)
 			reshape_root(NULL);
 		}
 		draw(S.v);
-		char *s = *S.errmsg ? S.errmsg : *S.command ? S.command : NULL;
-		if( s ) {
-			(s == S.errmsg ? wattron : wattroff)(S.werr, A_REVERSE);
-			mvwprintw(S.werr, 0, 0, "%s", s);
+		char *s = *S.errmsg ? S.errmsg : S.command;
+		if( *s || S.mode == S.modes + 2 ) {
+			int iscmd = S.mode == S.modes + 2;
+			(iscmd ? wattroff : wattron)(S.werr, A_REVERSE);
+			mvwprintw(S.werr, 0, 0, "%s%s", iscmd ? ":" : "", s);
 			wclrtoeol(S.werr);
 			draw_pane(S.werr, LINES - 1, 0);
 		}
