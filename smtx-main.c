@@ -434,17 +434,19 @@ draw(struct canvas *n) /* Draw a canvas. */
 void
 balance(struct canvas *n)
 {
-	int dir = n->typ;
-	while( n->c[dir] != NULL ) {
-		n = n->c[dir];
-	}
-	for(int count = 1; n; n = n->parent ) {
-		n->split_point[dir] = 1.0 / count++;
-		if( n->parent && n->parent->c[dir] != n ) {
-			break;
+	if( n ) {
+		int dir = n->typ;
+		while( n->c[dir] != NULL ) {
+			n = n->c[dir];
 		}
-		if( n->typ != dir ) {
-			break;
+		for(int count = 1; n; n = n->parent ) {
+			n->split_point[dir] = 1.0 / count++;
+			if( n->parent && n->parent->c[dir] != n ) {
+				break;
+			}
+			if( n->typ != dir ) {
+				break;
+			}
 		}
 	}
 }
