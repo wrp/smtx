@@ -39,6 +39,16 @@ test_attach(int fd)
 }
 
 int
+test_bighist(int fd)
+{
+	/* Use -s 9999999999 to trigger a memory allocation error */
+	/* Not really sure what else to do here; just call it to get
+	code coverage I guess */
+	(void)fd;
+	return 0;
+}
+
+int
 test_cols(int fd)
 {
 	/* Ensure that tput correctly identifies the width */

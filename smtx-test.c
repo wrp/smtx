@@ -16,6 +16,7 @@
  */
 #include "config.h"
 #include "unit-test.h"
+#include <limits.h>
 
 #define CTL(x) ((x) & 0x1f)
 
@@ -1084,12 +1085,16 @@ match_name(const char *a, const char *b)
 int
 main(int argc, char *const argv[])
 {
+	char bigint[128];
 	int fail_count = 0;
 	int total_count = 0;
 	const char *argv0 = argv[0];
 	struct st *tab = NULL, *v;
+
+	snprintf(bigint, sizeof bigint, "%d", INT_MAX);
 	F(test_ack);
 	F(test_attach);
+	F(test_bighist, "NOWAIT", "1", "args", "-s", bigint);
 	F(test_cols, "COLUMNS", "92", "args", "-w", "97");
 	F(test_command);
 	F(test_csr);
@@ -1232,6 +1237,7 @@ execute_test(struct st *v, const char *name)
 	setenv("PS1", PROMPT, 1);
 	unsetenv("LINES");
 	unsetenv("COLUMNS");
+	unsetenv("NOWAIT");
 	for( char **a = v->env; a && *a; a += 2 ) {
 		setenv(a[0], a[1], 1);
 	}
@@ -1266,7 +1272,9 @@ execute_test(struct st *v, const char *name)
 		if( close(c2p[1]) || close(p2c[0]) ) {
 			err(EXIT_FAILURE, "close");
 		}
-		grep(fd[0], PROMPT); /* Wait for shell to initialize */
+		if( getenv("NOWAIT") == NULL ) {
+			grep(fd[0], PROMPT); /* Wait for shell to initialize */
+		}
 		rv = v->f(fd[0]);
 		send_txt(fd[0], NULL, "kill $SMTX");
 		wait(&status);

@@ -896,9 +896,12 @@ init(void)
 	start_color();
 	use_default_colors();
 	resize_pad(&S.werr, 1, COLS);
-	err_check(S.werr == NULL, "Unable to create error window");
 	create(NULL);
-	err_check( ( S.f = S.v = S.c ) == NULL, "Unable to create root window");
+	S.f = S.v = S.c;
+	if( S.c == NULL || S.werr == NULL ) {
+		endwin();
+		fprintf(stderr, "Unable to create root window\n");
+	}
 }
 
 int

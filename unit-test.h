@@ -45,6 +45,7 @@ check_layout(int fd, int flag, const char *fmt, ...);
 typedef int(test)(int fd);
 test test_ack;
 test test_attach;
+test test_bighist;
 test test_cols;
 test test_command;
 test test_csr;
