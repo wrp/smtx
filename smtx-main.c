@@ -609,12 +609,13 @@ static void
 show_layout(const char *arg)
 {
 	char buf[1024] = "layout: ";
+	int w = strlen(buf);
 	int flag = S.count == -1 ? 1 : S.count;
 	struct canvas *c = flag & 0x20 ? S.f : S.c;
 	(void)arg;
-	size_t s = describe_layout(buf + 8, sizeof buf - 8, c, flag);
-	buf[8 + s] = ':';
-	rewrite(1, buf, s + 9);
+	size_t s = describe_layout(buf + w, sizeof buf - w - 1, c, flag);
+	buf[w + s] = ':';
+	rewrite(STDOUT_FILENO, buf, s + w + 1);
 }
 
 static action show_state;
