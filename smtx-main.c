@@ -103,9 +103,8 @@ delwinnul(WINDOW **w)
 }
 
 static void
-free_proc(struct pty **pv)
+free_proc(struct pty *p)
 {
-	struct pty *p = *pv;
 	if( p != NULL ) {
 		free(p->tabs);
 		delwinnul(&p->pri.win);
@@ -117,7 +116,6 @@ free_proc(struct pty **pv)
 			}
 		}
 		free(p);
-		*pv = NULL;
 	}
 }
 
@@ -131,20 +129,6 @@ resize_pad(WINDOW **p, int h, int w)
 		scrollok(*p, TRUE);
 		keypad(*p, TRUE);
 	}
-}
-
-static int
-new_screens(struct pty *p, int cols)
-{
-	resize_pad(&p->pri.win, S.history, cols);
-	resize_pad(&p->alt.win, S.history, cols);
-	if( ! p->pri.win || !p->alt.win ) {
-		return -1;
-	}
-	p->s = &p->pri;
-	p->vp.p = p;
-	setupevents(&p->vp);
-	return 0;
 }
 
 static struct pty *
@@ -164,10 +148,15 @@ new_pty(int rows, int cols)
 			signal(SIGCHLD, SIG_DFL);
 			execl(sh, sh, NULL);
 			err(EXIT_FAILURE, "exec SHELL='%s'", sh);
-		} else if( p->pid < 0 || new_screens(p, cols) == -1 ) {
-			err_check(1, "new_pty");
-			free_proc(&p);
 		} else if( p->pid > 0 ) {
+			resize_pad(&p->pri.win, S.history, cols);
+			resize_pad(&p->alt.win, S.history, cols);
+		}
+		if( p->pri.win && p->alt.win ) {
+			p->s = &p->pri;
+			p->vp.p = p;
+			setupevents(&p->vp);
+
 			FD_SET(p->fd, &S.fds);
 			fcntl(p->fd, F_SETFL, O_NONBLOCK);
 			extend_tabs(p, p->tabstop = 8);
@@ -180,6 +169,10 @@ new_pty(int rows, int cols)
 			p->next = *t;
 			*t = p;
 			strncpy(p->status, bname, sizeof p->status - 1);
+		} else {
+			free_proc(p);
+			err_check(1, "new_pty");
+			p = NULL;
 		}
 	}
 	return p;
