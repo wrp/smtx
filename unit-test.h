@@ -54,8 +54,8 @@ send_str(int fd, const char *wait, const char *fmt, ...);
 int __attribute__((format(printf,3,4)))
 validate_row(int fd, int row, const char *fmt, ... );
 
-int
-get_layout(int fd, int flag, char *layout, size_t siz);
+int get_layout(int fd, int flag, char *layout, size_t siz);
+int get_state(int fd, char *state, size_t siz);
 
 int __attribute__((format(printf,3,4)))
 check_layout(int fd, int flag, const char *fmt, ...);
@@ -91,4 +91,15 @@ test test_pnm;
 test test_quit;
 test test_resend;
 test test_reset;
+test test_resize;
+test test_resizepty;
+test test_ri;
+test test_row;
+test test_scrollback;
 test test_scrollh;
+test test_swap;
+test test_tabstop;
+test test_title;
+test test_tput;
+test test_vis;
+test test_width;
