@@ -664,8 +664,8 @@ test_scrollback(int fd)
 	send_cmd(fd, "uniq", "CC\recho u'n'iq");
 	status |= check_layout(fd, 0x1, "*23x26; 23x26; 23x26");
 
-	send_txt(fd, NULL, "a='%s'\rPS1=$(printf 'un%%s>' iq)", string);
-	send_cmd(fd, "uniq>", "100<");
+	send_txt(fd, "uniq>", "a='%s'\rPS1='un'i'q>'", string);
+	send_cmd(fd, NULL, "100<"); /* Cover invalid scroll left */
 	send_txt(fd, "uniq>", "yes \"$a\" | nl |\rsed 50q");
 	snprintf(trunc, 19, "%s", string);
 	status |= validate_row(fd, 1, "%6d  %-18s", 29, trunc);
