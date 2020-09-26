@@ -252,22 +252,6 @@ validate_row(int fd, int row, const char *fmt, ... )
 }
 
 static int
-test_dch(int fd)
-{
-	int rv = 0;
-	/* Print string, move back 3, delete 2, forward 3 */
-	send_txt(fd, "uniq", "%s%s%s%su'n'i'q'\\n'",
-		"printf '1234567", /* Print a string */
-		"\\033[3D",        /* Cursor back 3 */
-		"\\033[2P",        /* Delete 2 */
-		"\\033[1C"         /* Forward 1 */
-	);
-	rv |= validate_row(fd, 2, "%-80s", "12347uniq");
-	send_txt(fd, NULL, "kill $SMTX");
-	return rv;
-}
-
-static int
 test_decaln(int fd)
 {
 	char e[81] = "EEE";

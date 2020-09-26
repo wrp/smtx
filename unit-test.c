@@ -159,6 +159,22 @@ test_dasht(int fd)
 }
 
 int
+test_dch(int fd)
+{
+	int rv = 0;
+	/* Print string, move back 3, delete 2, forward 3 */
+	send_txt(fd, "uniq", "printf '%s%s%s%su'n'i'q'\\n'",
+		"1234567",  /* Print a string */
+		"\\033[3D", /* Cursor back 3 */
+		"\\033[2P", /* Delete 2 */
+		"\\033[1C"  /* Forward 1 */
+	);
+	rv |= validate_row(fd, 2, "%-80s", "12347uniq");
+	send_txt(fd, NULL, "kill $SMTX");
+	return rv;
+}
+
+int
 test_resend(int fd)
 {
 	send_txt(fd, "uniq", "%1$c%1$c\recho u'n'i'q'", ctlkey);
