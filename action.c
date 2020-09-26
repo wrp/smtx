@@ -284,23 +284,20 @@ describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 
 	char *isfocus = recurse && c == S.f ? "*" : "";
 	d += snprintf(d, e - d, "%s%dx%d", isfocus, c->extent.y, c->extent.x);
-
 	if( show_pos) {
 		d += snprintf(d, e - d, "@%d,%d", c->origin.y, c->origin.x);
 	}
 	if( show_id && c->p ) {
 		d += snprintf(d, e - d, "(id=%d)", c->p->id);
 	}
-	if( c->p->s ) {
-		if( ! c->p->s->vis ) {
-			d += snprintf(d, e - d, "!"); /* Cursor hidden */
-		}
+	if( c->p->s && ! c->p->s->vis ) {
+		d += snprintf(d, e - d, "!"); /* Cursor hidden */
 	}
 	if( ! c->p->pnm ) {
 		d += snprintf(d, e - d, "#"); /* Numeric keypad  */
 	}
-	for( int i = 0; i < 2; i ++ ) {
-		if( recurse && e - d > 3 && c->c[i] ) {
+	for( int i = 0; recurse && i < 2; i ++ ) {
+		if( e - d > 3 && c->c[i] ) {
 			*d++ = ';';
 			*d++ = ' ';
 			d += describe_layout(d, e - d, c->c[i], flags);
