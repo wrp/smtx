@@ -252,17 +252,6 @@ validate_row(int fd, int row, const char *fmt, ... )
 }
 
 static int
-test_dasht(int fd)
-{
-	/* This test exercises -t with a terminal type that should not
-	 * exist in order to test the code path that uses initscr() */
-	send_cmd(fd, "uniq", "c\recho u'n'i'q'");
-	int rv = check_layout(fd, 0x1, "*11x80; 11x80");
-	send_txt(fd, NULL, "kill $SMTX");
-	return rv;
-}
-
-static int
 test_dch(int fd)
 {
 	int rv = 0;

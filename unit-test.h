@@ -54,5 +54,6 @@ test test_csr;
 test test_cup;
 test test_cursor;
 test test_dashc;
+test test_dasht;
 test test_resend;
 test test_scrollh;
