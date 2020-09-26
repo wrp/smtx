@@ -74,5 +74,8 @@ test test_dch;
 test test_decaln;
 test test_decid;
 test test_dsr;
+test test_ech;
+test test_ed;
+test test_el;
 test test_resend;
 test test_scrollh;

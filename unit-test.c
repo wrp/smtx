@@ -227,6 +227,73 @@ test_dsr(int fd)
 }
 
 int
+test_ech(int fd)
+{
+	int rv = 0;
+	/* ech: erase N characters */
+	send_txt(fd, "uniq1", "%s%s",
+		"printf 012345; tput cub 3; tput ech 1;",
+		"printf '\\nuniq%s\\n' 1"
+	);
+	rv |= validate_row(fd, 2, "%-80s", "012 45");
+	send_str(fd, NULL, "exit\r");
+	return rv;
+}
+
+int
+test_ed(int fd)
+{
+	int rv = 0;
+	send_txt(fd, "uniq", "yes | sed 15q; tput cuu 8; echo u'n'i'q'");
+	rv |= validate_row(fd, 8, "%-80s", "y");
+	rv |= validate_row(fd, 12, "%-80s", "y");
+	send_txt(fd, "uniq2", "printf '\\033[J'u'n'i'q'2"); /* Clear to end */
+	rv |= validate_row(fd, 8, "%-80s", "y");
+	rv |= validate_row(fd, 12, "%-80s", "");
+	send_txt(fd, "uniq3", "printf '\\033[2J'u'n'i'q'3"); /* Clear all */
+	rv |= validate_row(fd, 8, "%-80s", "");
+	rv |= validate_row(fd, 13, "%-80s", "");
+	send_txt(fd, "uniq6", "clear; printf 'u'n'i'q'6'");
+	send_txt(fd, "uniq4", "yes | sed 15q; tput cuu 8; echo u'n'i'q4'");
+	for(int i = 2; i < 9; i++ ) {
+		rv |= validate_row(fd, i, "%-80s", "y");
+	}
+	send_txt(fd, "uniq5", "printf '\\033[1J'u'n'i'q'5"); /* Clear to top */
+	for(int i = 2; i < 9; i++ ) {
+		rv |= validate_row(fd, i, "%-80s", "");
+	}
+	for(int i = 12; i < 15; i++ ) {
+		rv |= validate_row(fd, i, "%-80s", "y");
+	}
+	send_txt(fd, "uniq7", "printf '\\033[3J\\033[1;1H'u'n'i'q'7");
+	for(int i = 2; i < 15; i++ ) {
+		rv |= validate_row(fd, i, "%-80s", "");
+	}
+	send_txt(fd, NULL, "exit");
+	return rv;
+}
+
+int
+test_el(int fd)
+{
+	int rv = 0;
+	send_txt(fd, "uniq01", "%s", "printf 01234; tput cub 3; tput el; "
+		"printf 'uniq%s\\n' 01");
+	rv |= validate_row(fd, 2, "%-80s", "01uniq01");
+
+	send_txt(fd, "uniq02", "%s", "printf 01234; tput cub 3; tput el1; "
+		"printf '\\nuniq%s' 02");
+	rv |= validate_row(fd, 4, "%-80s", "   34");
+
+	/* Delete full line with csi 2K */
+	send_txt(fd, "uniq03", "%s", "printf '01234\\033[2Ku'ni'q03\\n'");
+	rv |= validate_row(fd, 6, "%-80s", "     uniq03");
+
+	send_txt(fd, NULL, "exit");
+	return rv;
+}
+
+int
 test_resend(int fd)
 {
 	send_txt(fd, "uniq", "%1$c%1$c\recho u'n'i'q'", ctlkey);
