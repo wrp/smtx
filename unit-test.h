@@ -83,5 +83,8 @@ test test_ich;
 test test_insert;
 test test_layout;
 test test_lnm;
+test test_navigate;
+test test_nel;
+test test_pager;
 test test_resend;
 test test_scrollh;
