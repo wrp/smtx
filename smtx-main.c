@@ -650,7 +650,6 @@ build_bindings(void)
 	m = S.modes + 1;          /* control mode */
 	initialize_mode(m, bad_key);
 	add_key(m->keys, L':', transition, "command");
-	add_key(m->keys, CTL('f'), show_row, NULL);
 
 	add_key(m->keys, S.ctlkey, transition, "*enter");
 	add_key(m->keys, L'\r', transition, "enter");

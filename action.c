@@ -373,8 +373,7 @@ show_layout(const char *arg)
 void
 show_row(const char *arg)
 {
-	(void)arg;
-	int row = S.count == -1 ? 1 : S.count;
+	int row = strtol(arg, NULL, 10);
 	char buf[1024];
 	int k = sprintf(buf, "row %d: ", row);
 	size_t s = describe_row(buf + k, sizeof buf - k, row);

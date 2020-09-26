@@ -233,7 +233,7 @@ validate_row(int fd, int row, const char *fmt, ... )
 	(void)vsnprintf(expect, sizeof expect, fmt, ap);
 	va_end(ap);
 
-	len = snprintf(buf, sizeof buf, "%c%d%c\r", ctlkey, row - 1, CTL('f'));
+	len = snprintf(buf, sizeof buf, "%c:show_row %d\r", ctlkey, row - 1);
 	write(fd, buf, len);
 	sprintf(buf, "row %d: ", row - 1);
 	grep(fd, buf);
