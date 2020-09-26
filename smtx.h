@@ -185,3 +185,10 @@ extern action scrollh;
 extern action send;
 extern action set_width;
 extern action swap;
+
+#ifndef NDEBUG
+/* Debugging/test harness */
+extern action show_state;
+extern action show_layout;
+extern action show_row;
+#endif

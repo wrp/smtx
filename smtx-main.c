@@ -603,34 +603,6 @@ add_key(struct handler *b, wchar_t k, action act, const char *arg)
 	b[k].arg = arg;
 }
 
-static size_t describe_layout(char *d, ptrdiff_t siz, const struct canvas *c,
-	unsigned flags);
-static void
-show_layout(const char *arg)
-{
-	char buf[1024] = "layout: ";
-	int w = strlen(buf);
-	int flag = S.count == -1 ? 1 : S.count;
-	struct canvas *c = flag & 0x20 ? S.f : S.c;
-	(void)arg;
-	size_t s = describe_layout(buf + w, sizeof buf - w - 1, c, flag);
-	buf[w + s] = ':';
-	rewrite(STDOUT_FILENO, buf, s + w + 1);
-}
-
-static action show_state;
-static size_t describe_row(char *desc, size_t siz, int row);
-static void
-show_row(const char *arg)
-{
-	(void)arg;
-	int row = S.count == -1 ? 1 : S.count;
-	char buf[1024];
-	int k = sprintf(buf, "row %d: ", row);
-	size_t s = describe_row(buf + k, sizeof buf - k, row);
-	rewrite(1, buf, s + k);
-}
-
 /* These lookup tables are used by passthru, which
  * receive a pointer into these tables.  The tables
  * are constructed so that passthru gets a read count in the first position,
@@ -724,7 +696,6 @@ build_bindings(void)
 	m = S.modes + 2;  /* Command mode */
 	initialize_mode(m, append_command);
 	add_key(m->keys, L'\r', transition, "enter");
-
 
 	add_key(code_keys, KEY_RESIZE, reshape_root, NULL);
 	add_key(code_keys, KEY_F(1), send, "\033OP");
@@ -921,103 +892,3 @@ smtx_main(int argc, char *argv[])
 
 /* Descriptive functions used by test suite */
 
-/* Describe a layout. */
-static size_t
-describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
-{
-	const char * const e = d + siz;
-	int recurse = flags & 0x1;
-	int show_id = flags & 0x4;
-	int show_pid = flags & 0x8;
-	int show_pos = flags & 0x10;
-
-	char *isfocus = recurse && c == S.f ? "*" : "";
-	d += snprintf(d, e - d, "%s%dx%d", isfocus, c->extent.y, c->extent.x);
-
-	if( show_pos) {
-		d += snprintf(d, e - d, "@%d,%d", c->origin.y, c->origin.x);
-	}
-	if( show_pid && c->p ) {
-		d += snprintf(d, e - d, "(pid=%d)", c->p->pid);
-	}
-	if( show_id && c->p ) {
-		d += snprintf(d, e - d, "(id=%d)", c->p->id);
-	}
-	if( c->p->s ) {
-		if( ! c->p->s->vis ) {
-			d += snprintf(d, e - d, "!"); /* Cursor hidden */
-		}
-	}
-	if( ! c->p->pnm ) {
-		d += snprintf(d, e - d, "#"); /* Numeric keypad  */
-	}
-	for( int i = 0; i < 2; i ++ ) {
-		if( recurse && e - d > 3 && c->c[i] ) {
-			*d++ = ';';
-			*d++ = ' ';
-			d += describe_layout(d, e - d, c->c[i], flags);
-		}
-	}
-	return siz - ( e - d );
-}
-
-size_t
-describe_state(char *desc, size_t siz)
-{
-	size_t len = 0;
-
-	len += snprintf(desc, siz, "history=%d, ", S.history);
-	if( len < siz - 1 ) {
-		len += snprintf(desc + len, siz - len, "y=%d, x=%d, ", LINES,
-			COLS);
-	}
-	if( len < siz - 1 ) {
-		len += snprintf(desc + len, siz - len, "w=%d", S.width);
-	}
-	if( len > siz - 1 ) {
-		len = siz - 1;
-	}
-	desc[len++] = '\n';
-	return len;
-}
-
-static void
-show_state(const char *arg)
-{
-	(void)arg;
-	char buf[1024];
-	int k = sprintf(buf, "state: ");
-	size_t s = describe_state(buf + k, sizeof buf - k);
-	rewrite(1, buf, s + k);
-}
-
-static size_t
-describe_row(char *desc, size_t siz, int row)
-{
-	size_t len = 0;
-	int y, x, mx;
-
-	const struct canvas *c = S.c;
-	assert( c->offset.x >= 0 );
-
-	if( row < c->extent.y ) {
-		WINDOW *w = c->p->s->win;
-		getmaxyx(w, y, mx);
-		mx = MIN3(mx, c->extent.x + c->offset.x, (int)siz - 1);
-		mx -= c->offset.x;
-		getyx(w, y, x);
-		len = mx;
-		row += c->offset.y;
-		for( char *d = desc + len; mx >= 0; mx-- ) {
-			*d-- = mvwinch(w, row, mx + c->offset.x) & A_CHARTEXT;
-		}
-		wmove(w, y, x);
-	} else if( row == c->extent.y ) {
-		WINDOW *w = c->wtit;
-		len = c->extent.x;
-		for( x = 0; x < c->extent.x; x++ ) {
-			desc[x] = mvwinch(w, 0, x) & A_CHARTEXT;
-		}
-	}
-	return len;
-}
