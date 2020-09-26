@@ -38,6 +38,7 @@
 #endif
 
 #define CTL(x) ((x) & 0x1f)
+#define PROMPT "ps1>"
 
 extern int ctlkey;
 
@@ -86,5 +87,8 @@ test test_lnm;
 test test_navigate;
 test test_nel;
 test test_pager;
+test test_pnm;
+test test_quit;
 test test_resend;
+test test_reset;
 test test_scrollh;

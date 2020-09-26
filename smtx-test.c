@@ -20,8 +20,6 @@
 
 /* TODO: always use the p2c/c2p pipes for synchornization. */
 
-#define PROMPT "ps1>"
-
 static int read_timeout = 1;  /* Set to 0 when interactively debugging */
 static int main_timeout = 2;
 int c2p[2];
@@ -251,53 +249,6 @@ validate_row(int fd, int row, const char *fmt, ... )
 	return 0;
 }
 
-static int
-test_pnm(int fd)
-{
-	send_txt(fd, "uniq", "printf '\\033>'u'n'i'q\\n'"); /* numkp */
-	int rv = check_layout(fd, 0, "23x80#");
-	send_txt(fd, "uniq2", "\rprintf '\\033='u'n'i'q2\\n'"); /* numkp */
-	rv |= check_layout(fd, 0, "23x80");
-	send_txt(fd, "uniq3", "\rprintf '\\033[1l'u'n'i'q3\\n'"); /* csi 1l */
-	rv |= check_layout(fd, 0, "23x80#");
-	send_txt(fd, "uniq4", "\rprintf '\\033[1h'u'n'i'q4\\n'"); /* csi 1h */
-	rv |= check_layout(fd, 0, "23x80");
-	send_txt(fd, NULL, "exit");
-	return rv;
-}
-
-static int
-test_quit(int fd)
-{
-	send_cmd(fd, NULL, "%dq", SIGBUS); /* Invalid signal */
-	send_cmd(fd, "exited", "c\rexit"); /* (2) */
-	send_cmd(fd, NULL, "%dq", SIGTERM);  /* Invalid window */
-	send_cmd(fd, NULL, "j");
-	send_txt(fd, PROMPT, "trap \"printf 'uniq%%s' 01\" HUP");
-	send_cmd(fd, "uniq01", "%dq\r", SIGHUP);  /* (1) */
-	send_cmd(fd, NULL, "%dq", SIGTERM + 128);  /* Terminate SMTX */
-	return 0;
-}
-/*
-(1) The extra return seems necessary, as the shell on debian is not
-    firing the trap until the newline is processed
-(2) The string "exited" is expected to appear in the title line
-*/
-
-static int
-test_reset(int fd)
-{
-	int k[] = { 1, 3, 4, 6, 7, 20, 25, 34, 1048, 1049, 47, 1047 };
-
-	for( unsigned long i = 0; i < sizeof k / sizeof *k; i++ ) {
-		int v = k[i];
-		const char *fmt =  "printf '\\e[%d%c\r";
-		send_str(fd, NULL, fmt, v, 'l');
-		send_str(fd, NULL, fmt, v, 'h');
-	}
-	send_str(fd, NULL, "kill -TERM $SMTX\r");
-	return 0;
-}
 
 static int
 test_resize(int fd)
