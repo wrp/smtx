@@ -77,5 +77,8 @@ test test_dsr;
 test test_ech;
 test test_ed;
 test test_el;
+test test_equalize;
+test test_hpr;
+test test_ich;
 test test_resend;
 test test_scrollh;

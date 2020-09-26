@@ -294,6 +294,58 @@ test_el(int fd)
 }
 
 int
+test_equalize(int fd)
+{
+	send_cmd(fd, "uniq1", "%s", "cc5J\rprintf uniq%s 1");
+	int status = check_layout(fd, 0x1, "*12x80; 4x80; 5x80");
+	send_cmd(fd, "uniq2", "%s", "=\rprintf uniq%s 2");
+	status |= check_layout(fd, 0x1, "*7x80; 7x80; 7x80");
+	send_str(fd, NULL, "kill -TERM $SMTX\r");
+	return status;
+}
+
+int
+test_hpr(int fd)
+{
+	int rv = 0;
+	const char *cmd = "printf 'abcd\\033[5aef'gh'ij\\n'";
+	send_txt(fd, "efghij", "%s", cmd);
+	rv |= validate_row(fd, 2, "%-80s", "abcd     efghij");
+	send_txt(fd, NULL, "exit");
+	return rv;
+}
+
+int
+test_ich(int fd)
+{
+	int rv = 0;
+	/* ich: insert N characters, cub: move back N */
+	const char *cmd = "printf abcdefg; tput cub 3; tput ich 5";
+	send_txt(fd, "uniq1", "%s; %s", cmd, "printf '\\nuni%s\\n' q1");
+	rv |= validate_row(fd, 2, "%-80s", "abcd     efg");
+
+	cmd = "yes | nl | sed 6q; tput cuu 3; tput il 3; tput cud 6";
+	send_txt(fd, "uniq2", "%s; %s", cmd, "printf uni'%s\\n' q2");
+	for( int i=1; i < 4; i++ ) {
+		rv |= validate_row(fd, 4 + i, "%6d  y%71s", i, "");
+	}
+	for( int i=4; i < 7; i++ ) {
+		rv |= validate_row(fd, 4 + i, "%80s", "");
+	}
+	for( int i=7; i < 10; i++ ) {
+		rv |= validate_row(fd, 4 + i, "%6d  y%71s", i - 3, "");
+	}
+	/* dl: delete n lines */
+	cmd = "yes | nl | sed 6q; tput cuu 5; tput dl 4; tput cud 1";
+	send_txt(fd, "uniq3", "%s; %s", cmd, "printf uni'%s\\n' q3");
+	rv |= validate_row(fd, 16, "     %d  y%71s", 1, "");
+	rv |= validate_row(fd, 17, "     %d  y%71s", 6, "");
+
+	send_txt(fd, NULL, "exit");
+	return rv;
+}
+
+int
 test_resend(int fd)
 {
 	send_txt(fd, "uniq", "%1$c%1$c\recho u'n'i'q'", ctlkey);
