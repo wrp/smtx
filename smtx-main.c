@@ -651,7 +651,6 @@ build_bindings(void)
 	initialize_mode(m, bad_key);
 	add_key(m->keys, L':', transition, "command");
 	add_key(m->keys, CTL('d'), show_state, NULL);
-	add_key(m->keys, CTL('e'), show_layout, NULL);
 	add_key(m->keys, CTL('f'), show_row, NULL);
 
 	add_key(m->keys, S.ctlkey, transition, "*enter");

@@ -89,6 +89,9 @@ static struct name_func_siz {
 	size_t s;
 } nfs_lut[] = {
 	{ "bad_key", bad_key, 7 },
+	{ "show_state", show_state, 10 },
+	{ "show_layout", show_layout, 11 },
+	{ "show_row", show_row, 8 },
 	{ NULL }
 };
 static void
@@ -97,7 +100,7 @@ execute(char *arg)
 	struct name_func_siz *nfs = nfs_lut;
 	for( ; nfs->name; nfs += 1 ) {
 		if( !strncmp(nfs->name, arg, nfs->s) ) {
-			nfs->f(arg + 4);
+			nfs->f(arg + nfs->s);
 			break;
 		}
 	}
@@ -358,9 +361,8 @@ show_layout(const char *arg)
 {
 	char buf[1024] = "layout: ";
 	int w = strlen(buf);
-	int flag = S.count == -1 ? 1 : S.count;
+	int flag = strtol(arg, NULL, 10);
 	struct canvas *c = flag & 0x20 ? S.f : S.c;
-	(void)arg;
 	size_t s = describe_layout(buf + w, sizeof buf - w - 1, c, flag);
 	buf[w + s] = ':';
 	rewrite(STDOUT_FILENO, buf, s + w + 1);

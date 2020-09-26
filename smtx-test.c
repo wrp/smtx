@@ -103,7 +103,7 @@ get_layout(int fd, int flag, char *layout, size_t siz)
 	char buf[1024];
 	int len;
 	ssize_t s;
-	len = snprintf(buf, sizeof buf, "%c%d%c\r", ctlkey, flag, CTL('e'));
+	len = snprintf(buf, sizeof buf, "%c:show_layout %d\r", ctlkey, flag);
 	write(fd, buf, len);
 	grep(fd, "layout: ");
 	do s = timed_read(fd, buf, siz - 1, "layout"); while( s == 0 );
