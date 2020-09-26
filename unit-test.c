@@ -192,6 +192,16 @@ test_decaln(int fd)
 }
 
 int
+test_decid(int fd)
+{
+	send_txt(fd, "^[[>1;10;0c", "%s", "printf '\\033[>c'");
+	send_txt(fd, "^[[?1;2c", "%s", "\rprintf '\\033[c'");
+	send_txt(fd, "^[[?6c", "%s", "\rprintf '\\033Z'");
+	send_txt(fd, NULL, "\rkill $SMTX");
+	return 0;
+}
+
+int
 test_resend(int fd)
 {
 	send_txt(fd, "uniq", "%1$c%1$c\recho u'n'i'q'", ctlkey);

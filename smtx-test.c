@@ -252,16 +252,6 @@ validate_row(int fd, int row, const char *fmt, ... )
 }
 
 static int
-test_decid(int fd)
-{
-	send_txt(fd, "^[[>1;10;0c", "%s", "printf '\\033[>c'");
-	send_txt(fd, "^[[?1;2c", "%s", "\rprintf '\\033[c'");
-	send_txt(fd, "^[[?6c", "%s", "\rprintf '\\033Z'");
-	send_txt(fd, NULL, "\rkill $SMTX");
-	return 0;
-}
-
-static int
 test_dsr(int fd)
 {
 	send_txt(fd, "^[[2;1R", "%s", "printf '\\033[6n'");
