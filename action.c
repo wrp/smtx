@@ -89,9 +89,11 @@ static struct name_func_siz {
 	size_t s;
 } nfs_lut[] = {
 	{ "bad_key", bad_key, 7 },
+#ifndef NDEBUG
 	{ "show_state", show_state, 10 },
 	{ "show_layout", show_layout, 11 },
 	{ "show_row", show_row, 8 },
+#endif
 	{ NULL }
 };
 static void
@@ -378,7 +380,6 @@ show_row(const char *arg)
 	size_t s = describe_row(buf + k, sizeof buf - k, row);
 	rewrite(1, buf, s + k);
 }
-
 
 void
 show_state(const char *arg)

@@ -128,7 +128,7 @@ get_state(int fd, char *state, size_t siz)
 	char buf[64];
 	int len;
 	ssize_t s;
-	len = snprintf(buf, sizeof buf, "%c%c\r", ctlkey, CTL('d'));
+	len = snprintf(buf, sizeof buf, "%c:show_state\r", ctlkey);
 	write(fd, buf, len);
 	grep(fd, "state: ");
 	do s = timed_read(fd, state, siz, "state"); while( s == 0 );
