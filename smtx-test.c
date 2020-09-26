@@ -254,37 +254,6 @@ validate_row(int fd, int row, const char *fmt, ... )
 }
 
 static int
-test_cursor(int fd)
-{
-	int rv = 0;
-	send_txt(fd, "un01", "printf '0123456'; tput cub 4; printf 'un%%s' 01");
-
-	send_txt(fd, NULL, "tput sc; echo abcdefg; tput rc; echo bar");
-	send_txt(fd, "uniq01", "printf 'uniq%%s' 01");
-	rv |= validate_row(fd, 4, "%-80s", "bardefg");
-
-	send_txt(fd, "foobaz", "tput cup 15 50; printf 'foo%%s\\n' baz");
-	rv |= validate_row(fd, 16, "%-50sfoobaz%24s", "", "");
-
-	send_txt(fd, "foo37", "tput clear; printf 'foo%%s\n' 37");
-	rv |= validate_row(fd, 1, "%-80s", "foo37");
-
-	send_txt(fd, "bar38", "printf foo; tput ht; printf 'bar%%s\\n' 38");
-	rv |= validate_row(fd, 3, "%-80s", "foo     bar38");
-
-	send_txt(fd, "foo39", "printf 'a\\tb\\tc\\t'; tput cbt; tput cbt; "
-		"printf 'foo%%s\\n' 39");
-	rv |= validate_row(fd, 5, "%-80s", "a       foo39   c");
-
-	/* Cursor down 3 */
-	send_txt(fd, "uniq7", "tput cud 3; echo 'u'n'i'q7");
-	rv |= validate_row(fd, 10, "%-80s", "uniq7");
-	send_txt(fd, NULL, "kill $SMTX");
-
-	return rv;
-}
-
-static int
 test_dashc(int fd)
 {
 	int rv;

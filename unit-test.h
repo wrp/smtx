@@ -50,5 +50,6 @@ test test_cols;
 test test_command;
 test test_csr;
 test test_cup;
+test test_cursor;
 test test_resend;
 test test_scrollh;
