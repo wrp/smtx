@@ -80,5 +80,8 @@ test test_el;
 test test_equalize;
 test test_hpr;
 test test_ich;
+test test_insert;
+test test_layout;
+test test_lnm;
 test test_resend;
 test test_scrollh;
