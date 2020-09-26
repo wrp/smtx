@@ -175,6 +175,23 @@ test_dch(int fd)
 }
 
 int
+test_decaln(int fd)
+{
+	char e[81] = "EEE";
+	int rv = 0;
+	memset(e, 'E', 80);
+	send_txt(fd, "uniq", "printf '\\033[1048#u'; echo 'u'n'i'q;");
+	rv |= validate_row(fd, 1, "%s", e);
+	for( int i = 4; i < 24; i++ ) {
+		rv |= validate_row(fd, i, "%s", e);
+	}
+	memcpy(e, "uniq", 4);
+	rv |= validate_row(fd, 2, "%s", e);
+	send_str(fd, NULL, "kill $SMTX\r");
+	return rv;
+}
+
+int
 test_resend(int fd)
 {
 	send_txt(fd, "uniq", "%1$c%1$c\recho u'n'i'q'", ctlkey);
