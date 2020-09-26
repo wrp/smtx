@@ -218,6 +218,15 @@ test_decid(int fd)
 }
 
 int
+test_dsr(int fd)
+{
+	send_txt(fd, "^[[2;1R", "%s", "printf '\\033[6n'");
+	send_txt(fd, "^[[0n", "%s", "\rprintf '\\033[n'");
+	send_txt(fd, NULL, "\rkill $SMTX");
+	return 0;
+}
+
+int
 test_resend(int fd)
 {
 	send_txt(fd, "uniq", "%1$c%1$c\recho u'n'i'q'", ctlkey);
