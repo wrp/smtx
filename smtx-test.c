@@ -18,8 +18,6 @@
 #include "unit-test.h"
 #include <limits.h>
 
-#define CTL(x) ((x) & 0x1f)
-
 /* TODO: always use the p2c/c2p pipes for synchornization. */
 
 #define PROMPT "ps1>"
@@ -251,17 +249,6 @@ validate_row(int fd, int row, const char *fmt, ... )
 	}
 	return status;
 	return 0;
-}
-
-static int
-test_dashc(int fd)
-{
-	int rv;
-	ctlkey = CTL('l');
-	send_str(fd, "uniq", "%cc\recho u'n'i'q'\r", CTL('l'));
-	rv = check_layout(fd, 0x1, "*11x80; 11x80");
-	send_txt(fd, NULL, "kill $SMTX");
-	return rv;
 }
 
 static int

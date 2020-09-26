@@ -136,6 +136,17 @@ test_cursor(int fd)
 }
 
 int
+test_dashc(int fd)
+{
+	int rv;
+	ctlkey = CTL('l');
+	send_str(fd, "uniq", "%cc\recho u'n'i'q'\r", CTL('l'));
+	rv = check_layout(fd, 0x1, "*11x80; 11x80");
+	send_txt(fd, NULL, "kill $SMTX");
+	return rv;
+}
+
+int
 test_resend(int fd)
 {
 	send_txt(fd, "uniq", "%1$c%1$c\recho u'n'i'q'", ctlkey);

@@ -22,6 +22,8 @@
 # include <util.h>
 #endif
 
+#define CTL(x) ((x) & 0x1f)
+
 extern int ctlkey;
 
 void __attribute__((format(printf,3,4)))
@@ -51,5 +53,6 @@ test test_command;
 test test_csr;
 test test_cup;
 test test_cursor;
+test test_dashc;
 test test_resend;
 test test_scrollh;
