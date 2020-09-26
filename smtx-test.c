@@ -266,29 +266,19 @@ test_cursor(int fd)
 	send_txt(fd, "foobaz", "tput cup 15 50; printf 'foo%%s\\n' baz");
 	rv |= validate_row(fd, 16, "%-50sfoobaz%24s", "", "");
 
-	send_str(fd, "foo37", "tput clear; printf 'foo%%s\n' 37\r");
+	send_txt(fd, "foo37", "tput clear; printf 'foo%%s\n' 37");
 	rv |= validate_row(fd, 1, "%-80s", "foo37");
 
-	send_str(fd, "bar38", "printf foo; tput ht; printf 'bar%%s\\n' 38\r");
+	send_txt(fd, "bar38", "printf foo; tput ht; printf 'bar%%s\\n' 38");
 	rv |= validate_row(fd, 3, "%-80s", "foo     bar38");
 
-	send_str(fd, "foo39", "printf 'a\\tb\\tc\\t'; tput cbt; tput cbt; "
-		"printf 'foo%%s\\n' 39\r");
+	send_txt(fd, "foo39", "printf 'a\\tb\\tc\\t'; tput cbt; tput cbt; "
+		"printf 'foo%%s\\n' 39");
 	rv |= validate_row(fd, 5, "%-80s", "a       foo39   c");
 
-#if 0
-	check_cmd(T, "tput cud 6", "*23x80@0,0(%d,6)", y += 1 + 6);
-
-	check_cmd(T, "printf 012; tput cub 2; tput ich 2; echo",
-		"*23x80@0,0(%d,6)", y += 2);
-	expect_row(y - 1001 - 1, T, "0  12%75s", " ");
-
-	check_cmd(T, "tput cud 6", "*23x80@0,0(%d,6)", y += 1 + 6);
-	check_cmd(T, ":", "*23x80@0,0(%d,6)", ++y);
-	check_cmd(T, ":", "*23x80@0,0(%d,6)", ++y);
-	assert( y == 1023 );
-	check_cmd(T, ":", "*23x80@0,0(%d,6)", y);
-#endif
+	/* Cursor down 3 */
+	send_txt(fd, "uniq7", "tput cud 3; echo 'u'n'i'q7");
+	rv |= validate_row(fd, 10, "%-80s", "uniq7");
 	send_txt(fd, NULL, "kill $SMTX");
 
 	return rv;
