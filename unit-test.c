@@ -89,7 +89,7 @@ test_csr(int fd)
 {
 	int rv = 0;
 	/* Change scroll region */
-	send_txt(fd, "uniq1", "%s;%s", "tput csr 6 12; yes | nl -s: | sed 25q",
+	send_txt(fd, PROMPT, "%s;%s", "tput csr 6 12; yes | nl -s: | sed 25q",
 		"printf 'uni%s\\n' q1");
 	for(int i = 2; i <= 6; i++ ) {
 		rv |= validate_row(fd, i, "     %d:%-73s", i, "y");
