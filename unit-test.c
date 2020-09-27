@@ -325,7 +325,7 @@ test_ich(int fd)
 	rv |= validate_row(fd, 2, "%-80s", "abcd     efg");
 
 	cmd = "yes | nl | sed 6q; tput cuu 3; tput il 3; tput cud 6";
-	send_txt(fd, PROMPT, "%s", cmd);
+	send_txt(fd, "un1>", "PS1=u'n'1'> '; %s", cmd);
 	for( int i=1; i < 4; i++ ) {
 		rv |= validate_row(fd, 3 + i, "%6d  y%71s", i, "");
 	}
@@ -337,11 +337,11 @@ test_ich(int fd)
 	}
 	/* dl: delete n lines */
 	cmd = "yes | nl | sed 6q; tput cuu 5; tput dl 4; tput cud 1; tput nel";
-	send_txt(fd, PROMPT, "%s", cmd);
+	send_txt(fd, "un2>", "PS1=un'2> '; %s", cmd);
 	rv |= validate_row(fd, 14, "     %d  y%71s", 1, "");
 	rv |= validate_row(fd, 15, "     %d  y%71s", 6, "");
 	rv |= validate_row(fd, 16, "%-80s", "");
-	rv |= validate_row(fd, 17, "%-80s", PROMPT);
+	rv |= validate_row(fd, 17, "%-80s", "un2>");
 
 	send_txt(fd, NULL, "exit");
 	return rv;
