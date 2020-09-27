@@ -309,7 +309,7 @@ test_hpr(int fd)
 {
 	int rv = 0;
 	const char *cmd = "printf 'abcd\\033[5aef'gh'ij\\n'";
-	send_txt(fd, "efghij", "%s", cmd);
+	send_txt(fd, PROMPT, "%s", cmd);
 	rv |= validate_row(fd, 2, "%-80s", "abcd     efghij");
 	send_txt(fd, NULL, "exit");
 	return rv;
