@@ -100,7 +100,7 @@ static struct name_func_siz {
 	{ "show_layout", show_layout, 11 },
 	{ "show_row", show_row, 8 },
 #endif
-	{ NULL }
+	{ NULL, NULL, 0 }
 };
 static void
 execute(char *arg)
