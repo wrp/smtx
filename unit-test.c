@@ -523,7 +523,7 @@ test_reset(int fd)
 
 	for( unsigned long i = 0; i < sizeof k / sizeof *k; i++ ) {
 		int v = k[i];
-		const char *fmt =  "printf '\\e[%d%c\r";
+		const char *fmt =  "printf '\\033[%d%c\r";
 		send_str(fd, NULL, fmt, v, 'l');
 		send_str(fd, NULL, fmt, v, 'h');
 	}
