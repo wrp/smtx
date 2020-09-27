@@ -172,6 +172,7 @@ extern action attach;
 extern action bad_key;
 extern action transition;
 extern action create;
+extern action digit;
 extern action equalize;
 extern action mov;
 extern action new_tabstop;

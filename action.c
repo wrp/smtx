@@ -75,6 +75,12 @@ create(const char *arg)
 }
 
 void
+digit(const char *arg)
+{
+	S.count = 10 * (S.count == -1 ? 0 : S.count) + *arg - '0';
+}
+
+void
 equalize(const char *arg)
 {
 	(void)arg;

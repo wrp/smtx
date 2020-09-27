@@ -485,12 +485,6 @@ wait_child(struct pty *p)
 }
 
 static void
-digit(const char *arg)
-{
-	S.count = 10 * (S.count == -1 ? 0 : S.count) + *arg - '0';
-}
-
-static void
 getinput(fd_set *f) /* check stdin and all pty's for input. */
 {
 	if( FD_ISSET(STDIN_FILENO, f) ) {
