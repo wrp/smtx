@@ -387,20 +387,22 @@ test_layout(int fd)
 int
 test_lnm(int fd)
 {
-	send_txt(fd, PROMPT, "printf '\\033[20h\\n' "); /* line 1 */
-	int rv = validate_row(fd, 2, "%-80s", "");
+	int rv = validate_row(fd, 1, "%-80s", PROMPT);
+	send_txt(fd, "u1>", "PS1=u1\\>; printf '\\033[20h\\n' ");
+	rv = validate_row(fd, 2, "%-80s", "");
 
-	send_txt(fd, PROMPT, "printf 'foobaz\\rbar\\n'"); /* line 3 */
+	send_txt(fd, "u2>", "PS1=u2\\>; printf 'foobaz\\rbar\\n'");
 	/* Line 4 is blank because lnm is on and a newline was inserted */
 	rv |= validate_row(fd, 4, "%-80s", "");
 	rv |= validate_row(fd, 5, "%-80s", "barbaz");
 
-	send_txt(fd, PROMPT, "printf '\\033[20lsy'n'c2\\n'"); /* line 6 */
+	send_txt(fd, "u3>", "PS1=u3\\>; printf '\\033[20lsyn\\n'");
 	rv |= validate_row(fd, 7, "%-80s", "");  /* Inserted newline (1)*/
-	rv |= validate_row(fd, 8, "%-80s", "sync2");
+	rv |= validate_row(fd, 8, "%-80s", "syn");
 
-	send_txt(fd, PROMPT, "printf 'foo\\rch''eck3\\n'");
-	rv |= validate_row(fd, 10, "%-80s", "check3");
+	send_txt(fd, "u4>", "PS1=u4\\>; printf 'foo\\rabcdef\\n'");
+	rv |= validate_row(fd, 10, "%-80s", "abcdef");
+	rv |= validate_row(fd, 11, "%-80s", "u4>");
 	return rv;
 }
 /*
