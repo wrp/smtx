@@ -510,7 +510,7 @@ execute_test(struct st *v, const char *name)
 			grep(fd[0], PROMPT); /* Wait for shell to initialize */
 		}
 		rv = v->f(fd[0]);
-		send_txt(fd[0], NULL, "kill $SMTX");
+		write(fd[0], "kill $SMTX\r", 11);
 		wait(&status);
 	}
 	status = check_test_status(rv, status, fd[0], v->name);
