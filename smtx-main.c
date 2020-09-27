@@ -28,17 +28,6 @@ struct state S = {
 	.count = -1,
 };
 
-static void
-set_errmsg(int rv, const char *fmt, va_list ap)
-{
-	int e = errno;
-	rv = vsnprintf(S.errmsg, sizeof S.errmsg, fmt, ap);
-	if( e && rv < (int)sizeof S.errmsg - 3 ) {
-		strncat(S.errmsg, ": ", sizeof S.errmsg - rv);
-		strncat(S.errmsg, strerror(e), sizeof S.errmsg - rv - 2);
-	}
-}
-
 int
 err_check(int rv, const char *fmt, ...)
 {
@@ -46,8 +35,17 @@ err_check(int rv, const char *fmt, ...)
 		int e = errno;
 		va_list ap;
 		va_start(ap, fmt);
-		errno = e;
-		( S.werr ? set_errmsg : verrx )(rv, fmt, ap);
+		if( S.werr ) {
+			size_t len = sizeof S.errmsg;
+			int rv = vsnprintf(S.errmsg, len, fmt, ap);
+			if( e && rv + 3 < (int)len ) {
+				strncat(S.errmsg, ": ", len - rv);
+				strncat(S.errmsg, strerror(e), len - rv - 2);
+			}
+		} else {
+			errno = e;
+			verrx(rv, fmt, ap);
+		}
 		va_end(ap);
 		errno = e;
 	}
