@@ -485,8 +485,34 @@ wait_child(struct pty *p)
 }
 
 static void
-getinput(fd_set *f) /* check all pty's for input. */
+digit(const char *arg)
 {
+	S.count = 10 * (S.count == -1 ? 0 : S.count) + *arg - '0';
+}
+
+static void
+getinput(fd_set *f) /* check stdin and all pty's for input. */
+{
+	if( FD_ISSET(STDIN_FILENO, f) ) {
+		int r;
+		wint_t w;
+		while( (r = wget_wch(S.f->p->s->win, &w)) != ERR ) {
+			struct handler *b = NULL;
+			if( r == OK && w > 0 && w < 128 ) {
+				b = S.mode->keys + w;
+			} else if( r == KEY_CODE_YES ) {
+				assert( w >= KEY_MIN && w <= KEY_MAX );
+				b = &code_keys[w - KEY_MIN];
+			}
+			if( b ) {
+				assert( b->act );
+				b->act(b->arg);
+				if( b->act != digit ) {
+					S.count = -1;
+				}
+			}
+		}
+	}
 	for( struct pty *t = S.p; t; t = t->next ) {
 		if( t->fd > 0 && FD_ISSET(t->fd, f) ) {
 			char iobuf[BUFSIZ];
@@ -498,12 +524,6 @@ getinput(fd_set *f) /* check all pty's for input. */
 			}
 		}
 	}
-}
-
-static void
-digit(const char *arg)
-{
-	S.count = 10 * (S.count == -1 ? 0 : S.count) + *arg - '0';
 }
 
 static void
@@ -721,25 +741,6 @@ build_bindings(void)
 	add_key(code_keys, KEY_LEFT, sendarrow, "D");
 }
 
-static void
-handlechar(int r, wint_t k) /* Handle a single input character. */
-{
-	struct handler *b = NULL;
-
-	if( r == OK && k > 0 && k < 128 ) {
-		b = S.mode->keys + k;
-	} else if( r == KEY_CODE_YES && k >= KEY_MIN && k <= KEY_MAX ) {
-		b = &code_keys[k - KEY_MIN];
-	}
-	if( b ) {
-		assert( b->act );
-		b->act(b->arg);
-		if( b->act != digit ) {
-			S.count = -1;
-		}
-	}
-}
-
 void
 passthru(const char *arg)
 {
@@ -761,8 +762,6 @@ static void
 main_loop(void)
 {
 	while( S.c != NULL && S.p && S.p->fd > 0 && ! interrupted ) {
-		int r;
-		wint_t w;
 		fd_set sfds = S.fds;
 
 		if( S.reshape ) {
@@ -782,11 +781,6 @@ main_loop(void)
 		if( select(S.p->fd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
 			err_check(errno != EINTR , "select");
 			FD_ZERO(&sfds);
-		}
-		if( FD_ISSET(STDIN_FILENO, &sfds) ) {
-			while( (r = wget_wch(S.f->p->s->win, &w)) != ERR ) {
-				handlechar(r, w);
-			}
 		}
 		getinput(&sfds);
 	}
