@@ -43,6 +43,8 @@ TODO:
 	one to send arbitrary keystrokes.  Clearly, there are security issues.
 
 BUGS:
+	Commands for test_attach() are segfaulting in termux
+
 	Right arrow currently splits the screen.  This regression was introduced
 	in 8805e2acfba83d77f3e0768f302336a235e7fb2e and is related to timeout/nodelay.
 	Need to track down what's going on.

@@ -38,6 +38,7 @@ test_attach(int fd)
 	send_txt(fd, "sync", "printf '\\ns'y'n'c'\\n'");
 	int rv = validate_row(fd, 3, "%-80s", "sync");
 
+	/* Write "other" in lower left canvas */
 	send_cmd(fd, "other", "j\rprintf '\\no't'h'er'\\n'");
 
 	get_layout(fd, 5, desc, sizeof desc);
@@ -45,11 +46,12 @@ test_attach(int fd)
 		fprintf(stderr, "received unexpected: '%s'\n", desc);
 		rv = 1;
 	} else {
+		/* Move to upper left and attach to the pane with "other" */
 		send_cmd(fd, "uniq", "k%da\recho 'u'ni'q'", id);
 	}
 	rv |= check_layout(fd, 0x1, "*7x80; 7x80; 7x80");
 
-	/* 2nd row of the first window should now be different */
+	/* 2nd row of the first window should now be "other" */
 	rv |= validate_row(fd, 3, "%-80s", "other");
 	return rv;
 }
