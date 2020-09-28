@@ -123,28 +123,36 @@ test_cup(int fd)
 int
 test_cursor(int fd)
 {
-	int rv = 0;
-	send_txt(fd, "un01", "printf '0123456'; tput cub 4; printf 'un%%s' 01");
+	int d = 1;
+	const char *cmd = "PS1=un'%d>'; %s";
+	send_txt(fd, "un1>", cmd, d++, "printf '012345'; tput cub 4; "
+		"printf 'xyz\\n'");
+	int rv = validate_row(fd, 2, "%-80s", "01xyz5");
 
-	send_txt(fd, NULL, "tput sc; echo abcdefg; tput rc; echo bar");
-	send_txt(fd, "uniq01", "printf 'uniq%%s' 01");
-	rv |= validate_row(fd, 4, "%-80s", "bardefg");
+	/* sc == save cursor position;  rc == restore cursor position */
+	send_txt(fd, "un2>", cmd, d++, "tput sc; echo abcd; tput rc; echo xyz");
+	rv |= validate_row(fd, 4, "%-80s", "xyzd");
 
-	send_txt(fd, "foobaz", "tput cup 15 50; printf 'foo%%s\\n' baz");
+	send_txt(fd, "un3>", cmd, d++, "tput cup 15 50; printf 'foobaz\\n'");
 	rv |= validate_row(fd, 16, "%-50sfoobaz%24s", "", "");
 
-	send_txt(fd, "foo37", "tput clear; printf 'foo%%s\n' 37");
+	send_txt(fd, "un4>", cmd, d++, "tput clear; echo foo37");
 	rv |= validate_row(fd, 1, "%-80s", "foo37");
 
-	send_txt(fd, "bar38", "printf foo; tput ht; printf 'bar%%s\\n' 38");
+	/* ht == next hard tab */
+	send_txt(fd, "un5>", cmd, d++, "printf foo; tput ht; echo bar38");
 	rv |= validate_row(fd, 3, "%-80s", "foo     bar38");
 
-	send_txt(fd, "foo39", "printf 'a\\tb\\tc\\t'; tput cbt; tput cbt; "
-		"printf 'foo%%s\\n' 39");
+	/* cbt == backtab */
+	send_txt(fd, "un6>", cmd, d++, "printf 'a\\tb\\tc\\t'; tput cbt; "
+		"tput cbt; echo foo39");
 	rv |= validate_row(fd, 5, "%-80s", "a       foo39   c");
 
 	/* Cursor down 3 */
-	send_txt(fd, "uniq7", "tput cud 3; echo 'u'n'i'q7");
+	send_txt(fd, "un7>", cmd, d++, "tput cud 3; echo uniq7");
+	rv |= validate_row(fd, 7, "%-80s", "");
+	rv |= validate_row(fd, 8, "%-80s", "");
+	rv |= validate_row(fd, 9, "%-80s", "");
 	rv |= validate_row(fd, 10, "%-80s", "uniq7");
 	send_txt(fd, NULL, "kill $SMTX");
 
