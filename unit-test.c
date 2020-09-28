@@ -404,13 +404,14 @@ test_lnm(int fd)
 	rv |= validate_row(fd, 4, "%-80s", "");
 	rv |= validate_row(fd, 5, "%-80s", "barbaz");
 
-	send_txt(fd, "c3>", "PS1=c3\\>; printf '\\033[20l'; echo syn");
+	send_txt(fd, "c3>", "PS1=c3\\>; printf '\\033[20l'");
 	rv |= validate_row(fd, 7, "%-80s", "");  /* Inserted newline (1)*/
-	rv |= validate_row(fd, 8, "%-80s", "syn");
+	send_txt(fd, "c4>", "PS1=c4\\>; echo syn");
+	rv |= validate_row(fd, 9, "%-80s", "syn");
 
 	send_txt(fd, "u4>", "PS1=u4\\>; printf 'foo\\rabcdef\\n'");
-	rv |= validate_row(fd, 10, "%-80s", "abcdef");
-	rv |= validate_row(fd, 11, "%-80s", "u4>");
+	rv |= validate_row(fd, 11, "%-80s", "abcdef");
+	rv |= validate_row(fd, 12, "%-80s", "u4>");
 	return rv;
 }
 /*
