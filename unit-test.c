@@ -396,15 +396,15 @@ int
 test_lnm(int fd)
 {
 	int rv = validate_row(fd, 1, "%-80s", PROMPT);
-	send_txt(fd, "u1>", "PS1=u1\\>; printf '\\033[20h\\n' ");
+	send_txt(fd, "a1>", "PS1=a1\\>; printf '\\033[20h\\n' ");
 	rv = validate_row(fd, 2, "%-80s", "");
 
-	send_txt(fd, "u2>", "PS1=u2\\>; printf 'foobaz\\rbar\\n'");
+	send_txt(fd, "b2>", "PS1=b'2>'; printf 'foobaz\\rbar\\n'");
 	/* Line 4 is blank because lnm is on and a newline was inserted */
 	rv |= validate_row(fd, 4, "%-80s", "");
 	rv |= validate_row(fd, 5, "%-80s", "barbaz");
 
-	send_txt(fd, "u3>", "PS1=u3\\>; printf '\\033[20lsyn\\n'");
+	send_txt(fd, "c3>", "PS1=c3\\>; printf '\\033[20lsyn\\n'");
 	rv |= validate_row(fd, 7, "%-80s", "");  /* Inserted newline (1)*/
 	rv |= validate_row(fd, 8, "%-80s", "syn");
 
