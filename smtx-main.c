@@ -23,7 +23,7 @@ static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 struct state S = {
 	.ctlkey = CTL('g'),
 	.width = 80,
-	.mode = S.modes,
+	.mode = enter,
 	.history = 1024,
 	.count = -1,
 };
@@ -234,7 +234,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 {
 	struct canvas *f = S.f;
 	int x = 0, y = 0;
-	int show = S.mode == S.modes && f->p->s->vis;
+	int show = S.mode == enter && f->p->s->vis;
 	if( f->p && f->extent.y ) {
 		assert( f->p->s );
 		int top = S.history - f->extent.y;
@@ -419,7 +419,7 @@ void
 draw(struct canvas *n) /* Draw a canvas. */
 {
 	if( n != NULL && n->extent.y > 0 ) {
-		int rev = S.mode == &S.modes[1] && n == S.f;
+		int rev = S.mode == control && n == S.f;
 		draw(n->c[0]);
 		draw(n->c[1]);
 		draw_div(n, rev && !n->extent.x);
@@ -491,7 +491,7 @@ getinput(fd_set *f) /* check stdin and all pty's for input. */
 		while( (r = wget_wch(S.f->p->s->win, &w)) != ERR ) {
 			struct handler *b = NULL;
 			if( r == OK && w > 0 && w < 128 ) {
-				b = S.mode->keys + w;
+				b = S.modes[S.mode].keys + w;
 			} else if( r == KEY_CODE_YES ) {
 				assert( w >= KEY_MIN && w <= KEY_MAX );
 				b = &code_keys[w - KEY_MIN];
@@ -653,12 +653,12 @@ build_bindings(void)
 		add_key(code_keys, k, passthru, wc_lut + i);
 	}
 
-	struct mode *m = S.modes;  /* enter(pty) mode */
+	struct mode *m = &S.modes[enter];
 	initialize_mode(m, passthru);
 	add_key(m->keys, S.ctlkey, transition, "control");
 	add_key(m->keys, L'\r', send, "\r");
 
-	m = S.modes + 1;          /* control mode */
+	m = &S.modes[control];
 	initialize_mode(m, bad_key);
 	add_key(m->keys, L':', transition, "command");
 
@@ -701,7 +701,7 @@ build_bindings(void)
 	add_key(m->keys, L'8', digit, "8");
 	add_key(m->keys, L'9', digit, "9");
 
-	m = S.modes + 2;  /* Command mode */
+	m = &S.modes[command];
 	initialize_mode(m, append_command);
 	add_key(m->keys, L'\r', transition, "enter");
 
@@ -761,8 +761,8 @@ main_loop(void)
 		}
 		draw(S.v);
 		char *s = *S.errmsg ? S.errmsg : S.command;
-		if( *s || S.mode == S.modes + 2 ) {
-			int iscmd = S.mode == S.modes + 2;
+		if( *s || S.mode == command ) {
+			int iscmd = S.mode == command;
 			(iscmd ? wattroff : wattron)(S.werr, A_REVERSE);
 			mvwprintw(S.werr, 0, 0, "%s%s", iscmd ? ":" : "", s);
 			wclrtoeol(S.werr);

@@ -426,16 +426,16 @@ transition(const char *arg)
 		arg += 1;
 	}
 	S.errmsg[0] = 0; /* Clear any existing error message */
-	if( S.mode == S.modes + 2 ) {
+	if( S.mode == command ) {
 		execute(S.command);
 	}
 	S.command[0] = 0;
 	if( ! strcmp(arg, "enter") ) {
-		S.mode = S.modes;
+		S.mode = enter;
 	} else if( ! strcmp(arg, "control") ) {
-		S.mode = S.modes + 1;
+		S.mode = control;
 	} else if( ! strcmp(arg, "command") ) {
-		S.mode = S.modes + 2;
+		S.mode = command;
 	}
 	scrollbottom(S.f);
 }
