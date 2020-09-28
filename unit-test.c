@@ -747,24 +747,23 @@ test_tabstop(int fd)
 {
 	int rv = 0;
 	int d = 0;
-	const char *cmd = "printf 'this\\tis\\ta\\ttest%%d\\n' %d";
-	send_txt(fd, "test0", cmd, d);
-	rv |= validate_row(fd, 2, "%-80s", "this    is      a       test0");
+	const char *cmd = "PS1=un'%d>'; printf 'this\\tis\\ta\\ttest\\n'";
+	send_txt(fd, "un0>", cmd, d++);
+	rv |= validate_row(fd, 2, "%-80s", "this    is      a       test");
 
 	send_cmd(fd, NULL, "3t");
-	send_txt(fd, "test1", cmd, ++d);
-	rv |= validate_row(fd, 4, "%-80s", "this  is a  test1");
+	send_txt(fd, "un1>", cmd, d++);
+	rv |= validate_row(fd, 4, "%-80s", "this  is a  test");
 
 	send_cmd(fd, NULL, "t");
 	rv |= validate_row(fd, 6, "%-80s", "");
-	send_txt(fd, "test2", cmd, ++d);
-	rv |= validate_row(fd, 6, "%-80s", "this    is      a       test2");
+	send_txt(fd, "un2>", cmd, d++);
+	rv |= validate_row(fd, 6, "%-80s", "this    is      a       test");
 
-	send_txt(fd, "uniq:", "%s; %s", "tabs -5", "PS1=un'iq:'");
-	send_txt(fd, "test3", cmd, ++d);
-	rv |= validate_row(fd, 9, "%-80s", "this is   a    test3");
+	send_txt(fd, "un3>", "%s; %s", "tabs -5", "PS1=un'3>'");
+	send_txt(fd, "un4>", cmd, ++d);
+	rv |= validate_row(fd, 9, "%-80s", "this is   a    test");
 
-	send_txt(fd, NULL, "kill -TERM $SMTX");
 	return rv;
 }
 
