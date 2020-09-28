@@ -497,18 +497,13 @@ int
 test_quit(int fd)
 {
 	send_cmd(fd, NULL, "%dq", SIGBUS); /* Invalid signal */
-	send_cmd(fd, "exited", "c\rexit"); /* (2) */
+	send_cmd(fd, "exited", "c\rexit"); /* (1) */
 	send_cmd(fd, NULL, "%dq", SIGTERM);  /* Invalid window */
-	send_cmd(fd, NULL, "j");
-	send_txt(fd, PROMPT, "trap \"printf 'uniq%%s' 01\" HUP");
-	send_cmd(fd, "uniq01", "%dq\r", SIGHUP);  /* (1) */
 	send_cmd(fd, NULL, "%dq", SIGTERM + 128);  /* Terminate SMTX */
 	return 0;
 }
 /*
-(1) The extra return seems necessary, as the shell on debian is not
-    firing the trap until the newline is processed
-(2) The string "exited" is expected to appear in the title line
+(1) The string "exited" is expected to appear in the title line.
 */
 
 int
