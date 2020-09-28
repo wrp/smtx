@@ -133,10 +133,8 @@ new_pty(int rows, int cols)
 {
 	struct pty *p = calloc(1, sizeof *p);
 	assert( rows <= S.history );
-	if( p != NULL ) {
+	if( ! err_check(p == NULL, "new_pty") ) {
 		const char *sh = getshell();
-		const char *bname = strrchr(sh, '/');
-		bname = bname ? bname + 1 : sh;
 		p->ws.ws_row = rows - 1;
 		p->ws.ws_col = cols;
 		p->pid = forkpty(&p->fd, NULL, NULL, &p->ws);
@@ -145,7 +143,7 @@ new_pty(int rows, int cols)
 			signal(SIGCHLD, SIG_DFL);
 			execl(sh, sh, NULL);
 			err(EXIT_FAILURE, "exec SHELL='%s'", sh);
-		} else if( p->pid > 0 ) {
+		} else if( ! err_check(p->pid < 0, "forkpty" ) ) {
 			resize_pad(&p->pri.win, S.history, cols);
 			resize_pad(&p->alt.win, S.history, cols);
 		}
@@ -165,6 +163,8 @@ new_pty(int rows, int cols)
 			}
 			p->next = *t;
 			*t = p;
+			const char *bname = strrchr(sh, '/');
+			bname = bname ? bname + 1 : sh;
 			strncpy(p->status, bname, sizeof p->status - 1);
 		} else {
 			free_proc(p);
