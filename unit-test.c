@@ -105,20 +105,19 @@ test_csr(int fd)
 int
 test_cup(int fd)
 {
-	int status = 0;
-	/* cup: move to n, m;  cub: back n;  buf: forward n */
-	send_txt(fd, "uniq1", "%s", "tput cup 5 50; printf 'uniq%s\\n' 1");
-	char *cmd = "printf '0123456'; tput cub 4; printf '789\\nuniq%s\\n' 2";
-	send_txt(fd, "uniq2", "%s", cmd);
+	int rv = 0;
+	/* cup: move to N, M;  cub: back N;  cuf: forward N */
+	send_txt(fd, "un2>", "PS1=un'2>'; tput cup 5 50; printf 'row6\\n'");
+	char *cmd = "printf '0123456'; tput cub 4; printf '789\\n\\n'";
+	send_txt(fd, "un3>", "PS1='u'n'3>'; %s", cmd);
 	cmd = "printf abc; tput cuf 73; printf '12345678%s\\n' wrapped";
 	send_txt(fd, "5678wrapped", "%s", cmd);
 
-	status |= validate_row(fd, 6, "%50s%-30s", "", "uniq1");
-	status |= validate_row(fd, 8, "%-80s", "0127896");
-	status |= validate_row(fd, 11, "abc%73s1234", "");
-	status |= validate_row(fd, 12, "%-80s", "5678wrapped");
-	send_txt(fd, NULL, "kill $SMTX");
-	return status;
+	rv |= validate_row(fd, 6, "%50s%-30s", "", "row6");
+	rv |= validate_row(fd, 8, "%-80s", "0127896");
+	rv |= validate_row(fd, 11, "abc%73s1234", "");
+	rv |= validate_row(fd, 12, "%-80s", "5678wrapped");
+	return rv;
 }
 
 int
