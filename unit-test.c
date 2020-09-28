@@ -404,7 +404,7 @@ test_lnm(int fd)
 	rv |= validate_row(fd, 4, "%-80s", "");
 	rv |= validate_row(fd, 5, "%-80s", "barbaz");
 
-	send_txt(fd, "c3>", "PS1=c3\\>; printf '\\033[20lsyn\\n'");
+	send_txt(fd, "c3>", "PS1=c3\\>; printf '\\033[20l'; echo syn");
 	rv |= validate_row(fd, 7, "%-80s", "");  /* Inserted newline (1)*/
 	rv |= validate_row(fd, 8, "%-80s", "syn");
 
