@@ -278,10 +278,10 @@ set_width(const char *arg)
 }
 
 #ifndef NDEBUG
-/* Describe a layout. */
 static size_t
 describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 {
+	/* Describe a layout. */
 	const char * const e = d + siz;
 	int recurse = flags & 0x1;
 	int show_id = flags & 0x4;
