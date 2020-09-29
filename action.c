@@ -365,7 +365,7 @@ show_layout(const char *arg)
 {
 	char buf[1024] = "layout: ";
 	int w = strlen(buf);
-	int flag = strtol(arg, NULL, 10);
+	int flag = strtol(*arg == ';' ? arg + 1 : arg, NULL, 10);
 	struct canvas *c = flag & 0x20 ? S.f : S.c;
 	size_t s = describe_layout(buf + w, sizeof buf - w - 1, c, flag);
 	#ifndef NDEBUG

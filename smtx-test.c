@@ -99,6 +99,7 @@ get_layout(int fd, int flag, char *buf, size_t siz)
 	int len;
 	ssize_t s = 0;
 	const char *end = buf + siz;
+	len = snprintf(buf, siz, "\033]71;%d\007", flag);
 	len = snprintf(buf, siz, "%c:show_layout %d\r", ctlkey, flag);
 	write(fd, buf, len);
 	grep(fd, "layout: ");
@@ -226,7 +227,6 @@ validate_row(int fd, int row, const char *fmt, ... )
 	char expect[1024];
 	char buf[1024];
 	char *r = buf;
-	char *end = buf + sizeof buf;
 	int status = 0;
 	va_list ap;
 	va_start(ap, fmt);
@@ -254,7 +254,7 @@ validate_row(int fd, int row, const char *fmt, ... )
 	if( count > sizeof buf - 1 ) {
 		err(1, "Row is too long");
 	}
-	size_t s = timed_read(fd, buf, count, "Reading row");
+	ssize_t s = timed_read(fd, buf, count, "Reading row");
 	if( s == -1 ) {
 		fprintf(stderr, "reading from child: %s\n", strerror(errno));
 		return -1;

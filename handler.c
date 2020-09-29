@@ -29,15 +29,23 @@ enum cmd {
 
 
 static void
-handle_osc(struct pty *p, char *arg)
+handle_osc(struct pty *p, const char *arg)
 {
-	unsigned i;
-	switch( *arg++ ) {
-	case '2':
-		for( i = 0; *arg && i < sizeof p->status; ) {
-			p->status[i++] = *arg++;
-		}
-		p->status[i] = '\0';
+	const char *parm;
+
+	switch( strtol(arg, (char **)&parm, 10) ) {
+	case 2:
+		snprintf(p->status, sizeof p->status, "%s", parm);
+		break;
+	case 71:
+		show_layout(parm);
+		break;
+	case 72:
+		show_state(parm);
+		break;
+	case 73:
+		show_row(parm);
+		break;
 	}
 }
 

@@ -66,6 +66,8 @@ collectosc(struct vtp *v, wchar_t w)
 {
 	if( v->nosc < MAXOSC ) {
 		v->oscbuf[v->nosc++] = wctob(w);
+		assert( v->nosc < (int)sizeof v->oscbuf );
+		assert( v->oscbuf[v->nosc] == '\0' );
 	}
 }
 
