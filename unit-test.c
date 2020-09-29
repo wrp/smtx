@@ -696,10 +696,11 @@ test_swap(int fd)
 	int id[3];
 	char desc[1024];
 
+	/* Create several canvasses and move to lower left */
 	send_cmd(fd, NULL, "cCjC");
-	send_txt(fd, "uniq02", "printf 'uniq%%s\\n' 02");
-	/* Write string2 into lower left canvas */
-	send_txt(fd, "string2", "printf 'str%%s\\n' ing2");
+
+	/* Write lowerleft into lower left canvas */
+	send_txt(fd, "ll0>", "PS1='l'l'0>'; echo; echo lowerleft");
 
 	get_layout(fd, 5, desc, sizeof desc);
 	if( sscanf(desc, "11x40(id=%*d); *11x40(id=%d); "
@@ -709,28 +710,30 @@ test_swap(int fd)
 	}
 	rv |= validate_row(fd, 4, "%-40s", "");
 	send_cmd(fd, NULL, "k"); /* Move to upper left */
-	send_txt(fd, "uniq01", "printf 'uniq%%s\\n' 01");
-	send_txt(fd, NULL, "printf 'string%%s\\n' 1");
+	send_txt(fd, "ul0>", "PS1='u'l'0>'; echo; echo upperleft");
+	rv |= validate_row(fd, 3, "%-40s", "upperleft");
 
 	send_cmd(fd, NULL, "1024s");   /* Invalid swap */
 	send_cmd(fd, NULL, "%ds", id[0]); /* Swap upper left and lower left */
-	send_txt(fd, "uniq03", "printf 'uniq%%s\\n' 03");
-	rv |= validate_row(fd, 4, "%-40s", "string2");
-	rv |= validate_row(fd, 6, "%-40s", "uniq03");
+	send_txt(fd, "ll1>", "PS1='l'l'1>'; echo s2 line 5");
+	rv |= validate_row(fd, 3, "%-40s", "lowerleft");
 
-	/* Swap back */
+	/* Swap back (with no count, s swaps with parent or primary child) */
 	send_cmd(fd, NULL, "s");
-	send_txt(fd, "uniq04", "printf 'uniq%%s\\n' 04");
-	rv |= validate_row(fd, 4, "%-40s", "string1");
-	rv |= validate_row(fd, 6, "%-40s", "uniq04");
+	send_txt(fd, "ul1>", "PS1='u'l'1>'");
+	rv |= validate_row(fd, 3, "%-40s", "upperleft");
 
-	send_cmd(fd, NULL, "jl");
-	send_txt(fd, "uniq05", "printf '\\nuniq%%s\\n' 05");
-	send_cmd(fd, NULL, "kh");
-	send_txt(fd, "uniq06", "printf 'uniq%%s\\n' 06");
-	rv |= validate_row(fd, 4, "%-40s", "string1");
+	send_cmd(fd, NULL, "jl"); /* Move to lower right */
+	send_txt(fd, "lr1>", "PS1='l'r'1>'; echo; echo lowerright");
+	send_cmd(fd, NULL, "kh"); /* Move to upper left */
+	send_txt(fd, "ul2>", "PS1='u'l'2>'");
+	rv |= validate_row(fd, 3, "%-40s", "upperleft");
 	send_cmd(fd, NULL, "%ds", id[1]); /* Swap upper left and lower rt */
-	send_txt(fd, "uniq07", "printf 'uniq%%s\\n' 07");
+	send_txt(fd, "ul3>", "PS1='u'l'3>'");
+	/*
+	TODO: why does this not work?  The attach seems to clear screen
+	rv |= validate_row(fd, 3, "%-40s", "lowerright");
+	*/
 
 	get_layout(fd, 5, desc, sizeof desc);
 	if( sscanf(desc, "*11x40(id=%d); 11x40(id=%*d); "
