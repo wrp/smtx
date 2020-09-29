@@ -94,15 +94,21 @@ send_str(int fd, const char *wait, const char *fmt, ...)
 ssize_t timed_read(int, void *, size_t, const char *);
 
 int
-get_layout(int fd, int flag, char *layout, size_t siz)
+get_layout(int fd, int flag, char *buf, size_t siz)
 {
-	char buf[1024];
 	int len;
-	ssize_t s;
-	len = snprintf(buf, sizeof buf, "%c:show_layout %d\r", ctlkey, flag);
+	ssize_t s = 0;
+	const char *end = buf + siz;
+	len = snprintf(buf, siz, "%c:show_layout %d\r", ctlkey, flag);
 	write(fd, buf, len);
 	grep(fd, "layout: ");
-	do s = timed_read(fd, buf, siz - 1, "layout"); while( s == 0 );
+	while( buf < end && s != -1 ) {
+		s = timed_read(fd, buf, 1, "layout");
+		if( buf[0] == ':' ) {
+			break;
+		}
+		buf += s;
+	}
 	if( s == -1 ) {
 		fprintf(stderr, "reading from child: %s\n", strerror(errno));
 		return -1;
@@ -111,9 +117,8 @@ get_layout(int fd, int flag, char *layout, size_t siz)
 	char *e = strchr(buf, ':');
 	if( e ) {
 		*e = '\0';
-		strncpy(layout, buf, siz);
 	} else {
-		layout[0] = '\0';
+		buf[0] = '\0';
 	}
 	return 0;
 }
