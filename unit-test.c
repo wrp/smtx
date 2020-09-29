@@ -875,41 +875,43 @@ test_width(int fd)
 	/* Move up to a window that is now only 20 columns wide and
 	print a string of 50 chars */
 	send_cmd(fd, NULL, "k");
-	send_str(fd, NULL, "for i in 1 2 3 4 5; do ");
-	send_str(fd, NULL, "printf '%%s' ${i}123456789;");
-	send_str(fd, NULL, "test $i = 5 && printf '\\n  uniq%%s\\n' 02;");
-	send_str(fd, "uniq02", "done\r");
-	rv |= validate_row(fd, 3, "%-20s", "11234567892123456789");
+	send_str(fd, NULL, "PS1='u'n'1>'; for i in 1 2 3 4 5; do ");
+	send_txt(fd, "un1>", "printf '%%s' ${i}123456789; done; echo");
+	rv |= validate_row(fd, 2, "%-20s", "11234567892123456789");
 
 	/* Shift right 15 chars */
-	send_cmd(fd, "dedef", "15>\rprintf '%%20sded%%s' '' ef");
-	rv |= validate_row(fd, 3, "%-20s", "56789312345678941234");
+	send_cmd(fd, "un2>", "15>\rPS1='%15su'n'2>'", "");
+	rv |= validate_row(fd, 2, "%-20s", "56789312345678941234");
 
 	for( unsigned i = 0; i < sizeof buf - 1; i++ ) {
 		buf[i] = 'a' + i % 26;
 	}
 	buf[sizeof buf - 1] = '\0';
 	/* Clear screen, print 2 rows (160 chars) of alphabet */
-	send_txt(fd, NULL, "clear; printf '%s\\n'", buf);
+	send_str(fd, NULL, "PS1='%15su'n'3>'; ", "");
+	send_txt(fd, "un3>", "clear; printf '%s\\n'", buf);
+	rv |= validate_row(fd, 1, "%-20s", "pqrstuvwxyzabcdefghi");
+
 	/* Shift right 75 chars ( now looking at last 20 chars of pty)*/
 	send_cmd(fd, NULL, "75>");
-	/* Print 60 blanks then a string to sync*/
-	send_txt(fd, "de3dbeef", "printf '%%60sde3d%%s' '' beef");
+
+	send_txt(fd, "un3>", "PS1='%60su'n'3>'", "");
 	/* Verify that the 160 chars of repeated alphabet is at end of rows */
 	rv |= validate_row(fd, 1, "%-20s", "ijklmnopqrstuvwxyzab");
 	rv |= validate_row(fd, 2, "%-20s", "klmnopqrstuvwxyzabcd");
 
 	/* Change width of underlying pty to 180 */
-	send_cmd(fd, NULL, "180W\rclear; printf '%s\\n'", buf);
-	send_txt(fd, "de4dbeef", "printf '%%68sde4d%%s' '' beef");
+	send_cmd(fd, NULL, "180W");
+	send_txt(fd, "un4>", "PS1='%60su'n'4>'; clear; echo '%s'", "", buf);
 	rv |= validate_row(fd, 1, "%-20s", "ijklmnopqrstuvwxyzab");
 	send_cmd(fd, NULL, "1>");
-	send_txt(fd, "de5dbeef", "printf '%%68sde5d%%s' '' beef");
+	send_txt(fd, "un5>", "PS1='%61su'n'5>'; clear; echo '%s'", "", buf);
 	rv |= validate_row(fd, 1, "%-20s", "jklmnopqrstuvwxyzabc");
 
 	/* Change width of underlying pty to match canvas and scroll to start */
 	send_cmd(fd, NULL, "W180<");
-	send_txt(fd, NULL, "clear; printf '%s\\n'", buf);
+	send_txt(fd, NULL, "PS1='u'n'6>'");
+	send_txt(fd, "un6>", "clear; printf '%s\\n'", buf);
 	send_txt(fd, "de6dbeef", "printf '%%sde6d%%s' '' beef");
 	rv |= validate_row(fd, 1, "%-20s", "abcdefghijklmnopqrst");
 	rv |= validate_row(fd, 2, "%-20s", "uvwxyzabcdefghijklmn");
