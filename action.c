@@ -67,11 +67,10 @@ create(const char *arg)
 		}
 	}
 	balance(n);
-	/* TODO: we should be able to set S.reshape_root here, but
-	 * doing so causes odd (eg, unexplained) behavior in the tests.
-	 * Need to track down why.
-	 */
 	reshape_root(NULL);
+	if( n ) {
+		wmove(n->p->s->win, n->offset.y, 0);
+	}
 }
 
 void
