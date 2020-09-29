@@ -222,9 +222,11 @@ int
 validate_row(int fd, int row, const char *fmt, ... )
 {
 	int len;
-	ssize_t s;
+	size_t count = 0;
 	char expect[1024];
 	char buf[1024];
+	char *r = buf;
+	char *end = buf + sizeof buf;
 	int status = 0;
 	va_list ap;
 	va_start(ap, fmt);
@@ -233,14 +235,32 @@ validate_row(int fd, int row, const char *fmt, ... )
 
 	len = snprintf(buf, sizeof buf, "%c:show_row %d\r", ctlkey, row - 1);
 	write(fd, buf, len);
-	sprintf(buf, "row %d: ", row - 1);
+	sprintf(buf, "row %d:(", row - 1);
 	grep(fd, buf);
-	do s = timed_read(fd, buf, sizeof buf - 1, expect); while( s == 0 );
+	/* We expect to see "row N:(len)" on the fd, where len is the width of
+	 * the row.  The above grep discards "row N:(".  Now read the length. */
+
+	while( *r != ')' ) {
+		if( timed_read(fd, r, 1, "count in row validation") != 1 ) {
+			err(1, "Invalid read in row validation");
+		} else if( *r == ')' ) {
+			;
+		} else if( ! isdigit(*r) ) {
+			err(1, "Expected count, got '%c'\n", *r);
+		} else {
+			count = 10 * count + *r - '0';
+		}
+	}
+	if( count > sizeof buf - 1 ) {
+		err(1, "Row is too long");
+	}
+	size_t s = timed_read(fd, buf, count, "Reading row");
 	if( s == -1 ) {
 		fprintf(stderr, "reading from child: %s\n", strerror(errno));
 		return -1;
 	}
 	buf[s] = 0;
+
 	if( strcmp( buf, expect ) ) {
 		fprintf(stderr, "unexpected content in row %d\n", row);
 		fputs("received: '", stderr);
