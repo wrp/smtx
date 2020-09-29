@@ -155,8 +155,11 @@ check_layout(int fd, int flag, const char *fmt, ...)
 	if( get_layout(fd, flag, buf, sizeof buf) == 0 ) {
 		if( strcmp( buf, expect ) ) {
 			fprintf(stderr, "unexpected layout:\n");
-			fprintf(stderr, "received: %s\n", buf);
-			fprintf(stderr, "expected: %s\n", expect);
+			fputs("received: ", stderr);
+			for( const char *b = buf; *b; b++ ) {
+				fputc(isprint(*b) ? *b : '?', stderr);
+			}
+			fprintf(stderr, "\nexpected: %s\n", expect);
 		} else {
 			rv = 0;
 		}
@@ -246,8 +249,11 @@ validate_row(int fd, int row, const char *fmt, ... )
 	buf[s] = 0;
 	if( strcmp( buf, expect ) ) {
 		fprintf(stderr, "unexpected content in row %d\n", row);
-		fprintf(stderr, "received: '%s'\n", buf);
-		fprintf(stderr, "expected: '%s'\n", expect);
+		fputs("received: '", stderr);
+		for( const char *b = buf; *b; b++ ) {
+			fputc(isprint(*b) ? *b : '?', stderr);
+		}
+		fprintf(stderr, "'\nexpected: '%s'\n", expect);
 		status = 1;
 	}
 	return status;
