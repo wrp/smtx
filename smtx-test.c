@@ -105,6 +105,7 @@ get_layout(int fd, int flag, char *buf, size_t siz)
 	while( buf < end && s != -1 ) {
 		s = timed_read(fd, buf, 1, "layout");
 		if( buf[0] == ':' ) {
+			buf[0] = '\0';
 			break;
 		}
 		buf += s;
@@ -112,13 +113,6 @@ get_layout(int fd, int flag, char *buf, size_t siz)
 	if( s == -1 ) {
 		fprintf(stderr, "reading from child: %s\n", strerror(errno));
 		return -1;
-	}
-	buf[s < 0 ? 0 : s] = '\0';
-	char *e = strchr(buf, ':');
-	if( e ) {
-		*e = '\0';
-	} else {
-		buf[0] = '\0';
 	}
 	return 0;
 }
