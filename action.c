@@ -334,9 +334,9 @@ describe_row(char *desc, size_t siz, int row)
 		wmove(w, y, x);
 	} else if( row == c->extent.y ) {
 		WINDOW *w = c->wtit;
-		len = c->extent.x;
-		for( x = 0; x < c->extent.x; x++ ) {
-			desc[x] = mvwinch(w, 0, x) & A_CHARTEXT;
+		len = MIN((size_t)c->extent.x, siz - 1);
+		for( size_t i = 0; i < len; i++ ) {
+			desc[i] = mvwinch(w, 0, i) & A_CHARTEXT;
 		}
 	}
 	return len;
