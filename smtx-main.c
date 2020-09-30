@@ -351,15 +351,15 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 static void
 prune(const char *arg)
 {
-	struct canvas *x = S.f;
-	struct canvas *p = x->parent;
-	int d = x->typ;
-	struct canvas *n = x->c[d];
+	struct canvas *f = S.f;
+	struct canvas *p = f->parent;
+	int d = f->typ;
+	struct canvas *n = f->c[d];
 	(void)arg;
 
 	if( n ) {
 		n->parent = p;
-		n->origin = x->origin;
+		n->origin = f->origin;
 		*(p ? &p->c[d] : &S.c) = n;
 	} else if( p ) {
 		p->split_point[d] = 1.0;
@@ -367,15 +367,14 @@ prune(const char *arg)
 	} else {
 		S.c = NULL;
 	}
-	if( x == S.f ) {
-		focus(n ? n : p);
-	}
-	if( S.v == x ) {
+	assert( S.f == f );
+	focus(n ? n : p);
+	if( S.v == f ) {
 		S.v = n ? n : p;
 	}
-	for( ; x; x = n ) {
-		n = x->c[!d];
-		freecanvas(x);
+	for( ; f; f = n ) {
+		n = f->c[!d];
+		freecanvas(f);
 	}
 	S.reshape = 1;
 }
