@@ -37,15 +37,6 @@ handle_osc(struct pty *p, const char *arg)
 	case 2:
 		snprintf(p->status, sizeof p->status, "%s", parm);
 		break;
-	case 71:
-		show_layout(parm);
-		break;
-	case 72:
-		show_state(parm);
-		break;
-	case 73:
-		show_row(parm);
-		break;
 	}
 }
 

@@ -99,7 +99,6 @@ get_layout(int fd, int flag, char *buf, size_t siz)
 	int len;
 	ssize_t s = 0;
 	const char *end = buf + siz;
-	len = snprintf(buf, siz, "\033]71;%d\007", flag);
 	len = snprintf(buf, siz, "%c:show_layout %d\r", ctlkey, flag);
 	write(fd, buf, len);
 	grep(fd, "layout: ");
