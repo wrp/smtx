@@ -194,7 +194,7 @@ newcanvas(void)
 void
 focus(struct canvas *n)
 {
-	S.f = n ? n : S.v;
+	S.f = n ? n : S.c;
 }
 
 static void
@@ -369,9 +369,6 @@ prune(const char *arg)
 	}
 	assert( S.f == f );
 	focus(n ? n : p);
-	if( S.v == f ) {
-		S.v = n ? n : p;
-	}
 	for( ; f; f = n ) {
 		n = f->c[!d];
 		freecanvas(f);
@@ -518,20 +515,6 @@ getinput(fd_set *f) /* check stdin and all pty's for input. */
 }
 
 static void
-set_view_count(const char *arg)
-{
-	(void)arg;
-	struct canvas *n = S.f;
-	S.v = n;
-	switch( S.count ) {
-	case 0:
-		S.v = S.c;
-		break;
-	}
-	S.reshape = 1;
-}
-
-static void
 sendarrow(const char *k)
 {
 	struct canvas *n = S.f;
@@ -584,7 +567,7 @@ navigate(enum direction dir, int count, int type)
 		case nil:
 			;
 		}
-		t = type ? q : find_window(S.v, target.y, target.x);
+		t = type ? q : find_window(S.c, target.y, target.x);
 		n = t ? t : n;
 	}
 	focus(n);
@@ -688,7 +671,6 @@ build_bindings(void)
 	add_key(m->keys, L's', swap, NULL);
 	add_key(m->keys, L't', new_tabstop, NULL);
 	add_key(m->keys, L'W', set_width, NULL);
-	add_key(m->keys, L'v', set_view_count, NULL);
 	add_key(m->keys, L'x', prune, NULL);
 	add_key(m->keys, L'0', digit, "0");
 	add_key(m->keys, L'1', digit, "1");
@@ -759,7 +741,7 @@ main_loop(void)
 		if( S.reshape ) {
 			reshape_root(NULL);
 		}
-		draw(S.v);
+		draw(S.c);
 		char *s = *S.errmsg ? S.errmsg : S.command;
 		if( *s || S.mode == command ) {
 			int iscmd = S.mode == command;
@@ -860,7 +842,7 @@ init(void)
 	use_default_colors();
 	resize_pad(&S.werr, 1, COLS);
 	create(NULL);
-	S.f = S.v = S.c;
+	S.f = S.c;
 	if( S.c == NULL || S.werr == NULL ) {
 		endwin();
 		fprintf(stderr, "Unable to create root window\n");

@@ -98,8 +98,7 @@ struct state {
 	int count;
 	struct mode modes[3];
 	enum { enter, control, command } mode; /* The current mode */
-	struct canvas *v;  /* Root canvas currently displayed */
-	struct canvas *c;  /* Root of tree of all canvas */
+	struct canvas *c;  /* Root of all canvasses */
 	struct canvas *f;  /* Currently focused canvas */;
 	struct pty *p;     /* Head of list of all pty */
 	fd_set fds;

@@ -204,7 +204,7 @@ resize(const char *arg)
 		n->split_point[typ] = MIN(new / full, 1.0);
 	} else {
 		n->split_point[typ] = 0.0;
-		focus(S.v);
+		focus(S.c);
 	}
 	S.reshape = 1;
 }
