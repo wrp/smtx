@@ -910,9 +910,7 @@ test_width(int fd)
 
 	/* Change width of underlying pty to match canvas and scroll to start */
 	send_cmd(fd, NULL, "W180<");
-	send_txt(fd, NULL, "PS1='u'n'6>'");
-	send_txt(fd, "un6>", "clear; printf '%s\\n'", buf);
-	send_txt(fd, "de6dbeef", "printf '%%sde6d%%s' '' beef");
+	send_txt(fd, "un6>", "PS1='u'n'6>'; clear; printf '%s\\n'", buf);
 	rv |= validate_row(fd, 1, "%-20s", "abcdefghijklmnopqrst");
 	rv |= validate_row(fd, 2, "%-20s", "uvwxyzabcdefghijklmn");
 
