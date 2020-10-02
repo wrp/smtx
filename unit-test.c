@@ -480,18 +480,21 @@ test_pager(int fd)
 	int rv = 0;
 
 	send_txt(fd, "--More--", "%s; %s",
-		"yes abcd | nl -s: | sed -e '23,44y/abcd/wxyz/' -e 500q | more",
+		"yes abcd | nl -s: | sed -e '23,43y/abcd/wxyz/' "
+		"-e '44y/abcd/klmn/' -e 500q | more",
 		"PS1=u'ni'q\\>"
 	);
-	rv |= validate_row(fd, 02, "%-80s", "     2:abcd");
-	rv |= validate_row(fd, 10, "%-80s", "    10:abcd");
-	rv |= validate_row(fd, 22, "%-80s", "    22:abcd");
+	for( int i = 1; i < 23; i++ ) {
+		rv |= validate_row(fd, i, "    %2d:%-73s", i, "abcd");
+	}
 	rv |= validate_row(fd, 23, "%-80s", "--More--");
 	rv |= check_layout(fd, 0x1, "*23x80");
-	send_str(fd, "uniq>", "%s", " q");
-	rv |= validate_row(fd, 1,  "%-80s", "    23:wxyz");
-	rv |= validate_row(fd, 10, "%-80s", "    32:wxyz");
-	rv |= validate_row(fd, 22, "%-80s", "    44:wxyz");
+	send_str(fd, "44:klmn", " ");
+	send_str(fd, "uniq>", "q");
+	for( int i = 1; i < 22; i++ ) {
+		rv |= validate_row(fd, i, "    %2d:%-73s", i + 22, "wxyz");
+	}
+	rv |= validate_row(fd, 22, "%-80s", "    44:klmn");
 	rv |= validate_row(fd, 23, "%-80s", "uniq>");
 	send_txt(fd, NULL, "exit");
 	return rv;
