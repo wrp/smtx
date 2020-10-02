@@ -252,32 +252,42 @@ int
 test_ed(int fd)
 {
 	int rv = 0;
-	send_txt(fd, "uniq", "yes | sed 15q; tput cuu 8; echo u'n'i'q'");
+	/* cuu: cursor up N lines */
+	send_txt(fd, "un1>", "PS1='u'n'1>'; yes | sed 15q; tput cuu 8");
 	rv |= validate_row(fd, 8, "%-80s", "y");
-	rv |= validate_row(fd, 12, "%-80s", "y");
-	send_txt(fd, "uniq2", "printf '\\033[J'u'n'i'q'2"); /* Clear to end */
+	rv |= validate_row(fd, 9, "%-80s", "un1>");
+	rv |= validate_row(fd, 10, "%-80s", "y");
+
+	/* \\033[J : clear to end of line */
+	send_txt(fd, "xy2>", "PS1='x'y'2>'; printf '\\033[J\\n'");
 	rv |= validate_row(fd, 8, "%-80s", "y");
-	rv |= validate_row(fd, 12, "%-80s", "");
-	send_txt(fd, "uniq3", "printf '\\033[2J'u'n'i'q'3"); /* Clear all */
+	rv |= validate_row(fd, 10, "%-80s", "");
+	rv |= validate_row(fd, 11, "%-80s", "xy2>");
+
+	/* \\033[2J : clear screen */
+	send_txt(fd, "un3>", "PS1='u'n'3>'; printf '\\033[2J'");
 	rv |= validate_row(fd, 8, "%-80s", "");
+	rv |= validate_row(fd, 12, "%-80s", "un3>");
 	rv |= validate_row(fd, 13, "%-80s", "");
-	send_txt(fd, "uniq6", "clear; printf 'u'n'i'q'6'");
-	send_txt(fd, "uniq4", "yes | sed 15q; tput cuu 8; echo u'n'i'q4'");
+	send_txt(fd, "un4>", "PS1='u'n'4>'; clear");
+	rv |= validate_row(fd, 1, "%-80s", "un4>");
+	rv |= validate_row(fd, 12, "%-80s", "");
+	send_txt(fd, "un5>", "PS1='u'n'5>'; yes | sed 15q; tput cuu 8");
 	for(int i = 2; i < 9; i++ ) {
 		rv |= validate_row(fd, i, "%-80s", "y");
 	}
-	send_txt(fd, "uniq5", "printf '\\033[1J'u'n'i'q'5"); /* Clear to top */
+	/* \\03[1J : Clear to top of screen */
+	send_txt(fd, "un6>", "PS1='u'n'6>'; printf '\\033[1J'");
 	for(int i = 2; i < 9; i++ ) {
 		rv |= validate_row(fd, i, "%-80s", "");
 	}
 	for(int i = 12; i < 15; i++ ) {
 		rv |= validate_row(fd, i, "%-80s", "y");
 	}
-	send_txt(fd, "uniq7", "printf '\\033[3J\\033[1;1H'u'n'i'q'7");
+	send_txt(fd, "un7>", "PS1='u'n'7>'; printf '\\033[3J\\033[1;1H'");
 	for(int i = 2; i < 15; i++ ) {
 		rv |= validate_row(fd, i, "%-80s", "");
 	}
-	send_txt(fd, NULL, "exit");
 	return rv;
 }
 
