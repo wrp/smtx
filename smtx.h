@@ -69,6 +69,7 @@ struct screen {
 };
 struct pty {
 	int fd, ntabs, tabstop, id;
+	int history; /* Number of rows in .pri */
 	struct winsize ws;
 	pid_t pid;
 	bool *tabs, pnm, decom, am, lnm;
@@ -94,7 +95,7 @@ struct mode {
 struct state {
 	char ctlkey;
 	int width;
-	int history;      /* Number of lines retained */
+	int history; /* Size of newly created ptys */
 	int count;
 	struct mode modes[3];
 	enum { enter, control, command } mode; /* The current mode */

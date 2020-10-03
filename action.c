@@ -177,6 +177,9 @@ reshape_root(const char *arg)
 	}
 	for( struct pty *p = S.p; p; p = p->next ) {
 		p->ws.ws_row = 0;
+		if( LINES > p->history ) {
+			p->history = LINES;
+		}
 	}
 	resize_pad(&S.werr, 1, COLS);
 	reshape(S.c, 0, 0, LINES, COLS);
@@ -233,7 +236,7 @@ scrolln(const char *arg)
 	struct canvas *n = S.f;
 	if( n && n->p && n->p->s && n->p->s->win ) {
 		int count = S.count == -1 ? n->extent.y - 1 : S.count;
-		int top = S.history - n->extent.y;
+		int top = n->p->history - n->extent.y;
 		n->offset.y += *arg == '-' ? -count : count;
 		n->offset.y = MIN(MAX(0, n->offset.y), top);
 	}
@@ -262,8 +265,8 @@ set_width(const char *arg)
 {
 	struct canvas *n = S.f;
 	struct pty *p = n->p;
-	assert( S.history >= n->extent.y );
-	int h = S.history;
+	assert( p->history >= n->extent.y );
+	int h = p->history;
 	int w = arg ? strtol(arg, NULL, 10) : S.count;
 	if( w == -1 ) {
 		w = n->extent.x;
