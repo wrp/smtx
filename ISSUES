@@ -41,9 +41,11 @@ TODO:
 	one to send arbitrary keystrokes.  Clearly, there are security issues.
 
 BUGS:
-	Right arrow currently splits the screen.  This regression was introduced
-	in 8805e2acfba83d77f3e0768f302336a235e7fb2e and is related to timeout/nodelay.
-	Need to track down what's going on.
+	Fix cursor position after increasing history.
+
+	Right arrow (in control mode) currently splits the screen.  This regression was
+	introduced in 8805e2acfba83d77f3e0768f302336a235e7fb2e and is related to
+	timeout/nodelay.  Need to track down what's going on.
 
 	Make tput rep work.  eg, tput rep w 5 should write 5 'w' to term,
 	but the parameters do not seem to be getting sent properly.  We get
