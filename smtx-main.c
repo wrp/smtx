@@ -119,14 +119,14 @@ free_proc(struct pty *p)
 int
 resize_pad(WINDOW **p, int h, int w)
 {
-	int rv = 0;
+	int rv = -1;
 	if( *p ) {
 		err_check(wresize(*p, h, w ) != OK, "Error resizing window");
-		rv = -1;
 	} else if( (*p = newpad(h, w)) != NULL ) {
 		wtimeout(*p, 0);
 		scrollok(*p, TRUE);
 		keypad(*p, TRUE);
+		rv = 0;
 	}
 	return rv;
 }

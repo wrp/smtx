@@ -284,15 +284,19 @@ set_pty_history(struct pty *p, int siz)
 		WINDOW *w = p->s->win;
 
 		getyx(p->s->win, y, x);
+		/* TODO: handle errors gracefully here.  Perhaps we
+		 * need history to be an array of size 2.  Currently,
+		 * if one of these windows resizes but the other fails,
+		 * we will be in a bad state.
+		 */
 		replacewin(&p->pri.win, siz, p->ws.ws_col, siz - p->history);
 		replacewin(&p->alt.win, siz, p->ws.ws_col, siz - p->history);
 
 		if( w != p->s->win ) {
 			wmove(p->s->win, y + siz - p->history, x);
+			p->history = siz;
 		}
 
-		p->history = siz;
-		/* TODO: handle errors */
 	}
 }
 
