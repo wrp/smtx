@@ -280,14 +280,17 @@ static void
 set_pty_history(struct pty *p, int siz)
 {
 	if( p->history < siz ) {
-		int f = p->s == &p->pri;
 		int y, x;
+		WINDOW *w = p->s->win;
 
 		getyx(p->s->win, y, x);
 		replacewin(&p->pri.win, siz, p->ws.ws_col, siz - p->history);
 		replacewin(&p->alt.win, siz, p->ws.ws_col, siz - p->history);
-		p->s = f ? &p->pri : &p->alt;
-		wmove(p->s->win, y + siz - p->history, x);
+
+		if( w != p->s->win ) {
+			wmove(p->s->win, y + siz - p->history, x);
+		}
+
 		p->history = siz;
 		/* TODO: handle errors */
 	}
