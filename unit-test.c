@@ -67,16 +67,25 @@ test_bighist(int fd)
 int
 test_changehist(int fd)
 {
+	int rv = 0;
 	/* Test begins with -s 128 */
 	send_cmd(fd, NULL, "120Z"); /* Invalid (too small) */
-	/* TODO: validate the error message */
+	send_txt(fd, "un1>", "PS1=un'1>'; yes | nl -s '' | sed 127q");
+	for( int i = -104; i < 23; i++ ) {
+		rv |= validate_row(fd, i, "%6dy%73s", i + 105, "");
+	}
+	rv |= validate_row(fd, 23, "%-80s", "un1>");
 
-	/* The current implementation of history does not position the
-	 * cursor well.  Let's not bother testing anything until that is
-	 * fixed.  For now, just get code coverage.
-	 */
 	send_cmd(fd, NULL, "200Z"); /* Increase history to 200 */
-	return 0;
+	const char *cmd = "PS1=un'2>'; yes | nl -s '' | sed 127q";
+	send_txt(fd, "un2>", "%s", cmd);
+	rv |= validate_row(fd, -176, "    57%-74s", "y");
+	rv |= validate_row(fd, -106, "   127%-74s", "y");
+	rv |= validate_row(fd, -105, "un1>%-76s", cmd);
+	rv |= validate_row(fd, -104, "     1%-74s", "y");
+	rv |= validate_row(fd, 23, "%-80s", "un2>");
+
+	return rv;
 }
 
 int

@@ -281,10 +281,14 @@ set_pty_history(struct pty *p, int siz)
 {
 	if( p->history < siz ) {
 		int f = p->s == &p->pri;
+		int y, x;
+
+		getyx(p->s->win, y, x);
 		replacewin(&p->pri.win, siz, p->ws.ws_col, siz - p->history);
 		replacewin(&p->alt.win, siz, p->ws.ws_col, siz - p->history);
-		p->history = siz;
 		p->s = f ? &p->pri : &p->alt;
+		wmove(p->s->win, y + siz - p->history, x);
+		p->history = siz;
 		/* TODO: handle errors */
 	}
 }
@@ -371,9 +375,9 @@ describe_row(char *desc, size_t siz, int row)
 		getmaxyx(w, y, mx);
 		mx = MIN3(mx, c->extent.x + c->offset.x, (int)siz - 1);
 		mx -= c->offset.x;
-		getyx(w, y, x);
 		len = mx;
 		row += c->offset.y;
+		getyx(w, y, x);
 		for( char *d = desc + len; mx >= 0; mx-- ) {
 			*d-- = mvwinch(w, row, mx + c->offset.x) & A_CHARTEXT;
 		}
