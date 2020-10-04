@@ -163,7 +163,7 @@ extern void scrollbottom(struct canvas *n);
 extern int err_check(int, const char *, ...);
 extern void extend_tabs(struct pty *p, int tabstop);
 extern void pty_size(struct pty *p);
-extern void resize_pad(WINDOW **, int, int);
+extern int resize_pad(WINDOW **, int, int);
 extern void reshape_window(struct pty *);
 extern void reshape(struct canvas *n, int y, int x, int h, int w);
 
@@ -184,6 +184,7 @@ extern action resize;
 extern action scrolln;
 extern action scrollh;
 extern action send;
+extern action set_history;
 extern action set_width;
 extern action swap;
 

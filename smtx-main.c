@@ -116,16 +116,19 @@ free_proc(struct pty *p)
 	}
 }
 
-void
+int
 resize_pad(WINDOW **p, int h, int w)
 {
+	int rv = 0;
 	if( *p ) {
 		err_check(wresize(*p, h, w ) != OK, "Error resizing window");
+		rv = -1;
 	} else if( (*p = newpad(h, w)) != NULL ) {
 		wtimeout(*p, 0);
 		scrollok(*p, TRUE);
 		keypad(*p, TRUE);
 	}
+	return rv;
 }
 
 static struct pty *
@@ -672,6 +675,7 @@ build_bindings(void)
 	add_key(m->keys, L's', swap, NULL);
 	add_key(m->keys, L't', new_tabstop, NULL);
 	add_key(m->keys, L'W', set_width, NULL);
+	add_key(m->keys, L'Z', set_history, NULL);
 	add_key(m->keys, L'x', prune, NULL);
 	add_key(m->keys, L'0', digit, "0");
 	add_key(m->keys, L'1', digit, "1");

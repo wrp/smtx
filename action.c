@@ -168,6 +168,8 @@ quit(const char *arg)
 	}
 }
 
+static void set_pty_history(struct pty *p, int siz);
+
 void
 reshape_root(const char *arg)
 {
@@ -178,7 +180,7 @@ reshape_root(const char *arg)
 	for( struct pty *p = S.p; p; p = p->next ) {
 		p->ws.ws_row = 0;
 		if( LINES > p->history ) {
-			p->history = LINES;
+			set_pty_history(p, LINES);
 		}
 	}
 	resize_pad(&S.werr, 1, COLS);
@@ -257,6 +259,47 @@ send(const char *arg)
 		}
 		rewrite(n->p->fd, arg, strlen(arg));
 		scrollbottom(n);
+	}
+}
+
+static int
+replacewin(WINDOW **src, int rows, int cols, int delta)
+{
+	int rv = -1;
+	WINDOW *new = NULL;
+	if( resize_pad(&new, rows, cols) == 0 ) {
+		copywin(*src, new, 0, 0, delta, 0, rows - 1, cols - 1, 1);
+		delwin(*src);
+		*src = new;
+		rv = 0;
+	}
+	return rv;
+}
+
+static void
+set_pty_history(struct pty *p, int siz)
+{
+	if( p->history < siz ) {
+		int f = p->s == &p->pri;
+		replacewin(&p->pri.win, siz, p->ws.ws_col, siz - p->history);
+		replacewin(&p->alt.win, siz, p->ws.ws_col, siz - p->history);
+		p->history = siz;
+		p->s = f ? &p->pri : &p->alt;
+		/* TODO: handle errors */
+	}
+}
+
+void
+set_history(const char *arg)
+{
+	struct canvas *n = S.f;
+	struct pty *p = n->p;
+	int h = arg ? strtol(arg, NULL, 10) : S.count;
+	if( h < p->history ) {
+		err_check(1, "Refusing to shrink history");
+	} else {
+		set_pty_history(p, h);
+		S.reshape = 1;
 	}
 }
 

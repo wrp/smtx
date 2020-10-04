@@ -59,10 +59,23 @@ test_attach(int fd)
 int
 test_bighist(int fd)
 {
-	/* Use -s 9999999999 to trigger a memory allocation error */
-	/* Not really sure what else to do here; just call it to get
-	code coverage I guess */
+	/* Use -s INT_MAX to trigger a memory allocation error. */
 	(void)fd;
+	return 0;
+}
+
+int
+test_changehist(int fd)
+{
+	/* Test begins with -s 128 */
+	send_cmd(fd, NULL, "120Z"); /* Invalid (too small) */
+	/* TODO: validate the error message */
+
+	/* The current implementation of history does not position the
+	 * cursor well.  Let's not bother testing anything until that is
+	 * fixed.  For now, just get code coverage.
+	 */
+	send_cmd(fd, NULL, "200Z"); /* Increase history to 200 */
 	return 0;
 }
 
