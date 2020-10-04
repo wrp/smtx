@@ -111,7 +111,7 @@ test_csr(int fd)
 	for(int i = 7; i <= 11; i++ ) {
 		rv |= validate_row(fd, i, "    %2d:%-73s", i + 14, "y");
 	}
-	send_str(fd, NULL, "exit\r");
+	send_raw(fd, NULL, "exit\r");
 	return rv;
 }
 
@@ -143,7 +143,7 @@ test_cursor(int fd)
 	int rv = validate_row(fd, 2, "%-80s", "01xyz5");
 
 	/* sc == save cursor position;  rc == restore cursor position */
-	send_str(fd, NULL, "tput rc;"); /* Call restore before save */
+	send_raw(fd, NULL, "tput rc;"); /* Call restore before save */
 	send_txt(fd, "un2>", cmd, d++, "tput sc; echo abcd; tput rc; echo xyz");
 	rv |= validate_row(fd, 4, "%-80s", "xyzd");
 
@@ -178,7 +178,7 @@ test_dashc(int fd)
 {
 	int rv;
 	ctlkey = CTL('l');
-	send_str(fd, "uniq", "%cc\recho u'n'i'q'\r", CTL('l'));
+	send_raw(fd, "uniq", "%cc\recho u'n'i'q'\r", CTL('l'));
 	rv = check_layout(fd, 0x1, "*11x80; 11x80");
 	send_txt(fd, NULL, "kill $SMTX");
 	return rv;
@@ -225,7 +225,7 @@ test_decaln(int fd)
 	}
 	memcpy(e, "uniq", 4);
 	rv |= validate_row(fd, 2, "%s", e);
-	send_str(fd, NULL, "kill $SMTX\r");
+	send_raw(fd, NULL, "kill $SMTX\r");
 	return rv;
 }
 
@@ -258,7 +258,7 @@ test_ech(int fd)
 		"printf '\\nuniq%s\\n' 1"
 	);
 	rv |= validate_row(fd, 2, "%-80s", "012 45");
-	send_str(fd, NULL, "exit\r");
+	send_raw(fd, NULL, "exit\r");
 	return rv;
 }
 
@@ -332,7 +332,7 @@ test_equalize(int fd)
 	int status = check_layout(fd, 0x1, "*12x80; 4x80; 5x80");
 	send_cmd(fd, "uniq2", "%s", "=\rprintf uniq%s 2");
 	status |= check_layout(fd, 0x1, "*7x80; 7x80; 7x80");
-	send_str(fd, NULL, "kill -TERM $SMTX\r");
+	send_raw(fd, NULL, "kill -TERM $SMTX\r");
 	return status;
 }
 
@@ -412,7 +412,7 @@ test_layout(int fd)
 	send_cmd(fd, "foobaz", "l\rprintf 'foo%%s' baz\r");
 	rv |= check_layout(fd, 0x11, "11x80@0,0; 11x40@12,0; *11x39@12,41");
 
-	send_str(fd, NULL, "kill $SMTX\r");
+	send_raw(fd, NULL, "kill $SMTX\r");
 	return rv;
 }
 
@@ -503,8 +503,8 @@ test_pager(int fd)
 	}
 	rv |= validate_row(fd, 23, "%-80s", "--More--");
 	rv |= check_layout(fd, 0x1, "*23x80");
-	send_str(fd, "44:klmn", " ");
-	send_str(fd, "uniq>", "q");
+	send_raw(fd, "44:klmn", " ");
+	send_raw(fd, "uniq>", "q");
 	for( int i = 1; i < 22; i++ ) {
 		rv |= validate_row(fd, i, "    %2d:%-73s", i + 22, "wxyz");
 	}
@@ -559,10 +559,10 @@ test_reset(int fd)
 	for( unsigned long i = 0; i < sizeof k / sizeof *k; i++ ) {
 		int v = k[i];
 		const char *fmt =  "printf '\\033[%d%c\r";
-		send_str(fd, NULL, fmt, v, 'l');
-		send_str(fd, NULL, fmt, v, 'h');
+		send_raw(fd, NULL, fmt, v, 'l');
+		send_raw(fd, NULL, fmt, v, 'h');
 	}
-	send_str(fd, NULL, "kill -TERM $SMTX\r");
+	send_raw(fd, NULL, "kill -TERM $SMTX\r");
 	return 0;
 }
 
@@ -578,7 +578,7 @@ test_resize(int fd)
 	status |= check_layout(fd, 0x1, "*12x40; 0x80; 10x80; 12x39");
 	send_cmd(fd, "uniq4", "%s\r%s", "kkl20H", "printf 'uniq%s\\n' 4");
 	status |= check_layout(fd, 0x1, "12x20; 0x80; 10x80; *12x59");
-	send_str(fd, NULL, "kill -TERM $SMTX\r");
+	send_raw(fd, NULL, "kill -TERM $SMTX\r");
 	return status;
 }
 
@@ -902,7 +902,7 @@ test_width(int fd)
 	/* Move up to a window that is now only 20 columns wide and
 	print a string of 50 chars */
 	send_cmd(fd, NULL, "k");
-	send_str(fd, NULL, "PS1='u'n'1>'; for i in 1 2 3 4 5; do ");
+	send_raw(fd, NULL, "PS1='u'n'1>'; for i in 1 2 3 4 5; do ");
 	send_txt(fd, "un1>", "printf '%%s' ${i}123456789; done; echo");
 	rv |= validate_row(fd, 2, "%-20s", "11234567892123456789");
 
@@ -915,7 +915,7 @@ test_width(int fd)
 	}
 	buf[sizeof buf - 1] = '\0';
 	/* Clear screen, print 2 rows (160 chars) of alphabet */
-	send_str(fd, NULL, "PS1='%15su'n'3>'; ", "");
+	send_raw(fd, NULL, "PS1='%15su'n'3>'; ", "");
 	send_txt(fd, "un3>", "clear; printf '%s\\n'", buf);
 	rv |= validate_row(fd, 1, "%-20s", "pqrstuvwxyzabcdefghi");
 
@@ -941,6 +941,6 @@ test_width(int fd)
 	rv |= validate_row(fd, 1, "%-20s", "abcdefghijklmnopqrst");
 	rv |= validate_row(fd, 2, "%-20s", "uvwxyzabcdefghijklmn");
 
-	send_str(fd, NULL, "kill $SMTX\r");
+	send_raw(fd, NULL, "kill $SMTX\r");
 	return rv;
 }
