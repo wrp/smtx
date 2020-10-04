@@ -40,7 +40,7 @@ write_pty(int fd, unsigned flags, const char *wait, const char *fmt, va_list ap)
 	size_t n;
 	char *b = cmd;
 	if( flags & 0x1 ) {
-		*b++ = CTL('g');
+		*b++ = ctlkey;
 	}
 	n = vsnprintf(b, sizeof cmd - (b - cmd), fmt, ap);
 	if( n > sizeof cmd - 4 ) {

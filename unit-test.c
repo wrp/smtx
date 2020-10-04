@@ -142,8 +142,8 @@ test_cursor(int fd)
 	int rv = validate_row(fd, 2, "%-80s", "01xyz5");
 
 	/* sc == save cursor position;  rc == restore cursor position */
-	send_raw(fd, NULL, "tput rc;"); /* Call restore before save */
-	send_txt(fd, "un2>", cmd, d++, "tput sc; echo abcd; tput rc; echo xyz");
+	send_txt(fd, "un2>", cmd, d++,
+		"tput rc; tput sc; echo abcd; tput rc; echo xyz");
 	rv |= validate_row(fd, 4, "%-80s", "xyzd");
 
 	send_txt(fd, "un3>", cmd, d++, "tput cup 15 50; printf 'foobaz\\n'");
@@ -177,7 +177,7 @@ test_dashc(int fd)
 {
 	int rv;
 	ctlkey = CTL('l');
-	send_raw(fd, "uniq", "%cc\recho u'n'i'q'\r", CTL('l'));
+	send_cmd(fd, "un>", "c\rPS1='un>'");
 	rv = check_layout(fd, 0x1, "*11x80; 11x80");
 	send_txt(fd, NULL, "kill $SMTX");
 	return rv;
