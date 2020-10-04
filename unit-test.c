@@ -143,6 +143,7 @@ test_cursor(int fd)
 	int rv = validate_row(fd, 2, "%-80s", "01xyz5");
 
 	/* sc == save cursor position;  rc == restore cursor position */
+	send_str(fd, NULL, "tput rc;"); /* Call restore before save */
 	send_txt(fd, "un2>", cmd, d++, "tput sc; echo abcd; tput rc; echo xyz");
 	rv |= validate_row(fd, 4, "%-80s", "xyzd");
 
