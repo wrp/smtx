@@ -895,8 +895,10 @@ test_width(int fd)
 	/* Move up to a window that is now only 20 columns wide and
 	print a string of 50 chars */
 	send_cmd(fd, NULL, "k");
-	send_raw(fd, NULL, "PS1='u'n'1>'; for i in 1 2 3 4 5; do ");
-	send_txt(fd, "un1>", "printf '%%s' ${i}123456789; done; echo");
+	send_txt(fd, "un1>",
+		"PS1='u'n'1>'; for i in 1 2 3 4 5; do "
+		"printf '%%s' ${i}123456789; done; echo"
+	);
 	rv |= validate_row(fd, 2, "%-20s", "11234567892123456789");
 
 	/* Shift right 15 chars */
@@ -908,8 +910,9 @@ test_width(int fd)
 	}
 	buf[sizeof buf - 1] = '\0';
 	/* Clear screen, print 2 rows (160 chars) of alphabet */
-	send_raw(fd, NULL, "PS1='%15su'n'3>'; ", "");
-	send_txt(fd, "un3>", "clear; printf '%s\\n'", buf);
+	send_txt(fd, "un3>", "PS1='%15su'n'3>'; clear; printf '%s\\n'",
+		"", buf
+	);
 	rv |= validate_row(fd, 1, "%-20s", "pqrstuvwxyzabcdefghi");
 
 	/* Shift right 75 chars ( now looking at last 20 chars of pty)*/
