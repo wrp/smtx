@@ -111,7 +111,6 @@ test_csr(int fd)
 	for(int i = 7; i <= 11; i++ ) {
 		rv |= validate_row(fd, i, "    %2d:%-73s", i + 14, "y");
 	}
-	send_raw(fd, NULL, "exit\r");
 	return rv;
 }
 
@@ -225,7 +224,6 @@ test_decaln(int fd)
 	}
 	memcpy(e, "uniq", 4);
 	rv |= validate_row(fd, 2, "%s", e);
-	send_raw(fd, NULL, "kill $SMTX\r");
 	return rv;
 }
 
@@ -258,7 +256,6 @@ test_ech(int fd)
 		"printf '\\nuniq%s\\n' 1"
 	);
 	rv |= validate_row(fd, 2, "%-80s", "012 45");
-	send_raw(fd, NULL, "exit\r");
 	return rv;
 }
 
@@ -332,7 +329,6 @@ test_equalize(int fd)
 	int status = check_layout(fd, 0x1, "*12x80; 4x80; 5x80");
 	send_cmd(fd, "uniq2", "%s", "=\rprintf uniq%s 2");
 	status |= check_layout(fd, 0x1, "*7x80; 7x80; 7x80");
-	send_raw(fd, NULL, "kill -TERM $SMTX\r");
 	return status;
 }
 
@@ -412,7 +408,6 @@ test_layout(int fd)
 	send_cmd(fd, "foobaz", "l\rprintf 'foo%%s' baz\r");
 	rv |= check_layout(fd, 0x11, "11x80@0,0; 11x40@12,0; *11x39@12,41");
 
-	send_raw(fd, NULL, "kill $SMTX\r");
 	return rv;
 }
 
@@ -558,11 +553,10 @@ test_reset(int fd)
 
 	for( unsigned long i = 0; i < sizeof k / sizeof *k; i++ ) {
 		int v = k[i];
-		const char *fmt =  "printf '\\033[%d%c\r";
-		send_raw(fd, NULL, fmt, v, 'l');
-		send_raw(fd, NULL, fmt, v, 'h');
+		const char *fmt =  "printf '\\033[%d%c";
+		send_txt(fd, NULL, fmt, v, 'l');
+		send_txt(fd, NULL, fmt, v, 'h');
 	}
-	send_raw(fd, NULL, "kill -TERM $SMTX\r");
 	return 0;
 }
 
@@ -578,7 +572,6 @@ test_resize(int fd)
 	status |= check_layout(fd, 0x1, "*12x40; 0x80; 10x80; 12x39");
 	send_cmd(fd, "uniq4", "%s\r%s", "kkl20H", "printf 'uniq%s\\n' 4");
 	status |= check_layout(fd, 0x1, "12x20; 0x80; 10x80; *12x59");
-	send_raw(fd, NULL, "kill -TERM $SMTX\r");
 	return status;
 }
 
@@ -941,6 +934,5 @@ test_width(int fd)
 	rv |= validate_row(fd, 1, "%-20s", "abcdefghijklmnopqrst");
 	rv |= validate_row(fd, 2, "%-20s", "uvwxyzabcdefghijklmn");
 
-	send_raw(fd, NULL, "kill $SMTX\r");
 	return rv;
 }
