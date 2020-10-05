@@ -121,8 +121,10 @@ resize_pad(WINDOW **p, int h, int w)
 {
 	int rv = -1;
 	if( *p ) {
-		err_check(wresize(*p, h, w ) != OK, "Error resizing window");
-	} else if( (*p = newpad(h, w)) != NULL ) {
+		err_check(wresize(*p, h, w ) != OK, "Error creating window");
+	} else if( (*p = newpad(h, w)) == NULL ) {
+		err_check(1, "Error resizing window");
+	} else {
 		wtimeout(*p, 0);
 		scrollok(*p, TRUE);
 		keypad(*p, TRUE);
