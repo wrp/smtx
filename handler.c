@@ -68,6 +68,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	y = py - tos;
 	x = px;
 	getmaxyx(win, my, mx);
+	assert( my == p->s->rows );
 	my -= tos;
 	wgetscrreg(win, &top, &bot);
 	bot += 1 - tos;

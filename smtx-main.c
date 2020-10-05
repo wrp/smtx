@@ -243,6 +243,14 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	if( f->p && f->extent.y ) {
 		assert( f->p->s );
 		int top = f->p->s->rows - f->extent.y;
+		#ifndef NDEBUG
+		{
+		int mx, my;
+		getmaxyx(f->p->s->win, my, mx);
+	(void)mx;
+		assert( my == f->p->s->rows );
+		}
+		#endif
 		getyx(f->p->s->win, y, x);
 		if( 0
 			|| x < f->offset.x
@@ -282,6 +290,14 @@ set_height(struct canvas *n)
 {
 	struct pty *p = n->p;
 	assert( p->s->rows >= n->extent.y );
+	#ifndef NDEBUG
+	{
+	int mx, my;
+	getmaxyx(p->pri.win, my, mx);
+	(void)mx;
+	assert( my == p->pri.rows );
+	}
+	#endif
 	p->ws.ws_row = n->extent.y;
 	wsetscrreg(p->pri.win, 0, p->pri.rows - 1);
 	wsetscrreg(p->alt.win, 0, n->extent.y - 1);
@@ -294,6 +310,14 @@ scrollbottom(struct canvas *n)
 {
 	if( n && n->p && n->p->s && n->extent.y ) {
 		assert( n->p->s->rows >= n->extent.y );
+	#ifndef NDEBUG
+	{
+	int mx, my;
+	getmaxyx(n->p->s->win, my, mx);
+	(void)mx;
+	assert( my == n->p->s->rows );
+	}
+	#endif
 		n->offset.y = n->p->s->rows - n->extent.y;
 	}
 }

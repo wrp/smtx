@@ -179,9 +179,7 @@ reshape_root(const char *arg)
 	}
 	for( struct pty *p = S.p; p; p = p->next ) {
 		p->ws.ws_row = 0;
-		if( LINES > p->pri.rows || LINES > p->alt.rows ) {
-			set_pty_history(p, LINES);
-		}
+		set_pty_history(p, LINES);
 	}
 	resize_pad(&S.werr, 1, COLS);
 	reshape(S.c, 0, 0, LINES, COLS);
@@ -239,6 +237,14 @@ scrolln(const char *arg)
 	if( n && n->p && n->p->s && n->p->s->win ) {
 		int count = S.count == -1 ? n->extent.y - 1 : S.count;
 		int top = n->p->s->rows - n->extent.y;
+	#ifndef NDEBUG
+	{
+	int mx, my;
+	getmaxyx(n->p->s->win, my, mx);
+	(void)mx;
+	assert( my == n->p->s->rows );
+	}
+	#endif
 		n->offset.y += *arg == '-' ? -count : count;
 		n->offset.y = MIN(MAX(0, n->offset.y), top);
 	}
@@ -283,6 +289,15 @@ set_pty_history(struct pty *p, int siz)
 	for( struct screen **sp = w; *sp; sp++ ) {
 		struct screen *s = *sp;
 
+	#ifndef NDEBUG
+	{
+	int mx, my;
+	getmaxyx(s->win, my, mx);
+	(void)mx;
+	assert( my == s->rows );
+	}
+	#endif
+
 		if( s->rows < siz ) {
 			WINDOW *orig = s->win;
 			int y, x;
@@ -304,12 +319,8 @@ set_history(const char *arg)
 	struct canvas *n = S.f;
 	struct pty *p = n->p;
 	int h = arg ? strtol(arg, NULL, 10) : S.count;
-	if( h < p->pri.rows && h < p->alt.rows ) {
-		err_check(1, "Refusing to shrink history");
-	} else {
-		set_pty_history(p, h);
-		S.reshape = 1;
-	}
+	set_pty_history(p, h);
+	S.reshape = 1;
 }
 
 void
@@ -322,6 +333,16 @@ set_width(const char *arg)
 		w = n->extent.x;
 	}
 	if( p->fd > 0 && (pty_size(p), w != p->ws.ws_col) ) {
+	#ifndef NDEBUG
+	{
+	int mx, my;
+	getmaxyx(p->pri.win, my, mx);
+	(void)mx;
+	assert( my == p->pri.rows );
+	getmaxyx(p->alt.win, my, mx);
+	assert( my == p->alt.rows );
+	}
+	#endif
 		assert( p->pri.rows >= n->extent.y );
 		assert( p->alt.rows >= n->extent.y );
 		p->ws.ws_col = w;
