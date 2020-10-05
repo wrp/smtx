@@ -72,6 +72,8 @@ struct pty {
 	struct winsize ws;
 	pid_t pid;
 	bool *tabs, pnm, decom, am, lnm;
+	/* DECOM: When set, cursor addressing is relative to the upper left
+	 * corner of the scrolling region. */
 	wchar_t repc;
 	struct screen pri, alt, *s;
 	wchar_t *g0, *g1, *g2, *g3, *gc, *gs, *sgc, *sgs;
