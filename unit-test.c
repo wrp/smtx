@@ -718,6 +718,37 @@ test_scrollh(int fd)
 	return rv;
 }
 
+
+int
+test_su(int fd)
+{
+	int rv = 0;
+	send_txt(fd, "un1>", "PS1=un'1>'; yes | nl -s '' | sed 50q");
+	rv |= validate_row(fd, 22, "    50y%73s", "");
+	rv |= validate_row(fd, 23, "%-80s", "un1>");
+
+	/* Use csi escape sequence S to scroll up 10 lines */
+	char *cmd = "PS1=un'2>'; printf '\\033[10S'";
+	send_txt(fd, "un2>", cmd);
+	rv |= validate_row(fd, 11, "    50y%73s", "");
+	rv |= validate_row(fd, 12, "un1>%-76s", cmd);
+	for( int i = 13; i < 23; i++ ) {
+		rv |= validate_row(fd, i, "%-80s", "");
+	}
+	rv |= validate_row(fd, 23, "%-80s", "un2>");
+
+	/* Use csi escape sequence T to scroll down 15 lines */
+	cmd = "PS1=un'3>'; printf '\\033[15T'";
+	send_txt(fd, "un3>", cmd);
+	rv |= validate_row(fd, 10, "    35y%73s", "");
+
+	/* Use csi escape sequence ^ to scroll down 4 lines */
+	cmd = "PS1=un'4>'; printf '\\033[4^'";
+	send_txt(fd, "un4>", cmd);
+	rv |= validate_row(fd, 10, "    32y%73s", "");
+	return rv;
+}
+
 int
 test_swap(int fd)
 {
