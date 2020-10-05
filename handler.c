@@ -234,25 +234,25 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	case rc: /* Restore Cursor */
 		if( iw == L'#' ) {
 			CALL(decaln);
-			return;
-		}
-		if( !s->saved ) {
-			return;
-		}
-		wmove(win, s->sy, s->sx);              /* old position */
-		wattr_set(win, s->sattr, s->sp, NULL); /* attrs/color pair */
-		s->fg = s->sfg;                        /* foreground color */
-		s->bg = s->sbg;                        /* background color */
-		s->xenl = s->oxenl;                    /* xenl state */
-		p->gc = p->sgc; p->gs = p->sgs;        /* save character sets */
+		} else if( !s->saved ) {
+			noclear_repc = 1;
+		} else {
+			wmove(win, s->sy, s->sx);
+			wattr_set(win, s->sattr, s->sp, NULL);
+			s->fg = s->sfg;
+			s->bg = s->sbg;
+			s->xenl = s->oxenl;
+			p->gc = p->sgc;
+			p->gs = p->sgs;
 
-		/* restore colors */
-		#if HAVE_ALLOC_PAIR
-		int cp = alloc_pair(s->fg, s->bg);
-		wcolor_set(win, cp, NULL);
-		setcchar(&b, L" ", A_NORMAL, cp, NULL);
-		wbkgrndset(win, &b);
-		#endif
+			/* restore colors */
+			#if HAVE_ALLOC_PAIR
+			int cp = alloc_pair(s->fg, s->bg);
+			wcolor_set(win, cp, NULL);
+			setcchar(&b, L" ", A_NORMAL, cp, NULL);
+			wbkgrndset(win, &b);
+			#endif
+		}
 		break;
 	case ri: /* Reverse Index (scroll back) */
 		wgetscrreg(win, &t1, &t2);
