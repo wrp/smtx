@@ -88,7 +88,8 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	case csr: /* CSR - Change Scrolling Region */
 		t1 = argv && argc > 1 ? argv[1] : my;
 		if( wsetscrreg(win, tos + p0[1] - 1, tos + t1 - 1) == OK ) {
-			CALL(cup);
+			s->xenl = false;
+			wmove(win, tos + (p->decom ? top : 0), 0);
 		}
 		break;
 	case cub: /* Cursor Backward */
