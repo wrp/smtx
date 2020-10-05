@@ -887,8 +887,20 @@ test_tput(int fd)
 	for( int i = 8; i < 23; i++ ) {
 		rv |= validate_row(fd, i, "%80s", "");
 	}
-	/* bel: alert user*/
-	send_txt(fd, NULL, "tput bel; kill $SMTX");
+	send_txt(fd, "un1>", "PS1=un'1> '; tput bel");
+	rv |= validate_row(fd, 8, "%-80s", "un1>");
+
+	/* Use vpr to move down 5 lines */
+	char *cmd = "PS1=un'2>'; printf '\\033[5e'; echo foo";
+	send_txt(fd, "un2>", cmd);
+	rv |= validate_row(fd, 8, "un1> %-75s", cmd);
+
+	for( int i = 10; i < 14; i++ ) {
+		rv |= validate_row(fd, i, "%80s", "");
+	}
+	rv |= validate_row(fd, 14, "%-80s", "foo");
+	rv |= validate_row(fd, 15, "%-80s", "un2>");
+
 	return rv;
 }
 
