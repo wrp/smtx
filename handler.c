@@ -21,8 +21,8 @@
  * The names for handlers come from their ANSI/ECMA/DEC mnemonics.
  */
 enum cmd {
-	ack=1, bell, cbt, cls, cnl, cpl, cr, csr, cub, cud, cuf, cup,
-	cuu, dch, decaln, decid, decreqtparm, dsr, ech, ed, el, hpa, hpr, ht,
+	ack=1, bell, cls, cnl, cpl, cr, csr, cub, cud, cuf, cup,
+	cuu, dch, decaln, decid, decreqtparm, dsr, ech, ed, el, hpa, hpr,
 	hts, ich, idl, ind, mode, nel, numkp, osc, pnl, print, rc, rep,
 	ri, ris, sc, scs, sgr, sgr0, so, su, tab, tbc, vis, vpa, vpr
 };
@@ -80,12 +80,6 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		break;
 	case bell: /* Terminal bell. */
 		beep();
-		break;
-	case cbt: /* Cursor Backwards Tab */
-		for( i = px - 1; i >= 0 && ! p->tabs[i]; i-- ) {
-			assert( i < p->ntabs );
-		}
-		wmove(win, py, i);
 		break;
 	case cr: /* Carriage Return */
 		s->xenl = false;
@@ -202,12 +196,6 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	case hpr: /* Cursor Horizontal Relative */
 		wmove(win, py, MIN(px + p0[1], mx - 1));
 		break;
-	case ht: /* Horizontal Tab */
-		for( i = px + 1; i < mx - 1 && !p->tabs[i]; i++ ) {
-			assert(i < p->ntabs);
-		}
-		wmove(win, py, i);
-		break;
 	case hts: /* Horizontal Tab Set */
 		if( px < p->ntabs && px > 0 ) {
 			p->tabs[px] = true;
@@ -274,9 +262,20 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		wscrl(win, (w == L'T' || w == L'^') ? -p0[1] : p0[1]);
 		break;
 	case tab: /* Tab forwards or backwards */
-		for( i = 0; i < p0[1]; i++ ) {
-			CALL(w == L'Z' ? cbt : ht);
+		if( w == L'Z' ) {
+			for( ; p0[1] && px > 0; ) {
+				if( p->tabs[--px] ) {
+					p0[1] -= 1;
+				}
+			}
+		} else {
+			for( ; p0[1] && px < mx - 1; ) {
+				if( p->tabs[++px] ) {
+					p0[1] -= 1;
+				}
+			}
 		}
+		wmove(win, py, px);
 		break;
 	case tbc: /* Tabulation Clear */
 		if( p->tabs != NULL ) {
