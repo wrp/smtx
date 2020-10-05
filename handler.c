@@ -309,9 +309,10 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		wbkgdset(win, COLOR_PAIR(0) | ' ');
 		break;
 	case cls: /* Clear screen */
-		CALL(cup);
+		s->xenl = false;
+		wmove(win, tos + (p->decom ? top : 0), 0);
 		wclrtobot(win);
-		CALL(cup);
+		wmove(win, tos + (p->decom ? top : 0), 0);
 		break;
 	case ris: /* Reset to Initial State */
 		ioctl(p->fd, TIOCGWINSZ, &p->ws);
