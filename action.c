@@ -235,16 +235,11 @@ scrolln(const char *arg)
 {
 	struct canvas *n = S.f;
 	if( n && n->p && n->p->s && n->p->s->win ) {
+		int y, x;
 		int count = S.count == -1 ? n->extent.y - 1 : S.count;
-		int top = n->p->s->rows - n->extent.y;
-	#ifndef NDEBUG
-	{
-	int mx, my;
-	getmaxyx(n->p->s->win, my, mx);
-	(void)mx;
-	assert( my == n->p->s->rows );
-	}
-	#endif
+		getmaxyx(n->p->s->win, y, x);
+		(void)x;
+		int top = y - n->extent.y;
 		n->offset.y += *arg == '-' ? -count : count;
 		n->offset.y = MIN(MAX(0, n->offset.y), top);
 	}
@@ -288,26 +283,18 @@ set_pty_history(struct pty *p, int siz)
 	struct screen *w[] = { &p->pri, &p->alt, NULL };
 	for( struct screen **sp = w; *sp; sp++ ) {
 		struct screen *s = *sp;
+		int my, x;
+		getmaxyx(s->win, my, x);
 
-	#ifndef NDEBUG
-	{
-	int mx, my;
-	getmaxyx(s->win, my, mx);
-	(void)mx;
-	assert( my == s->rows );
-	}
-	#endif
-
-		if( s->rows < siz ) {
+		if( my < siz ) {
 			WINDOW *orig = s->win;
-			int y, x;
+			int y;
 
 			getyx(s->win, y, x);
-			replacewin(&s->win, siz, p->ws.ws_col, siz - s->rows);
+			replacewin(&s->win, siz, p->ws.ws_col, siz - my);
 
 			if( orig != s->win ) {
-				wmove(s->win, y + siz - s->rows, x);
-				s->rows = siz;
+				wmove(s->win, y + siz - my, x);
 			}
 		}
 	}
@@ -333,21 +320,15 @@ set_width(const char *arg)
 		w = n->extent.x;
 	}
 	if( p->fd > 0 && (pty_size(p), w != p->ws.ws_col) ) {
-	#ifndef NDEBUG
-	{
-	int mx, my;
-	getmaxyx(p->pri.win, my, mx);
-	(void)mx;
-	assert( my == p->pri.rows );
-	getmaxyx(p->alt.win, my, mx);
-	assert( my == p->alt.rows );
-	}
-	#endif
-		assert( p->pri.rows >= n->extent.y );
-		assert( p->alt.rows >= n->extent.y );
+		int py, ay, x;
+		getmaxyx(p->pri.win, py, x);
+		getmaxyx(p->alt.win, ay, x);
+		(void)x;
+		assert( py >= n->extent.y );
+		assert( ay >= n->extent.y );
 		p->ws.ws_col = w;
-		resize_pad(&p->pri.win, p->pri.rows, w);
-		resize_pad(&p->alt.win, p->alt.rows, w);
+		resize_pad(&p->pri.win, py, w);
+		resize_pad(&p->alt.win, ay, w);
 		extend_tabs(p, p->tabstop);
 		reshape_window(p);
 	}

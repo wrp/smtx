@@ -61,7 +61,6 @@ extern int smtx_main(int, char **);
 
 struct canvas;
 struct screen {
-	int rows; /* Number of rows in win (eg, history buffer) */
 	int sy, sx, vis;
 	short fg, bg, sfg, sbg, sp;
 	bool insert, oxenl, xenl, saved;

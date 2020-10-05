@@ -149,8 +149,8 @@ new_pty(int rows, int cols)
 			execl(sh, sh, NULL);
 			err(EXIT_FAILURE, "exec SHELL='%s'", sh);
 		} else if( ! err_check(p->pid < 0, "forkpty" ) ) {
-			resize_pad(&p->pri.win, p->pri.rows = S.history, cols);
-			resize_pad(&p->alt.win, p->alt.rows = S.history, cols);
+			resize_pad(&p->pri.win, S.history, cols);
+			resize_pad(&p->alt.win, S.history, cols);
 		}
 		if( p->pri.win && p->alt.win ) {
 			p->s = &p->pri;
@@ -240,17 +240,9 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	struct canvas *f = S.f;
 	int x = 0, y = 0;
 	int show = S.mode == enter && f->p->s->vis;
-	if( f->p && f->extent.y ) {
-		assert( f->p->s );
-		int top = f->p->s->rows - f->extent.y;
-		#ifndef NDEBUG
-		{
-		int mx, my;
-		getmaxyx(f->p->s->win, my, mx);
-	(void)mx;
-		assert( my == f->p->s->rows );
-		}
-		#endif
+	if( f->p && f->p->s && f->extent.y ) {
+		getmaxyx(f->p->s->win, y, x);
+		int top = y - f->extent.y;
 		getyx(f->p->s->win, y, x);
 		if( 0
 			|| x < f->offset.x
@@ -288,18 +280,14 @@ reshape_window(struct pty *p)
 static void
 set_height(struct canvas *n)
 {
+	int y, x;
 	struct pty *p = n->p;
-	assert( p->s->rows >= n->extent.y );
-	#ifndef NDEBUG
-	{
-	int mx, my;
-	getmaxyx(p->pri.win, my, mx);
-	(void)mx;
-	assert( my == p->pri.rows );
-	}
-	#endif
+	getmaxyx(p->pri.win, y, x);
+	(void)x;
+
+	assert( y >= n->extent.y );
 	p->ws.ws_row = n->extent.y;
-	wsetscrreg(p->pri.win, 0, p->pri.rows - 1);
+	wsetscrreg(p->pri.win, 0, y - 1);
 	wsetscrreg(p->alt.win, 0, n->extent.y - 1);
 	wrefresh(p->s->win);
 	reshape_window(p);
@@ -309,16 +297,11 @@ void
 scrollbottom(struct canvas *n)
 {
 	if( n && n->p && n->p->s && n->extent.y ) {
-		assert( n->p->s->rows >= n->extent.y );
-	#ifndef NDEBUG
-	{
-	int mx, my;
-	getmaxyx(n->p->s->win, my, mx);
-	(void)mx;
-	assert( my == n->p->s->rows );
-	}
-	#endif
-		n->offset.y = n->p->s->rows - n->extent.y;
+		int y, x;
+		getmaxyx(n->p->s->win, y, x);
+		(void)x;
+		assert( y >= n->extent.y );
+		n->offset.y = y - n->extent.y;
 	}
 }
 
