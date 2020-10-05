@@ -273,9 +273,11 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		break;
 	case tbc: /* Tabulation Clear */
 		if( p->tabs != NULL ) {
-			switch( argc >= 0 && argv ? argv[0] : 0 ) {
+			switch( p0[0] ) {
 			case 0:
-				p->tabs[px < p->ntabs ? px : 0] = false;
+				if( px < p->ntabs ) {
+					p->tabs[px] = false;
+				}
 				break;
 			case 3:
 				memset(p->tabs, 0, p->ntabs * sizeof *p->tabs);

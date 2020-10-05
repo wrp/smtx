@@ -831,6 +831,11 @@ test_tabstop(int fd)
 	send_txt(fd, "un4>", cmd, ++d);
 	rv |= validate_row(fd, 9, "%-80s", "this is   a    test");
 
+	/* Clear tab in position 10 */
+	send_txt(fd, "un5>", "PS1=un'5>'; tput hpa 10; printf '\\033[0g'");
+	send_txt(fd, "un6>", cmd, d += 2);
+	rv |= validate_row(fd, 12, "%-80s", "this is        a    test");
+
 	return rv;
 }
 
