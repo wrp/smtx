@@ -49,11 +49,11 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	int noclear_repc = 0;
 	int p0[2];               /* First arg, defaulting to 0 or 1 */
 	int p1;                  /* argv[1], defaulting to 1 */
-	int i, t1 = 0, t2 = 0;   /* Some temp ints */
+	int x, i, t1 = 0, t2 = 0;   /* Some temp ints */
 	struct pty *p = v->p;    /* the current pty */
 	struct screen *s = p->s; /* the current SCRN buffer */
 	WINDOW *win = s->win;    /* the current window */
-	int y, x;                /* cursor position */
+	int y;                   /* cursor position */
 	int my, mx;              /* max possible values for x and y */
 	int py, px;              /* physical cursor position in scrollback */
 	int top = 0, bot = 0;    /* the scrolling region */
@@ -82,7 +82,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		beep();
 		break;
 	case cbt: /* Cursor Backwards Tab */
-		for( i = x - 1; i >= 0 && ! p->tabs[i]; i-- ) {
+		for( i = px - 1; i >= 0 && ! p->tabs[i]; i-- ) {
 			assert( i < p->ntabs );
 		}
 		wmove(win, py, i);
@@ -99,20 +99,20 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		break;
 	case cub: /* Cursor Backward */
 		s->xenl = false;
-		wmove(win, py, MAX(x - p0[1], 0));
+		wmove(win, py, MAX(px - p0[1], 0));
 		break;
 	case cud: /* Cursor Down */
-		wmove(win, MIN(py + p0[1], tos + bot - 1), x);
+		wmove(win, MIN(py + p0[1], tos + bot - 1), px);
 		break;
 	case cuf: /* Cursor Forward */
-		wmove(win, py, MIN(x + p0[1], mx - 1));
+		wmove(win, py, MIN(px + p0[1], mx - 1));
 		break;
 	case cup: /* Cursor Position */
 		s->xenl = false;
 		wmove(win, tos + (p->decom ? top : 0) + p0[1] - 1, p1 - 1);
 		break;
 	case cuu: /* Cursor Up */
-		wmove(win, MAX(py - p0[1], tos + top), x);
+		wmove(win, MAX(py - p0[1], tos + top), px);
 		break;
 	case dch: /* Delete Character */
 		for( i = 0; i < p0[1]; i++ ) {
@@ -142,7 +142,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	case dsr: /* DSR - Device Status Report */
 		if( p0[0] == 6 ) {
 			i = snprintf(buf, sizeof buf, "\033[%d;%dR",
-				(p->decom ? y - top : y) + 1, x + 1);
+				(p->decom ? y - top : y) + 1, px + 1);
 		} else {
 			i = snprintf(buf, sizeof buf, "\033[0n");
 		}
@@ -154,7 +154,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		setcchar(&b, L" ", A_NORMAL, alloc_pair(s->fg, s->bg), NULL);
 		#endif
 		for( i = 0; i < p0[1]; i++ )
-			mvwadd_wchnstr(win, py, x + i, &b, 1);
+			mvwadd_wchnstr(win, py, px + i, &b, 1);
 		wmove(win, py, px);
 		break;
 	case ed: /* Erase in Display */
@@ -172,7 +172,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				wmove(win, i, 0);
 				wclrtoeol(win);
 			}
-			wmove(win, py, x);
+			wmove(win, py, px);
 			tput(v, w, iw, 1, argv, el);
 			break;
 		}
@@ -189,12 +189,12 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			wclrtoeol(win);
 			break;
 		case 1:
-			for( i = 0; i <= x; i++ ) {
+			for( i = 0; i <= px; i++ ) {
 				mvwadd_wchnstr(win, py, i, &b, 1);
 			}
 			break;
 		}
-		wmove(win, py, x);
+		wmove(win, py, px);
 		break;
 	case hpa: /* Cursor Horizontal Absolute */
 		wmove(win, py, MIN(p0[1] - 1, mx - 1));
@@ -203,14 +203,14 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		wmove(win, py, MIN(px + p0[1], mx - 1));
 		break;
 	case ht: /* Horizontal Tab */
-		for( i = x + 1; i < mx - 1 && !p->tabs[i]; i++ ) {
+		for( i = px + 1; i < mx - 1 && !p->tabs[i]; i++ ) {
 			assert(i < p->ntabs);
 		}
 		wmove(win, py, i);
 		break;
 	case hts: /* Horizontal Tab Set */
-		if( x < p->ntabs && x > 0 ) {
-			p->tabs[x] = true;
+		if( px < p->ntabs && px > 0 ) {
+			p->tabs[px] = true;
 		}
 		break;
 	case ich: /* Insert Character */
@@ -257,7 +257,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	case ri: /* Reverse Index (scroll back) */
 		wgetscrreg(win, &t1, &t2);
 		wsetscrreg(win, t1 >= tos ? t1 : tos, t2);
-		y == top ? wscrl(win, -1) : wmove(win, MAX(tos, py - 1), x);
+		y == top ? wscrl(win, -1) : wmove(win, MAX(tos, py - 1), px);
 		wsetscrreg(win, t1, t2);
 		break;
 	case sc: /* Save Cursor */
@@ -282,7 +282,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		if( p->tabs != NULL ) {
 			switch( argc >= 0 && argv ? argv[0] : 0 ) {
 			case 0:
-				p->tabs[x < p->ntabs ? x : 0] = false;
+				p->tabs[px < p->ntabs ? px : 0] = false;
 				break;
 			case 3:
 				memset(p->tabs, 0, p->ntabs * sizeof *p->tabs);
@@ -297,10 +297,10 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		s->vis = iw == L'6'? 0 : 1;
 		break;
 	case vpa: /* Cursor Vertical Absolute */
-		wmove(win, MIN(tos + bot - 1, MAX(tos + top, tos + p0[1] - 1)), x);
+		wmove(win, MIN(tos + bot - 1, MAX(tos + top, tos + p0[1] - 1)), px);
 		break;
 	case vpr: /* Cursor Vertical Relative */
-		wmove(win, MIN(tos + bot - 1, MAX(tos + top, py + p0[1])), x);
+		wmove(win, MIN(tos + bot - 1, MAX(tos + top, py + p0[1])), px);
 		break;
 case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 	if( p0[0] ) {
@@ -455,7 +455,7 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 	}
 		break;
 	case ind: /* Index */
-		y == (bot - 1) ? scroll(win) : wmove(win, py + 1, x);
+		y == (bot - 1) ? scroll(win) : wmove(win, py + 1, px);
 		break;
 	case nel: /* Next Line */
 		CALL(cr);
