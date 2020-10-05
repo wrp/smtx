@@ -343,7 +343,11 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 			case  1: p->pnm = set;              break;
 			case  3: CALL(cls);                 break;
 			case  4: s->insert = set;           break;
-			case  6: p->decom = set; CALL(cup); break;
+			case  6:
+				p->decom = set;
+				s->xenl = false;
+				wmove(win, tos + (p->decom ? top : 0), 0);
+				break;
 			case  7: p->am = set;               break;
 			case 20: p->lnm = set;              break;
 			case 25: s->vis = set ? 1 : 0;      break;
