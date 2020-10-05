@@ -24,7 +24,7 @@ struct state S = {
 	.ctlkey = CTL('g'),
 	.width = 80,
 	.mode = enter,
-	.history = 1024,
+	.history = 1024, /* History provided to new WINDOWS */
 	.count = -1,
 };
 
@@ -149,9 +149,8 @@ new_pty(int rows, int cols)
 			execl(sh, sh, NULL);
 			err(EXIT_FAILURE, "exec SHELL='%s'", sh);
 		} else if( ! err_check(p->pid < 0, "forkpty" ) ) {
-			p->history = S.history;
-			resize_pad(&p->pri.win, p->history, cols);
-			resize_pad(&p->alt.win, p->history, cols);
+			resize_pad(&p->pri.win, p->pri.rows = S.history, cols);
+			resize_pad(&p->alt.win, p->alt.rows = S.history, cols);
 		}
 		if( p->pri.win && p->alt.win ) {
 			p->s = &p->pri;
@@ -243,7 +242,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	int show = S.mode == enter && f->p->s->vis;
 	if( f->p && f->extent.y ) {
 		assert( f->p->s );
-		int top = f->p->history - f->extent.y;
+		int top = f->p->s->rows - f->extent.y;
 		getyx(f->p->s->win, y, x);
 		if( 0
 			|| x < f->offset.x
@@ -282,9 +281,9 @@ static void
 set_height(struct canvas *n)
 {
 	struct pty *p = n->p;
-	assert( p->history >= n->extent.y );
+	assert( p->s->rows >= n->extent.y );
 	p->ws.ws_row = n->extent.y;
-	wsetscrreg(p->pri.win, 0, p->history - 1);
+	wsetscrreg(p->pri.win, 0, p->pri.rows - 1);
 	wsetscrreg(p->alt.win, 0, n->extent.y - 1);
 	wrefresh(p->s->win);
 	reshape_window(p);
@@ -294,8 +293,8 @@ void
 scrollbottom(struct canvas *n)
 {
 	if( n && n->p && n->p->s && n->extent.y ) {
-		assert( n->p->history >= n->extent.y );
-		n->offset.y = n->p->history - n->extent.y;
+		assert( n->p->s->rows >= n->extent.y );
+		n->offset.y = n->p->s->rows - n->extent.y;
 	}
 }
 

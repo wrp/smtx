@@ -61,6 +61,7 @@ extern int smtx_main(int, char **);
 
 struct canvas;
 struct screen {
+	int rows; /* Number of rows in win (eg, history buffer) */
 	int sy, sx, vis;
 	short fg, bg, sfg, sbg, sp;
 	bool insert, oxenl, xenl, saved;
@@ -69,7 +70,6 @@ struct screen {
 };
 struct pty {
 	int fd, ntabs, tabstop, id;
-	int history; /* Number of rows in .pri */
 	struct winsize ws;
 	pid_t pid;
 	bool *tabs, pnm, decom, am, lnm;

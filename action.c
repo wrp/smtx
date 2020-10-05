@@ -179,7 +179,7 @@ reshape_root(const char *arg)
 	}
 	for( struct pty *p = S.p; p; p = p->next ) {
 		p->ws.ws_row = 0;
-		if( LINES > p->history ) {
+		if( LINES > p->pri.rows || LINES > p->alt.rows ) {
 			set_pty_history(p, LINES);
 		}
 	}
@@ -238,7 +238,7 @@ scrolln(const char *arg)
 	struct canvas *n = S.f;
 	if( n && n->p && n->p->s && n->p->s->win ) {
 		int count = S.count == -1 ? n->extent.y - 1 : S.count;
-		int top = n->p->history - n->extent.y;
+		int top = n->p->s->rows - n->extent.y;
 		n->offset.y += *arg == '-' ? -count : count;
 		n->offset.y = MIN(MAX(0, n->offset.y), top);
 	}
@@ -279,24 +279,22 @@ replacewin(WINDOW **src, int rows, int cols, int delta)
 static void
 set_pty_history(struct pty *p, int siz)
 {
-	if( p->history < siz ) {
-		int y, x;
-		WINDOW *w = p->s->win;
+	struct screen *w[] = { &p->pri, &p->alt, NULL };
+	for( struct screen **sp = w; *sp; sp++ ) {
+		struct screen *s = *sp;
 
-		getyx(p->s->win, y, x);
-		/* TODO: handle errors gracefully here.  Perhaps we
-		 * need history to be an array of size 2.  Currently,
-		 * if one of these windows resizes but the other fails,
-		 * we will be in a bad state.
-		 */
-		replacewin(&p->pri.win, siz, p->ws.ws_col, siz - p->history);
-		replacewin(&p->alt.win, siz, p->ws.ws_col, siz - p->history);
+		if( s->rows < siz ) {
+			WINDOW *orig = s->win;
+			int y, x;
 
-		if( w != p->s->win ) {
-			wmove(p->s->win, y + siz - p->history, x);
-			p->history = siz;
+			getyx(s->win, y, x);
+			replacewin(&s->win, siz, p->ws.ws_col, siz - s->rows);
+
+			if( orig != s->win ) {
+				wmove(s->win, y + siz - s->rows, x);
+				s->rows = siz;
+			}
 		}
-
 	}
 }
 
@@ -306,7 +304,7 @@ set_history(const char *arg)
 	struct canvas *n = S.f;
 	struct pty *p = n->p;
 	int h = arg ? strtol(arg, NULL, 10) : S.count;
-	if( h < p->history ) {
+	if( h < p->pri.rows && h < p->alt.rows ) {
 		err_check(1, "Refusing to shrink history");
 	} else {
 		set_pty_history(p, h);
@@ -319,16 +317,16 @@ set_width(const char *arg)
 {
 	struct canvas *n = S.f;
 	struct pty *p = n->p;
-	assert( p->history >= n->extent.y );
-	int h = p->history;
 	int w = arg ? strtol(arg, NULL, 10) : S.count;
 	if( w == -1 ) {
 		w = n->extent.x;
 	}
 	if( p->fd > 0 && (pty_size(p), w != p->ws.ws_col) ) {
+		assert( p->pri.rows >= n->extent.y );
+		assert( p->alt.rows >= n->extent.y );
 		p->ws.ws_col = w;
-		resize_pad(&p->pri.win, h, w);
-		resize_pad(&p->alt.win, h, w);
+		resize_pad(&p->pri.win, p->pri.rows, w);
+		resize_pad(&p->alt.win, p->alt.rows, w);
 		extend_tabs(p, p->tabstop);
 		reshape_window(p);
 	}

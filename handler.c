@@ -57,7 +57,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	int my, mx;              /* max possible values for x and y */
 	int py, px;              /* physical cursor position in scrollback */
 	int top = 0, bot = 0;    /* the scrolling region */
-	int tos = p->history - p->ws.ws_row;
+	int tos = p->s->rows - p->ws.ws_row;
 	char buf[32];
 	cchar_t b;
 
@@ -330,8 +330,8 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		p->am = p->pnm = true;
 		p->pri.vis = p->alt.vis = 1;
 		p->s = &p->pri;
-		assert( p->history >= p->ws.ws_row );
-		wsetscrreg(p->pri.win, 0, p->history - 1);
+		assert( p->s->rows >= p->ws.ws_row );
+		wsetscrreg(p->pri.win, 0, p->s->rows - 1);
 		wsetscrreg(p->alt.win, 0, p->ws.ws_row - 1);
 		memset(p->tabs, 0, p->ntabs * sizeof *p->tabs);
 		for( i = 0; i < p->ntabs; i += p->tabstop ) {
