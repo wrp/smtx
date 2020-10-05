@@ -262,17 +262,10 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		wscrl(win, (w == L'T' || w == L'^') ? -p0[1] : p0[1]);
 		break;
 	case tab: /* Tab forwards or backwards */
-		if( w == L'Z' ) {
-			for( ; p0[1] && px > 0; ) {
-				if( p->tabs[--px] ) {
-					p0[1] -= 1;
-				}
-			}
-		} else {
-			for( ; p0[1] && px < mx - 1; ) {
-				if( p->tabs[++px] ) {
-					p0[1] -= 1;
-				}
+		while( p0[1] && px > 0 && px < mx - 1 ) {
+			px += w == L'Z' ? -1 : +1;
+			if( p->tabs[px] ) {
+				p0[1] -= 1;
 			}
 		}
 		wmove(win, py, px);
