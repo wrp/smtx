@@ -57,7 +57,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	int my, mx;              /* max possible values for x and y */
 	int py, px;              /* physical cursor position in scrollback */
 	int top = 0, bot = 0;    /* the scrolling region */
-	int tos = p->s->rows - p->ws.ws_row;
+	int tos;
 	char buf[32];
 	cchar_t b;
 
@@ -65,10 +65,12 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	p0[1] = argv && argc > 0 ? argv[0] : 1;
 	p1 = argv && argc > 1 ? argv[1] : 1;
 	getyx(win, py, px);
-	y = py - tos;
 	x = px;
 	getmaxyx(win, my, mx);
 	assert( my == p->s->rows );
+
+	tos = my - p->ws.ws_row;
+	y = py - tos;
 	my -= tos;
 	wgetscrreg(win, &top, &bot);
 	bot += 1 - tos;
