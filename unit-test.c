@@ -22,16 +22,29 @@ test_alt(int fd)
 	/* Emit csi sequence to use alternate screen */
 
 	int rv = 0;
+
+	/* Write some lines of text on primary screen */
 	send_txt(fd, "primary", "echo 'p'rimar'y'");
 	rv |= validate_row(fd, 2, "%-80s", "primary");
 	send_txt(fd, "un1>", "PS1='u'n'1>'; echo primary 4");
+	rv |= validate_row(fd, 4, "%-80s", "primary 4");
+
+	/* Go to alternate screen */
 	send_txt(fd, NULL, "printf '\\033[47h'");
 	send_txt(fd, "secondary", "echo 's'econdar'y'");
 	rv |= validate_row(fd, 2, "%-80s", "secondary");
 	rv |= validate_row(fd, 4, "%-80s", "");
+
+	/* Return to primary screen */
 	send_txt(fd, NULL, "printf '\\033[47l'");
 	send_txt(fd, "ab1>", "PS1='a'b1'>'");
 	rv |= validate_row(fd, 4, "%-80s", "primary 4");
+	rv |= validate_row(fd, 7, "%-80s", "ab1>");
+
+	/* Go back to alternate screen using 1047 */
+	send_txt(fd, "zephyr", "printf '\\033[1047h'\recho z'e'ph'y'r");
+	rv |= validate_row(fd, 2, "%-80s", "zephyr");
+	rv |= validate_row(fd, 4, "%-80s", "");
 	return rv;
 }
 
