@@ -351,6 +351,7 @@ main(int argc, char *const argv[])
 
 	snprintf(bigint, sizeof bigint, "%d", INT_MAX);
 	F(test_ack);
+	F(test_alt);
 	F(test_attach);
 	F(test_bighist, "NOWAIT", "1", "args", "-s", bigint);
 	F(test_changehist, "args", "-s", "128");

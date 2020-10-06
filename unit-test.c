@@ -17,6 +17,25 @@
 #include "unit-test.h"
 
 int
+test_alt(int fd)
+{
+	/* Emit csi sequence to use alternate screen */
+
+	int rv = 0;
+	send_txt(fd, "primary", "echo 'p'rimar'y'");
+	rv |= validate_row(fd, 2, "%-80s", "primary");
+	send_txt(fd, "un1>", "PS1='u'n'1>'; echo primary 4");
+	send_txt(fd, NULL, "printf '\\033[47h'");
+	send_txt(fd, "secondary", "echo 's'econdar'y'");
+	rv |= validate_row(fd, 2, "%-80s", "secondary");
+	rv |= validate_row(fd, 4, "%-80s", "");
+	send_txt(fd, NULL, "printf '\\033[47l'");
+	send_txt(fd, "ab1>", "PS1='a'b1'>'");
+	rv |= validate_row(fd, 4, "%-80s", "primary 4");
+	return rv;
+}
+
+int
 test_ack(int fd)
 {
 	/* Expect an \x06 in response to \x05

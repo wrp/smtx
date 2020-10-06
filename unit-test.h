@@ -62,6 +62,7 @@ check_layout(int fd, int flag, const char *fmt, ...);
 
 typedef int(test)(int fd);
 test test_ack;
+test test_alt;
 test test_attach;
 test test_bighist;
 test test_changehist;
