@@ -21,7 +21,7 @@
  * The names for handlers come from their ANSI/ECMA/DEC mnemonics.
  */
 enum cmd {
-	ack=1, bell, cls, cnl, cpl, cr, csr, cub, cud, cuf, cup,
+	ack=1, bell, cnl, cpl, cr, csr, cub, cud, cuf, cup,
 	cuu, dch, decaln, decid, decreqtparm, dsr, ech, ed, el, hpa, hpr,
 	hts, ich, idl, ind, mode, nel, numkp, osc, pnl, print, rc, rep,
 	ri, ris, sc, scs, sgr, so, su, tab, tbc, vis, vpa, vpr
@@ -336,9 +336,6 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		for( i = 0; i < p->ntabs; i += p->tabstop ) {
 			p->tabs[i] = true;
 		}
-		/* Fall thru */
-	case cls: /* Clear screen */
-		clear_screen(p, top, tos);
 		break;
 	case mode: /* Set or Reset Mode */
 	{
