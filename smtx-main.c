@@ -155,11 +155,11 @@ new_pty(int rows, int cols)
 		if( p->pri.win && p->alt.win ) {
 			p->s = &p->pri;
 			p->vp.p = p;
+			extend_tabs(p, p->tabstop = 8);
 			setupevents(&p->vp);
 
 			FD_SET(p->fd, &S.fds);
 			fcntl(p->fd, F_SETFL, O_NONBLOCK);
-			extend_tabs(p, p->tabstop = 8);
 			p->id = p->fd - 2;
 			struct pty **t = &S.p;
 			/* Insert into ordered list */
