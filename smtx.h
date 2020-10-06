@@ -56,7 +56,6 @@ extern int smtx_main(int, char **);
 #define CTL(x) ((x) & 0x1f)
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
-#define MIN3(a, b, c) ((a) < (b) ? MIN(a, c) : MIN(b, c))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
 struct canvas;

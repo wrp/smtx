@@ -380,7 +380,8 @@ describe_row(char *desc, size_t siz, int row)
 	if( row < c->extent.y ) {
 		WINDOW *w = c->p->s->win;
 		getmaxyx(w, y, mx);
-		mx = MIN3(mx, c->extent.x + c->offset.x, (int)siz - 1);
+		assert( c->extent.x + c->offset.x <= mx );
+		mx = MIN(c->extent.x + c->offset.x, (int)siz - 1);
 		mx -= c->offset.x;
 		len = mx;
 		row += c->offset.y;
