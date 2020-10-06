@@ -371,29 +371,28 @@ describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 static size_t
 describe_row(char *desc, size_t siz, int row)
 {
-	size_t len = 0;
-	int y, x, mx;
+	size_t i = 0;
+	int y, x;
 
 	const struct canvas *c = S.c;
 	assert( c->offset.x >= 0 );
 
 	if( row < c->extent.y ) {
 		WINDOW *w = c->p->s->win;
-		len = mx = c->extent.x;
 		row += c->offset.y;
 		getyx(w, y, x);
-		for( char *d = desc + len; mx >= 0; mx-- ) {
-			*d-- = mvwinch(w, row, mx + c->offset.x) & A_CHARTEXT;
+		for( i = 0; i < (size_t)c->extent.x && i < siz; i++ ) {
+			chtype k = mvwinch(w, row, i + c->offset.x);
+			desc[i] = k & A_CHARTEXT;
 		}
 		wmove(w, y, x);
 	} else if( row == c->extent.y ) {
 		WINDOW *w = c->wtit;
-		len = MIN((size_t)c->extent.x, siz - 1);
-		for( size_t i = 0; i < len; i++ ) {
+		for( i = 0; i < (size_t)c->extent.x && i < siz; i++ ) {
 			desc[i] = mvwinch(w, 0, i) & A_CHARTEXT;
 		}
 	}
-	return len;
+	return i;
 }
 
 static size_t
