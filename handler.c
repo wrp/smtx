@@ -40,6 +40,15 @@ handle_osc(struct pty *p, const char *arg)
 	}
 }
 
+static void
+clear_screen(struct pty *p, int top, int tos)
+{
+	p->s->xenl = false;
+	wmove(p->s->win, tos + (p->decom ? top : 0), 0);
+	wclrtobot(p->s->win);
+	wmove(p->s->win, tos + (p->decom ? top : 0), 0);
+}
+
 #define CALL(x) tput(v, 0, 0, 0, NULL, x)
 void
 tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
@@ -307,12 +316,6 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		s->fg = s->bg = -1;
 		wbkgdset(win, COLOR_PAIR(0) | ' ');
 		break;
-	case cls: /* Clear screen */
-		s->xenl = false;
-		wmove(win, tos + (p->decom ? top : 0), 0);
-		wclrtobot(win);
-		wmove(win, tos + (p->decom ? top : 0), 0);
-		break;
 	case ris: /* Reset to Initial State */
 		ioctl(p->fd, TIOCGWINSZ, &p->ws);
 		p->gs = p->gc = p->g0 = CSET_US;
@@ -320,7 +323,6 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		p->g2 = CSET_US;
 		p->g3 = CSET_GRAPH;
 		p->decom = s->insert = s->oxenl = s->xenl = p->lnm = false;
-		CALL(cls);
 		CALL(sgr0);
 		p->am = p->pnm = true;
 		p->pri.vis = p->alt.vis = 1;
@@ -331,14 +333,17 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		for( i = 0; i < p->ntabs; i += p->tabstop ) {
 			p->tabs[i] = true;
 		}
-	break;
+		/* Fall thru */
+	case cls: /* Clear screen */
+		clear_screen(p, top, tos);
+		break;
 	case mode: /* Set or Reset Mode */
 	{
 		bool set = (w == L'h');
 		for( i = 0; i < argc; i++ ) {
 			switch( argv[i] ) {
 			case  1: p->pnm = set;              break;
-			case  3: CALL(cls);                 break;
+			case  3: clear_screen(p, top, tos); break;
 			case  4: s->insert = set;           break;
 			case  6:
 				p->decom = set;
@@ -354,7 +359,7 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 			case 47: case 1047:
 				if( set && p->s != &p->alt ) {
 					p->s = &p->alt;
-					CALL(cls);
+					clear_screen(p, top, tos);
 				} else if( !set && p->s != &p->pri ) {
 					p->s = &p->pri;
 				}
