@@ -24,7 +24,7 @@ enum cmd {
 	ack=1, bell, cls, cnl, cpl, cr, csr, cub, cud, cuf, cup,
 	cuu, dch, decaln, decid, decreqtparm, dsr, ech, ed, el, hpa, hpr,
 	hts, ich, idl, ind, mode, nel, numkp, osc, pnl, print, rc, rep,
-	ri, ris, sc, scs, sgr, sgr0, so, su, tab, tbc, vis, vpa, vpr
+	ri, ris, sc, scs, sgr, so, su, tab, tbc, vis, vpa, vpr
 };
 
 
@@ -47,6 +47,15 @@ clear_screen(struct pty *p, int top, int tos)
 	wmove(p->s->win, tos + (p->decom ? top : 0), 0);
 	wclrtobot(p->s->win);
 	wmove(p->s->win, tos + (p->decom ? top : 0), 0);
+}
+
+static void
+reset_sgr(struct screen *s)
+{
+	wattrset(s->win, A_NORMAL);
+	wcolor_set(s->win, 0, NULL);
+	s->fg = s->bg = -1;
+	wbkgdset(s->win, COLOR_PAIR(0) | ' ');
 }
 
 #define CALL(x) tput(v, 0, 0, 0, NULL, x)
@@ -310,12 +319,6 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		rewrite(p->fd, "\033[2;1;2;120;128;1;0x", 20);
 	}
 	break;
-	case sgr0: /* Reset SGR to default */
-		wattrset(win, A_NORMAL);
-		wcolor_set(win, 0, NULL);
-		s->fg = s->bg = -1;
-		wbkgdset(win, COLOR_PAIR(0) | ' ');
-		break;
 	case ris: /* Reset to Initial State */
 		ioctl(p->fd, TIOCGWINSZ, &p->ws);
 		p->gs = p->gc = p->g0 = CSET_US;
@@ -323,7 +326,7 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		p->g2 = CSET_US;
 		p->g3 = CSET_GRAPH;
 		p->decom = s->insert = s->oxenl = s->xenl = p->lnm = false;
-		CALL(sgr0);
+		reset_sgr(s);
 		p->am = p->pnm = true;
 		p->pri.vis = p->alt.vis = 1;
 		p->s = &p->pri;
@@ -374,14 +377,16 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		bool do16 = COLORS >= 16;
 		bool do256 = COLORS >= 256;
 		if( !argc ) {
-			CALL(sgr0);
+			reset_sgr(s);
 		}
 		short bg = s->bg, fg = s->fg;
 		for( i = 0; i < argc; i++ ) {
 			bool at = argc > i + 2 && argv[i + 1] == 5;
 			int val = argc > i + 2 ? argv[i + 2] : 0;
 			switch( argv[i] ) {
-			case  0: CALL(sgr0);                        break;
+			case  0:
+				reset_sgr(s);
+				break;
 			case  1: wattron(win,  A_BOLD);             break;
 			case  2: wattron(win,  A_DIM);              break;
 			case  4: wattron(win,  A_UNDERLINE);        break;
