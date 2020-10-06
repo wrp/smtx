@@ -460,8 +460,13 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		y == (bot - 1) ? scroll(win) : wmove(win, py + 1, px);
 		break;
 	case nel: /* Next Line */
-		CALL(cr);
-		CALL(ind);
+		s->xenl = false;
+		if( y == bot - 1 ) {
+			wmove(win, py, 0);
+			scroll(win);
+		} else {
+			wmove(win, py + 1, 0);
+		}
 		break;
 	case pnl: /* Newline */
 		CALL((p->lnm? nel : ind));
