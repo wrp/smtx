@@ -30,7 +30,7 @@
 # this will likely just get skipped.  (eg, configure with
 # CFLAGS='--coverage -g -O0' to enable this test)
 
-if ! test -f smtx-test.gcda; then
+if ! test -f test-main.gcda; then
 	exit 77
 fi
 
