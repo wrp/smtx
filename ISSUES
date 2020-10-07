@@ -48,9 +48,6 @@ BUGS:
 	introduced in 8805e2acfba83d77f3e0768f302336a235e7fb2e and is related to
 	timeout/nodelay.  Need to track down what's going on.
 
-	Somehow, the test-main program creates a file named 1 in the work dir.
-	Need to track that down and clean it up.
-
 	Make tput rep work.  eg, tput rep w 5 should write 5 'w' to term,
 	but the parameters do not seem to be getting sent properly.  We get
 	argc == 1 and argv[0] == 5 - 1, but the w is chomped.  Note that this
