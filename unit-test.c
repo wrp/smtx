@@ -763,12 +763,19 @@ test_sgr(int fd)
 	rv |= validate_row(fd, 4, "%-91s", "foo<dim>bar</dim>");
 	send_txt(fd, "un3>", fmt, ++d, 4);
 	rv |= validate_row(fd, 6, "%-89s", "foo<ul>bar</ul>");
+
+	/* Change to [m to reset with no arguments */
+	fmt = "PS1='un''%d>'; printf 'foo\\033[%dmbar\\033[m\\n'";
 	send_txt(fd, "un4>", fmt, ++d, 5);
 	rv |= validate_row(fd, 8, "%-95s", "foo<blink>bar</blink>");
 	send_txt(fd, "un5>", fmt, ++d, 7);
 	rv |= validate_row(fd, 10, "%-91s", "foo<rev>bar</rev>");
 	send_txt(fd, "un6>", fmt, ++d, 8);
 	rv |= validate_row(fd, 12, "%-91s", "foo<inv>bar</inv>");
+
+	fmt = "PS1='un''%d>'; printf 'foo\\033[1mbar\\033[22m\\n'";
+	send_txt(fd, "un7>", fmt, ++d);
+	rv |= validate_row(fd, 14, "%-93s", "foo<bold>bar</bold>");
 
 	return rv;
 }
