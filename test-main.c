@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "config.h"
-#include "unit-test.h"
+#include "test-unit.h"
 #include <limits.h>
 
 /* TODO: always use the p2c/c2p pipes for synchornization. */
