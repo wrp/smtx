@@ -22,3 +22,7 @@ version: $(DIST_SOURCES) $(DIST_COMMON)
 install-data-hook:
 	mkdir -p $(DESTDIR)$(sysconfdir)/terminfo
 	tic -o $(DESTDIR)$(sysconfdir)/terminfo -s -x $(top_srcdir)/smtx.ti
+
+uninstall-hook:
+	rm -rf $(DESTDIR)$(sysconfdir)/terminfo/s/smtx
+	rm -rf $(DESTDIR)$(sysconfdir)/terminfo/s/smtx-256color
