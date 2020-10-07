@@ -55,7 +55,7 @@ describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 }
 
 static void
-check_flag(unsigned f, unsigned *flags, char **d, char *e, char *msg, int set)
+check_attr(unsigned f, unsigned *flags, char **d, char *e, char *msg, int set)
 {
 	char *dest = *d;
 	size_t len = strlen(msg);
@@ -82,7 +82,7 @@ describe_row(char *desc, size_t siz, int row)
 {
 	int y, x;
 	size_t i = 0;
-	unsigned flags = 0;
+	unsigned attrs = 0;
 	int offset = 0;
 	const struct canvas *c = S.c;
 	char *end = desc + siz;
@@ -112,7 +112,7 @@ describe_row(char *desc, size_t siz, int row)
 	for( i = 0; i < (size_t)c->extent.x && desc < end; i++ ) {
 		chtype k = mvwinch(w, row, i + offset);
 		for( atrp = atrs; atrp->flag; atrp += 1 ) {
-			check_flag(atrp->flag, &flags, &desc, end, atrp->name,
+			check_attr(atrp->flag, &attrs, &desc, end, atrp->name,
 				( (k & A_ATTRIBUTES) & atrp->attr ) ? 1 : 0
 			);
 		}
