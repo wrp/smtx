@@ -366,9 +366,9 @@ test_el(int fd)
 int
 test_equalize(int fd)
 {
-	send_cmd(fd, "uniq1", "%s", "cc5J\rprintf uniq%s 1");
+	send_cmd(fd, "un1>", "%s", "cc5J\rPS1=un'1>'");
 	int status = check_layout(fd, 0x1, "*12x80; 4x80; 5x80");
-	send_cmd(fd, "uniq2", "%s", "=\rprintf uniq%s 2");
+	send_cmd(fd, "un2>", "%s", "=\rPS1=un'2>'");
 	status |= check_layout(fd, 0x1, "*7x80; 7x80; 7x80");
 	return status;
 }
