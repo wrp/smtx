@@ -99,6 +99,7 @@ test test_ri;
 test test_row;
 test test_scrollback;
 test test_scrollh;
+test test_sgr;
 test test_su;
 test test_swap;
 test test_tabstop;

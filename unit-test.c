@@ -537,7 +537,7 @@ test_pager(int fd)
 	for( int i = 1; i < 23; i++ ) {
 		rv |= validate_row(fd, i, "    %2d:%-73s", i, "abcd");
 	}
-	rv |= validate_row(fd, 23, "%-80s", "--More--");
+	rv |= validate_row(fd, 23, "%-91s", "<rev>--More--</rev>");
 	rv |= check_layout(fd, 0x1, "*23x80");
 	send_raw(fd, "44:klmn", " ");
 	send_raw(fd, "uniq>", "q");
@@ -750,6 +750,28 @@ test_scrollh(int fd)
 	return rv;
 }
 
+int
+test_sgr(int fd)
+{
+	int rv = 0;
+	int d = 0;
+	const char *fmt = "PS1='un''%d>'; printf 'foo\\033[%dmbar\\033[0m\\n'";
+	send_txt(fd, "un1>", fmt, ++d, 1);
+	rv |= validate_row(fd, 2, "%-93s", "foo<bold>bar</bold>");
+	rv |= validate_row(fd, 3, "%-80s", "un1>");
+	send_txt(fd, "un2>", fmt, ++d, 2);
+	rv |= validate_row(fd, 4, "%-91s", "foo<dim>bar</dim>");
+	send_txt(fd, "un3>", fmt, ++d, 4);
+	rv |= validate_row(fd, 6, "%-89s", "foo<ul>bar</ul>");
+	send_txt(fd, "un4>", fmt, ++d, 5);
+	rv |= validate_row(fd, 8, "%-95s", "foo<blink>bar</blink>");
+	send_txt(fd, "un5>", fmt, ++d, 7);
+	rv |= validate_row(fd, 10, "%-91s", "foo<rev>bar</rev>");
+	send_txt(fd, "un6>", fmt, ++d, 8);
+	rv |= validate_row(fd, 12, "%-91s", "foo<inv>bar</inv>");
+
+	return rv;
+}
 
 int
 test_su(int fd)

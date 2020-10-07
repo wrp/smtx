@@ -368,16 +368,39 @@ describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 	return siz - ( e - d );
 }
 
+static void
+check_flag(unsigned f, unsigned *flags, char **d, char *e, char *msg, int set)
+{
+	char *dest = *d;
+	size_t len = strlen(msg);
+	if( ((set && !(*flags & f)) || (!set && (*flags & f)))
+			&& dest + len + 3 < e ) {
+		*dest++ = '<';
+		if( !set ) {
+			*dest++ = '/';
+		}
+		memcpy(dest, msg, len);
+		dest += len;
+		*dest++ = '>';
+	}
+	if( set ) {
+		*flags |= f;
+	} else {
+		*flags &= ~f;
+	}
+	*d = dest;
+}
+
 static size_t
 describe_row(char *desc, size_t siz, int row)
 {
 	int y, x;
 	size_t i = 0;
+	unsigned flags = 0;
 	int offset = 0;
 	const struct canvas *c = S.c;
+	char *end = desc + siz;
 	WINDOW *w = c->p->s->win;
-
-	assert( c->offset.x >= 0 );
 
 	if( row < c->extent.y ) {
 		row += c->offset.y;
@@ -387,12 +410,33 @@ describe_row(char *desc, size_t siz, int row)
 		row = 0;
 	}
 	getyx(w, y, x);
-	for( i = 0; i < (size_t)c->extent.x && i < siz; i++ ) {
+	for( i = 0; i < (size_t)c->extent.x && desc < end; i++ ) {
 		chtype k = mvwinch(w, row, i + offset);
-		desc[i] = k & A_CHARTEXT;
+		switch( k & A_ATTRIBUTES ) {
+		case A_BOLD:
+			check_flag(0x1, &flags, &desc, end, "bold", 1); break;
+		case A_DIM:
+			check_flag(0x2, &flags, &desc, end, "dim", 1); break;
+		case A_UNDERLINE:
+			check_flag(0x4, &flags, &desc, end, "ul", 1); break;
+		case A_BLINK:
+			check_flag(0x8, &flags, &desc, end, "blink", 1); break;
+		case A_REVERSE:
+			check_flag(0x10, &flags, &desc, end, "rev", 1); break;
+		case A_INVIS:
+			check_flag(0x20, &flags, &desc, end, "inv", 1); break;
+		default:
+			check_flag(0x1, &flags, &desc, end, "bold", 0);
+			check_flag(0x2, &flags, &desc, end, "dim", 0);
+			check_flag(0x4, &flags, &desc, end, "ul", 0);
+			check_flag(0x8, &flags, &desc, end, "blink", 0);
+			check_flag(0x10, &flags, &desc, end, "rev", 0);
+			check_flag(0x20, &flags, &desc, end, "inv", 0);
+		}
+		*desc++ = k & A_CHARTEXT;
 	}
 	wmove(w, y, x);
-	return i;
+	return siz - ( end - desc );
 }
 
 static size_t
