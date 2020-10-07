@@ -6,7 +6,7 @@ LIBS = -lncursesw -lutil
 
 LDADD = libsmtx.la
 noinst_LTLIBRARIES = libsmtx.la
-libsmtx_la_SOURCES = vtparser.c smtx-main.c cset.c handler.c action.c
+libsmtx_la_SOURCES = vtparser.c smtx-main.c cset.c handler.c action.c show.c
 check_PROGRAMS = smtx-test
 TESTS = main-test smtx-test coverage-test
 smtx_test_SOURCES = smtx-test.c unit-test.c
