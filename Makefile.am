@@ -10,6 +10,7 @@ libsmtx_la_SOURCES = vtparser.c smtx-main.c cset.c handler.c action.c
 check_PROGRAMS = smtx-test
 TESTS = main-test smtx-test coverage-test
 smtx_test_SOURCES = smtx-test.c unit-test.c
+smtx_test_DEPENDENCIES = smtx
 
 CLEANFILES = *.gcda *.gcno *.gcov version *.1
 EXTRA_DIST = build-aux/package-version version main-test coverage-test smtx.ti
