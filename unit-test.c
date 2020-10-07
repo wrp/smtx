@@ -755,28 +755,29 @@ test_sgr(int fd)
 {
 	int rv = 0;
 	int d = 0;
-	const char *fmt = "PS1='un''%d>'; printf 'foo\\033[%dmbar\\033[0m\\n'";
-	send_txt(fd, "un1>", fmt, ++d, 1);
+	const char *fmt = "PS1='un''%d>'; printf 'foo\\033[%smbar\\033[%sm\\n'";
+	send_txt(fd, "un1>", fmt, ++d, "1", "0");
 	rv |= validate_row(fd, 2, "%-93s", "foo<bold>bar</bold>");
 	rv |= validate_row(fd, 3, "%-80s", "un1>");
-	send_txt(fd, "un2>", fmt, ++d, 2);
+	send_txt(fd, "un2>", fmt, ++d, "2", "0");
 	rv |= validate_row(fd, 4, "%-91s", "foo<dim>bar</dim>");
-	send_txt(fd, "un3>", fmt, ++d, 4);
+	send_txt(fd, "un3>", fmt, ++d, "4", "0");
 	rv |= validate_row(fd, 6, "%-89s", "foo<ul>bar</ul>");
-
-	/* Change to [m to reset with no arguments */
-	fmt = "PS1='un''%d>'; printf 'foo\\033[%dmbar\\033[m\\n'";
-	send_txt(fd, "un4>", fmt, ++d, 5);
+	/* Switch 2nd arg to test reset with no args */
+	send_txt(fd, "un4>", fmt, ++d, "5", "");
 	rv |= validate_row(fd, 8, "%-95s", "foo<blink>bar</blink>");
-	send_txt(fd, "un5>", fmt, ++d, 7);
+	send_txt(fd, "un5>", fmt, ++d, "7", "");
 	rv |= validate_row(fd, 10, "%-91s", "foo<rev>bar</rev>");
-	send_txt(fd, "un6>", fmt, ++d, 8);
+	send_txt(fd, "un6>", fmt, ++d, "8", "");
 	rv |= validate_row(fd, 12, "%-91s", "foo<inv>bar</inv>");
 
-	fmt = "PS1='un''%d>'; printf 'foo\\033[1mbar\\033[22m\\n'";
-	send_txt(fd, "un7>", fmt, ++d);
+	/* test that 22 disables bold */
+	send_txt(fd, "un7>", fmt, ++d, "1", "22");
 	rv |= validate_row(fd, 14, "%-93s", "foo<bold>bar</bold>");
 
+	/* test that 25 disables blink */
+	send_txt(fd, "un8", fmt, ++d, "5", "25");
+	rv |= validate_row(fd, 16, "%-95s", "foo<blink>bar</blink>");
 	return rv;
 }
 
