@@ -87,6 +87,19 @@ describe_row(char *desc, size_t siz, int row)
 	const struct canvas *c = S.c;
 	char *end = desc + siz;
 	WINDOW *w = c->p->s->win;
+	struct {
+		unsigned attr;
+		unsigned flag;
+		char *name;
+	} *atrp, atrs[] = {
+		{ A_BOLD,       0x1, "bold" },
+		{ A_DIM,        0x2, "dim" },
+		{ A_UNDERLINE,  0x4, "ul" },
+		{ A_BLINK,      0x8, "blink" },
+		{ A_REVERSE,   0x10, "rev" },
+		{ A_INVIS,     0x20, "inv" },
+		{ 0, 0, NULL }
+	};
 
 	if( row < c->extent.y ) {
 		row += c->offset.y;
@@ -98,26 +111,10 @@ describe_row(char *desc, size_t siz, int row)
 	getyx(w, y, x);
 	for( i = 0; i < (size_t)c->extent.x && desc < end; i++ ) {
 		chtype k = mvwinch(w, row, i + offset);
-		switch( k & A_ATTRIBUTES ) {
-		case A_BOLD:
-			check_flag(0x1, &flags, &desc, end, "bold", 1); break;
-		case A_DIM:
-			check_flag(0x2, &flags, &desc, end, "dim", 1); break;
-		case A_UNDERLINE:
-			check_flag(0x4, &flags, &desc, end, "ul", 1); break;
-		case A_BLINK:
-			check_flag(0x8, &flags, &desc, end, "blink", 1); break;
-		case A_REVERSE:
-			check_flag(0x10, &flags, &desc, end, "rev", 1); break;
-		case A_INVIS:
-			check_flag(0x20, &flags, &desc, end, "inv", 1); break;
-		default:
-			check_flag(0x1, &flags, &desc, end, "bold", 0);
-			check_flag(0x2, &flags, &desc, end, "dim", 0);
-			check_flag(0x4, &flags, &desc, end, "ul", 0);
-			check_flag(0x8, &flags, &desc, end, "blink", 0);
-			check_flag(0x10, &flags, &desc, end, "rev", 0);
-			check_flag(0x20, &flags, &desc, end, "inv", 0);
+		for( atrp = atrs; atrp->flag; atrp += 1 ) {
+			check_flag(atrp->flag, &flags, &desc, end, atrp->name,
+				( (k & A_ATTRIBUTES) & atrp->attr ) ? 1 : 0
+			);
 		}
 		*desc++ = k & A_CHARTEXT;
 	}
