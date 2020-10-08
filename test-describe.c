@@ -78,35 +78,34 @@ check_attr(unsigned f, unsigned *flags, char **d, char *e, char *msg, int set)
 }
 
 static char *
+color_name(short k)
+{
+	char *n;
+	switch( k ) {
+	case COLOR_BLACK:    n =   "black"; break;
+	case COLOR_RED:      n =     "red"; break;
+	case COLOR_GREEN:    n =   "green"; break;
+	case COLOR_YELLOW:   n =  "yellow"; break;
+	case COLOR_BLUE:     n =    "blue"; break;
+	case COLOR_MAGENTA:  n = "magenta"; break;
+	case COLOR_CYAN:     n =    "cyan"; break;
+	case COLOR_WHITE:    n =   "white"; break;
+	default:             n = "";
+	}
+	return n;
+}
+static char *
 get_color_name(int pair)
 {
 	static char buf[64];
-	struct { int symbol; char *name; } lut[] = {
-		{ -1,            "" },
-		{ COLOR_BLACK,   "black" },
-		{ COLOR_RED,     "red" },
-		{ COLOR_GREEN,   "green" },
-		{ COLOR_YELLOW,  "yellow" },
-		{ COLOR_BLUE,    "blue" },
-		{ COLOR_MAGENTA, "magenta" },
-		{ COLOR_CYAN,    "cyan" },
-		{ COLOR_WHITE,   "white" }
-	};
+	short fg, bg;
 	sprintf(buf, "unknown");
-	int siz = sizeof lut / sizeof *lut;
-	for( int bg = 0; bg < siz; bg += 1 ) {
-		for( int fg = 0; fg < siz; fg += 1 ) {
-			int this = find_pair(lut[fg].symbol, lut[bg].symbol);
-			if( this == pair ) {
-				sprintf(buf, "%s%s%s", lut[fg].name,
-					lut[bg].name[0] ? "/" : "",
-					lut[bg].name
-				);
-				goto end;
-			}
-		}
+	if( pair_content(pair, &fg, &bg) == OK ) {
+		sprintf(buf, "%s%s%s", color_name(fg),
+			color_name(bg)[0] ? "/" : "",
+			color_name(bg)
+		);
 	}
-end:
 	return buf;
 }
 
