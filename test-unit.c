@@ -756,11 +756,16 @@ test_scrollh(int fd)
 static int
 sgr_background(int fd)
 {
-	char *fmt = "printf '%s\\033[%sm%s'; ";
-	send_raw(fd, NULL, fmt, "c", "32;42", "d");
-	send_raw(fd, NULL, fmt, "", "", "e\\nline 3");
+	int rv = 0;
+	char *fmt = "printf '%s\\033[%sm%s\\033[m%s\\n'; ";
+	send_raw(fd, NULL, fmt, "c", "32;42", "d", "e");
 	send_txt(fd, "xy1>", "PS1='xy''1>'");
-	return validate_row(fd, 2, "%-95s", "c<green/green>d<>e");
+	rv |= validate_row(fd, 2, "%-95s", "c<green/green>d<>e");
+
+	send_raw(fd, NULL, fmt, "x", "31;42;7", "y", "z");
+	send_txt(fd, "xy2>", "PS1='xy''2>'");
+	rv |= validate_row(fd, 4, "%-104s", "x<rev><red/green>y</rev><>z");
+	return rv;
 }
 
 int
