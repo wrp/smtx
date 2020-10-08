@@ -77,12 +77,46 @@ check_attr(unsigned f, unsigned *flags, char **d, char *e, char *msg, int set)
 	*d = dest;
 }
 
+static char *
+get_color_name(int pair)
+{
+	static char buf[64];
+	struct { int symbol; char *name; } lut[] = {
+		{ -1,             "" },
+		{ COLOR_BLACK,   "black" },
+		{ COLOR_RED,     "red" },
+		{ COLOR_GREEN,   "green" },
+		{ COLOR_YELLOW,  "yellow" },
+		{ COLOR_BLUE,    "blue" },
+		{ COLOR_MAGENTA, "magenta" },
+		{ COLOR_CYAN,    "cyan" },
+		{ COLOR_WHITE,   "white" }
+	};
+	sprintf(buf, "unknown");
+	int siz = sizeof lut / sizeof *lut;
+	for( int bg = 0; bg < siz; bg += 1 ) {
+		for( int fg = 0; fg < siz; fg += 1 ) {
+			int this = find_pair(lut[fg].symbol, lut[bg].symbol);
+			if( this == pair ) {
+				sprintf(buf, "%s%s%s", lut[fg].name,
+					lut[bg].name[0] ? "/" : "",
+					lut[bg].name
+				);
+				goto end;
+			}
+		}
+	}
+end:
+	return buf;
+}
+
 static size_t
 describe_row(char *desc, size_t siz, int row)
 {
 	int y, x;
 	size_t i = 0;
 	unsigned attrs = 0;
+	unsigned cflag = 0;
 	int offset = 0;
 	const struct canvas *c = S.c;
 	char *end = desc + siz;
@@ -114,6 +148,12 @@ describe_row(char *desc, size_t siz, int row)
 		for( atrp = atrs; atrp->flag; atrp += 1 ) {
 			check_attr(atrp->flag, &attrs, &desc, end, atrp->name,
 				( (k & A_ATTRIBUTES) & atrp->attr ) ? 1 : 0
+			);
+		}
+		for( int i = 1; i < COLORS; i++ ) {
+			char *name = get_color_name(i);
+			check_attr(0x1 << i, &cflag, &desc, end,
+				name, (k & A_COLOR) == COLOR_PAIR(i) ? 1 : 0
 			);
 		}
 		*desc++ = k & A_CHARTEXT;
