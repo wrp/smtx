@@ -82,7 +82,7 @@ get_color_name(int pair)
 {
 	static char buf[64];
 	struct { int symbol; char *name; } lut[] = {
-		{ -1,             "" },
+		{ -1,            "" },
 		{ COLOR_BLACK,   "black" },
 		{ COLOR_RED,     "red" },
 		{ COLOR_GREEN,   "green" },
@@ -116,7 +116,7 @@ describe_row(char *desc, size_t siz, int row)
 	int y, x;
 	size_t i = 0;
 	unsigned attrs = 0;
-	unsigned cflag = 0;
+	int last_color_pair = 0;
 	int offset = 0;
 	const struct canvas *c = S.c;
 	char *end = desc + siz;
@@ -144,17 +144,18 @@ describe_row(char *desc, size_t siz, int row)
 	}
 	getyx(w, y, x);
 	for( i = 0; i < (size_t)c->extent.x && desc < end; i++ ) {
+		int p;
 		chtype k = mvwinch(w, row, i + offset);
 		for( atrp = atrs; atrp->flag; atrp += 1 ) {
 			check_attr(atrp->flag, &attrs, &desc, end, atrp->name,
 				( (k & A_ATTRIBUTES) & atrp->attr ) ? 1 : 0
 			);
 		}
-		for( int i = 1; i < COLORS; i++ ) {
-			char *name = get_color_name(i);
-			check_attr(0x1 << i, &cflag, &desc, end,
-				name, (k & A_COLOR) == COLOR_PAIR(i) ? 1 : 0
-			);
+		p = PAIR_NUMBER(k);
+		if( p != last_color_pair ) {
+			unsigned dummy = 0;
+			check_attr(1, &dummy, &desc, end, get_color_name(p), 1);
+			last_color_pair = p;
 		}
 		*desc++ = k & A_CHARTEXT;
 	}

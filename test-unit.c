@@ -760,7 +760,7 @@ sgr_background(int fd)
 	send_raw(fd, NULL, fmt, "c", "32;42", "d");
 	send_raw(fd, NULL, fmt, "", "", "e\\nline 3");
 	send_txt(fd, "xy1>", "PS1='xy''1>'");
-	return validate_row(fd, 2, "%-95s", "c<green>d</green>e");
+	return validate_row(fd, 2, "%-95s", "c<green/green>d<>e");
 }
 
 int
@@ -794,20 +794,20 @@ test_sgr(int fd)
 
 	/* test colors */
 	send_txt(fd, "un9>", fmt, ++d, "31", "");
-	rv |= validate_row(fd, 18, "%-91s", "foo<red>bar</red>");
+	rv |= validate_row(fd, 18, "%-87s", "foo<red>bar<>");
 
 	send_txt(fd, "un10>", fmt, ++d, "30", "");
-	rv |= validate_row(fd, 20, "%-95s", "foo<black>bar</black>");
+	rv |= validate_row(fd, 20, "%-89s", "foo<black>bar<>");
 
 	send_txt(fd, "un11>", fmt, ++d, "32", "");
-	rv |= validate_row(fd, 22, "%-95s", "foo<green>bar</green>");
+	rv |= validate_row(fd, 22, "%-89s", "foo<green>bar<>");
 
 	/* Now at bottom of screen and scrolling up, so always check row 22 */
 	send_txt(fd, "un12>", fmt, ++d, "33", "");
-	rv |= validate_row(fd, 22, "%-97s", "foo<yellow>bar</yellow>");
+	rv |= validate_row(fd, 22, "%-90s", "foo<yellow>bar<>");
 
 	send_txt(fd, "un13>", fmt, ++d, "37", "");
-	rv |= validate_row(fd, 22, "%-95s", "foo<white>bar</white>");
+	rv |= validate_row(fd, 22, "%-89s", "foo<white>bar<>");
 
 	for( int i = 34; i < 38; i++ ) {
 		fmt = "PS1='a'x'%d>'; printf 'ax%d\\033[%dmend\\033[mt\\n'";
@@ -815,21 +815,16 @@ test_sgr(int fd)
 		char buf[128];
 		char ps[16];
 		char width[10];
-		sprintf(width, "%%-%zds", 80 + 2 * strlen(colors[i-34]) + 5);
+		sprintf(width, "%%-%zds", 80 + strlen(colors[i-34]) + 4);
 		sprintf(ps, "ax%d>", i);
-		sprintf(buf, "ax%1$d<%2$s>end</%2$s>t", i, colors[ i - 34]);
+		sprintf(buf, "ax%d<%s>end<>t", i, colors[ i - 34]);
 		send_txt(fd, ps, fmt, i, i, i);
-		/* Test for cyan is failing.  Unclear why.  Skip for now */
-		if( i != 36 ) {
-			rv |= validate_row(fd, 22, width, buf);
-		}
+		rv |= validate_row(fd, 22, width, buf);
 	}
-	rv |= validate_row(fd, 16, "%-93s", "ax34<blue>end</blue>t");
-	rv |= validate_row(fd, 18, "%-99s", "ax35<magenta>end</magenta>t");
-	/*
-	rv |= validate_row(fd, 20, "%-93s", "ax36<cyan>end</cyan>t");
-	*/
-	rv |= validate_row(fd, 22, "%-95s", "ax37<white>end</white>t");
+	rv |= validate_row(fd, 16, "%-88s", "ax34<blue>end<>t");
+	rv |= validate_row(fd, 18, "%-91s", "ax35<magenta>end<>t");
+	rv |= validate_row(fd, 20, "%-88s", "ax36<cyan>end<>t");
+	rv |= validate_row(fd, 22, "%-89s", "ax37<white>end<>t");
 	send_txt(fd, "aw1>", "PS1='a'w1'>'; clear");
 	rv |= sgr_background(fd);
 
