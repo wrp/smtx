@@ -40,9 +40,13 @@ TODO:
 	processing loop so the fifo gets selected in the main loop allowing
 	one to send arbitrary keystrokes.  Clearly, there are security issues.
 
-BUGS:
+	Make it possible for windows to overlap.
 
-	Need to handle memory errors in set_history more thoroughly.
+	Redo the whole architecture and dump the tree structure.  Windows
+	should just be in a list with size and origin.
+
+BUGS:
+	Need to handle memory allocation errors more thoroughly.
 
 	Right arrow (in control mode) currently splits the screen.  This regression was
 	introduced in 8805e2acfba83d77f3e0768f302336a235e7fb2e and is related to
@@ -116,9 +120,16 @@ Partially implemented/vague ideas:
 	Needs to be easier to navigate in full screen mode.   Perhaps
 	title bar would show title of windows above, below, to the
 	left, and right.  Then hjkl navigation would stay in full
-	screen mode while going between them.
+	screen mode while going between them. (Note that we still need
+	to implement "full screen mode", and indeed need to define what
+	I mean by that.)
 
 	Possibly add character in title bar to indicate mode.  Need to make
 	title bar more functional in general, so this thought should probably
 	be consumed by that.  Probably want to be able to send arbitrary
-	format strings in through an escape sequence.
+	format strings in through an escape sequence. Note that we currently
+	can set the "title" of the window via an osc sequence, but that title
+	is only a portion of the title bar.  Probably want the ability to control
+	the format of the title bar.  Also, the title bar/row should probably
+	be a subwindow rather than just consuming one line of the main window.
+	All the '-1' in the code get confusing.
