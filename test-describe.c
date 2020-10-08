@@ -115,6 +115,7 @@ describe_row(char *desc, size_t siz, int row)
 	int y, x;
 	size_t i = 0;
 	unsigned attrs = 0;
+	unsigned cflag = 0;
 	int last_color_pair = 0;
 	int offset = 0;
 	const struct canvas *c = S.c;
@@ -152,8 +153,10 @@ describe_row(char *desc, size_t siz, int row)
 		}
 		p = PAIR_NUMBER(k);
 		if( p != last_color_pair ) {
-			unsigned dummy = 0;
-			check_attr(1, &dummy, &desc, end, get_color_name(p), 1);
+			int put = p ? p : last_color_pair;
+			check_attr(1u << put, &cflag, &desc, end,
+				get_color_name(put), p
+			);
 			last_color_pair = p;
 		}
 		*desc++ = k & A_CHARTEXT;
