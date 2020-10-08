@@ -753,6 +753,16 @@ test_scrollh(int fd)
 	return rv;
 }
 
+static int
+sgr_background(int fd)
+{
+	char *fmt = "printf '%s\\033[%sm%s'; ";
+	send_raw(fd, NULL, fmt, "c", "32;42", "d");
+	send_raw(fd, NULL, fmt, "", "", "e\\nline 3");
+	send_txt(fd, "xy1>", "PS1='xy''1>'");
+	return validate_row(fd, 2, "%-95s", "c<green>d</green>e");
+}
+
 int
 test_sgr(int fd)
 {
@@ -820,6 +830,8 @@ test_sgr(int fd)
 	rv |= validate_row(fd, 20, "%-93s", "ax36<cyan>end</cyan>t");
 	*/
 	rv |= validate_row(fd, 22, "%-95s", "ax37<white>end</white>t");
+	send_txt(fd, "aw1>", "PS1='a'w1'>'; clear");
+	rv |= sgr_background(fd);
 
 	return rv;
 }
