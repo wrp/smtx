@@ -781,6 +781,11 @@ test_sgr(int fd)
 	/* test that 25 disables blink */
 	send_txt(fd, "un8", fmt, ++d, "5", "25");
 	rv |= validate_row(fd, 16, "%-95s", "foo<blink>bar</blink>");
+
+	/* test colors (stub) */
+	send_txt(fd, "un9", fmt, ++d, "33", "");
+	rv |= validate_row(fd, 18, "%-80s", "foobar");
+
 	return rv;
 }
 
