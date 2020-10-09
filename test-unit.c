@@ -215,6 +215,13 @@ test_cursor(int fd)
 	rv |= validate_row(fd, 13, "%-80s", "bazbar");
 	rv |= validate_row(fd, 14, "%-80s", "un8>");
 
+	/* cnl: cursor next line */
+	send_txt(fd, "un9>", cmd, d++, "printf 'foo\\n\\033[Ebaz\\n'");
+	rv |= validate_row(fd, 15, "%-80s", "foo");
+	rv |= validate_row(fd, 16, "%-80s", "");
+	rv |= validate_row(fd, 17, "%-80s", "baz");
+	rv |= validate_row(fd, 18, "%-80s", "un9>");
+
 	return rv;
 }
 
