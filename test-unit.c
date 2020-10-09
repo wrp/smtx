@@ -788,7 +788,7 @@ test_sgr(int fd)
 
 	char fmt[1024] = "PS1='un''%d>'; clear; ";
 	char *cmd = fmt + strlen(fmt);
-	sprintf(cmd, "%s", "printf 'foo\\033[%smbar\\033[%sm\\n'");
+	sprintf(cmd, "%s", "printf 'foo\\033[%smbar\\033[%smbaz\\n'");
 	struct { char *sgr; char *name; } *attrp, attrs[] = {
 		{ "1", "bold" },
 		{ "2", "dim" },
@@ -796,6 +796,22 @@ test_sgr(int fd)
 		{ "5", "blink" },
 		{ "7", "rev" },
 		{ "8", "inv" },
+		{ "30", "black" },
+		{ "31", "red" },
+		{ "32", "green" },
+		{ "33", "yellow" },
+		{ "34", "blue" },
+		{ "35", "magenta" },
+		{ "36", "cyan" },
+		{ "37", "white" },
+		{ "40", "black*" },
+		{ "41", "red*" },
+		{ "42", "green*" },
+		{ "43", "yellow*" },
+		{ "44", "blue*" },
+		{ "45", "magenta*" },
+		{ "46", "cyan*" },
+		{ "47", "white*" },
 		{ NULL, NULL }
 	};
 
@@ -806,59 +822,31 @@ test_sgr(int fd)
 		size_t len = strlen(attrp->name);
 		sprintf(ps, "un%d>", ++d);
 		sprintf(lenfmt, "%%-%zds", 80 + 5 + len * 2);
-		sprintf(expect, "foo<%1$s>bar</%1$s>", attrp->name);
+		sprintf(expect, "foo<%1$s>bar</%1$s>baz", attrp->name);
 		send_txt(fd, ps, fmt, d, attrp->sgr, "0");
 		rv |= validate_row(fd, 1, lenfmt, expect);
 	}
 
 	/* test that 22 disables bold */
-	send_txt(fd, "un7>", fmt, ++d, "1", "22");
-	rv |= validate_row(fd, 1, "%-93s", "foo<bold>bar</bold>");
+	send_txt(fd, "un7>", fmt, d=7, "1", "22");
+	rv |= validate_row(fd, 1, "%-93s", "foo<bold>bar</bold>baz");
 
 	/* test that 24 disables underline */
 	send_txt(fd, "un8>", fmt, ++d, "4", "24");
-	rv |= validate_row(fd, 1, "%-89s", "foo<ul>bar</ul>");
+	rv |= validate_row(fd, 1, "%-89s", "foo<ul>bar</ul>baz");
 
 	/* test that 25 disables blink */
 	send_txt(fd, "un9>", fmt, ++d, "5", "25");
-	rv |= validate_row(fd, 1, "%-95s", "foo<blink>bar</blink>");
+	rv |= validate_row(fd, 1, "%-95s", "foo<blink>bar</blink>baz");
 
 	/* test that 27 disables reverse */
 	send_txt(fd, "un10>", fmt, ++d, "7", "27");
-	rv |= validate_row(fd, 1, "%-91s", "foo<rev>bar</rev>");
+	rv |= validate_row(fd, 1, "%-91s", "foo<rev>bar</rev>baz");
 
-	/* test colors */
-	send_txt(fd, "un9>", fmt, d = 9, "31", "");
-	rv |= validate_row(fd, 1, "%-91s", "foo<red>bar</red>");
+	/* test that 39 disables foreground color */
+	send_txt(fd, "un11>", fmt, ++d, "31", "39");
+	rv |= validate_row(fd, 1, "%-91s", "foo<red>bar</red>baz");
 
-	send_txt(fd, "un10>", fmt, ++d, "30", "");
-	rv |= validate_row(fd, 1, "%-95s", "foo<black>bar</black>");
-
-	send_txt(fd, "un11>", fmt, ++d, "32", "");
-	rv |= validate_row(fd, 1, "%-95s", "foo<green>bar</green>");
-
-	send_txt(fd, "un12>", fmt, ++d, "33", "");
-	rv |= validate_row(fd, 1, "%-97s", "foo<yellow>bar</yellow>");
-
-	send_txt(fd, "un13>", fmt, ++d, "37", "");
-	rv |= validate_row(fd, 1, "%-95s", "foo<white>bar</white>");
-
-	for( int i = 34; i < 38; i++ ) {
-		cmd = "PS1='a'x'%d>'; printf 'ax%d\\033[%dmend\\033[mt\\n'";
-		char *colors[] = { "blue", "magenta", "cyan", "white" };
-		char buf[128];
-		char ps[16];
-		char width[10];
-		sprintf(width, "%%-%zds", 80 + 2 * strlen(colors[i-34]) + 5);
-		sprintf(ps, "ax%d>", i);
-		sprintf(buf, "ax%1$d<%2$s>end</%2$s>t", i, colors[ i - 34]);
-		send_txt(fd, ps, cmd, i, i, i);
-		rv |= validate_row(fd, 3 + 2 * (i - 34), width, buf);
-	}
-	rv |= validate_row(fd, 3, "%-93s", "ax34<blue>end</blue>t");
-	rv |= validate_row(fd, 5, "%-99s", "ax35<magenta>end</magenta>t");
-	rv |= validate_row(fd, 7, "%-93s", "ax36<cyan>end</cyan>t");
-	rv |= validate_row(fd, 9, "%-95s", "ax37<white>end</white>t");
 	send_txt(fd, "aw1>", "PS1='a'w1'>'; clear");
 	rv |= sgr_background(fd);
 
