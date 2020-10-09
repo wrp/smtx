@@ -775,49 +775,47 @@ test_sgr(int fd)
 	int rv = 0;
 	int d = 0;
 
-	char fmt[1024] = "PS1='un''%d>'; ";
+	char fmt[1024] = "PS1='un''%d>'; clear; ";
 	char *cmd = fmt + strlen(fmt);
 	sprintf(cmd, "%s", "printf 'foo\\033[%smbar\\033[%sm\\n'");
 
 	send_txt(fd, "un1>", fmt, ++d, "1", "0");
-	rv |= validate_row(fd, 2, "%-93s", "foo<bold>bar</bold>");
-	rv |= validate_row(fd, 3, "%-80s", "un1>");
+	rv |= validate_row(fd, 1, "%-93s", "foo<bold>bar</bold>");
 	send_txt(fd, "un2>", fmt, ++d, "2", "0");
-	rv |= validate_row(fd, 4, "%-91s", "foo<dim>bar</dim>");
+	rv |= validate_row(fd, 1, "%-91s", "foo<dim>bar</dim>");
 	send_txt(fd, "un3>", fmt, ++d, "4", "0");
-	rv |= validate_row(fd, 6, "%-89s", "foo<ul>bar</ul>");
+	rv |= validate_row(fd, 1, "%-89s", "foo<ul>bar</ul>");
 	/* Switch 2nd arg to test reset with no args */
 	send_txt(fd, "un4>", fmt, ++d, "5", "");
-	rv |= validate_row(fd, 8, "%-95s", "foo<blink>bar</blink>");
+	rv |= validate_row(fd, 1, "%-95s", "foo<blink>bar</blink>");
 	send_txt(fd, "un5>", fmt, ++d, "7", "");
-	rv |= validate_row(fd, 10, "%-91s", "foo<rev>bar</rev>");
+	rv |= validate_row(fd, 1, "%-91s", "foo<rev>bar</rev>");
 	send_txt(fd, "un6>", fmt, ++d, "8", "");
-	rv |= validate_row(fd, 12, "%-91s", "foo<inv>bar</inv>");
+	rv |= validate_row(fd, 1, "%-91s", "foo<inv>bar</inv>");
 
 	/* test that 22 disables bold */
 	send_txt(fd, "un7>", fmt, ++d, "1", "22");
-	rv |= validate_row(fd, 14, "%-93s", "foo<bold>bar</bold>");
+	rv |= validate_row(fd, 1, "%-93s", "foo<bold>bar</bold>");
 
 	/* test that 25 disables blink */
 	send_txt(fd, "un8>", fmt, ++d, "5", "25");
-	rv |= validate_row(fd, 16, "%-95s", "foo<blink>bar</blink>");
+	rv |= validate_row(fd, 1, "%-95s", "foo<blink>bar</blink>");
 
 	/* test colors */
 	send_txt(fd, "un9>", fmt, ++d, "31", "");
-	rv |= validate_row(fd, 18, "%-91s", "foo<red>bar</red>");
+	rv |= validate_row(fd, 1, "%-91s", "foo<red>bar</red>");
 
 	send_txt(fd, "un10>", fmt, ++d, "30", "");
-	rv |= validate_row(fd, 20, "%-95s", "foo<black>bar</black>");
+	rv |= validate_row(fd, 1, "%-95s", "foo<black>bar</black>");
 
 	send_txt(fd, "un11>", fmt, ++d, "32", "");
-	rv |= validate_row(fd, 22, "%-95s", "foo<green>bar</green>");
+	rv |= validate_row(fd, 1, "%-95s", "foo<green>bar</green>");
 
-	/* Now at bottom of screen and scrolling up, so always check row 22 */
 	send_txt(fd, "un12>", fmt, ++d, "33", "");
-	rv |= validate_row(fd, 22, "%-97s", "foo<yellow>bar</yellow>");
+	rv |= validate_row(fd, 1, "%-97s", "foo<yellow>bar</yellow>");
 
 	send_txt(fd, "un13>", fmt, ++d, "37", "");
-	rv |= validate_row(fd, 22, "%-95s", "foo<white>bar</white>");
+	rv |= validate_row(fd, 1, "%-95s", "foo<white>bar</white>");
 
 	for( int i = 34; i < 38; i++ ) {
 		cmd = "PS1='a'x'%d>'; printf 'ax%d\\033[%dmend\\033[mt\\n'";
@@ -829,12 +827,12 @@ test_sgr(int fd)
 		sprintf(ps, "ax%d>", i);
 		sprintf(buf, "ax%1$d<%2$s>end</%2$s>t", i, colors[ i - 34]);
 		send_txt(fd, ps, cmd, i, i, i);
-		rv |= validate_row(fd, 22, width, buf);
+		rv |= validate_row(fd, 3 + 2 * (i - 34), width, buf);
 	}
-	rv |= validate_row(fd, 16, "%-93s", "ax34<blue>end</blue>t");
-	rv |= validate_row(fd, 18, "%-99s", "ax35<magenta>end</magenta>t");
-	rv |= validate_row(fd, 20, "%-93s", "ax36<cyan>end</cyan>t");
-	rv |= validate_row(fd, 22, "%-95s", "ax37<white>end</white>t");
+	rv |= validate_row(fd, 3, "%-93s", "ax34<blue>end</blue>t");
+	rv |= validate_row(fd, 5, "%-99s", "ax35<magenta>end</magenta>t");
+	rv |= validate_row(fd, 7, "%-93s", "ax36<cyan>end</cyan>t");
+	rv |= validate_row(fd, 9, "%-95s", "ax37<white>end</white>t");
 	send_txt(fd, "aw1>", "PS1='a'w1'>'; clear");
 	rv |= sgr_background(fd);
 
