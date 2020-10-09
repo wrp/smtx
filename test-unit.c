@@ -774,7 +774,11 @@ test_sgr(int fd)
 {
 	int rv = 0;
 	int d = 0;
-	const char *fmt = "PS1='un''%d>'; printf 'foo\\033[%smbar\\033[%sm\\n'";
+
+	char fmt[1024] = "PS1='un''%d>'; ";
+	char *cmd = fmt + strlen(fmt);
+	sprintf(cmd, "%s", "printf 'foo\\033[%smbar\\033[%sm\\n'");
+
 	send_txt(fd, "un1>", fmt, ++d, "1", "0");
 	rv |= validate_row(fd, 2, "%-93s", "foo<bold>bar</bold>");
 	rv |= validate_row(fd, 3, "%-80s", "un1>");
@@ -816,7 +820,7 @@ test_sgr(int fd)
 	rv |= validate_row(fd, 22, "%-95s", "foo<white>bar</white>");
 
 	for( int i = 34; i < 38; i++ ) {
-		fmt = "PS1='a'x'%d>'; printf 'ax%d\\033[%dmend\\033[mt\\n'";
+		cmd = "PS1='a'x'%d>'; printf 'ax%d\\033[%dmend\\033[mt\\n'";
 		char *colors[] = { "blue", "magenta", "cyan", "white" };
 		char buf[128];
 		char ps[16];
@@ -824,7 +828,7 @@ test_sgr(int fd)
 		sprintf(width, "%%-%zds", 80 + 2 * strlen(colors[i-34]) + 5);
 		sprintf(ps, "ax%d>", i);
 		sprintf(buf, "ax%1$d<%2$s>end</%2$s>t", i, colors[ i - 34]);
-		send_txt(fd, ps, fmt, i, i, i);
+		send_txt(fd, ps, cmd, i, i, i);
 		rv |= validate_row(fd, 22, width, buf);
 	}
 	rv |= validate_row(fd, 16, "%-93s", "ax34<blue>end</blue>t");
