@@ -834,8 +834,7 @@ test_sgr(int fd)
 		char expect[128];
 		size_t len = strlen(atp->name);
 		d += 1;
-		sprintf(prefix, "%c%c%c%c", 'a' + d % 26, 'a' + (d + 13) % 26,
-			'a' + (d + 7) % 26, 'a' + (d + 5) % 26);
+		sprintf(prefix, "%c%c", 'a' + d % 26, 'a' + (d + 13) % 26);
 		sprintf(ps, "%s%d>", prefix,  d);
 		sprintf(lenfmt, "%%-%zds", 80 + 5 + len * 2);
 		sprintf(expect, "foo<%1$s>bar</%1$s>baz", atp->name);
@@ -845,6 +844,9 @@ test_sgr(int fd)
 			continue;
 		}
 		/* Check 16-color foreground  */
+		d += 1;
+		sprintf(prefix, "%c%c", 'a' + d % 26, 'a' + (d + 13) % 26);
+		sprintf(ps, "%s%d>", prefix,  d);
 		send_txt(fd, ps, fmt, prefix, d, atp->sgr + 60, "0");
 		if( colors > 16 ) {
 			sprintf(expect, "foo<%1$s>bar</%1$s>baz", atp->name);
@@ -855,11 +857,17 @@ test_sgr(int fd)
 		rv |= validate_row(fd, 1, lenfmt, expect);
 
 		/* Check backgound color */
+		d += 1;
+		sprintf(prefix, "%c%c", 'a' + d % 26, 'a' + (d + 13) % 26);
+		sprintf(ps, "%s%d>", prefix,  d);
 		send_txt(fd, ps, fmt, prefix, d, atp->sgr + 10, "0");
 		sprintf(expect, "foo<%1$s*>bar</%1$s*>baz", atp->name);
 		sprintf(lenfmt, "%%-%zds", 80 + 7 + len * 2);
 		rv |= validate_row(fd, 1, lenfmt, expect);
 
+		d += 1;
+		sprintf(prefix, "%c%c", 'a' + d % 26, 'a' + (d + 13) % 26);
+		sprintf(ps, "%s%d>", prefix,  d);
 		send_txt(fd, ps, fmt, prefix, d, atp->sgr + 70, "0");
 		if( colors > 16 ) {
 			sprintf(expect, "foo<%1$s*>bar</%1$s*>baz", atp->name);
