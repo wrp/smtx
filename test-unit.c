@@ -834,7 +834,7 @@ test_sgr(int fd)
 		/* Check 16-color foreground  */
 		send_txt(fd, ps, fmt, prefix, d, atp->sgr + 60, "0");
 		if( colors > 16 ) {
-			sprintf(expect, "foo<%1$s*>bar</%1$s*>baz", atp->name);
+			sprintf(expect, "foo<%1$s>bar</%1$s>baz", atp->name);
 		} else {
 			sprintf(expect, "foobarbaz");
 			sprintf(lenfmt, "%%-80s");
@@ -845,6 +845,15 @@ test_sgr(int fd)
 		send_txt(fd, ps, fmt, prefix, d, atp->sgr + 10, "0");
 		sprintf(expect, "foo<%1$s*>bar</%1$s*>baz", atp->name);
 		sprintf(lenfmt, "%%-%zds", 80 + 7 + len * 2);
+		rv |= validate_row(fd, 1, lenfmt, expect);
+
+		send_txt(fd, ps, fmt, prefix, d, atp->sgr + 70, "0");
+		if( colors > 16 ) {
+			sprintf(expect, "foo<%1$s*>bar</%1$s*>baz", atp->name);
+		} else {
+			sprintf(expect, "foobarbaz");
+			sprintf(lenfmt, "%%-80s");
+		}
 		rv |= validate_row(fd, 1, lenfmt, expect);
 	}
 
