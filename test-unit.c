@@ -786,7 +786,7 @@ test_sgr(int fd)
 	int rv = 0;
 	int d = 0;
 
-	char fmt[1024] = "PS1='un''%d>'; clear; ";
+	char fmt[1024] = "PS1='%s''%d>'; clear; ";
 	char *cmd = fmt + strlen(fmt);
 	sprintf(cmd, "%s", "printf 'foo\\033[%smbar\\033[%smbaz\\n'");
 	struct { char *sgr; char *name; } *attrp, attrs[] = {
@@ -817,38 +817,41 @@ test_sgr(int fd)
 
 	for( attrp = attrs; attrp->sgr; attrp++ ) {
 		char ps[32];
+		char prefix[3];
 		char lenfmt[32];
 		char expect[128];
 		size_t len = strlen(attrp->name);
-		sprintf(ps, "un%d>", ++d);
+		d += 1;
+		sprintf(prefix, "%c%c", 'a' + d % 26, 'a' + (d + 13) % 26);
+		sprintf(ps, "%s%d>", prefix,  d);
 		sprintf(lenfmt, "%%-%zds", 80 + 5 + len * 2);
 		sprintf(expect, "foo<%1$s>bar</%1$s>baz", attrp->name);
-		send_txt(fd, ps, fmt, d, attrp->sgr, "0");
+		send_txt(fd, ps, fmt, prefix, d, attrp->sgr, "0");
 		rv |= validate_row(fd, 1, lenfmt, expect);
 	}
 
 	/* test that 22 disables bold */
-	send_txt(fd, "un7>", fmt, d=7, "1", "22");
+	send_txt(fd, "ab7>", fmt, "ab", d=7, "1", "22");
 	rv |= validate_row(fd, 1, "%-93s", "foo<bold>bar</bold>baz");
 
 	/* test that 24 disables underline */
-	send_txt(fd, "un8>", fmt, ++d, "4", "24");
+	send_txt(fd, "cd8>", fmt, "cd", ++d, "4", "24");
 	rv |= validate_row(fd, 1, "%-89s", "foo<ul>bar</ul>baz");
 
 	/* test that 25 disables blink */
-	send_txt(fd, "un9>", fmt, ++d, "5", "25");
+	send_txt(fd, "ef9>", fmt, "ef", ++d, "5", "25");
 	rv |= validate_row(fd, 1, "%-95s", "foo<blink>bar</blink>baz");
 
 	/* test that 27 disables reverse */
-	send_txt(fd, "un10>", fmt, ++d, "7", "27");
+	send_txt(fd, "gh10>", fmt, "gh", ++d, "7", "27");
 	rv |= validate_row(fd, 1, "%-91s", "foo<rev>bar</rev>baz");
 
 	/* test that 39 disables foreground color */
-	send_txt(fd, "un11>", fmt, ++d, "31", "39");
+	send_txt(fd, "ij11>", fmt, "ij", ++d, "31", "39");
 	rv |= validate_row(fd, 1, "%-91s", "foo<red>bar</red>baz");
 
 	/* test that 49 disables background color */
-	send_txt(fd, "un12>", fmt, ++d, "44", "49");
+	send_txt(fd, "kl12>", fmt, "kl", ++d, "44", "49");
 	rv |= validate_row(fd, 1, "%-95s", "foo<blue*>bar</blue*>baz");
 
 	/* Clear screen for the sgr_background() call */
