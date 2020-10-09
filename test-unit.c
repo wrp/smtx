@@ -226,6 +226,15 @@ test_cursor(int fd)
 	rv |= validate_row(fd, 17, "%-80s", "baz");
 	rv |= validate_row(fd, 18, "%-80s", "un9>");
 
+	/* Use raw esape sequences (^e7/^e8) to save/restore cursor */
+	send_txt(fd, "szab>", "PS1='sz'a'b> '; printf 'ab\\0337xy\\n' ");
+	rv |= validate_row(fd, 19, "%-80s", "abxy");
+	rv |= validate_row(fd, 20, "%-80s", "szab>");
+	cmd = "PS1='qx'u'i'; printf 'ab\\0338jq\\n'";
+	send_txt(fd, "qxui", "%s", cmd);
+	rv |= validate_row(fd, 19, "%-80s", "abjq");
+	rv |= validate_row(fd, 20, "qxui> %-74s", cmd);
+
 	return rv;
 }
 
