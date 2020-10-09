@@ -273,9 +273,10 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		wattr_get(win, &s->sattr, &s->sp, NULL); /* attrs/color pair */
 		s->sfg = s->fg;                          /* foreground color */
 		s->sbg = s->bg;                          /* background color */
-		s->oxenl = s->xenl;                      /* xenl state */
-		s->saved = true;                         /* data is valid */
-		p->sgc = p->gc; p->sgs = p->gs;          /* character sets */
+		s->oxenl = s->xenl;
+		s->saved = true;      /* data is valid */
+		p->sgc = p->gc;       /* character sets */
+		p->sgs = p->gs;
 		break;
 	case su: /* Scroll Up/Down */
 		wscrl(win, (w == L'T' || w == L'^') ? -p0[1] : p0[1]);
