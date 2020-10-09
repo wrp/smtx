@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "test-unit.h"
-#include <ncurses.h>  /* For COLORS */
 
 int
 test_alt(int fd)
@@ -807,6 +806,14 @@ test_sgr(int fd)
 		{ 37, "white" },
 		{ 0, NULL }
 	};
+	send_txt(fd, "qp3>", "PS1='qp''3>'; tput colors");
+	char row[256];
+	int colors = 0;
+	get_row(fd, 2, row, sizeof row);
+	if( sscanf(row, "%d", &colors) != 1 ) {
+		rv = 1;
+		fprintf(stderr, "unable to get color count.\n");
+	}
 
 	for( atp = attrs; atp->sgr; atp++ ) {
 		char ps[32];
@@ -826,7 +833,7 @@ test_sgr(int fd)
 		}
 		/* Check 16-color foreground  */
 		send_txt(fd, ps, fmt, prefix, d, atp->sgr + 60, "0");
-		if( COLORS > 16 ) {
+		if( colors > 16 ) {
 			sprintf(expect, "foo<%1$s*>bar</%1$s*>baz", atp->name);
 		} else {
 			sprintf(expect, "foobarbaz");
