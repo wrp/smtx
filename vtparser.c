@@ -32,7 +32,7 @@ struct state{
 	void (*entry)(struct vtp *v);
 	struct action act[0x80];
 };
-static struct state ground, escape, escape_intermediate, csi_entry,
+static struct state ground, esc, esc_intermediate, csi_entry,
 	csi_ignore, csi_param, csi_intermediate, osc_string;
 
 static void
@@ -203,7 +203,7 @@ initstate(struct state *s, void (*entry)(struct vtp *))
 	init_action(s, 0x18, docontrol, &ground);
 	init_action(s, 0x19, docontrol, NULL);
 	init_action(s, 0x1a, docontrol, &ground);
-	init_action(s, 0x1b, ignore, &escape);
+	init_action(s, 0x1b, ignore, &esc);
 	init_range(s, 0x1c, 0x1f, docontrol, NULL);
 	init_action(s, 0x7f, ignore, NULL);
 }
@@ -215,27 +215,28 @@ init(void)
 	initstate(&ground, NULL);
 	init_range(&ground, 0x20, 0x7f, doprint, NULL);
 
-	initstate(&escape, reset);
-	init_action(&escape, 0x20, collect, &escape_intermediate);
-	init_action(&escape, 0x21, ignore, &osc_string); /* ! */
-	init_range(&escape, 0x22, 0x2f, collect, &escape_intermediate);
-	init_range(&escape, 0x30, 0x4f, doescape, &ground);
-	init_action(&escape, 0x50, ignore, &osc_string); /* P */
-	init_range(&escape, 0x51, 0x57, doescape, &ground);
+	initstate(&esc, reset);
+	init_action(&esc, 0x20, collect, &esc_intermediate);
+	init_action(&esc, 0x21, ignore, &osc_string); /* ! */
+	init_range(&esc, 0x22, 0x2f, collect, &esc_intermediate);
+	init_range(&esc, 0x30, 0x4f, doescape, &ground);
+	init_action(&esc, 0x50, ignore, &osc_string); /* P */
+	init_range(&esc, 0x51, 0x57, doescape, &ground);
 	/* Why is 0x58 ('X') skipped ? (1) */
-	init_range(&escape, 0x59, 0x5a, doescape, &ground);
-	init_action(&escape, 0x5b, ignore, &csi_entry);  /* [ */
-	init_action(&escape, 0x5c, doescape, &ground);   /* \ */
-	init_action(&escape, 0x5d, ignore, &osc_string); /* ] */
-	init_action(&escape, 0x5e, ignore, &osc_string); /* ^ */
-	init_action(&escape, 0x5f, ignore, &osc_string); /* _ */
-	init_range(&escape, 0x60, 0x6a, doescape, &ground);
-	init_action(&escape, 0x6b, ignore, &osc_string); /* k */
-	init_range(&escape, 0x6c, 0x7e, doescape, &ground);
+	init_range(&esc, 0x59, 0x5a, doescape, &ground);
+	init_action(&esc, 0x5b, ignore, &csi_entry);  /* [ */
+	init_action(&esc, 0x5c, doescape, &ground);   /* \ */
+	init_action(&esc, 0x5d, ignore, &osc_string); /* ] */
+	init_action(&esc, 0x5e, ignore, &osc_string); /* ^ */
+	init_action(&esc, 0x5f, ignore, &osc_string); /* _ */
+	init_range(&esc, 0x60, 0x6a, doescape, &ground);
+	init_action(&esc, 0x6b, ignore, &osc_string); /* k */
+	init_range(&esc, 0x6c, 0x7e, doescape, &ground);
 
-	initstate(&escape_intermediate, NULL);
-	init_range(&escape_intermediate, 0x20, 0x2f, collect, NULL);
-	init_range(&escape_intermediate, 0x30, 0x7e, doescape, &ground);
+
+	initstate(&esc_intermediate, NULL);
+	init_range(&esc_intermediate, 0x20, 0x2f, collect, NULL);
+	init_range(&esc_intermediate, 0x30, 0x7e, doescape, &ground);
 
 	initstate(&csi_entry, reset);
 	init_range(&csi_entry, 0x20, 0x2f, collect, &csi_intermediate);
