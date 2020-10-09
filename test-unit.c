@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "test-unit.h"
+#include <ncurses.h>  /* For COLORS */
 
 int
 test_alt(int fd)
@@ -789,7 +790,7 @@ test_sgr(int fd)
 	char fmt[1024] = "PS1='%s''%d>'; clear; ";
 	char *cmd = fmt + strlen(fmt);
 	sprintf(cmd, "%s", "printf 'foo\\033[%dmbar\\033[%smbaz\\n'");
-	struct { int sgr; char *name; } *attrp, attrs[] = {
+	struct { int sgr; char *name; } *atp, attrs[] = {
 		{ 1, "bold" },
 		{ 2, "dim" },
 		{ 4, "ul" },  /* underline */
@@ -804,29 +805,39 @@ test_sgr(int fd)
 		{ 35, "magenta" },
 		{ 36, "cyan" },
 		{ 37, "white" },
-		{ 40, "black*" },
-		{ 41, "red*" },
-		{ 42, "green*" },
-		{ 43, "yellow*" },
-		{ 44, "blue*" },
-		{ 45, "magenta*" },
-		{ 46, "cyan*" },
-		{ 47, "white*" },
 		{ 0, NULL }
 	};
 
-	for( attrp = attrs; attrp->sgr; attrp++ ) {
+	for( atp = attrs; atp->sgr; atp++ ) {
 		char ps[32];
 		char prefix[3];
 		char lenfmt[32];
 		char expect[128];
-		size_t len = strlen(attrp->name);
+		size_t len = strlen(atp->name);
 		d += 1;
 		sprintf(prefix, "%c%c", 'a' + d % 26, 'a' + (d + 13) % 26);
 		sprintf(ps, "%s%d>", prefix,  d);
 		sprintf(lenfmt, "%%-%zds", 80 + 5 + len * 2);
-		sprintf(expect, "foo<%1$s>bar</%1$s>baz", attrp->name);
-		send_txt(fd, ps, fmt, prefix, d, attrp->sgr, "0");
+		sprintf(expect, "foo<%1$s>bar</%1$s>baz", atp->name);
+		send_txt(fd, ps, fmt, prefix, d, atp->sgr, "0");
+		rv |= validate_row(fd, 1, lenfmt, expect);
+		if( atp->sgr < 30 ) {
+			continue;
+		}
+		/* Check 16-color foreground  */
+		send_txt(fd, ps, fmt, prefix, d, atp->sgr + 60, "0");
+		if( COLORS > 16 ) {
+			sprintf(expect, "foo<%1$s*>bar</%1$s*>baz", atp->name);
+		} else {
+			sprintf(expect, "foobarbaz");
+			sprintf(lenfmt, "%%-80s");
+		}
+		rv |= validate_row(fd, 1, lenfmt, expect);
+
+		/* Check backgound color */
+		send_txt(fd, ps, fmt, prefix, d, atp->sgr + 10, "0");
+		sprintf(expect, "foo<%1$s*>bar</%1$s*>baz", atp->name);
+		sprintf(lenfmt, "%%-%zds", 80 + 7 + len * 2);
 		rv |= validate_row(fd, 1, lenfmt, expect);
 	}
 
