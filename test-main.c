@@ -214,18 +214,13 @@ grep(int fd, const char *needle)
 	}
 }
 
-/* TODO: allow alternatives.  That is, sometimes there is a race, and
- * a row has one of two values (depending on if the shell has printed
- * a prompt).  It might be nice to check that.
- */
 int
-validate_row(int fd, int row, const char *fmt, ... )
+get_row(int fd, int row, char *buf, size_t siz)
 {
 	size_t count = 0;
-	char buf[1024];
 	char *r = buf;
 
-	int len = snprintf(buf, sizeof buf, "%c:show_row %d\r", ctlkey, row - 1);
+	int len = snprintf(buf, siz, "%c:show_row %d\r", ctlkey, row - 1);
 	write(fd, buf, len);
 	sprintf(buf, "row %d:(", row - 1);
 	grep(fd, buf);
@@ -243,7 +238,7 @@ validate_row(int fd, int row, const char *fmt, ... )
 			count = 10 * count + *r - '0';
 		}
 	}
-	if( count > sizeof buf - 1 ) {
+	if( count > siz - 1 ) {
 		err(1, "Row is too long");
 	}
 	ssize_t s = timed_read(fd, buf, count, "Reading row");
@@ -252,7 +247,21 @@ validate_row(int fd, int row, const char *fmt, ... )
 		return -1;
 	}
 	buf[s] = 0;
+	return 0;
+}
 
+/* TODO: allow alternatives.  That is, sometimes there is a race, and
+ * a row has one of two values (depending on if the shell has printed
+ * a prompt).  It might be nice to check that.
+ */
+int
+validate_row(int fd, int row, const char *fmt, ... )
+{
+
+	char buf[1024];
+	if( get_row(fd, row, buf, sizeof buf) == -1 ) {
+		return -1;
+	}
 	char expect[1024];
 	va_list ap;
 	va_start(ap, fmt);
