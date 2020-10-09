@@ -494,7 +494,7 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 			getyx(win, y, x);
 			y -= tos;
 		}
-		if( w < MAXMAP && p->gc[w] ) {
+		if( w < 0x7f && p->gc[w] ) {
 			w = p->gc[w];
 		}
 		p->repc = w;

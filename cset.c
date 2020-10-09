@@ -17,14 +17,12 @@
  */
 #include "smtx.h"
 
-wchar_t CSET_US[MAXMAP]; /* "USASCII" */
+wchar_t CSET_US[0x7f]; /* "USASCII" */
 
 #if defined(__STDC_ISO_10646__) || defined(WCHAR_IS_UNICODE)
-wchar_t CSET_UK[MAXMAP] = { /* "United Kingdom" */
-    [L'#'] = 0x00a3
-};
 
-wchar_t CSET_GRAPH[MAXMAP] = { /* Graphics Set One */
+wchar_t CSET_UK[0x7f] = { [L'#'] = 0x00a3 };
+wchar_t CSET_GRAPH[0x7f] = { /* Graphics Set One */
     [L'-'] = 0x2191,  [L'a'] = 0x2592,  [L'k'] = 0x2510,  [L'u'] = 0x2524,
     [L'}'] = 0x00a3,  [L'b'] = 0x2409,  [L'l'] = 0x250c,  [L'v'] = 0x2534,
     [L'~'] = 0x00b7,  [L'c'] = 0x240c,  [L'm'] = 0x2514,  [L'w'] = 0x252c,
@@ -39,11 +37,8 @@ wchar_t CSET_GRAPH[MAXMAP] = { /* Graphics Set One */
 
 #else /* wchar_t doesn't map to Unicode */
 
-wchar_t CSET_UK[] = { /* "United Kingdom" */
-    [L'#'] = L'&'
-};
-
-wchar_t CSET_GRAPH[] = { /* Graphics Set One */
+wchar_t CSET_UK[0x7f] = { [L'#'] = L'&' };
+wchar_t CSET_GRAPH[0x7f] = { /* Graphics Set One */
     [L'-'] = '^',   [L'a'] = L':',   [L'k'] = L'+',  [L'u'] = L'+',
     [L'}'] = L'&',  [L'b'] = L' ',   [L'l'] = L'+',  [L'v'] = L'+',
     [L'~'] = L'o',  [L'c'] = L' ',   [L'm'] = L'+',  [L'w'] = L'+',

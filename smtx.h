@@ -142,11 +142,9 @@ struct canvas {
 	WINDOW *wdiv;  /* Window for divider */
 };
 
-
-#define MAXMAP 0x7f
-extern wchar_t CSET_US[]; /* "USASCII" */
-extern wchar_t CSET_UK[]; /* "United Kingdom" */
-extern wchar_t CSET_GRAPH[]; /* Graphics Set One */
+extern wchar_t CSET_US[0x7f]; /* "USASCII" */
+extern wchar_t CSET_UK[0x7f]; /* "United Kingdom" */
+extern wchar_t CSET_GRAPH[0x7f]; /* Graphics Set One */
 extern int tabstop;
 extern int id;
 extern void fixcursor(void);
