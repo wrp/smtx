@@ -209,7 +209,7 @@ grep(int fd, const char *needle)
 			err(EXIT_FAILURE, "read from pty");
 		}
 		if( c != *n++ ) {
-			n = needle;
+			n = c == *needle ? needle + 1 : needle;
 		}
 	}
 }
