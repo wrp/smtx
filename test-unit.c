@@ -767,6 +767,16 @@ sgr_background(int fd)
 	send_txt(fd, "xy2>", "PS1='xy''2>'");
 	rv |= validate_row(fd, 4, "%-123s",
 		"x<rev><yellow><cyan*>y</rev></yellow></cyan*>z");
+
+	/* Change foreground color independent of background */
+	/* tput el to make sure color does not change after the line */
+	fmt = "printf '%s\\033[%sm%s\\033[%sm%s'; tput el; printf '\\n'; ";
+	send_raw(fd, NULL, fmt, "a", "35;46", "b", "47", "end");
+	send_txt(fd, "ab3>", "PS1='ab''3>'");
+	rv |= validate_row(fd, 6, "%-104s", "a<magenta><cyan*>b<white*>end");
+	/* Ensure color is still in place for the prompt */
+	rv |= validate_row(fd, 7, "%-116s",
+		"<magenta><white*>ab3></magenta></white*>");
 	return rv;
 }
 

@@ -146,11 +146,13 @@ describe_row(char *desc, size_t siz, int row)
 		if( p != last_color_pair ) {
 			int put = p ? p : last_color_pair;
 			short fg, bg;
-			if( pair_content((short)put, &fg, &bg) == OK ) {
-				check_attr(1u << put, &fgflag, &desc, end,
+			if( pair_content((short)put, &fg, &bg) == OK
+					&& bg < (short)sizeof(1u) * CHAR_BIT
+					&& fg < (short)sizeof(1u) * CHAR_BIT ) {
+				check_attr(1u << fg, &fgflag, &desc, end,
 					color_name(fg), p, 0
 				);
-				check_attr(1u << put, &bgflag, &desc, end,
+				check_attr(1u << bg, &bgflag, &desc, end,
 					color_name(bg), p, 1
 				);
 			}
