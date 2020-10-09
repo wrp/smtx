@@ -24,27 +24,31 @@ test_alt(int fd)
 	int rv = 0;
 
 	/* Write some lines of text on primary screen */
-	send_txt(fd, "primary", "echo 'p'rimar'y'");
-	rv |= validate_row(fd, 2, "%-80s", "primary");
-	send_txt(fd, "un1>", "PS1='u'n'1>'; echo primary 4");
-	rv |= validate_row(fd, 4, "%-80s", "primary 4");
+	send_txt(fd, "ps1>", "echo prim line 2");
+	rv |= validate_row(fd, 2, "%-80s", "prim line 2");
+	send_txt(fd, "un1>", "PS1=un'1> '; echo prim line 4");
+	rv |= validate_row(fd, 4, "%-80s", "prim line 4");
 
 	/* Go to alternate screen */
-	send_txt(fd, NULL, "printf '\\033[47h'");
-	send_txt(fd, "secondary", "echo 's'econdar'y'");
-	rv |= validate_row(fd, 2, "%-80s", "secondary");
+	const char *cmd = "PS1=az'2>'; printf '\\033[47h'; echo alt 1";
+	send_txt(fd, "az2>", cmd);
+	rv |= validate_row(fd, 1, "%-80s", "alt 1");
+	rv |= validate_row(fd, 2, "%-80s", "az2>");
 	rv |= validate_row(fd, 4, "%-80s", "");
 
 	/* Return to primary screen */
-	send_txt(fd, NULL, "printf '\\033[47l'");
-	send_txt(fd, "ab1>", "PS1='a'b1'>'");
-	rv |= validate_row(fd, 4, "%-80s", "primary 4");
-	rv |= validate_row(fd, 7, "%-80s", "ab1>");
+	send_txt(fd, "qw3>", "PS1=qw'3>'; printf '\\033[47l'");
+	rv |= validate_row(fd, 4, "%-80s", "prim line 4");
+	rv |= validate_row(fd, 5, "un1> %-75s", cmd);
+	rv |= validate_row(fd, 6, "%-80s", "qw3>");
 
 	/* Go back to alternate screen using 1047 */
-	send_txt(fd, "zephyr", "printf '\\033[1047h'\recho z'e'ph'y'r");
-	rv |= validate_row(fd, 2, "%-80s", "zephyr");
-	rv |= validate_row(fd, 4, "%-80s", "");
+	send_txt(fd, "lj4>", "PS1=lj'4> '; printf '\\033[1047h'; echo alt 2");
+	rv |= validate_row(fd, 1, "%-80s", "alt 2");
+	rv |= validate_row(fd, 2, "%-80s", "lj4>");
+	for( int i = 3; i < 24; i++ ) {
+		rv |= validate_row(fd, i, "%-80s", "");
+	}
 	return rv;
 }
 
