@@ -786,9 +786,6 @@ test_sgr(int fd)
 	int rv = 0;
 	int d = 0;
 
-	char fmt[1024] = "PS1='%s''%d>'; clear; ";
-	char *cmd = fmt + strlen(fmt);
-	sprintf(cmd, "%s", "printf 'foo\\033[%dmbar\\033[%smbaz\\n'");
 	struct { int sgr; char *name; } *atp, attrs[] = {
 		{ 1, "bold" },
 		{ 2, "dim" },
@@ -814,15 +811,19 @@ test_sgr(int fd)
 		rv = 1;
 		fprintf(stderr, "unable to get color count.\n");
 	}
+	char fmt[1024] = "PS1='%s''%d>'; clear; ";
+	char *cmd = fmt + strlen(fmt);
+	sprintf(cmd, "%s", "printf 'foo\\033[%dmbar\\033[%smbaz\\n'");
 
 	for( atp = attrs; atp->sgr; atp++ ) {
 		char ps[32];
-		char prefix[3];
+		char prefix[12];
 		char lenfmt[32];
 		char expect[128];
 		size_t len = strlen(atp->name);
 		d += 1;
-		sprintf(prefix, "%c%c", 'a' + d % 26, 'a' + (d + 13) % 26);
+		sprintf(prefix, "%c%c%c%c", 'a' + d % 26, 'a' + (d + 13) % 26,
+			'a' + (d + 7) % 26, 'a' + (d + 5) % 26);
 		sprintf(ps, "%s%d>", prefix,  d);
 		sprintf(lenfmt, "%%-%zds", 80 + 5 + len * 2);
 		sprintf(expect, "foo<%1$s>bar</%1$s>baz", atp->name);
