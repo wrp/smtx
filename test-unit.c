@@ -821,6 +821,7 @@ test_sgr(int fd)
 	struct { int sgr; char *name; } *atp, attrs[] = {
 		{ 1, "bold" },
 		{ 2, "dim" },
+		{ 3, "italic" },
 		{ 4, "ul" },  /* underline */
 		{ 5, "blink" },
 		{ 7, "rev" },
@@ -905,6 +906,10 @@ test_sgr(int fd)
 	/* test that 24 disables underline */
 	send_txt(fd, "cd8>", fmt, "cd", ++d, 4, "24");
 	rv |= validate_row(fd, 1, "%-89s", "foo<ul>bar</ul>baz");
+
+	/* test that 23 disables italics */
+	send_txt(fd, "itx0>", fmt, "itx", 0, 3, "23");
+	rv |= validate_row(fd, 1, "%-97s", "foo<italic>bar</italic>baz");
 
 	/* test that 25 disables blink */
 	send_txt(fd, "ef9>", fmt, "ef", ++d, 5, "25");
