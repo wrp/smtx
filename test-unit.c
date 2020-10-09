@@ -758,14 +758,15 @@ sgr_background(int fd)
 {
 	int rv = 0;
 	char *fmt = "printf '%s\\033[%sm%s\\033[m%s\\n'; ";
-	send_raw(fd, NULL, fmt, "c", "32;42", "d", "e");
+	send_raw(fd, NULL, fmt, "c", "31;42", "d", "e");
 	send_txt(fd, "xy1>", "PS1='xy''1>'");
-	rv |= validate_row(fd, 2, "%-107s", "c<green/green>d</green/green>e");
+	rv |= validate_row(fd, 2, "%-108s", "c<red><green*>d</red></green*>e");
 
-	send_raw(fd, NULL, fmt, "x", "31;42;7", "y", "z");
+	/* Test changing both colors with an attribute */
+	send_raw(fd, NULL, fmt, "x", "33;46;7", "y", "z");
 	send_txt(fd, "xy2>", "PS1='xy''2>'");
-	rv |= validate_row(fd, 4, "%-114s",
-		"x<rev><red/green>y</rev></red/green>z");
+	rv |= validate_row(fd, 4, "%-123s",
+		"x<rev><yellow><cyan*>y</rev></yellow></cyan*>z");
 	return rv;
 }
 

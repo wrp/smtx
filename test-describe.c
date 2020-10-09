@@ -55,18 +55,22 @@ describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 }
 
 static void
-check_attr(unsigned f, unsigned *flags, char **d, char *e, char *msg, int set)
+check_attr(unsigned f, unsigned *flags, char **d, char *e, char *msg, int set,
+	int star)
 {
 	char *dest = *d;
 	size_t len = strlen(msg);
 	if( ((set && !(*flags & f)) || (!set && (*flags & f)))
-			&& dest + len + 3 < e ) {
+			&& len > 0 && dest + len + 3 < e ) {
 		*dest++ = '<';
 		if( !set ) {
 			*dest++ = '/';
 		}
 		memcpy(dest, msg, len);
 		dest += len;
+		if( star ) {
+			*dest++ = '*';
+		}
 		*dest++ = '>';
 	}
 	if( set ) {
@@ -94,20 +98,6 @@ color_name(short k)
 	}
 	return n;
 }
-static char *
-get_color_name(int pair)
-{
-	static char buf[64];
-	short fg, bg;
-	sprintf(buf, "unknown");
-	if( pair_content(pair, &fg, &bg) == OK ) {
-		sprintf(buf, "%s%s%s", color_name(fg),
-			color_name(bg)[0] ? "/" : "",
-			color_name(bg)
-		);
-	}
-	return buf;
-}
 
 static size_t
 describe_row(char *desc, size_t siz, int row)
@@ -115,7 +105,8 @@ describe_row(char *desc, size_t siz, int row)
 	int y, x;
 	size_t i = 0;
 	unsigned attrs = 0;
-	unsigned cflag = 0;
+	unsigned fgflag = 0;
+	unsigned bgflag = 0;
 	int last_color_pair = 0;
 	int offset = 0;
 	const struct canvas *c = S.c;
@@ -148,15 +139,21 @@ describe_row(char *desc, size_t siz, int row)
 		chtype k = mvwinch(w, row, i + offset);
 		for( atrp = atrs; atrp->flag; atrp += 1 ) {
 			check_attr(atrp->flag, &attrs, &desc, end, atrp->name,
-				( (k & A_ATTRIBUTES) & atrp->attr ) ? 1 : 0
+				( (k & A_ATTRIBUTES) & atrp->attr ) ? 1 : 0, 0
 			);
 		}
 		p = PAIR_NUMBER(k);
 		if( p != last_color_pair ) {
 			int put = p ? p : last_color_pair;
-			check_attr(1u << put, &cflag, &desc, end,
-				get_color_name(put), p
-			);
+			short fg, bg;
+			if( pair_content((short)put, &fg, &bg) == OK ) {
+				check_attr(1u << put, &fgflag, &desc, end,
+					color_name(fg), p, 0
+				);
+				check_attr(1u << put, &bgflag, &desc, end,
+					color_name(bg), p, 1
+				);
+			}
 			last_color_pair = p;
 		}
 		*desc++ = k & A_CHARTEXT;
