@@ -778,31 +778,46 @@ test_sgr(int fd)
 	char fmt[1024] = "PS1='un''%d>'; clear; ";
 	char *cmd = fmt + strlen(fmt);
 	sprintf(cmd, "%s", "printf 'foo\\033[%smbar\\033[%sm\\n'");
+	struct { char *sgr; char *name; } *attrp, attrs[] = {
+		{ "1", "bold" },
+		{ "2", "dim" },
+		{ "4", "ul" },  /* underline */
+		{ "5", "blink" },
+		{ "7", "rev" },
+		{ "8", "inv" },
+		{ NULL, NULL }
+	};
 
-	send_txt(fd, "un1>", fmt, ++d, "1", "0");
-	rv |= validate_row(fd, 1, "%-93s", "foo<bold>bar</bold>");
-	send_txt(fd, "un2>", fmt, ++d, "2", "0");
-	rv |= validate_row(fd, 1, "%-91s", "foo<dim>bar</dim>");
-	send_txt(fd, "un3>", fmt, ++d, "4", "0");
-	rv |= validate_row(fd, 1, "%-89s", "foo<ul>bar</ul>");
-	/* Switch 2nd arg to test reset with no args */
-	send_txt(fd, "un4>", fmt, ++d, "5", "");
-	rv |= validate_row(fd, 1, "%-95s", "foo<blink>bar</blink>");
-	send_txt(fd, "un5>", fmt, ++d, "7", "");
-	rv |= validate_row(fd, 1, "%-91s", "foo<rev>bar</rev>");
-	send_txt(fd, "un6>", fmt, ++d, "8", "");
-	rv |= validate_row(fd, 1, "%-91s", "foo<inv>bar</inv>");
+	for( attrp = attrs; attrp->sgr; attrp++ ) {
+		char ps[32];
+		char lenfmt[32];
+		char expect[128];
+		size_t len = strlen(attrp->name);
+		sprintf(ps, "un%d>", ++d);
+		sprintf(lenfmt, "%%-%zds", 80 + 5 + len * 2);
+		sprintf(expect, "foo<%1$s>bar</%1$s>", attrp->name);
+		send_txt(fd, ps, fmt, d, attrp->sgr, "0");
+		rv |= validate_row(fd, 1, lenfmt, expect);
+	}
 
 	/* test that 22 disables bold */
 	send_txt(fd, "un7>", fmt, ++d, "1", "22");
 	rv |= validate_row(fd, 1, "%-93s", "foo<bold>bar</bold>");
 
+	/* test that 24 disables underline */
+	send_txt(fd, "un8>", fmt, ++d, "4", "24");
+	rv |= validate_row(fd, 1, "%-89s", "foo<ul>bar</ul>");
+
 	/* test that 25 disables blink */
-	send_txt(fd, "un8>", fmt, ++d, "5", "25");
+	send_txt(fd, "un9>", fmt, ++d, "5", "25");
 	rv |= validate_row(fd, 1, "%-95s", "foo<blink>bar</blink>");
 
+	/* test that 27 disables reverse */
+	send_txt(fd, "un10>", fmt, ++d, "7", "27");
+	rv |= validate_row(fd, 1, "%-91s", "foo<rev>bar</rev>");
+
 	/* test colors */
-	send_txt(fd, "un9>", fmt, ++d, "31", "");
+	send_txt(fd, "un9>", fmt, d = 9, "31", "");
 	rv |= validate_row(fd, 1, "%-91s", "foo<red>bar</red>");
 
 	send_txt(fd, "un10>", fmt, ++d, "30", "");
