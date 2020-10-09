@@ -1051,6 +1051,7 @@ test_title(int fd)
 	memset(buf, 'q', 76);
 	buf[75] = '\0';
 	rv |= validate_row(fd, 24, "1 sh %s", buf);
+	/* Use osc sequence to change title */
 	send_txt(fd, "uniq", "printf '\\033]2foobar\\007'; echo u'n'iq");
 	buf[71] = '\0';
 	rv |= validate_row(fd, 24, "1 foobar %s", buf);
