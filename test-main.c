@@ -221,18 +221,11 @@ grep(int fd, const char *needle)
 int
 validate_row(int fd, int row, const char *fmt, ... )
 {
-	int len;
 	size_t count = 0;
-	char expect[1024];
 	char buf[1024];
 	char *r = buf;
-	int status = 0;
-	va_list ap;
-	va_start(ap, fmt);
-	(void)vsnprintf(expect, sizeof expect, fmt, ap);
-	va_end(ap);
 
-	len = snprintf(buf, sizeof buf, "%c:show_row %d\r", ctlkey, row - 1);
+	int len = snprintf(buf, sizeof buf, "%c:show_row %d\r", ctlkey, row - 1);
 	write(fd, buf, len);
 	sprintf(buf, "row %d:(", row - 1);
 	grep(fd, buf);
@@ -260,6 +253,13 @@ validate_row(int fd, int row, const char *fmt, ... )
 	}
 	buf[s] = 0;
 
+	char expect[1024];
+	va_list ap;
+	va_start(ap, fmt);
+	(void)vsnprintf(expect, sizeof expect, fmt, ap);
+	va_end(ap);
+
+	int status = 0;
 	if( strcmp( buf, expect ) ) {
 		fprintf(stderr, "unexpected content in row %d\n", row);
 		fputs("received: '", stderr);
@@ -270,7 +270,6 @@ validate_row(int fd, int row, const char *fmt, ... )
 		status = 1;
 	}
 	return status;
-	return 0;
 }
 
 
