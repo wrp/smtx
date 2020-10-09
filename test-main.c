@@ -396,6 +396,7 @@ main(int argc, char *const argv[])
 	F(test_row);
 	F(test_scrollback);
 	F(test_scrollh, "COLUMNS", "26", "args", "-w", "78");
+	F(test_scs);
 	F(test_sgr);
 	F(test_su);
 	F(test_swap);

@@ -19,7 +19,12 @@
 
 wchar_t CSET_US[0x7f]; /* "USASCII" */
 
-#if defined(__STDC_ISO_10646__) || defined(WCHAR_IS_UNICODE)
+/*
+ * Avoid unicode except when NDEBUG is defined because
+ * testing is easier.  More thought needs to go here.
+ */
+#if (defined(__STDC_ISO_10646__) || defined(WCHAR_IS_UNICODE)) \
+	&& defined(NDEBUG)
 
 wchar_t CSET_UK[0x7f] = { [L'#'] = 0x00a3 };
 wchar_t CSET_GRAPH[0x7f] = { /* Graphics Set One */

@@ -769,6 +769,22 @@ test_scrollh(int fd)
 	return rv;
 }
 
+int
+test_scs(int fd) /* select character set */
+{
+	int rv = 0;
+	/* uk mapping should convert # -> & */
+	send_txt(fd, "ab1>", "PS1='a'b1'> '; printf '\\033(A\\017#\\n'" );
+	rv |= validate_row(fd, 2, "%-80s", "&");
+	rv |= validate_row(fd, 3, "%-80s", "ab1>");
+
+	/* Reset to US map */
+	send_txt(fd, "cd2>", "PS1='c'd2'> '; printf '\\033(B\\017#\\n'" );
+	rv |= validate_row(fd, 4, "%-80s", "#");
+	rv |= validate_row(fd, 5, "%-80s", "cd2>");
+	return rv;
+}
+
 static int
 sgr_background(int fd)
 {
