@@ -208,7 +208,12 @@ test_cursor(int fd)
 	rv |= validate_row(fd, 8, "%-80s", "");
 	rv |= validate_row(fd, 9, "%-80s", "");
 	rv |= validate_row(fd, 10, "%-80s", "uniq7");
-	send_txt(fd, NULL, "kill $SMTX");
+
+	/* cpl: cursor previous line */
+	send_txt(fd, "un8>", cmd, d++, "printf 'foo\\nXXXbar\\n\\033[Fbaz\\n'");
+	rv |= validate_row(fd, 12, "%-80s", "foo");
+	rv |= validate_row(fd, 13, "%-80s", "bazbar");
+	rv |= validate_row(fd, 14, "%-80s", "un8>");
 
 	return rv;
 }
