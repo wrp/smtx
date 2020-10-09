@@ -847,6 +847,11 @@ test_sgr(int fd)
 	send_txt(fd, "un11>", fmt, ++d, "31", "39");
 	rv |= validate_row(fd, 1, "%-91s", "foo<red>bar</red>baz");
 
+	/* test that 49 disables background color */
+	send_txt(fd, "un12>", fmt, ++d, "44", "49");
+	rv |= validate_row(fd, 1, "%-95s", "foo<blue*>bar</blue*>baz");
+
+	/* Clear screen for the sgr_background() call */
 	send_txt(fd, "aw1>", "PS1='a'w1'>'; clear");
 	rv |= sgr_background(fd);
 
