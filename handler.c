@@ -62,7 +62,7 @@ static void
 insert_space(int count, WINDOW *win)
 {
 	while( count-- ) {
-		wins_nwstr(win, L" ", 1);
+		wins_wstr(win, L" ");
 	}
 }
 
@@ -491,7 +491,7 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 			return;
 		}
 		if( s->insert ) {
-			insert_space(p0[1], win);
+			insert_space(1, win);
 		}
 		if( s->xenl ) {
 			s->xenl = false;
