@@ -538,9 +538,9 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 			p->gs = p->gc = p->g1; /* locking shift */
 		} else if( w == 0xf ) {
 			p->gs = p->gc = p->g0; /* locking shift */
-		} else if( w == L'p' ) {
+		} else if( w == L'}' ) {
 			p->gs = p->gc = p->g2; /* locking shift */
-		} else if( w == L'o' ) {
+		} else if( w == L'|' ) {
 			p->gs = p->gc = p->g3; /* locking shift */
 		} else if( w == L'N' ) {
 			p->gs = p->gc; /* non-locking shift */
@@ -618,6 +618,8 @@ setupevents(struct vtp *v)
 	vtonevent(v, ESCAPE,  L'M', ri);
 	vtonevent(v, ESCAPE,  L'N', so);
 	vtonevent(v, ESCAPE,  L'O', so);
+	vtonevent(v, ESCAPE,  L'}', so);
+	vtonevent(v, ESCAPE,  L'|', so);
 	vtonevent(v, ESCAPE,  L'Z', decid);
 	vtonevent(v, ESCAPE,  L'c', ris);
 	vtonevent(v, ESCAPE,  L'p', vis);

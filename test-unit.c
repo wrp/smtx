@@ -825,12 +825,23 @@ test_scs(int fd) /* select character set */
 	rv |= validate_row(fd, 16, "%-80s", "Z++");
 	rv |= validate_row(fd, 17, "%-80s", "qr9>");
 
-	/* Reset all, locking switch to g1, print 2 ++ that become >>, reset */
+	/* Reset all, locking switch to g1, print ++ that becomes >>, reset */
 	send_txt(fd, "st1>", "PS1=st1'> '; printf '\\033c\\016++\\033c\\n'" );
 	rv |= validate_row(fd, 18, "%-80s", ">>");
 	rv |= validate_row(fd, 19, "%-80s", "st1>");
 
-	/* Test ^e@ */
+	/* Pass invalid sequence to scs to return early */
+	send_raw(fd, NULL, "printf '\\033-A'; " );
+
+	/* Use esc-0 to set g2 to GRAPH */
+	send_raw(fd, NULL, "printf '\\033*0'; " );
+
+	/* Use esc-} to do locking shift to g2, write ++, reset  */
+	send_raw(fd, NULL, "printf '\\033}++\\033c++\\n'; " );
+	send_txt(fd, "uv2>", "PS1=uv2'> '");
+	rv |= validate_row(fd, 20, "%-80s", ">>++");
+	rv |= validate_row(fd, 21, "%-80s", "uv2>");
+
 	return rv;
 }
 
