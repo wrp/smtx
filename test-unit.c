@@ -607,6 +607,17 @@ test_quit(int fd)
 */
 
 int
+test_repc(int fd)
+{
+	int rv = validate_row(fd, 1, "%-80s", "ps1>");
+	send_txt(fd, "ab1>", "PS1=ab1'> '; printf 'x\\033[5b\\n'");
+	rv |= validate_row(fd, 2, "%-80s", "xxxxxx");
+	rv |= validate_row(fd, 3, "%-80s", "ab1>");
+	send_txt(fd, NULL, "exit");
+	return rv;
+}
+
+int
 test_resend(int fd)
 {
 	send_txt(fd, "uniq", "%1$c%1$c\recho u'n'i'q'", ctlkey);

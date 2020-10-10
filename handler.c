@@ -513,7 +513,6 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 			tput(v, p->repc, 0, 0, NULL, print);
 		}
 		break;
-
 	case scs: /* Select Character Set */
 	{
 		wchar_t **t;
