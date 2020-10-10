@@ -523,6 +523,16 @@ test_mode(int fd)
 	send_txt(fd, "ab2>", "PS1=ab2'> '; printf 'abc\\033[4h\\033[2Ddef\\n'");
 	rv |= validate_row(fd, 2, "%-80s", "adefbc");
 	rv |= validate_row(fd, 3, "%-80s", "ab2>");
+
+	/* Disable insert mode */
+	send_txt(fd, "zy2>", "PS1=zy2'> '; printf 'abc\\033[4l\\033[2DX\\n'");
+	rv |= validate_row(fd, 4, "%-80s", "aXc");
+	rv |= validate_row(fd, 5, "%-80s", "zy2>");
+
+	/* Clear screen using CSI mode 3 */
+	send_txt(fd, "cd3>", "printf '\\033[3l'; PS1=cd3'> '");
+	rv |= validate_row(fd, 1, "%-80s", "cd3>");
+
 	return 0;
 }
 
