@@ -800,6 +800,10 @@ test_scs(int fd) /* select character set */
 	send_txt(fd, "gh4>", "PS1=gh4'> '; printf 'Q\\033N##\\n'" );
 	rv |= validate_row(fd, 8, "%-80s", "Q&#");
 
+	/* Non-locking switch to g3, print 2 ++, first is changed to > */
+	send_txt(fd, "ij5>", "PS1=ij5'> '; printf 'Z\\033O++\\n'" );
+	rv |= validate_row(fd, 10, "%-80s", "Z>+");
+
 	/* Test ^e@ */
 	return rv;
 }
