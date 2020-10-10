@@ -512,6 +512,20 @@ test_lnm(int fd)
  */
 
 int
+test_mode(int fd)
+{
+	int k[] = { 1, 3, 4, 6, 7, 20, 25, 34, 1048, 1049, 47, 1047 };
+
+	for( unsigned long i = 0; i < sizeof k / sizeof *k; i++ ) {
+		int v = k[i];
+		const char *fmt =  "printf '\\033[%d%c";
+		send_txt(fd, NULL, fmt, v, 'l');
+		send_txt(fd, NULL, fmt, v, 'h');
+	}
+	return 0;
+}
+
+int
 test_navigate(int fd)
 {
 	send_cmd(fd, NULL, "cjkhl2Cjkhlc");
@@ -624,20 +638,6 @@ test_resend(int fd)
 	int rv = validate_row(fd, 1, "%-80s", "ps1>^G");
 	send_txt(fd, NULL, "exit");
 	return rv;
-}
-
-int
-test_reset(int fd)
-{
-	int k[] = { 1, 3, 4, 6, 7, 20, 25, 34, 1048, 1049, 47, 1047 };
-
-	for( unsigned long i = 0; i < sizeof k / sizeof *k; i++ ) {
-		int v = k[i];
-		const char *fmt =  "printf '\\033[%d%c";
-		send_txt(fd, NULL, fmt, v, 'l');
-		send_txt(fd, NULL, fmt, v, 'h');
-	}
-	return 0;
 }
 
 int

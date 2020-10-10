@@ -383,12 +383,12 @@ main(int argc, char *const argv[])
 	F(test_insert);
 	F(test_layout);
 	F(test_lnm);
+	F(test_mode);
 	F(test_navigate);
 	F(test_nel, "TERM", "smtx");
 	F(test_pager ,"MORE", "");
 	F(test_pnm);
 	F(test_quit);
-	F(test_reset);
 	F(test_repc);
 	F(test_resend);
 	F(test_resize);
