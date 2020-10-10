@@ -514,14 +514,22 @@ test_lnm(int fd)
 int
 test_mode(int fd)
 {
-	int k[] = { 1, 3, 4, 6, 7, 20, 25, 34, 1048, 1049, 47, 1047 };
+	#if 0
+	Does coverage testing but does not verify anything.
 
+	int k[] = { 1, 3, 4, 6, 7, 20, 25, 34, 1048, 1049, 47, 1047 };
 	for( unsigned long i = 0; i < sizeof k / sizeof *k; i++ ) {
 		int v = k[i];
 		const char *fmt =  "printf '\\033[%d%c";
 		send_txt(fd, NULL, fmt, v, 'l');
 		send_txt(fd, NULL, fmt, v, 'h');
 	}
+	#endif
+	int rv = validate_row(fd, 1, "%-80s", "ps1>");
+	/* Print abc, goto to insert mode, move back 2, insert def */
+	send_txt(fd, "ab2>", "PS1=ab2'> '; printf 'abc\\033[4h\\033[2Ddef\\n'");
+	rv |= validate_row(fd, 2, "%-80s", "adefbc");
+	rv |= validate_row(fd, 3, "%-80s", "ab2>");
 	return 0;
 }
 
