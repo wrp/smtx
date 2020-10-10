@@ -58,6 +58,14 @@ reset_sgr(struct screen *s)
 	wbkgdset(s->win, COLOR_PAIR(0) | ' ');
 }
 
+static void
+insert_space(int count, WINDOW *win)
+{
+	while( count-- ) {
+		wins_nwstr(win, L" ", 1);
+	}
+}
+
 #define CALL(x) tput(v, 0, 0, 0, NULL, x)
 void
 tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
@@ -221,9 +229,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		}
 		break;
 	case ich: /* Insert Character */
-		for( i = 0; i < p0[1]; i++ ) {
-			wins_nwstr(win, L" ", 1);
-		}
+		insert_space(p0[1], win);
 		break;
 	case idl: /* Insert/Delete Line */
 		/* We don't use insdelln here because it inserts above and
@@ -485,7 +491,7 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 			return;
 		}
 		if( s->insert ) {
-			CALL(ich);
+			insert_space(p0[1], win);
 		}
 		if( s->xenl ) {
 			s->xenl = false;
