@@ -131,7 +131,6 @@ test_cols(int fd)
 	int rv;
 	send_txt(fd, "uniq1", "%s", "tput cols; printf 'uniq%s\\n' 1");
 	rv = validate_row(fd, 2, "%-92s", "97");
-	send_txt(fd, NULL, "exit");
 	return rv;
 }
 
@@ -386,8 +385,6 @@ test_el(int fd)
 	/* Delete full line with csi 2K */
 	send_txt(fd, "uniq03", "%s", "printf '01234\\033[2Ku'ni'q03\\n'");
 	rv |= validate_row(fd, 6, "%-80s", "     uniq03");
-
-	send_txt(fd, NULL, "exit");
 	return rv;
 }
 
@@ -408,7 +405,6 @@ test_hpr(int fd)
 	const char *cmd = "printf 'abcd\\033[5aef'gh'ij\\n'";
 	send_txt(fd, PROMPT, "%s", cmd);
 	rv |= validate_row(fd, 2, "%-80s", "abcd     efghij");
-	send_txt(fd, NULL, "exit");
 	return rv;
 }
 
@@ -439,8 +435,6 @@ test_ich(int fd)
 	rv |= validate_row(fd, 15, "     %d  y%71s", 6, "");
 	rv |= validate_row(fd, 16, "%-80s", "");
 	rv |= validate_row(fd, 17, "%-80s", "un2>");
-
-	send_txt(fd, NULL, "exit");
 	return rv;
 }
 
@@ -453,7 +447,6 @@ test_insert(int fd)
 		"echo foo; tput rmir; printf 'sync%s\\n' 01");
 	rc |= validate_row(fd, 3, "%-80s", "0123foo456");
 	rc |= validate_row(fd, 4, "%-80s", "sync01");
-	send_txt(fd, NULL, "exit");
 	return rc;
 }
 
@@ -570,7 +563,6 @@ test_nel(int fd)
 		"printf 'uniq%s\\n' 02";
 	send_txt(fd, "uniq02", "%s", cmd);
 	rv |= validate_row(fd, 8, "%-80s", "fooblah012");
-	send_txt(fd, NULL, "exit");
 	return rv;
 }
 
@@ -596,7 +588,6 @@ test_pager(int fd)
 	}
 	rv |= validate_row(fd, 22, "%-80s", "    44:klmn");
 	rv |= validate_row(fd, 23, "%-80s", "uniq>");
-	send_txt(fd, NULL, "exit");
 	return rv;
 }
 
@@ -611,7 +602,6 @@ test_pnm(int fd)
 	rv |= check_layout(fd, 0, "23x80#");
 	send_txt(fd, "uniq4", "\rprintf '\\033[1h'u'n'i'q4\\n'"); /* csi 1h */
 	rv |= check_layout(fd, 0, "23x80");
-	send_txt(fd, NULL, "exit");
 	return rv;
 }
 
@@ -635,7 +625,6 @@ test_repc(int fd)
 	send_txt(fd, "ab1>", "PS1=ab1'> '; printf 'x\\033[5b\\n'");
 	rv |= validate_row(fd, 2, "%-80s", "xxxxxx");
 	rv |= validate_row(fd, 3, "%-80s", "ab1>");
-	send_txt(fd, NULL, "exit");
 	return rv;
 }
 
@@ -644,7 +633,6 @@ test_resend(int fd)
 {
 	send_txt(fd, "uniq", "%1$c%1$c\recho u'n'i'q'", ctlkey);
 	int rv = validate_row(fd, 1, "%-80s", "ps1>^G");
-	send_txt(fd, NULL, "exit");
 	return rv;
 }
 
@@ -792,8 +780,6 @@ test_scrollh(int fd)
 	/* Scroll 200 to the right (should stop at 52) */
 	send_cmd(fd, "uniq3", "%s", "200>\rprintf '%52s'u'n'i'q'3\\n");
 	rv |= validate_row(fd, 4, "%-26s", buf + 52);
-
-	send_txt(fd, NULL, "exit");
 	return rv;
 }
 
@@ -1165,8 +1151,6 @@ test_title(int fd)
 
 	buf[65] = '\0';
 	rv |= validate_row(fd, 24, "1 qux 1-80/200 %s", buf);
-
-	send_txt(fd, NULL, "exit");
 	return rv;
 }
 
@@ -1232,8 +1216,6 @@ test_vis(int fd)
 	/* esc p to show cursor */
 	send_txt(fd, "uniq6", "%s", "printf '\\033p u'n'iq6'");
 	rv |= check_layout(fd, 0, "23x80");
-
-	send_txt(fd, NULL, "exit");
 	return rv;
 }
 
