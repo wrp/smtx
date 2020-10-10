@@ -816,6 +816,20 @@ test_scs(int fd) /* select character set */
 	rv |= validate_row(fd, 13, "%-80s", "Z&#");
 	rv |= validate_row(fd, 14, "%-80s", "mn7>");
 
+	/* Switch g3 back to GRAPH, switch g1 to US */
+	send_txt(fd, "op8>", "PS1=op8'> '; printf '\\033+2\\033)1'" );
+	rv |= validate_row(fd, 15, "%-80s", "op8>");
+
+	/* locking switch to g1, print 2 ++, both are unchanged */
+	send_txt(fd, "qr9>", "PS1=qr9'> '; printf 'Z\\016++\\n'" );
+	rv |= validate_row(fd, 16, "%-80s", "Z++");
+	rv |= validate_row(fd, 17, "%-80s", "qr9>");
+
+	/* Reset all, locking switch to g1, print 2 ++ that become >>, reset */
+	send_txt(fd, "st1>", "PS1=st1'> '; printf '\\033c\\016++\\033c\\n'" );
+	rv |= validate_row(fd, 18, "%-80s", ">>");
+	rv |= validate_row(fd, 19, "%-80s", "st1>");
+
 	/* Test ^e@ */
 	return rv;
 }
