@@ -842,6 +842,12 @@ test_scs(int fd) /* select character set */
 	rv |= validate_row(fd, 20, "%-80s", ">>++");
 	rv |= validate_row(fd, 21, "%-80s", "uv2>");
 
+	/* Use esc-| to do locking shift to g3, write ++, reset  */
+	send_raw(fd, NULL, "printf '\\033|++\\033c++\\n'; " );
+	send_txt(fd, "wx3>", "PS1=wx3'> '");
+	rv |= validate_row(fd, 22, "%-80s", ">>++");
+	rv |= validate_row(fd, 23, "%-80s", "wx3>");
+
 	return rv;
 }
 
