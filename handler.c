@@ -616,6 +616,7 @@ setupevents(struct vtp *v)
 	vtonevent(v, ESCAPE,  L'E', nel);
 	vtonevent(v, ESCAPE,  L'H', hts);
 	vtonevent(v, ESCAPE,  L'M', ri);
+	vtonevent(v, ESCAPE,  L'N', so);
 	vtonevent(v, ESCAPE,  L'Z', decid);
 	vtonevent(v, ESCAPE,  L'c', ris);
 	vtonevent(v, ESCAPE,  L'p', vis);

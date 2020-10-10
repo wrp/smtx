@@ -787,10 +787,20 @@ test_scs(int fd) /* select character set */
 	rv |= validate_row(fd, 2, "%-80s", "&");
 	rv |= validate_row(fd, 3, "%-80s", "ab1>");
 
-	/* Reset to US map */
+	/* Reset to US map (\\017 triggers so) */
 	send_txt(fd, "cd2>", "PS1='c'd2'> '; printf '\\033(B\\017#\\n'" );
 	rv |= validate_row(fd, 4, "%-80s", "#");
 	rv |= validate_row(fd, 5, "%-80s", "cd2>");
+
+	/* Set g2 to UK */
+	send_txt(fd, "ef3>", "PS1=ef3'> '; printf '\\033*A\\033@\\n'" );
+	rv |= validate_row(fd, 7, "%-80s", "ef3>");
+
+	/* Non-locking switch to g2, print 2 ##, first is changed to & */
+	send_txt(fd, "gh4>", "PS1=gh4'> '; printf 'Q\\033N##\\n'" );
+	rv |= validate_row(fd, 8, "%-80s", "Q&#");
+
+	/* Test ^e@ */
 	return rv;
 }
 
