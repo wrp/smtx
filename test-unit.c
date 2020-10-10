@@ -782,27 +782,39 @@ int
 test_scs(int fd) /* select character set */
 {
 	int rv = 0;
-	/* uk mapping should convert # -> & */
-	send_txt(fd, "ab1>", "PS1='a'b1'> '; printf '\\033(A\\017#\\n'" );
-	rv |= validate_row(fd, 2, "%-80s", "&");
+	/* Reset to UK map. uk mapping should convert # -> & */
+	send_txt(fd, "ab1>", "PS1='a'b1'> '; printf '\\033(A\\017#a#\\n'" );
+	rv |= validate_row(fd, 2, "%-80s", "&a&");
 	rv |= validate_row(fd, 3, "%-80s", "ab1>");
 
 	/* Reset to US map (\\017 triggers so) */
-	send_txt(fd, "cd2>", "PS1='c'd2'> '; printf '\\033(B\\017#\\n'" );
-	rv |= validate_row(fd, 4, "%-80s", "#");
+	send_txt(fd, "cd2>", "PS1='c'd2'> '; printf '\\033(B\\017#a#\\n'" );
+	rv |= validate_row(fd, 4, "%-80s", "#a#");
 	rv |= validate_row(fd, 5, "%-80s", "cd2>");
 
 	/* Set g2 to UK */
-	send_txt(fd, "ef3>", "PS1=ef3'> '; printf '\\033*A\\033@\\n'" );
+	send_txt(fd, "ef3>", "PS1=ef3'> '; printf '\\033*A\\n'" );
+	rv |= validate_row(fd, 6, "%-80s", "");
 	rv |= validate_row(fd, 7, "%-80s", "ef3>");
 
 	/* Non-locking switch to g2, print 2 ##, first is changed to & */
 	send_txt(fd, "gh4>", "PS1=gh4'> '; printf 'Q\\033N##\\n'" );
 	rv |= validate_row(fd, 8, "%-80s", "Q&#");
+	rv |= validate_row(fd, 9, "%-80s", "gh4>");
 
 	/* Non-locking switch to g3, print 2 ++, first is changed to > */
 	send_txt(fd, "ij5>", "PS1=ij5'> '; printf 'Z\\033O++\\n'" );
 	rv |= validate_row(fd, 10, "%-80s", "Z>+");
+	rv |= validate_row(fd, 11, "%-80s", "ij5>");
+
+	/* Make g3 the UK map */
+	send_txt(fd, "kl6>", "PS1=kl6'> '; printf '\\033+A'" );
+	rv |= validate_row(fd, 12, "%-80s", "kl6>");
+
+	/* Non-locking switch to g3, print 2 ##, only first is changed to & */
+	send_txt(fd, "mn7>", "PS1=mn7'> '; printf 'Z\\033O##\\n'" );
+	rv |= validate_row(fd, 13, "%-80s", "Z&#");
+	rv |= validate_row(fd, 14, "%-80s", "mn7>");
 
 	/* Test ^e@ */
 	return rv;
