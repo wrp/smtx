@@ -61,7 +61,7 @@ extern int smtx_main(int, char **);
 struct canvas;
 struct screen {
 	int sy, sx, vis;
-	short fg, bg, sfg, sbg, sp;
+	struct { short fg, bg, p; } c, sc;
 	bool insert, oxenl, xenl, saved;
 	attr_t sattr;
 	WINDOW *win;

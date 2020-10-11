@@ -54,7 +54,7 @@ reset_sgr(struct screen *s)
 {
 	wattrset(s->win, A_NORMAL);
 	wcolor_set(s->win, 0, NULL);
-	s->fg = s->bg = -1;
+	s->c.fg = s->c.bg = -1;
 	wbkgdset(s->win, COLOR_PAIR(0) | ' ');
 }
 
@@ -172,7 +172,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		break;
 	case ech: /* Erase Character */
 		#if HAVE_ALLOC_PAIR
-		setcchar(&b, L" ", A_NORMAL, alloc_pair(s->fg, s->bg), NULL);
+		setcchar(&b, L" ", A_NORMAL, alloc_pair(s->c.fg, s->c.bg), NULL);
 		#endif
 		for( i = 0; i < p0[1]; i++ )
 			mvwadd_wchnstr(win, py, px + i, &b, 1);
@@ -201,7 +201,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		break;
 	case el: /* Erase in Line */
 #if HAVE_ALLOC_PAIR
-		setcchar(&b, L" ", A_NORMAL, alloc_pair(s->fg, s->bg), NULL);
+		setcchar(&b, L" ", A_NORMAL, alloc_pair(s->c.fg, s->c.bg), NULL);
 #endif
 		switch( argc > 0 ? argv[0] : 0 ) {
 		case 2:
@@ -251,16 +251,15 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			noclear_repc = 1;
 		} else {
 			wmove(win, s->sy, s->sx);
-			wattr_set(win, s->sattr, s->sp, NULL);
-			s->fg = s->sfg;
-			s->bg = s->sbg;
+			wattr_set(win, s->sattr, s->c.p, NULL);
+			s->sc = s->c;
 			s->xenl = s->oxenl;
 			p->gc = p->sgc;
 			p->gs = p->sgs;
 
 			/* restore colors */
 			#if HAVE_ALLOC_PAIR
-			int cp = alloc_pair(s->fg, s->bg);
+			int cp = alloc_pair(s->c.fg, s->c.bg);
 			wcolor_set(win, cp, NULL);
 			setcchar(&b, L" ", A_NORMAL, cp, NULL);
 			wbkgrndset(win, &b);
@@ -276,9 +275,8 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	case sc: /* Save Cursor */
 		s->sx = px;                              /* X position */
 		s->sy = py;                              /* Y position */
-		wattr_get(win, &s->sattr, &s->sp, NULL); /* attrs/color pair */
-		s->sfg = s->fg;                          /* foreground color */
-		s->sbg = s->bg;                          /* background color */
+		wattr_get(win, &s->sattr, &s->c.p, NULL); /* attrs/color pair */
+		s->sc = s->c;
 		s->oxenl = s->xenl;
 		s->saved = true;      /* data is valid */
 		p->sgc = p->gc;       /* character sets */
@@ -383,7 +381,7 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		if( !argc ) {
 			reset_sgr(s);
 		}
-		short bg = s->bg, fg = s->fg;
+		short bg = s->c.bg, fg = s->c.fg;
 		for( i = 0; i < argc; i++ ) {
 			bool at = argc > i + 2 && argv[i + 1] == 5;
 			int val = argc > i + 2 ? argv[i + 2] : 0;
@@ -413,7 +411,7 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 			case 36:  fg = COLOR_CYAN;      doc = do8;   break;
 			case 37:  fg = COLOR_WHITE;     doc = do8;   break;
 			case 38:
-				fg = at ? val : s->fg;
+				fg = at ? val : s->c.fg;
 				i += 2;
 				doc = do256;
 				break;
@@ -427,7 +425,7 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 			case 46:  bg = COLOR_CYAN;       doc = do8;   break;
 			case 47:  bg = COLOR_WHITE;      doc = do8;   break;
 			case 48:
-				bg = at ? val : s->bg;
+				bg = at ? val : s->c.bg;
 				i += 2;
 				doc = do256;
 				break;
@@ -456,7 +454,7 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		}
 #if HAVE_ALLOC_PAIR
 		if( doc ) {
-			int p = alloc_pair(s->fg = fg, s->bg = bg);
+			int p = alloc_pair(s->c.fg = fg, s->c.bg = bg);
 			wcolor_set(win, p, NULL);
 			setcchar(&b, L" ", A_NORMAL, p, NULL);
 			wbkgrndset(win, &b);
