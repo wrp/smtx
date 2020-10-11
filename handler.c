@@ -53,8 +53,7 @@ static void
 reset_sgr(struct screen *s)
 {
 	wattrset(s->win, A_NORMAL);
-	wcolor_set(s->win, 0, NULL);
-	s->c.fg = s->c.bg = -1;
+	wcolor_set(s->win, s->c.p = 0, NULL);
 	wbkgdset(s->win, COLOR_PAIR(0) | ' ');
 }
 
@@ -171,9 +170,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		rewrite(p->fd, buf, i);
 		break;
 	case ech: /* Erase Character */
-		#if HAVE_ALLOC_PAIR
-		setcchar(&b, L" ", A_NORMAL, alloc_pair(s->c.fg, s->c.bg), NULL);
-		#endif
+		setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
 		for( i = 0; i < p0[1]; i++ )
 			mvwadd_wchnstr(win, py, px + i, &b, 1);
 		wmove(win, py, px);
@@ -200,9 +197,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		wmove(win, py, px);
 		break;
 	case el: /* Erase in Line */
-#if HAVE_ALLOC_PAIR
-		setcchar(&b, L" ", A_NORMAL, alloc_pair(s->c.fg, s->c.bg), NULL);
-#endif
+		setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
 		switch( argc > 0 ? argv[0] : 0 ) {
 		case 2:
 			wmove(win, py, 0); /* Fall Thru */
@@ -258,12 +253,9 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			p->gs = p->sgs;
 
 			/* restore colors */
-			#if HAVE_ALLOC_PAIR
-			int cp = alloc_pair(s->c.fg, s->c.bg);
-			wcolor_set(win, cp, NULL);
-			setcchar(&b, L" ", A_NORMAL, cp, NULL);
+			wcolor_set(win, s->c.p, NULL);
+			setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
 			wbkgrndset(win, &b);
-			#endif
 		}
 		break;
 	case ri: /* Reverse Index (scroll back) */
@@ -381,7 +373,8 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		if( !argc ) {
 			reset_sgr(s);
 		}
-		short bg = s->c.bg, fg = s->c.fg;
+		short fg, bg;
+		pair_content(s->c.p, &fg, &bg);
 		for( i = 0; i < argc; i++ ) {
 			bool at = argc > i + 2 && argv[i + 1] == 5;
 			int val = argc > i + 2 ? argv[i + 2] : 0;
@@ -411,7 +404,9 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 			case 36:  fg = COLOR_CYAN;      doc = do8;   break;
 			case 37:  fg = COLOR_WHITE;     doc = do8;   break;
 			case 38:
-				fg = at ? val : s->c.fg;
+				if( at ) {
+					fg = val;
+				}
 				i += 2;
 				doc = do256;
 				break;
@@ -425,7 +420,9 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 			case 46:  bg = COLOR_CYAN;       doc = do8;   break;
 			case 47:  bg = COLOR_WHITE;      doc = do8;   break;
 			case 48:
-				bg = at ? val : s->c.bg;
+				if( at ) {
+					bg = val;
+				}
 				i += 2;
 				doc = do256;
 				break;
@@ -454,9 +451,9 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		}
 #if HAVE_ALLOC_PAIR
 		if( doc ) {
-			int p = alloc_pair(s->c.fg = fg, s->c.bg = bg);
-			wcolor_set(win, p, NULL);
-			setcchar(&b, L" ", A_NORMAL, p, NULL);
+			s->c.p = alloc_pair(fg, bg);
+			wcolor_set(win, s->c.p, NULL);
+			setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
 			wbkgrndset(win, &b);
 		}
 #endif
