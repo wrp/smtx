@@ -238,9 +238,9 @@ void
 fixcursor(void) /* Move the terminal cursor to the active window. */
 {
 	struct canvas *f = S.f;
-	int x = 0, y = 0;
 	int show = S.mode == enter && f->p->s->vis;
 	if( f->p && f->p->s && f->extent.y ) {
+		int y, x;
 		getmaxyx(f->p->s->win, y, x);
 		int top = y - f->extent.y;
 		getyx(f->p->s->win, y, x);
@@ -254,7 +254,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 			show = false;
 		} else {
 			y = MIN( MAX(y, top), top + f->extent.y);
-			wmove(f->p->s->win, y, x);
+			wmove(f->p->s->win, f->p->s->c.y = y, x);
 		}
 		draw_window(f);
 	}
@@ -874,6 +874,3 @@ smtx_main(int argc, char *argv[])
 	}
 	return EXIT_SUCCESS;
 }
-
-/* Descriptive functions used by test suite */
-

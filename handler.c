@@ -106,31 +106,38 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		break;
 	case cr: /* Carriage Return */
 		s->xenl = false;
-		wmove(win, s->c.y, 0);
+		wmove(win, s->c.y, s->c.x = 0);
 		break;
 	case csr: /* CSR - Change Scrolling Region */
 		t1 = argv && argc > 1 ? argv[1] : my;
 		if( wsetscrreg(win, tos + p0[1] - 1, tos + t1 - 1) == OK ) {
 			s->xenl = false;
-			wmove(win, tos + (p->decom ? top : 0), 0);
+			s->c.y = tos + (p->decom ? top : 0);
+			wmove(s->win, s->c.y, s->c.x = 0);
 		}
 		break;
 	case cub: /* Cursor Backward */
 		s->xenl = false;
-		wmove(win, s->c.y, MAX(s->c.x - p0[1], 0));
+		s->c.x = MAX(s->c.x - p0[1], 0);
+		wmove(win, s->c.y, s->c.x);
 		break;
 	case cud: /* Cursor Down */
-		wmove(win, MIN(s->c.y + p0[1], tos + bot - 1), s->c.x);
+		s->c.y = MIN(s->c.y + p0[1], tos + bot - 1);
+		wmove(win, s->c.y, s->c.x);
 		break;
 	case cuf: /* Cursor Forward */
-		wmove(win, s->c.y, MIN(s->c.x + p0[1], mx - 1));
+		s->c.x = MIN(s->c.x + p0[1], mx - 1);
+		wmove(win, s->c.y, s->c.x);
 		break;
 	case cup: /* Cursor Position */
 		s->xenl = false;
-		wmove(win, tos + (p->decom ? top : 0) + p0[1] - 1, p1 - 1);
+		s->c.y = tos + (p->decom ? top : 0) + p0[1] - 1;
+		s->c.x = p1 - 1;
+		wmove(win, s->c.y, s->c.x);
 		break;
 	case cuu: /* Cursor Up */
-		wmove(win, MAX(s->c.y - p0[1], tos + top), s->c.x);
+		s->c.y = MAX(s->c.y - p0[1], tos + top);
+		wmove(win, s->c.y, s->c.x);
 		break;
 	case dch: /* Delete Character */
 		for( i = 0; i < p0[1]; i++ ) {
@@ -515,6 +522,7 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 			wins_nwstr(win, &w, 1);
 		} else {
 			waddnwstr(win, &w, 1);
+			p->s->c.x += wcwidth(w);
 		}
 		p->gc = p->gs;
 		noclear_repc = 1;

@@ -69,7 +69,8 @@ create(const char *arg)
 	balance(n);
 	reshape_root(NULL);
 	if( n ) {
-		wmove(n->p->s->win, n->offset.y, 0);
+		struct screen*s = n->p->s;
+		wmove(s->win, s->c.y = n->offset.y, s->c.x = 0);
 	}
 }
 
@@ -294,7 +295,7 @@ set_pty_history(struct pty *p, int siz)
 			replacewin(&s->win, siz, p->ws.ws_col, siz - my);
 
 			if( orig != s->win ) {
-				wmove(s->win, y + siz - my, x);
+				wmove(s->win, s->c.y = y + siz - my, x);
 			}
 		}
 	}
