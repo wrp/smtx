@@ -518,22 +518,26 @@ test_mode(int fd)
 		send_txt(fd, NULL, fmt, v, 'h');
 	}
 	#endif
-	int rv = validate_row(fd, 1, "%-80s", "ps1>");
+	int rv = validate_row(fd, 1, "%-140s", "ps1>");
 	/* Print abc, goto to insert mode, move back 2, insert def */
 	send_txt(fd, "ab2>", "PS1=ab2'> '; printf 'abc\\033[4h\\033[2Ddef\\n'");
-	rv |= validate_row(fd, 2, "%-80s", "adefbc");
-	rv |= validate_row(fd, 3, "%-80s", "ab2>");
+	rv |= validate_row(fd, 2, "%-140s", "adefbc");
+	rv |= validate_row(fd, 3, "%-140s", "ab2>");
 
 	/* Disable insert mode */
 	send_txt(fd, "zy2>", "PS1=zy2'> '; printf 'abc\\033[4l\\033[2DX\\n'");
-	rv |= validate_row(fd, 4, "%-80s", "aXc");
-	rv |= validate_row(fd, 5, "%-80s", "zy2>");
+	rv |= validate_row(fd, 4, "%-140s", "aXc");
+	rv |= validate_row(fd, 5, "%-140s", "zy2>");
 
-	/* Clear screen using CSI mode 3 */
+	/* Change width to 80 with CSI mode 3 */
 	send_txt(fd, "cd3>", "printf '\\033[3l'; PS1=cd3'> '");
-	rv |= validate_row(fd, 1, "%-80s", "cd3>");
+	rv |= validate_row(fd, 6, "%-80s", "cd3>");
 
-	return 0;
+	/* Change width to 132 with CSI mode 3 */
+	send_txt(fd, "ef4>", "printf '\\033[3h'; PS1=ef4'> '");
+	rv |= validate_row(fd, 7, "%-132s", "ef4>");
+
+	return rv;
 }
 
 int

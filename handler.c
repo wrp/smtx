@@ -350,10 +350,7 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		for( i = 0; i < argc; i++ ) {
 			switch( argv[i] ) {
 			case  1: p->pnm = set;              break;
-			/* TODO: 3h should set 132 column mode, and
-			3l should set 80 column mode.  Just clearing
-			the screen seems inadequate.*/
-			case  3: clear_screen(p, top, tos); break;
+			case  3: set_width(set ? "132" : "80"); break;
 			case  4: s->insert = set;           break;
 			case  6:
 				p->decom = set;

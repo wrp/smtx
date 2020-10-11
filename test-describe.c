@@ -110,6 +110,7 @@ describe_row(char *desc, size_t siz, int row)
 	int last_color_pair = 0;
 	int offset = 0;
 	const struct canvas *c = S.c;
+	unsigned width = c->p->ws.ws_col;
 	char *end = desc + siz;
 	WINDOW *w = c->p->s->win;
 	struct {
@@ -135,7 +136,7 @@ describe_row(char *desc, size_t siz, int row)
 		row = 0;
 	}
 	getyx(w, y, x);
-	for( i = 0; i < (size_t)c->extent.x && desc < end; i++ ) {
+	for( i = 0; i < (size_t)c->extent.x && i < width && desc < end; i++ ) {
 		int p;
 		chtype k = mvwinch(w, row, i + offset);
 		for( atrp = atrs; atrp->flag; atrp += 1 ) {

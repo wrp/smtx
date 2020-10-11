@@ -383,7 +383,7 @@ main(int argc, char *const argv[])
 	F(test_insert);
 	F(test_layout);
 	F(test_lnm);
-	F(test_mode);
+	F(test_mode, "COLUMNS", "140");
 	F(test_navigate);
 	F(test_nel, "TERM", "smtx");
 	F(test_pager ,"MORE", "");
