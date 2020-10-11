@@ -206,15 +206,16 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			for( i = 0; i <= s->c.x; i++ ) {
 				mvwadd_wchnstr(win, s->c.y, i, &b, 1);
 			}
-			break;
 		}
 		wmove(win, s->c.y, s->c.x);
 		break;
 	case hpa: /* Cursor Horizontal Absolute */
-		wmove(win, s->c.y, MIN(p0[1] - 1, mx - 1));
+		s->c.x = MIN(p0[1] - 1, mx - 1);
+		wmove(win, s->c.y, s->c.x);
 		break;
 	case hpr: /* Cursor Horizontal Relative */
-		wmove(win, s->c.y, MIN(s->c.x + p0[1], mx - 1));
+		s->c.x = MIN(s->c.x + p0[1], mx - 1);
+		wmove(win, s->c.y, s->c.x);
 		break;
 	case hts: /* Horizontal Tab Set */
 		if( s->c.x < p->ntabs && s->c.x > 0 ) {
@@ -232,7 +233,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		wsetscrreg(win, s->c.y, t2);
 		wscrl(win, w == L'L' ? -i : i);
 		wsetscrreg(win, t1, t2);
-		wmove(win, s->c.y, 0);
+		wmove(win, s->c.y, s->c.x = 0);
 		break;
 	case numkp: /* Application/Numeric Keypad Mode */
 		p->pnm = (w == L'=');
@@ -259,7 +260,12 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	case ri: /* Reverse Index (scroll back) */
 		wgetscrreg(win, &t1, &t2);
 		wsetscrreg(win, t1 >= tos ? t1 : tos, t2);
-		y == top ? wscrl(win, -1) : wmove(win, MAX(tos, s->c.y - 1), s->c.x);
+		if( y == top ) {
+			 wscrl(win, -1);
+		} else {
+			s->c.y = MAX(tos, s->c.y - 1);
+			wmove(win, s->c.y, s->c.x);
+		}
 		wsetscrreg(win, t1, t2);
 		break;
 	case sc: /* Save Cursor */
@@ -300,10 +306,12 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		s->vis = iw == L'6'? 0 : 1;
 		break;
 	case vpa: /* Cursor Vertical Absolute */
-		wmove(win, MIN(tos + bot - 1, MAX(tos + top, tos + p0[1] - 1)), s->c.x);
+		s->c.y = MIN(tos + bot - 1, MAX(tos + top, tos + p0[1] - 1));
+		wmove(win, s->c.y, s->c.x);
 		break;
 	case vpr: /* Cursor Vertical Relative */
-		wmove(win, MIN(tos + bot - 1, MAX(tos + top, s->c.y + p0[1])), s->c.x);
+		s->c.y = MIN(tos + bot - 1, MAX(tos + top, s->c.y + p0[1]));
+		wmove(win, s->c.y, s->c.x);
 		break;
 case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 	if( p0[0] ) {
@@ -457,25 +465,31 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 	}
 		break;
 	case ind: /* Index */
-		y == (bot - 1) ? scroll(win) : wmove(win, s->c.y + 1, s->c.x);
+		if( y == bot - 1 ) {
+			scroll(win);
+		} else {
+			wmove(win, ++s->c.y, s->c.x);
+		}
 		break;
 	case nel: /* Next Line */
 		s->xenl = false;
 		if( y == bot - 1 ) {
-			wmove(win, s->c.y, 0);
+			wmove(win, s->c.y, s->c.x = 0);
 			scroll(win);
 		} else {
-			wmove(win, s->c.y + 1, 0);
+			wmove(win, ++s->c.y, s->c.x = 0);
 		}
 		break;
 	case pnl: /* Newline */
 		CALL((p->lnm? nel : ind));
 		break;
 	case cpl: /* CPL - Cursor Previous Line */
-		wmove(win, MAX(tos + top, s->c.y - p0[1]), 0);
+		s->c.y = MAX(tos + top, s->c.y - p0[1]);
+		wmove(win, s->c.y, s->c.x = 0);
 		break;
 	case cnl: /* CNL - Cursor Next Line */
-		wmove(win, MIN(tos + bot - 1, s->c.y + p0[1]), 0);
+		s->c.y = MIN(tos + bot - 1, s->c.y + p0[1]);
+		wmove(win, s->c.y, s->c.x = 0);
 		break;
 	case print: /* Print a character to the terminal */
 		if( wcwidth(w) < 0 ) {
