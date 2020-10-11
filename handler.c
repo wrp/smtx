@@ -89,8 +89,9 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	p0[0] = argv && argc > 0 ? argv[0] : 0;
 	p0[1] = argv && argc > 0 ? argv[0] : 1;
 	p1 = argv && argc > 1 ? argv[1] : 1;
-	getyx(win, py, px);
-	x = px;
+	getyx(win, s->c.y, s->c.x);
+	x = px = s->c.x;
+	py = s->c.y;
 	getmaxyx(win, my, mx);
 
 	tos = my - p->ws.ws_row;
@@ -245,9 +246,9 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		} else if( !s->saved ) {
 			noclear_repc = 1;
 		} else {
-			wmove(win, s->sy, s->sx);
+			s->c = s->sc;
+			wmove(win, s->c.y, s->c.x);
 			wattr_set(win, s->sattr, s->c.p, NULL);
-			s->sc = s->c;
 			s->xenl = s->oxenl;
 			p->gc = p->sgc;
 			p->gs = p->sgs;
@@ -265,8 +266,6 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		wsetscrreg(win, t1, t2);
 		break;
 	case sc: /* Save Cursor */
-		s->sx = px;                              /* X position */
-		s->sy = py;                              /* Y position */
 		wattr_get(win, &s->sattr, &s->c.p, NULL); /* attrs/color pair */
 		s->sc = s->c;
 		s->oxenl = s->xenl;

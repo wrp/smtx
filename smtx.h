@@ -60,8 +60,8 @@ extern int smtx_main(int, char **);
 
 struct canvas;
 struct screen {
-	int sy, sx, vis;
-	struct { short p; } c, sc;
+	int vis;
+	struct { int x, y; short p; } c, sc;
 	bool insert, oxenl, xenl, saved;
 	attr_t sattr;
 	WINDOW *win;
