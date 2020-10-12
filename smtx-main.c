@@ -240,10 +240,11 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	struct canvas *f = S.f;
 	int show = S.mode == enter && f->p->s->vis;
 	if( f->p && f->p->s && f->extent.y ) {
+		struct screen *s = f->p->s;
 		int y, x;
-		getmaxyx(f->p->s->win, y, x);
+		getmaxyx(s->win, y, x);
 		int top = y - f->extent.y;
-		getyx(f->p->s->win, y, x);
+		getyx(s->win, y, x);
 		if( 0
 			|| x < f->offset.x
 			|| x > f->offset.x + f->extent.x - 1
@@ -254,7 +255,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 			show = false;
 		} else {
 			y = MIN( MAX(y, top), top + f->extent.y);
-			wmove(f->p->s->win, f->p->s->c.y = y, x);
+			wmove(s->win, s->c.y = y, s->c.x = x);
 		}
 		draw_window(f);
 	}

@@ -44,9 +44,10 @@ static void
 clear_screen(struct pty *p, int top, int tos)
 {
 	p->s->xenl = false;
-	wmove(p->s->win, tos + (p->decom ? top : 0), 0);
+	p->s->c.y = tos + (p->decom ? top : 0);
+	wmove(p->s->win, p->s->c.y, p->s->c.x = 0);
 	wclrtobot(p->s->win);
-	wmove(p->s->win, tos + (p->decom ? top : 0), 0);
+	wmove(p->s->win, p->s->c.y, p->s->c.x = 0);
 }
 
 static void
@@ -88,6 +89,12 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	p0[0] = argv && argc > 0 ? argv[0] : 0;
 	p0[1] = argv && argc > 0 ? argv[0] : 1;
 	p1 = argv && argc > 1 ? argv[1] : 1;
+	#ifndef NDEBUG
+	int x1, y1;
+	getyx(win, y1, x1);
+	assert( y1 == s->c.y );
+	assert( x1 == s->c.x );
+	#endif
 	getyx(win, s->c.y, s->c.x);
 	getmaxyx(win, my, mx);
 
