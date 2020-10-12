@@ -709,7 +709,7 @@ int
 test_repc(int fd)
 {
 	int rv = validate_row(fd, 1, "%-80s", "ps1>");
-	send_txt(fd, "ab1>", "PS1=ab1'> '; printf 'x\\033[5b\\n'");
+	send_txt(fd, "ab1>", "PS1=ab1'> '; printf 'x\\033[5b\\033[10b\\n'");
 	rv |= validate_row(fd, 2, "%-80s", "xxxxxx");
 	rv |= validate_row(fd, 3, "%-80s", "ab1>");
 	return rv;

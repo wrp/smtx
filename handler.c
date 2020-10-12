@@ -590,9 +590,8 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		}
 		break;
 	}
-	switch( handler ) {
-	case sgr: case print: case rep: break;
-	default: p->repc = 0;
+	if( handler != sgr && handler != print ) {
+		p->repc = 0;
 	}
 }
 
