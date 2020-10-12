@@ -102,6 +102,22 @@ decaln(struct pty *p, int tos)
 	wmove(p->s->win, p->s->c.y, p->s->c.x);
 }
 
+
+static void
+newline(struct pty *p, int cr, int y, int bot)
+{
+	if( cr ) {
+		p->s->xenl = false;
+		p->s->c.x = 0;
+	}
+	if( y == bot - 1 ) {
+		wmove(p->s->win, p->s->c.y, p->s->c.x);
+		scroll(p->s->win);
+	} else {
+		wmove(p->s->win, ++p->s->c.y, p->s->c.x);
+	}
+}
+
 #define CALL(x) tput(v, 0, 0, 0, NULL, x)
 void
 tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
@@ -497,18 +513,13 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 	}
 		break;
 	case pnl: /* Newline */
-		if( p->lnm ) { /* fallthrough */
+		newline(p, p->lnm, y, bot);
+		break;
 	case nel: /* Next Line */
-			s->xenl = false;
-			s->c.x = 0;
-		} /* fallthrough */
+		newline(p, 1, y, bot);
+		break;
 	case ind: /* Index */
-		if( y == bot - 1 ) {
-			wmove(win, s->c.y, s->c.x);
-			scroll(win);
-		} else {
-			wmove(win, ++s->c.y, s->c.x);
-		}
+		newline(p, 0, y, bot);
 		break;
 	case cpl: /* CPL - Cursor Previous Line */
 		s->c.y = MAX(tos + top, s->c.y - p0[1]);

@@ -240,6 +240,11 @@ test_cursor(int fd)
 	rv |= validate_row(fd, 19, "%-80s", "abokz");
 	rv |= validate_row(fd, 20, "gixi%-76s", cmd);
 
+	/* Use ESC-D to scroll window */
+	send_txt(fd, "atk1>", "PS1=atk'1> '; printf 'foo\\033Dbar\\n'");
+	rv |= validate_row(fd, 21, "%-80s", "foo");
+	rv |= validate_row(fd, 22, "%-80s", "   bar");
+
 	return rv;
 }
 
