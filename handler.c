@@ -493,10 +493,10 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		noclear_repc = 1;
 	}
 		break;
-	case nel: /* Next Line */
+	case nel: nel: /* Next Line */
 		s->xenl = false;
 		s->c.x = 0; /* Fall Thru */
-	case ind: /* Index */
+	case ind: ind: /* Index */
 		if( y == bot - 1 ) {
 			wmove(win, s->c.y, s->c.x);
 			scroll(win);
@@ -505,7 +505,11 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		}
 		break;
 	case pnl: /* Newline */
-		CALL((p->lnm? nel : ind));
+		if( p->lnm ) {
+			goto nel;
+		} else {
+			goto ind;
+		}
 		break;
 	case cpl: /* CPL - Cursor Previous Line */
 		s->c.y = MAX(tos + top, s->c.y - p0[1]);
