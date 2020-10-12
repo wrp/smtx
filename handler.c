@@ -354,13 +354,13 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		s->c.y = MIN(tos + bot - 1, MAX(tos + top, s->c.y + p0[1]));
 		wmove(win, s->c.y, s->c.x);
 		break;
-case decreqtparm: /* DECREQTPARM - Request Device Parameters */
-	if( p0[0] ) {
-		rewrite(p->fd, "\033[3;1;2;120;1;0x", 16);
-	} else {
-		rewrite(p->fd, "\033[2;1;2;120;128;1;0x", 20);
-	}
-	break;
+	case decreqtparm: /* DECREQTPARM - Request Device Parameters */
+		if( p0[0] ) {
+			rewrite(p->fd, "\033[3;1;2;120;1;0x", 16);
+		} else {
+			rewrite(p->fd, "\033[2;1;2;120;128;1;0x", 20);
+		}
+		break;
 	case ris: /* Reset to Initial State */
 		ioctl(p->fd, TIOCGWINSZ, &p->ws);
 		p->g0 = CSET_US;

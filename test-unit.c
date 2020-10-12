@@ -55,12 +55,16 @@ test_alt(int fd)
 int
 test_ack(int fd)
 {
-	/* Expect an \x06 in response to \x05
-	 * I don't completely understand how the \x06 is getting converted
-	 * to "^F"
-	 */
+	/* Expect an \x06 in response to \x05 */
 	send_txt(fd, "^F", "printf '\\005'");
-	send_cmd(fd, NULL, "143q");
+	send_txt(fd, NULL, ":");
+
+	/* Get coverage of decreqtparm */
+	send_txt(fd, "[2;1;2;120;128;1;0x", "printf '\\033[x'");
+	send_txt(fd, NULL, ":");
+	send_txt(fd, "[3;1;2;120;1;0x", "printf '\\033[1x'");
+	send_txt(fd, NULL, ":");
+
 	return 0; /* Test will timeout if it fails */
 }
 
