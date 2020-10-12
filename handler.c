@@ -380,8 +380,12 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 			case 20: p->lnm = set;              break;
 			case 25: s->vis = set ? 1 : 0;      break;
 			case 34: s->vis = set ? 1 : 2;      break;
-			case 1048: CALL((set ? sc : rc));   break;
-			case 1049: CALL((set ? sc : rc)); /* fall-thru */
+			case 1048:
+				(set ? save_cursor : restore_cursor)(s);
+				break;
+			case 1049:
+				(set ? save_cursor : restore_cursor)(s);
+				/* fall-thru */
 			case 47: case 1047:
 				if( set && p->s != &p->alt ) {
 					p->s = &p->alt;
