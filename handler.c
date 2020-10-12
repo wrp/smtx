@@ -51,6 +51,17 @@ clear_screen(struct pty *p, int top, int tos)
 }
 
 static void
+save_cursor(struct pty *p)
+{
+	wattr_get(p->s->win, &p->s->sattr, &p->s->c.p, NULL);
+	p->s->sc = p->s->c;
+	p->s->oxenl = p->s->xenl;
+	p->s->saved = true;   /* data is valid */
+	p->sgc = p->gc;       /* character sets */
+	p->sgs = p->gs;
+}
+
+static void
 reset_sgr(struct screen *s)
 {
 	wattrset(s->win, A_NORMAL);
@@ -283,12 +294,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		wsetscrreg(win, t1, t2);
 		break;
 	case sc: /* Save Cursor */
-		wattr_get(win, &s->sattr, &s->c.p, NULL); /* attrs/color pair */
-		s->sc = s->c;
-		s->oxenl = s->xenl;
-		s->saved = true;      /* data is valid */
-		p->sgc = p->gc;       /* character sets */
-		p->sgs = p->gs;
+		save_cursor(p);
 		break;
 	case su: /* Scroll Up/Down */
 		wscrl(win, (w == L'T' || w == L'^') ? -p0[1] : p0[1]);
