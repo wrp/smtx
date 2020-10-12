@@ -192,11 +192,9 @@ show_layout(const char *arg)
 	int flag = strtol(*arg == ';' ? arg + 1 : arg, NULL, 10);
 	struct canvas *c = flag & 0x20 ? S.f : S.c;
 	size_t s = describe_layout(buf + w, sizeof buf - w - 1, c, flag);
-	#ifndef NDEBUG
 	for( size_t i = w; i < w + s; i++ ) {
 		assert( buf[i] != ':' );
 	}
-	#endif
 	buf[w + s] = ':';
 	rewrite(STDOUT_FILENO, buf, s + w + 1);
 }
