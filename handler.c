@@ -112,6 +112,32 @@ newline(struct pty *p, int cr, int y, int bot)
 	}
 }
 
+static void
+print_char(wchar_t w, struct pty *p, int y, int bot)
+{
+	if( p->s->insert ) {
+		insert_space(1, p->s->win);
+	}
+	if( p->s->xenl ) {
+		p->s->xenl = false;
+		if( p->decawm ) {
+			newline(p, 1, y, bot);
+		}
+	}
+	if( w < 0x7f && p->s->c.gc[w] ) {
+		w = p->s->c.gc[w];
+	}
+	p->repc = w;
+	if( p->s->c.x == p->ws.ws_col - wcwidth(w) ) {
+		p->s->xenl = true;
+		wins_nwstr(p->s->win, &w, 1);
+	} else {
+		waddnwstr(p->s->win, &w, 1);
+		p->s->c.x += wcwidth(w);
+	}
+	p->s->c.gc = p->s->c.gs;
+}
+
 void
 tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 {
@@ -522,35 +548,14 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		wmove(win, s->c.y, s->c.x = 0);
 		break;
 	case print: /* Print a character to the terminal */
-		if( wcwidth(w) < 0 ) {
-			return;
+		if( wcwidth(w) > 0 ) {
+			print_char(w, p, y, bot);
 		}
-		if( s->insert ) {
-			insert_space(1, win);
-		}
-		if( s->xenl ) {
-			s->xenl = false;
-			if( p->decawm ) {
-				newline(p, 1, y, bot);
-			}
-		}
-		if( w < 0x7f && p->s->c.gc[w] ) {
-			w = p->s->c.gc[w];
-		}
-		p->repc = w;
-		if( s->c.x == p->ws.ws_col - wcwidth(w) ) {
-			s->xenl = true;
-			wins_nwstr(win, &w, 1);
-		} else {
-			waddnwstr(win, &w, 1);
-			p->s->c.x += wcwidth(w);
-		}
-		p->s->c.gc = p->s->c.gs;
 		noclear_repc = 1;
 		break;
 	case rep: /* REP - Repeat Character */
 		for( i=0; i < p0[1] && p->repc; i++ ) {
-			tput(v, p->repc, 0, 0, NULL, print);
+			print_char(p->repc, p, y, bot);
 		}
 		break;
 	case scs: /* Select Character Set */
