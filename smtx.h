@@ -61,7 +61,7 @@ extern int smtx_main(int, char **);
 struct canvas;
 struct screen {
 	int vis;
-	struct { int x, y; short p; } c, sc;
+	struct { int x, y; short p; wchar_t *gc, *gs; } c, sc;
 	bool insert, oxenl, xenl, saved;
 	attr_t sattr;
 	WINDOW *win;
@@ -75,7 +75,7 @@ struct pty {
 	 * corner of the scrolling region. */
 	wchar_t repc;
 	struct screen pri, alt, *s;
-	wchar_t *g0, *g1, *g2, *g3, *gc, *gs, *sgc, *sgs;
+	wchar_t *g0, *g1, *g2, *g3;
 	struct pty *next;
 	char status[32];
 	struct vtp vp;

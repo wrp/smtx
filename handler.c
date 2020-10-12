@@ -57,8 +57,6 @@ save_cursor(struct pty *p)
 	p->s->sc = p->s->c;
 	p->s->oxenl = p->s->xenl;
 	p->s->saved = true;   /* data is valid */
-	p->sgc = p->gc;       /* character sets */
-	p->sgs = p->gs;
 }
 
 static void
@@ -273,8 +271,6 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			wmove(win, s->c.y, s->c.x);
 			wattr_set(win, s->sattr, s->c.p, NULL);
 			s->xenl = s->oxenl;
-			p->gc = p->sgc;
-			p->gs = p->sgs;
 
 			/* restore colors */
 			wcolor_set(win, s->c.p, NULL);
@@ -342,10 +338,12 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 	break;
 	case ris: /* Reset to Initial State */
 		ioctl(p->fd, TIOCGWINSZ, &p->ws);
-		p->gs = p->gc = p->g0 = CSET_US;
+		p->g0 = CSET_US;
 		p->g1 = CSET_GRAPH;
 		p->g2 = CSET_US;
 		p->g3 = CSET_GRAPH;
+		p->pri.c.gs = p->pri.c.gc = p->g0;
+		p->alt.c.gs = p->alt.c.gc = p->g0;
 		p->decom = s->insert = s->oxenl = s->xenl = p->lnm = false;
 		reset_sgr(s);
 		p->am = p->pnm = true;
@@ -526,8 +524,8 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 			getyx(win, y, s->c.x);
 			y -= tos;
 		}
-		if( w < 0x7f && p->gc[w] ) {
-			w = p->gc[w];
+		if( w < 0x7f && p->s->c.gc[w] ) {
+			w = p->s->c.gc[w];
 		}
 		p->repc = w;
 		if( s->c.x == p->ws.ws_col - wcwidth(w) ) {
@@ -537,7 +535,7 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 			waddnwstr(win, &w, 1);
 			p->s->c.x += wcwidth(w);
 		}
-		p->gc = p->gs;
+		p->s->c.gc = p->s->c.gs;
 		noclear_repc = 1;
 		break;
 	case rep: /* REP - Repeat Character */
@@ -566,19 +564,19 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		break;
 	case so: /* Switch Out/In Character Set */
 		if( w == 0x0e ) {
-			p->gs = p->gc = p->g1; /* locking shift */
+			p->s->c.gs = p->s->c.gc = p->g1; /* locking shift */
 		} else if( w == 0xf ) {
-			p->gs = p->gc = p->g0; /* locking shift */
+			p->s->c.gs = p->s->c.gc = p->g0; /* locking shift */
 		} else if( w == L'}' ) {
-			p->gs = p->gc = p->g2; /* locking shift */
+			p->s->c.gs = p->s->c.gc = p->g2; /* locking shift */
 		} else if( w == L'|' ) {
-			p->gs = p->gc = p->g3; /* locking shift */
+			p->s->c.gs = p->s->c.gc = p->g3; /* locking shift */
 		} else if( w == L'N' ) {
-			p->gs = p->gc; /* non-locking shift */
-			p->gc = p->g2;
+			p->s->c.gs = p->s->c.gc; /* non-locking shift */
+			p->s->c.gc = p->g2;
 		} else if( w == L'O' ) {
-			p->gs = p->gc; /* non-locking shift */
-			p->gc = p->g3;
+			p->s->c.gs = p->s->c.gc; /* non-locking shift */
+			p->s->c.gc = p->g3;
 		}
 		break;
 	}
