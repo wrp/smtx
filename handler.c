@@ -22,7 +22,7 @@
  */
 enum cmd {
 	ack=1, bell, cnl, cpl, cr, csr, cub, cud, cuf, cup,
-	cuu, dch, decaln, decid, decreqtparm, dsr, ech, ed, el, hpa, hpr,
+	cuu, dch, decid, decreqtparm, dsr, ech, ed, el, hpa, hpr,
 	hts, ich, idl, ind, mode, nel, numkp, osc, pnl, print, rc, rep,
 	ri, ris, sc, scs, sgr, so, su, tab, tbc, vis, vpa, vpr
 };
@@ -88,6 +88,18 @@ insert_space(int count, WINDOW *win)
 	while( count-- ) {
 		wins_wstr(win, L" ");
 	}
+}
+
+static void
+decaln(struct pty *p, int tos)
+{
+	for( int r = 0; r < p->ws.ws_row; r++ ) {
+		const chtype e[] = { COLOR_PAIR(0) | 'E', 0 };
+		for( int c = 0; c <= p->ws.ws_col; c++ ) {
+			mvwaddchnstr(p->s->win, tos + r, c, e, 1);
+		}
+	}
+	wmove(p->s->win, p->s->c.y, p->s->c.x);
 }
 
 #define CALL(x) tput(v, 0, 0, 0, NULL, x)
@@ -175,15 +187,6 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			wdelch(win);
 		}
 		break;
-	case decaln: /* Screen Alignment Test */
-		for( int r = 0; r < p->ws.ws_row; r++ ) {
-			const chtype e[] = { COLOR_PAIR(0) | 'E', 0 };
-			for( int c = 0; c <= p->ws.ws_col; c++ ) {
-				mvwaddchnstr(win, tos + r, c, e, 1);
-			}
-		}
-		wmove(win, s->c.y, s->c.x);
-	break;
 	case decid: /* Send Terminal Identification */
 		if( w == L'c' ) {
 			if( iw == L'>' ) {
@@ -278,7 +281,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		break;
 	case rc: /* Restore Cursor */
 		if( iw == L'#' ) {
-			CALL(decaln);
+			decaln(p, tos);
 		} else if( !s->saved ) {
 			noclear_repc = 1;
 		} else {
