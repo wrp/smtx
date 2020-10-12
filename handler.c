@@ -392,7 +392,8 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case  6:
 				p->decom = set;
 				s->xenl = false;
-				wmove(win, tos + (p->decom ? top : 0), 0);
+				s->c.y = tos + (p->decom ? top : 0);
+				wmove(win, s->c.y, s->c.x = 0);
 				break;
 			case  7: p->am = set;               break;
 			case 20: p->lnm = set;              break;
