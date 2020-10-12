@@ -62,7 +62,7 @@ struct canvas;
 struct screen {
 	int vis;
 	struct { int x, y; short p; wchar_t *gc, *gs; } c, sc;
-	bool insert, oxenl, xenl, saved;
+	bool insert, oxenl, xenl;
 	attr_t sattr;
 	WINDOW *win;
 };

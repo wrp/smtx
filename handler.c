@@ -17,16 +17,13 @@
  */
 #include "smtx.h"
 
-/*
- * The names for handlers come from their ANSI/ECMA/DEC mnemonics.
- */
+/* The names for handlers come from their ANSI/ECMA/DEC mnemonics.  */
 enum cmd {
 	ack=1, bell, cnl, cpl, cr, csr, cub, cud, cuf, cup,
 	cuu, dch, decid, decreqtparm, dsr, ech, ed, el, hpa, hpr,
 	hts, ich, idl, ind, mode, nel, numkp, osc, pnl, print, rc, rep,
 	ri, ris, sc, scs, sgr, so, su, tab, tbc, vis, vpa, vpr
 };
-
 
 static void
 handle_osc(struct pty *p, const char *arg)
@@ -36,7 +33,6 @@ handle_osc(struct pty *p, const char *arg)
 	switch( strtol(arg, (char **)&parm, 10) ) {
 	case 2:
 		snprintf(p->status, sizeof p->status, "%s", parm);
-		break;
 	}
 }
 
@@ -70,7 +66,6 @@ save_cursor(struct screen *s)
 	wattr_get(s->win, &s->sattr, &s->c.p, NULL);
 	s->sc = s->c;
 	s->oxenl = s->xenl;
-	s->saved = true;   /* data is valid */
 }
 
 static void
@@ -296,7 +291,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	case rc: /* Restore Cursor */
 		if( iw == L'#' ) {
 			decaln(p, tos);
-		} else if( !s->saved ) {
+		} else if( !s->sc.gc ) {
 			noclear_repc = 1;
 		} else {
 			restore_cursor(s);
