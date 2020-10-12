@@ -14,6 +14,9 @@ TODO:
 
 	Add a command to start up a new shell in a canvas where the shell is dead.
 
+	Determine if colors should be saved with save/restore cursor and implement
+	accordingly.
+
 	Implement an "insert mode".  That is, have a command from command mode
 	that sets the keybinding so that all keys except 'return/enter' are
 	passed through, and return is bound to transition to command mode.
