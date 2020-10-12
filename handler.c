@@ -533,8 +533,6 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			if( p->am ) {
 				newline(p, 1, y, bot);
 			}
-			getyx(win, y, s->c.x);
-			y -= tos;
 		}
 		if( w < 0x7f && p->s->c.gc[w] ) {
 			w = p->s->c.gc[w];
