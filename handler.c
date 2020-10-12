@@ -152,7 +152,6 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 
 	int *argv = arg;
 	enum cmd c = handler;
-	int noclear_repc = 0;
 	struct pty *p = v->p;    /* the current pty */
 	struct screen *s = p->s; /* the current SCRN buffer */
 	WINDOW *win = s->win;    /* the current window */
@@ -317,9 +316,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	case rc: /* Restore Cursor */
 		if( iw == L'#' ) {
 			decaln(p, tos);
-		} else if( !s->sc.gc ) {
-			noclear_repc = 1;
-		} else {
+		} else if( s->sc.gc ) {
 			restore_cursor(s);
 		}
 		break;
@@ -527,7 +524,6 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			wbkgrndset(win, &b);
 		}
 #endif
-		noclear_repc = 1;
 	}
 		break;
 	case pnl: /* Newline */
@@ -551,7 +547,6 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		if( wcwidth(w) > 0 ) {
 			print_char(w, p, y, bot);
 		}
-		noclear_repc = 1;
 		break;
 	case rep: /* REP - Repeat Character */
 		for( i=0; i < p0[1] && p->repc; i++ ) {
@@ -595,8 +590,9 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		}
 		break;
 	}
-	if( !noclear_repc ) {
-		p->repc = 0;
+	switch( handler ) {
+	case sgr: case print: case rep: break;
+	default: p->repc = 0;
 	}
 }
 
