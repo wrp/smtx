@@ -118,7 +118,6 @@ newline(struct pty *p, int cr, int y, int bot)
 	}
 }
 
-#define CALL(x) tput(v, 0, 0, 0, NULL, x)
 void
 tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 {
@@ -539,7 +538,7 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		if( s->xenl ) {
 			s->xenl = false;
 			if( p->am ) {
-				CALL(nel);
+				newline(p, 1, y, bot);
 			}
 			getyx(win, y, s->c.x);
 			y -= tos;

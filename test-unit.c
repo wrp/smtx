@@ -240,10 +240,16 @@ test_cursor(int fd)
 	rv |= validate_row(fd, 19, "%-80s", "abokz");
 	rv |= validate_row(fd, 20, "gixi%-76s", cmd);
 
-	/* Use ESC-D to scroll window */
+	/* Use ESC-D to insert a line */
 	send_txt(fd, "atk1>", "PS1=atk'1> '; printf 'foo\\033Dbar\\n'");
 	rv |= validate_row(fd, 21, "%-80s", "foo");
 	rv |= validate_row(fd, 22, "%-80s", "   bar");
+	rv |= validate_row(fd, 23, "%-80s", "atk1>");
+	/* Use ESC-D to scroll (we are at bottom of display) */
+	send_txt(fd, "bqs2>", "PS1=bqs'2> '; printf 'ab\\033Dcd\\n'");
+	rv |= validate_row(fd, 21, "%-80s", "ab");
+	rv |= validate_row(fd, 22, "%-80s", "  cd");
+	rv |= validate_row(fd, 23, "%-80s", "bqs2>");
 
 	return rv;
 }
