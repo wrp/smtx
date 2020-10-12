@@ -577,6 +577,39 @@ test_mode(int fd)
 	send_txt(fd, "ef4>", "printf '\\033[3h'; PS1=ef4'> '");
 	rv |= validate_row(fd, 7, "%-132s", "ef4>");
 
+	/* Write 125 spaces to get close to end of line */
+	char *cmd = "PS1=gh5'> '; ";
+	send_raw(fd, NULL, "%-125s", cmd);
+	send_txt(fd, "gh5>", "echo abcd");
+	/* Test that wraparound advances one line */
+	rv |= validate_row(fd, 7, "ef4> %-125sec", cmd);
+	rv |= validate_row(fd, 8, "%-132s", "ho abcd");
+	rv |= validate_row(fd, 9, "%-132s", "abcd");
+	/* Turn off wrap-around */
+	cmd = "PS1=ij6'> '; printf '\\033[7l'";
+	send_txt(fd, "ij6>", "%s", cmd);
+	rv |= validate_row(fd, 10, "gh5> %-127s", cmd);
+	rv |= validate_row(fd, 11, "%-132s", "ij6>");
+	/* Check that a command does not wrap.  The behavior
+	 * here is not quite what I expect.  I expect that the
+	 * echo abcdefg will overlap the line by 2 chars, so
+	 * that the "fg" should appear at the start of the line.
+	 * (This is what happens in interactive use.)
+	 * Instead, the f seems to overwrite the e, and then the
+	 * g overwrites the f, leaving us with abcdg at the end
+	 * of the line.  But, the important part of this test is
+	 * to ensure that the fg are not written into line 12. */
+	cmd = "PS1=kl7'> '; echo abcdefg";
+	int len = 132 - strlen("kl7> ") + 2;
+	char buf[256];
+	strcpy(buf, cmd);
+	buf[strlen(buf) - 2] = '\0';
+	buf[strlen(buf) - 1] = 'g';
+	send_txt(fd, "kl7>", "%*s", len, cmd);
+	rv |= validate_row(fd, 11, "ij6> %127s", buf);
+	rv |= validate_row(fd, 12, "%-132s", "abcdefg");
+	rv |= validate_row(fd, 13, "%-132s", "kl7>");
+
 	return rv;
 }
 
