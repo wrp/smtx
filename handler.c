@@ -51,6 +51,21 @@ clear_screen(struct pty *p, int top, int tos)
 }
 
 static void
+restore_cursor(struct screen *s)
+{
+	cchar_t b;
+	s->c = s->sc;
+	wmove(s->win, s->c.y, s->c.x);
+	wattr_set(s->win, s->sattr, s->c.p, NULL);
+	s->xenl = s->oxenl;
+
+	/* restore colors */
+	wcolor_set(s->win, s->c.p, NULL);
+	setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
+	wbkgrndset(s->win, &b);
+}
+
+static void
 save_cursor(struct screen *s)
 {
 	wattr_get(s->win, &s->sattr, &s->c.p, NULL);
@@ -267,15 +282,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		} else if( !s->saved ) {
 			noclear_repc = 1;
 		} else {
-			s->c = s->sc;
-			wmove(win, s->c.y, s->c.x);
-			wattr_set(win, s->sattr, s->c.p, NULL);
-			s->xenl = s->oxenl;
-
-			/* restore colors */
-			wcolor_set(win, s->c.p, NULL);
-			setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
-			wbkgrndset(win, &b);
+			restore_cursor(s);
 		}
 		break;
 	case ri: /* Reverse Index (scroll back) */
