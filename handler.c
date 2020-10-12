@@ -365,7 +365,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		p->alt.c.gs = p->alt.c.gc = p->g0;
 		p->decom = s->insert = s->oxenl = s->xenl = p->lnm = false;
 		reset_sgr(s);
-		p->am = p->pnm = true;
+		p->decawm = p->pnm = true;
 		p->pri.vis = p->alt.vis = 1;
 		p->s = &p->pri;
 		wsetscrreg(p->pri.win, 0, p->ws.ws_row + tos - 1);
@@ -389,7 +389,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				s->c.y = tos + (p->decom ? top : 0);
 				wmove(win, s->c.y, s->c.x = 0);
 				break;
-			case  7: p->am = set;               break;
+			case  7: p->decawm = set;           break;
 			case 20: p->lnm = set;              break;
 			case 25: s->vis = set ? 1 : 0;      break;
 			case 34: s->vis = set ? 1 : 2;      break;
@@ -530,7 +530,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		}
 		if( s->xenl ) {
 			s->xenl = false;
-			if( p->am ) {
+			if( p->decawm ) {
 				newline(p, 1, y, bot);
 			}
 		}

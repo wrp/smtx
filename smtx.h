@@ -70,7 +70,8 @@ struct pty {
 	int fd, ntabs, tabstop, id;
 	struct winsize ws;
 	pid_t pid;
-	bool *tabs, pnm, decom, am, lnm;
+	bool *tabs, pnm, decom, lnm;
+	int decawm; /* Wrap-around mode */
 	/* DECOM: When set, cursor addressing is relative to the upper left
 	 * corner of the scrolling region. */
 	wchar_t repc;
