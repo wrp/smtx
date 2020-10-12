@@ -70,31 +70,33 @@ insert_space(int count, WINDOW *win)
 void
 tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 {
+	int p0[2];       /* First arg, defaulting to 0 or 1 */
+	int p1;          /* argv[1], defaulting to 1 */
+	int i, t1, t2;   /* Some temp ints */
+	int y;           /* cursor position */
+	int tos;         /* top of screen */
+	int top, bot;    /* the scrolling region */
+	char buf[32];
+	cchar_t b;
+
 	int *argv = arg;
 	enum cmd c = handler;
 	int noclear_repc = 0;
-	int p0[2];               /* First arg, defaulting to 0 or 1 */
-	int p1;                  /* argv[1], defaulting to 1 */
-	int i, t1 = 0, t2 = 0;   /* Some temp ints */
 	struct pty *p = v->p;    /* the current pty */
 	struct screen *s = p->s; /* the current SCRN buffer */
 	WINDOW *win = s->win;    /* the current window */
-	int y;                   /* cursor position */
-	int top = 0, bot = 0;    /* the scrolling region */
-	int tos;
-	char buf[32];
-	cchar_t b;
 
 	p0[0] = argv && argc > 0 ? argv[0] : 0;
 	p0[1] = argv && argc > 0 ? argv[0] : 1;
 	p1 = argv && argc > 1 ? argv[1] : 1;
 	#ifndef NDEBUG
-	int x1, y1;
-	getyx(win, y1, x1);
-	assert( y1 == s->c.y );
-	assert( x1 == s->c.x );
+	{
+		int x1, y1;
+		getyx(win, y1, x1);
+		assert( y1 == s->c.y );
+		assert( x1 == s->c.x );
+	}
 	#endif
-	getyx(win, s->c.y, s->c.x);
 	getmaxyx(win, tos, t1);
 
 	tos -= p->ws.ws_row;
