@@ -51,12 +51,12 @@ clear_screen(struct pty *p, int top, int tos)
 }
 
 static void
-save_cursor(struct pty *p)
+save_cursor(struct screen *s)
 {
-	wattr_get(p->s->win, &p->s->sattr, &p->s->c.p, NULL);
-	p->s->sc = p->s->c;
-	p->s->oxenl = p->s->xenl;
-	p->s->saved = true;   /* data is valid */
+	wattr_get(s->win, &s->sattr, &s->c.p, NULL);
+	s->sc = s->c;
+	s->oxenl = s->xenl;
+	s->saved = true;   /* data is valid */
 }
 
 static void
@@ -290,7 +290,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		wsetscrreg(win, t1, t2);
 		break;
 	case sc: /* Save Cursor */
-		save_cursor(p);
+		save_cursor(s);
 		break;
 	case su: /* Scroll Up/Down */
 		wscrl(win, (w == L'T' || w == L'^') ? -p0[1] : p0[1]);
