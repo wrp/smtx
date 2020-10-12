@@ -493,22 +493,18 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		noclear_repc = 1;
 	}
 		break;
-	case nel: nel: /* Next Line */
-		s->xenl = false;
-		s->c.x = 0; /* Fall Thru */
-	case ind: ind: /* Index */
+	case pnl: /* Newline */
+		if( p->lnm ) { /* fallthrough */
+	case nel: /* Next Line */
+			s->xenl = false;
+			s->c.x = 0;
+		} /* fallthrough */
+	case ind: /* Index */
 		if( y == bot - 1 ) {
 			wmove(win, s->c.y, s->c.x);
 			scroll(win);
 		} else {
 			wmove(win, ++s->c.y, s->c.x);
-		}
-		break;
-	case pnl: /* Newline */
-		if( p->lnm ) {
-			goto nel;
-		} else {
-			goto ind;
 		}
 		break;
 	case cpl: /* CPL - Cursor Previous Line */
