@@ -493,20 +493,15 @@ case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		noclear_repc = 1;
 	}
 		break;
+	case nel: /* Next Line */
+		s->xenl = false;
+		s->c.x = 0; /* Fall Thru */
 	case ind: /* Index */
 		if( y == bot - 1 ) {
+			wmove(win, s->c.y, s->c.x);
 			scroll(win);
 		} else {
 			wmove(win, ++s->c.y, s->c.x);
-		}
-		break;
-	case nel: /* Next Line */
-		s->xenl = false;
-		if( y == bot - 1 ) {
-			wmove(win, s->c.y, s->c.x = 0);
-			scroll(win);
-		} else {
-			wmove(win, ++s->c.y, s->c.x = 0);
 		}
 		break;
 	case pnl: /* Newline */
