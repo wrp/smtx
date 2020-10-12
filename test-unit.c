@@ -245,11 +245,30 @@ test_cursor(int fd)
 	rv |= validate_row(fd, 21, "%-80s", "foo");
 	rv |= validate_row(fd, 22, "%-80s", "   bar");
 	rv |= validate_row(fd, 23, "%-80s", "atk1>");
+
 	/* Use ESC-D to scroll (we are at bottom of display) */
-	send_txt(fd, "bqs2>", "PS1=bqs'2> '; printf 'ab\\033Dcd\\n'");
+	rv |= validate_row(fd, 1, "%-80s", "foo37");
+	cmd = "PS1=bqs'2> '; printf 'ab\\033Dcd\\n'";
+	send_txt(fd, "bqs2>", cmd);
+	rv |= validate_row(fd, 20, "atk1> %-74s", cmd);
 	rv |= validate_row(fd, 21, "%-80s", "ab");
 	rv |= validate_row(fd, 22, "%-80s", "  cd");
 	rv |= validate_row(fd, 23, "%-80s", "bqs2>");
+
+	/* Verify behavior of ESC-M from top of screen */
+	send_txt(fd, "abc3>", "PS1=ab'c3> '; yes | nl -w 2 -s '' | sed 25q");
+	rv |= validate_row(fd,  1, "%-80s", " 4y");
+	rv |= validate_row(fd,  4, "%-80s", " 7y");
+	rv |= validate_row(fd, 22, "%-80s", "25y");
+	rv |= validate_row(fd, 23, "%-80s", "abc3>");
+
+	send_raw(fd, NULL, "printf '\\033[H'; "); /* move to origin */
+	send_raw(fd, NULL, "printf '\\033M\\033M'; ");  /* Scroll up 2 */
+	send_txt(fd, "line1>", "PS1=line'1> '");
+	rv |= validate_row(fd,  1, "%-80s", "line1>");
+	rv |= validate_row(fd,  2, "%-80s", "");
+	rv |= validate_row(fd,  3, "%-80s", " 5y");
+	rv |= validate_row(fd,  4, "%-80s", " 6y");
 
 	return rv;
 }
