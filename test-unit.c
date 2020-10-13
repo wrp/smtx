@@ -1293,6 +1293,9 @@ test_utf(int fd)
 	/* Write an invalid sequence */
 	send_txt(fd, "ru3>", "PS1=ru3'> '; printf '\\300\\300\\n'");
 	rv |= validate_row(fd, 4, "%-80s", "\375\375");
+
+	/* Write a literal zero */
+	send_txt(fd, "sv4>", "PS1=sv4'> '; printf 'a\\000b\\n'");
 	return rv;
 }
 
