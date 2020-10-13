@@ -155,6 +155,7 @@ static struct state esc = {
 		[0x30 ... 0x4f] = {doescape, &ground},
 		[0x50]          = {ignore, &osc_string}, /* P */
 		[0x51 ... 0x57] = {doescape, &ground},
+		[0x58]          = {ignore, NULL},
 		/* Why is 0x58 ('X') skipped ? (1) */
 		[0x59 ... 0x5a] = {doescape, &ground},
 		[0x5b]          = {ignore, &csi_entry},  /* [ */
@@ -311,9 +312,8 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 		s += r;
 		if( w >= 0 && w < MAXCALLBACK ) {
 			struct action *a = (vp->s ? vp->s : &ground)->act + w;
-			if( a->cb ) {
-				a->cb(vp, w);
-			}
+			assert( a->cb != NULL );
+			a->cb(vp, w);
 			if( a->next ) {
 				assert( a->cb );
 				vp->s = a->next;
