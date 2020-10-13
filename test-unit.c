@@ -1289,6 +1289,10 @@ test_utf(int fd)
 	 * string validation methods are naive, and we are currently getting
 	 * back the above string.  TODO: clean this up.
 	 */
+
+	/* Write an invalid sequence */
+	send_txt(fd, "ru3>", "PS1=ru3'> '; printf '\\300\\300\\n'");
+	rv |= validate_row(fd, 4, "%-80s", "\375\375");
 	return rv;
 }
 
