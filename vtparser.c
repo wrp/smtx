@@ -298,9 +298,8 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 	while( n ) {
 		size_t r = mbrtowc(&w, s, n, &vp->ms);
 		switch( r ) {
-		case -2: /* incomplete character, try again */
-			return;
 		case -1: /* invalid character, skip it */
+		case -2: /* incomplete character, skip it */
 			w = VTPARSER_BAD_CHAR;
 			memset(&vp->ms, 0, sizeof vp->ms);
 			r = 1;
