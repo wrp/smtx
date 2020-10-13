@@ -170,6 +170,22 @@ static struct state esc = {
  * (1) I suspect this is a bug from mtm
  */
 
+static struct state esc_intermediate = {
+	.entry = NULL,
+	.act = {
+		[0]             = {ignore, NULL},
+		[0x01 ... 0x17] = {docontrol, NULL},
+		[0x18]          = {docontrol, &ground},
+		[0x19]          = {docontrol, NULL},
+		[0x1a]          = {docontrol, &ground},
+		[0x1b]          = {ignore, &esc},
+		[0x1c ... 0x1f] = {docontrol, NULL},
+		[0x20 ... 0x2f] = {collect, NULL},
+		[0x30 ... 0x7e] = {doescape, &ground},
+		[0x7f]          = {ignore, NULL},
+	}
+};
+
 void
 vtonevent(struct vtp *vp, enum vtEvent t, wchar_t w, int cb)
 {
@@ -260,10 +276,6 @@ static void
 init(void)
 {
 	initialized = 1;
-
-	initstate(&esc_intermediate, NULL);
-	init_range(&esc_intermediate, 0x20, 0x2f, collect, NULL);
-	init_range(&esc_intermediate, 0x30, 0x7e, doescape, &ground);
 
 	initstate(&csi_entry, reset);
 	init_range(&csi_entry, 0x20, 0x2f, collect, &csi_intermediate);
