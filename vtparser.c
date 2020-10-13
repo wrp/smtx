@@ -259,6 +259,21 @@ static struct state csi_intermediate = {
 	}
 };
 
+static struct state osc_string = {
+	.entry = reset,
+	.act = {
+		[0]             = {ignore, NULL},
+		[0x01 ... 0x06] = {docontrol, NULL},
+		[0x07]          = {doosc, &ground},
+		[0x08 ... 0x17] = {docontrol, NULL},
+		[0x18]          = {docontrol, &ground},
+		[0x19]          = {docontrol, NULL},
+		[0x1a]          = {docontrol, &ground},
+		[0x1b]          = {ignore, &esc},
+		[0x1c ... 0x1f] = {docontrol, NULL},
+		[0x20 ... 0x7f] = {collectosc, NULL},
+	}
+};
 
 void
 vtonevent(struct vtp *vp, enum vtEvent t, wchar_t w, int cb)
@@ -350,8 +365,4 @@ static void
 init(void)
 {
 	initialized = 1;
-
-	initstate(&osc_string, reset);
-	init_action(&osc_string, 0x07, doosc, &ground);
-	init_range(&osc_string, 0x20, 0x7f, collectosc, NULL);
 }
