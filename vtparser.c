@@ -186,6 +186,28 @@ static struct state esc_intermediate = {
 	}
 };
 
+static struct state csi_entry = {
+	.entry = reset,
+	.act = {
+		[0]             = {ignore, NULL},
+		[0x01 ... 0x17] = {docontrol, NULL},
+		[0x18]          = {docontrol, &ground},
+		[0x19]          = {docontrol, NULL},
+		[0x1a]          = {docontrol, &ground},
+		[0x1b]          = {ignore, &esc},
+		[0x1c ... 0x1f] = {docontrol, NULL},
+		[0x20 ... 0x2f] = {collect, &csi_intermediate},
+		[0x30 ... 0x39] = {param, &csi_param},
+		[0x3a]          = {ignore, &csi_ignore},
+		[0x3b]          = {param, &csi_param},
+		[0x3c ... 0x3f] = {collect, &csi_param},
+		[0x40 ... 0x7e] = {docsi, &ground},
+		[0x7f]          = {ignore, NULL},
+	}
+};
+
+
+
 void
 vtonevent(struct vtp *vp, enum vtEvent t, wchar_t w, int cb)
 {
@@ -276,14 +298,6 @@ static void
 init(void)
 {
 	initialized = 1;
-
-	initstate(&csi_entry, reset);
-	init_range(&csi_entry, 0x20, 0x2f, collect, &csi_intermediate);
-	init_range(&csi_entry, 0x30, 0x39, param, &csi_param);
-	init_action(&csi_entry, 0x3a, ignore, &csi_ignore);
-	init_action(&csi_entry, 0x3b, param, &csi_param);
-	init_range(&csi_entry, 0x3c, 0x3f, collect, &csi_param);
-	init_range(&csi_entry, 0x40, 0x7e, docsi, &ground);
 
 	initstate(&csi_ignore, NULL);
 	init_range(&csi_ignore, 0x20, 0x3f, ignore, NULL);
