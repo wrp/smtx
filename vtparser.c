@@ -206,7 +206,21 @@ static struct state csi_entry = {
 	}
 };
 
-
+static struct state csi_ignore = {
+	.entry = NULL,
+	.act = {
+		[0]             = {ignore, NULL},
+		[0x01 ... 0x17] = {docontrol, NULL},
+		[0x18]          = {docontrol, &ground},
+		[0x19]          = {docontrol, NULL},
+		[0x1a]          = {docontrol, &ground},
+		[0x1b]          = {ignore, &esc},
+		[0x1c ... 0x1f] = {docontrol, NULL},
+		[0x20 ... 0x3f] = {ignore, NULL},
+		[0x40 ... 0x7e] = {ignore, &ground},
+		[0x7f]          = {ignore, NULL},
+	}
+};
 
 void
 vtonevent(struct vtp *vp, enum vtEvent t, wchar_t w, int cb)
@@ -298,10 +312,6 @@ static void
 init(void)
 {
 	initialized = 1;
-
-	initstate(&csi_ignore, NULL);
-	init_range(&csi_ignore, 0x20, 0x3f, ignore, NULL);
-	init_range(&csi_ignore, 0x40, 0x7e, ignore, &ground);
 
 	initstate(&csi_param, NULL);
 	init_range(&csi_param, 0x20, 0x2f, collect, &csi_intermediate);
