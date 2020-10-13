@@ -32,8 +32,6 @@ struct state{
 	void (*entry)(struct vtp *v);
 	struct action act[0x80];
 };
-static struct state ground, esc, esc_intermediate, csi_entry,
-	csi_ignore, csi_param, csi_intermediate, osc_string;
 
 static void
 reset(struct vtp *v)
@@ -121,6 +119,23 @@ doosc(struct vtp *v, wchar_t w)
 {
 	tput(v, w, v->inter, v->nosc, v->oscbuf, v->osc);
 }
+
+static struct state esc, esc_intermediate, csi_entry,
+	csi_ignore, csi_param, csi_intermediate, osc_string;
+
+static struct state ground = {
+	.entry = NULL,
+	.act = {
+		[0]             = {ignore, NULL},
+		[0x01 ... 0x17] = {docontrol, NULL},
+		[0x18]          = {docontrol, &ground},
+		[0x19]          = {docontrol, NULL},
+		[0x1a]          = {docontrol, &ground},
+		[0x1b]          = {ignore, &esc},
+		[0x1c ... 0x1f] = {docontrol, NULL},
+		[0x20 ... 0x7f] = {doprint, NULL},
+	}
+};
 
 void
 vtonevent(struct vtp *vp, enum vtEvent t, wchar_t w, int cb)
@@ -212,8 +227,6 @@ static void
 init(void)
 {
 	initialized = 1;
-	initstate(&ground, NULL);
-	init_range(&ground, 0x20, 0x7f, doprint, NULL);
 
 	initstate(&esc, reset);
 	init_action(&esc, 0x20, collect, &esc_intermediate);
