@@ -62,21 +62,18 @@ collect(struct vtp *v, wchar_t w)
 	}
 }
 
-
-static callback param;
 static void
 param(struct vtp *v, wchar_t w)
 {
 	v->narg = v->narg ? v->narg : 1;
 	int *a = v->args + v->narg - 1;
 	if( w == L';' ) {
-		v->args[v->narg++] = 0;
+		v->narg += 1;
 	} else if( v->narg < MAXPARAM && *a < 9999 ) {
 		*a = *a * 10 + w - '0';
 	}
 }
 
-static callback docontrol;
 static void
 docontrol(struct vtp *v, wchar_t w)
 {
