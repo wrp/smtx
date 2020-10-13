@@ -837,7 +837,11 @@ init(void)
 	snprintf(buf, sizeof buf - 1, "%d", getpid());
 	setenv("SMTX", buf, 1);
 	setenv("SMTX_VERSION", VERSION, 1);
-	setlocale(LC_ALL, "");
+	/* Setting locale like this is absolutely the wrong thing to do.
+	 * TODO: figure out the right thing to do.
+	 */
+	setlocale(LC_ALL, "en_US.UTF-8");
+
 	build_bindings();
 	if( (new = newterm(term, stdin, stdout)) == NULL ) {
 		initscr();

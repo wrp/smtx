@@ -108,5 +108,6 @@ test test_swap;
 test test_tabstop;
 test test_title;
 test test_tput;
+test test_utf;
 test test_vis;
 test test_width;

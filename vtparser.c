@@ -142,7 +142,7 @@ static struct state ground = {
 static struct state esc = {
 	.entry = reset,
 	.act = {
-		[0] = {ignore, NULL},
+		[0]             = {ignore, NULL},
 		[0x01 ... 0x17] = {docontrol, NULL},
 		[0x18]          = {docontrol, &ground},
 		[0x19]          = {docontrol, NULL},
@@ -321,6 +321,8 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 					vp->s->entry(vp);
 				}
 			}
+		} else {
+			doprint(vp, w);
 		}
 	}
 }

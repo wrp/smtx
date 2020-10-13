@@ -1277,6 +1277,22 @@ test_tput(int fd)
 }
 
 int
+test_utf(int fd)
+{
+	int rv = validate_row(fd, 1, "%-80s", "ps1>");
+	send_txt(fd, "qt2>", "PS1=qt2'> '; printf '\\342\\202\\254\\n'");
+	rv |= validate_row(fd, 2, "%-112s",
+		"<black><black*>\254</black></black*>");
+	/* The above row is a little wonky.  In response to
+	 * \342\202\254 (0xe282ac, but some printf don't allow hex) mb,
+	 * we expect the tty to display unicode character U+20AC.  But our
+	 * string validation methods are naive, and we are currently getting
+	 * back the above string.  TODO: clean this up.
+	 */
+	return rv;
+}
+
+int
 test_vis(int fd)
 {
 	int rv = 0;
