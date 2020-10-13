@@ -20,9 +20,6 @@
 #include <string.h>
 #include "vtparser.h"
 
-static int initialized;
-static void init(void);
-
 typedef void (callback)(struct vtp *p, wchar_t w);
 struct action {
 	callback *cb;
@@ -120,9 +117,14 @@ doosc(struct vtp *v, wchar_t w)
 	tput(v, w, v->inter, v->nosc, v->oscbuf, v->osc);
 }
 
+
+/*
+ * State definitions built by consulting the excellent state chart created by
+ * Paul Flo Williams: http://vt100.net/emu/dec_ansi_parser
+ * Please note that Williams does not (AFAIK) endorse this work.
+ */
 static struct state esc, esc_intermediate, csi_entry,
 	csi_ignore, csi_param, csi_intermediate, osc_string;
-
 static struct state ground = {
 	.entry = NULL,
 	.act = {
@@ -278,9 +280,6 @@ static struct state osc_string = {
 void
 vtonevent(struct vtp *vp, enum vtEvent t, wchar_t w, int cb)
 {
-	if( ! initialized ) {
-		init();
-	}
 	assert( w < MAXCALLBACK );
 	switch( t ) {
         case CONTROL: vp->cons[w] = cb; break;
@@ -324,45 +323,4 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 			}
 		}
 	}
-}
-
-/*
- * State definitions built by consulting the excellent state chart created by
- * Paul Flo Williams: http://vt100.net/emu/dec_ansi_parser
- * Please note that Williams does not (AFAIK) endorse this work.
- */
-
-static void
-init_action(struct state *s, wchar_t idx, callback cb, struct state *next)
-{
-	s->act[idx].cb = cb;
-	s->act[idx].next = next;
-}
-
-static void
-init_range(struct state *s, wchar_t b, wchar_t e, callback cb, struct state *n)
-{
-	for( ; b <= e; b++ ) {
-		init_action(s, b, cb, n);
-	}
-}
-
-static void
-initstate(struct state *s, void (*entry)(struct vtp *))
-{
-	s->entry = entry;
-	init_action(s, 0, ignore, NULL);
-	init_range(s, 0x01, 0x17, docontrol, NULL);
-	init_action(s, 0x18, docontrol, &ground);
-	init_action(s, 0x19, docontrol, NULL);
-	init_action(s, 0x1a, docontrol, &ground);
-	init_action(s, 0x1b, ignore, &esc);
-	init_range(s, 0x1c, 0x1f, docontrol, NULL);
-	init_action(s, 0x7f, ignore, NULL);
-}
-
-static void
-init(void)
-{
-	initialized = 1;
 }
