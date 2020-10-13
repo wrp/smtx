@@ -492,9 +492,14 @@ wait_child(struct pty *p)
 }
 
 static void
-getinput(fd_set *f) /* check stdin and all pty's for input. */
+getinput(void) /* check stdin and all pty's for input. */
 {
-	if( FD_ISSET(STDIN_FILENO, f) ) {
+	fd_set sfds = S.fds;
+	if( select(S.p->fd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
+		err_check(errno != EINTR , "select");
+		return;
+	}
+	if( FD_ISSET(STDIN_FILENO, &sfds) ) {
 		int r;
 		wint_t w;
 		while( (r = wget_wch(S.f->p->s->win, &w)) != ERR ) {
@@ -515,7 +520,7 @@ getinput(fd_set *f) /* check stdin and all pty's for input. */
 		}
 	}
 	for( struct pty *t = S.p; t; t = t->next ) {
-		if( t->fd > 0 && FD_ISSET(t->fd, f) ) {
+		if( t->fd > 0 && FD_ISSET(t->fd, &sfds) ) {
 			char iobuf[BUFSIZ];
 			ssize_t r = read(t->fd, iobuf, sizeof iobuf);
 			if( r > 0 ) {
@@ -750,8 +755,6 @@ static void
 main_loop(void)
 {
 	while( S.c != NULL && S.p && S.p->fd > 0 && ! interrupted ) {
-		fd_set sfds = S.fds;
-
 		if( S.reshape ) {
 			reshape_root(NULL);
 		}
@@ -766,11 +769,7 @@ main_loop(void)
 		}
 		fixcursor();
 		doupdate();
-		if( select(S.p->fd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
-			err_check(errno != EINTR , "select");
-			FD_ZERO(&sfds);
-		}
-		getinput(&sfds);
+		getinput();
 	}
 }
 
