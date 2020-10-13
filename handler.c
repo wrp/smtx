@@ -143,10 +143,10 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 {
 	int p0[2];       /* First arg, defaulting to 0 or 1 */
 	int p1;          /* argv[1], defaulting to 1 */
-	int i, t1, t2;   /* Some temp ints */
+	int i, t1 = 0, t2 = 0;
 	int y;           /* cursor position */
 	int tos;         /* top of screen */
-	int top, bot;    /* the scrolling region */
+	int top = 0, bot = 0;/* the scrolling region */
 	char buf[32];
 	cchar_t b;
 
