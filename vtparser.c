@@ -25,11 +25,10 @@ struct action {
 	callback *cb;
 	struct state *next;
 };
-struct state{
+struct state {
 	void (*entry)(struct vtp *v);
 	struct action act[0x80];
 };
-
 static void
 reset(struct vtp *v)
 {
@@ -46,25 +45,23 @@ ignore(struct vtp *v, wchar_t w)
 	(void)w;
 }
 
-static callback collect;
+static struct state esc, esc_intermediate, csi_entry,
+	csi_ignore, csi_param, csi_intermediate, osc_string;
+
 static void
 collect(struct vtp *v, wchar_t w)
 {
-	if( !v->inter ) {
+	if( v->s == &osc_string ) {
+		if( v->nosc < MAXOSC ) {
+			v->oscbuf[v->nosc++] = wctob(w);
+			assert( v->nosc < (int)sizeof v->oscbuf );
+			assert( v->oscbuf[v->nosc] == '\0' );
+		}
+	} else if( !v->inter ) {
 		v->inter = (int)w;
 	}
 }
 
-static callback collectosc;
-static void
-collectosc(struct vtp *v, wchar_t w)
-{
-	if( v->nosc < MAXOSC ) {
-		v->oscbuf[v->nosc++] = wctob(w);
-		assert( v->nosc < (int)sizeof v->oscbuf );
-		assert( v->oscbuf[v->nosc] == '\0' );
-	}
-}
 
 static callback param;
 static void
@@ -123,8 +120,6 @@ doosc(struct vtp *v, wchar_t w)
  * Paul Flo Williams: http://vt100.net/emu/dec_ansi_parser
  * Please note that Williams does not (AFAIK) endorse this work.
  */
-static struct state esc, esc_intermediate, csi_entry,
-	csi_ignore, csi_param, csi_intermediate, osc_string;
 static struct state ground = {
 	.entry = NULL,
 	.act = {
@@ -274,7 +269,7 @@ static struct state osc_string = {
 		[0x1a]          = {docontrol, &ground},
 		[0x1b]          = {ignore, &esc},
 		[0x1c ... 0x1f] = {docontrol, NULL},
-		[0x20 ... 0x7f] = {collectosc, NULL},
+		[0x20 ... 0x7f] = {collect, NULL},
 	}
 };
 
