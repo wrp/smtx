@@ -137,6 +137,39 @@ static struct state ground = {
 	}
 };
 
+static struct state esc = {
+	.entry = reset,
+	.act = {
+		[0] = {ignore, NULL},
+		[0x01 ... 0x17] = {docontrol, NULL},
+		[0x18]          = {docontrol, &ground},
+		[0x19]          = {docontrol, NULL},
+		[0x1a]          = {docontrol, &ground},
+		[0x1b]          = {ignore, &esc},
+		[0x1c ... 0x1f] = {docontrol, NULL},
+		[0x20]          = {collect, &esc_intermediate},
+		[0x21]          = {ignore, &osc_string}, /* ! */
+		[0x22 ... 0x2f] = {collect, &esc_intermediate},
+		[0x30 ... 0x4f] = {doescape, &ground},
+		[0x50]          = {ignore, &osc_string}, /* P */
+		[0x51 ... 0x57] = {doescape, &ground},
+		/* Why is 0x58 ('X') skipped ? (1) */
+		[0x59 ... 0x5a] = {doescape, &ground},
+		[0x5b]          = {ignore, &csi_entry},  /* [ */
+		[0x5c]          = {doescape, &ground},   /* \ */
+		[0x5d]          = {ignore, &osc_string}, /* ] */
+		[0x5e]          = {ignore, &osc_string}, /* ^ */
+		[0x5f]          = {ignore, &osc_string}, /* _ */
+		[0x60 ... 0x6a] = {doescape, &ground},
+		[0x6b]          = {ignore, &osc_string}, /* k */
+		[0x6c ... 0x7e] = {doescape, &ground},
+		[0x7f]          = {ignore, NULL},
+	}
+};
+/*
+ * (1) I suspect this is a bug from mtm
+ */
+
 void
 vtonevent(struct vtp *vp, enum vtEvent t, wchar_t w, int cb)
 {
@@ -228,25 +261,6 @@ init(void)
 {
 	initialized = 1;
 
-	initstate(&esc, reset);
-	init_action(&esc, 0x20, collect, &esc_intermediate);
-	init_action(&esc, 0x21, ignore, &osc_string); /* ! */
-	init_range(&esc, 0x22, 0x2f, collect, &esc_intermediate);
-	init_range(&esc, 0x30, 0x4f, doescape, &ground);
-	init_action(&esc, 0x50, ignore, &osc_string); /* P */
-	init_range(&esc, 0x51, 0x57, doescape, &ground);
-	/* Why is 0x58 ('X') skipped ? (1) */
-	init_range(&esc, 0x59, 0x5a, doescape, &ground);
-	init_action(&esc, 0x5b, ignore, &csi_entry);  /* [ */
-	init_action(&esc, 0x5c, doescape, &ground);   /* \ */
-	init_action(&esc, 0x5d, ignore, &osc_string); /* ] */
-	init_action(&esc, 0x5e, ignore, &osc_string); /* ^ */
-	init_action(&esc, 0x5f, ignore, &osc_string); /* _ */
-	init_range(&esc, 0x60, 0x6a, doescape, &ground);
-	init_action(&esc, 0x6b, ignore, &osc_string); /* k */
-	init_range(&esc, 0x6c, 0x7e, doescape, &ground);
-
-
 	initstate(&esc_intermediate, NULL);
 	init_range(&esc_intermediate, 0x20, 0x2f, collect, NULL);
 	init_range(&esc_intermediate, 0x30, 0x7e, doescape, &ground);
@@ -280,6 +294,3 @@ init(void)
 	init_action(&osc_string, 0x07, doosc, &ground);
 	init_range(&osc_string, 0x20, 0x7f, collectosc, NULL);
 }
-/*
- * (1) I suspect this is a bug from mtm
- */
