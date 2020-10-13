@@ -31,7 +31,7 @@ test_alt(int fd)
 
 	/* Go to alternate screen */
 	const char *cmd = "PS1=az'2>'; printf '\\033[47h'; echo alt 1";
-	send_txt(fd, "az2>", cmd);
+	send_txt(fd, "az2>", "%s", cmd);
 	rv |= validate_row(fd, 1, "%-80s", "alt 1");
 	rv |= validate_row(fd, 2, "%-80s", "az2>");
 	rv |= validate_row(fd, 4, "%-80s", "");
@@ -253,7 +253,7 @@ test_cursor(int fd)
 	/* Use ESC-D to scroll (we are at bottom of display) */
 	rv |= validate_row(fd, 1, "%-80s", "foo37");
 	cmd = "PS1=bqs'2> '; printf 'ab\\033Dcd\\n'";
-	send_txt(fd, "bqs2>", cmd);
+	send_txt(fd, "bqs2>", "%s", cmd);
 	rv |= validate_row(fd, 20, "atk1> %-74s", cmd);
 	rv |= validate_row(fd, 21, "%-80s", "ab");
 	rv |= validate_row(fd, 22, "%-80s", "  cd");
@@ -1102,7 +1102,7 @@ test_su(int fd)
 
 	/* Use csi escape sequence S to scroll up 10 lines */
 	char *cmd = "PS1=ab'2>'; printf '\\033[10S'";
-	send_txt(fd, "ab2>", cmd);
+	send_txt(fd, "ab2>", "%s", cmd);
 	rv |= validate_row(fd, 11, "    50y%73s", "");
 	rv |= validate_row(fd, 12, "un1>%-76s", cmd);
 	for( int i = 13; i < 23; i++ ) {
@@ -1112,12 +1112,12 @@ test_su(int fd)
 
 	/* Use csi escape sequence T to scroll down 15 lines */
 	cmd = "PS1=ws'3>'; printf '\\033[15T'";
-	send_txt(fd, "ws3>", cmd);
+	send_txt(fd, "ws3>", "%s", cmd);
 	rv |= validate_row(fd, 10, "    35y%73s", "");
 
 	/* Use csi escape sequence ^ to scroll down 4 lines */
 	cmd = "PS1=xy'4>'; printf '\\033[4^'";
-	send_txt(fd, "xy4>", cmd);
+	send_txt(fd, "xy4>", "%s", cmd);
 	rv |= validate_row(fd, 10, "    32y%73s", "");
 	return rv;
 }
@@ -1264,7 +1264,7 @@ test_tput(int fd)
 
 	/* Use vpr to move down 5 lines */
 	char *cmd = "PS1=un'2>'; printf '\\033[5e'; echo foo";
-	send_txt(fd, "un2>", cmd);
+	send_txt(fd, "un2>", "%s", cmd);
 	rv |= validate_row(fd, 8, "un1> %-75s", cmd);
 
 	for( int i = 10; i < 14; i++ ) {
