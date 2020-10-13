@@ -516,14 +516,12 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			#endif
 			}
 		}
-#if HAVE_ALLOC_PAIR
 		if( doc ) {
 			s->c.p = alloc_pair(fg, bg);
 			wcolor_set(win, s->c.p, NULL);
 			setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
 			wbkgrndset(win, &b);
 		}
-#endif
 	}
 		break;
 	case pnl: /* Newline */
