@@ -121,10 +121,11 @@ int
 get_state(int fd, char *state, size_t siz)
 {
 	char buf[64];
-	int len;
 	ssize_t s;
-	len = snprintf(buf, sizeof buf, "%c:show_state\r", ctlkey);
-	write(fd, buf, len);
+	int fd2 = get_secondary_fd(fd);
+	int len = snprintf(buf, siz, "\033]62\007");
+	write(fd2, buf, len);
+	close(fd2);
 	grep(fd, "state: ");
 	do s = timed_read(fd, state, siz, "state"); while( s == 0 );
 	if( s == -1 ) {
