@@ -222,10 +222,9 @@ show_row(const char *arg)
 void
 show_state(const char *arg)
 {
-	(void)arg;
 	char buf[1024];
 	int k = sprintf(buf, "state: ");
 	size_t s = describe_state(buf + k, sizeof buf - k);
 	rewrite(1, buf, s + k);
-	show_layout("53");
+	show_layout(*arg ? arg : "53");
 }
