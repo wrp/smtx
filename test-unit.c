@@ -1231,10 +1231,10 @@ test_title(int fd)
 	buf[75] = '\0';
 	rv |= validate_row(fd, 24, "1 sh %s", buf);
 	/* Use osc sequence to change title */
-	send_txt(fd, "uniq", "printf '\\033]2foobar\\007'; echo u'n'iq");
+	send_txt(fd, "uniq", "printf '\\033]2;foobar\\007'; echo u'n'iq");
 	buf[71] = '\0';
 	rv |= validate_row(fd, 24, "1 foobar %s", buf);
-	send_cmd(fd, "unIq", "200W\rprintf '\\033]2qux\\007u'n'I'q");
+	send_cmd(fd, "unIq", "200W\rprintf '\\033]2;qux\\007u'n'I'q");
 
 	buf[65] = '\0';
 	rv |= validate_row(fd, 24, "1 qux 1-80/200 %s", buf);

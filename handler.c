@@ -29,10 +29,24 @@ static void
 handle_osc(struct pty *p, const char *arg)
 {
 	const char *parm;
+	int cmd = strtol(arg, (char **)&parm, 10);
 
-	switch( strtol(arg, (char **)&parm, 10) ) {
+	parm = *parm == ';' ? parm + 1 : "";
+	/* TODO: pick better codes.  Right now, I'm using 60+ simply because
+	 * those value appear to be unused by xterm.
+	 *
+	 * Also: fix the state machine.  Right now, we are just passing
+	 * a string like "2;text" instead of parsing the semi-colon in the
+	 * state machine.  Yechh.
+	 */
+	switch( cmd ) {
 	case 2:
 		snprintf(p->status, sizeof p->status, "%s", parm);
+		break;
+		#if 0
+	case 3:
+		show_row(parm);
+		#endif
 	}
 }
 
