@@ -139,13 +139,6 @@ test_cols(int fd)
 }
 
 int
-test_command(int fd)
-{
-	send_cmd(fd, NULL, ":bad_key");
-	return 0;
-}
-
-int
 test_csr(int fd)
 {
 	int rv = 0;
@@ -176,6 +169,10 @@ test_cup(int fd)
 	rv |= validate_row(fd, 8, "%-80s", "0127896");
 	rv |= validate_row(fd, 11, "abc%73s1234", "");
 	rv |= validate_row(fd, 12, "%-80s", "5678wrapped");
+
+	/* Send an invalid key to cover beep() action */
+	send_cmd(fd, NULL, ":");
+
 	return rv;
 }
 

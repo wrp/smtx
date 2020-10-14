@@ -391,7 +391,6 @@ main(int argc, char *const argv[])
 	F(test_bighist, "NOWAIT", "1", "args", "-s", bigint);
 	F(test_changehist, "args", "-s", "128");
 	F(test_cols, "COLUMNS", "92", "args", "-w", "97");
-	F(test_command);
 	F(test_csr);
 	F(test_cup);
 	F(test_cursor);
