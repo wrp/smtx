@@ -80,6 +80,7 @@ struct pty {
 	struct pty *next;
 	char status[32];
 	struct vtp vp;
+	char secondary[PATH_MAX];
 };
 
 typedef void(action)(const char *arg);

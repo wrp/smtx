@@ -142,7 +142,7 @@ new_pty(int rows, int cols)
 		const char *sh = getshell();
 		p->ws.ws_row = rows - 1;
 		p->ws.ws_col = cols;
-		p->pid = forkpty(&p->fd, NULL, NULL, &p->ws);
+		p->pid = forkpty(&p->fd, p->secondary, NULL, &p->ws);
 		if( p->pid == 0 ) {
 			setsid();
 			signal(SIGCHLD, SIG_DFL);
