@@ -213,6 +213,7 @@ show_row(const char *arg)
 	int k = snprintf(buf, sizeof buf, "row %d:(%zd)%s", row, s, val);
 	rewrite(1, buf, k < (int)sizeof buf ? k : (int)sizeof buf);
 }
+#endif
 
 void
 show_state(const char *arg)
@@ -223,4 +224,3 @@ show_state(const char *arg)
 	size_t s = describe_state(buf + k, sizeof buf - k);
 	rewrite(1, buf, s + k);
 }
-#endif
