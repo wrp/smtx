@@ -98,7 +98,6 @@ static struct name_func_siz {
 #ifndef NDEBUG
 	{ "show_state", show_state, 10 },
 	{ "show_layout", show_layout, 11 },
-	{ "show_row", show_row, 8 },
 #endif
 	{ NULL, NULL, 0 }
 };

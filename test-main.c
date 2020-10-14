@@ -17,6 +17,7 @@
 #include "config.h"
 #include "test-unit.h"
 #include <limits.h>
+#include <fcntl.h>
 
 static int read_timeout = 1;  /* Set to 0 when interactively debugging */
 static int main_timeout = 2;
@@ -211,13 +212,39 @@ grep(int fd, const char *needle)
 }
 
 int
+get_secondary_fd(int fd)
+{
+	int fd2;
+	char path[PATH_MAX];
+	char *p = path;
+	const char *end = path + sizeof path;
+	send_cmd(fd, NULL, "Q");
+	grep(fd, "layout:");
+	grep(fd, "2nd=");
+	do {
+		if( timed_read(fd, p, 1, "2nd path") != 1 ) {
+			err(1, "Invalid read getting 2ndary");
+		}
+	} while( *p != ')' && ++p < end -1 );
+	*p = '\0';
+	if( (fd2 = open(path, O_WRONLY)) == -1) {
+		err(1, path);
+	}
+	return fd2;
+}
+
+int
 get_row(int fd, int row, char *buf, size_t siz)
 {
 	size_t count = 0;
 	char *r = buf;
+	int fd2;
 
-	int len = snprintf(buf, siz, "%c:show_row %d\r", ctlkey, row - 1);
-	write(fd, buf, len);
+	fd2 = get_secondary_fd(fd);
+	int len = snprintf(buf, siz, "\033]60;%d\007", row - 1);
+	write(fd2, buf, len);
+	close(fd2);
+
 	sprintf(buf, "row %d:(", row - 1);
 	grep(fd, buf);
 	/* We expect to see "row N:(len)" on the fd, where len is the width of
