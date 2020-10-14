@@ -227,5 +227,5 @@ show_state(const char *arg)
 	int k = sprintf(buf, "state: ");
 	size_t s = describe_state(buf + k, sizeof buf - k);
 	rewrite(1, buf, s + k);
-	show_layout("35");
+	show_layout("53");
 }
