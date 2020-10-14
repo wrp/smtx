@@ -183,8 +183,12 @@ describe_state(char *desc, size_t siz)
 	if( len < siz - 1 ) {
 		len += snprintf(desc + len, siz - len, "w=%d", S.width);
 	}
-	assert( len < siz - 1 );
+	if( len > siz - 3 ) {
+		len = siz - 3;
+	}
+	desc[len++] = '\r';
 	desc[len++] = '\n';
+	desc[len++] = '\0';
 	return len;
 }
 
@@ -223,4 +227,5 @@ show_state(const char *arg)
 	int k = sprintf(buf, "state: ");
 	size_t s = describe_state(buf + k, sizeof buf - k);
 	rewrite(1, buf, s + k);
+	show_layout("35");
 }
