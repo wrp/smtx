@@ -18,12 +18,8 @@
 #include "test-unit.h"
 #include <limits.h>
 
-/* TODO: always use the p2c/c2p pipes for synchornization. */
-
 static int read_timeout = 1;  /* Set to 0 when interactively debugging */
 static int main_timeout = 2;
-int c2p[2];
-int p2c[2];
 static int check_test_status(int rv, int status, int pty, const char *name);
 static void grep(int fd, const char *needle);
 int ctlkey = CTL('g');
@@ -515,9 +511,6 @@ execute_test(struct st *v, const char *name)
 		setenv(a[0], a[1], 1);
 	}
 	set_window_size(&ws);
-	if( pipe(c2p) || pipe(p2c) ) {
-		err(EXIT_FAILURE, "pipe");
-	}
 	if( openpty(fd, fd + 1, NULL, NULL, &ws) ) {
 		err(EXIT_FAILURE, "openpty");
 	}
@@ -533,17 +526,11 @@ execute_test(struct st *v, const char *name)
 			err(EXIT_FAILURE, "login_tty");
 		}
 		rv = 0;
-		if( close(c2p[0]) || close(p2c[1]) ) {
-			err(EXIT_FAILURE, "close");
-		}
 		execv("./smtx", v->argv);
 		err(EXIT_FAILURE, "execv");
 	default:
 		if( close(fd[1]) ) {
 			err(EXIT_FAILURE, "close secondary");
-		}
-		if( close(c2p[1]) || close(p2c[0]) ) {
-			err(EXIT_FAILURE, "close");
 		}
 		if( getenv("NOWAIT") == NULL ) {
 			grep(fd[0], PROMPT); /* Wait for shell to initialize */
