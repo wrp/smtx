@@ -23,6 +23,7 @@ static int read_timeout = 1;  /* Set to 0 when interactively debugging */
 static int main_timeout = 2;
 static int check_test_status(int rv, int status, int pty, const char *name);
 static void grep(int fd, const char *needle);
+static int get_secondary_fd(int fd);
 int ctlkey = CTL('g');
 
 union param {
@@ -93,11 +94,13 @@ ssize_t timed_read(int, void *, size_t, const char *);
 int
 get_layout(int fd, int flag, char *buf, size_t siz)
 {
-	int len;
 	ssize_t s = 0;
 	const char *end = buf + siz;
-	len = snprintf(buf, siz, "%c:show_layout %d\r", ctlkey, flag);
-	write(fd, buf, len);
+	int fd2 = get_secondary_fd(fd);
+	int len = snprintf(buf, siz, "\033]61;%d\007", flag);
+	write(fd2, buf, len);
+	close(fd2);
+
 	grep(fd, "layout: ");
 	while( buf < end && s != -1 ) {
 		s = timed_read(fd, buf, 1, "layout");
@@ -211,7 +214,7 @@ grep(int fd, const char *needle)
 	}
 }
 
-int
+static int
 get_secondary_fd(int fd)
 {
 	int fd2;

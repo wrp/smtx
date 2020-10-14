@@ -46,6 +46,9 @@ handle_osc(struct pty *p, const char *arg)
 	case 60:
 		show_row(parm);
 		break;
+	case 61:
+		show_layout(parm);
+		break;
 	}
 }
 
