@@ -18,7 +18,6 @@
 /* This file contains descripive functions that should only ever be
  * used by the test harness.
  */
-#ifndef NDEBUG
 #include "smtx.h"
 
 static size_t
@@ -192,7 +191,7 @@ describe_state(char *desc, size_t siz)
 	return len;
 }
 
-void
+static void
 show_layout(const char *arg)
 {
 	char buf[1024] = "layout: ";
@@ -207,7 +206,7 @@ show_layout(const char *arg)
 	rewrite(STDOUT_FILENO, buf, s + w + 1);
 }
 
-void
+static void
 show_row(const char *arg)
 {
 	int row = strtol(arg, NULL, 10);
@@ -217,10 +216,9 @@ show_row(const char *arg)
 	int k = snprintf(buf, sizeof buf, "row %d:(%zd)%s", row, s, val);
 	rewrite(1, buf, k < (int)sizeof buf ? k : (int)sizeof buf);
 }
-#endif
 
 void
-show_state(const char *arg)
+show_status(const char *arg)
 {
 	char buf[1024];
 	if( *arg == 'r' ) {

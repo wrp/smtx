@@ -187,8 +187,4 @@ extern action set_width;
 extern action swap;
 
 /* Debugging/test harness */
-extern action show_state;
-#ifndef NDEBUG
-extern action show_layout;
-extern action show_row;
-#endif
+extern action show_status;

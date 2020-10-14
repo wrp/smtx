@@ -683,7 +683,7 @@ build_bindings(void)
 	add_key(m->keys, L'L', resize, "L");
 	add_key(m->keys, L'H', resize, "H");
 	add_key(m->keys, L'q', quit, NULL);
-	add_key(m->keys, L'Q', show_state, "");
+	add_key(m->keys, L'Q', show_status, "");
 	add_key(m->keys, L's', swap, NULL);
 	add_key(m->keys, L't', new_tabstop, NULL);
 	add_key(m->keys, L'W', set_width, NULL);
