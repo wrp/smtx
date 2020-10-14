@@ -16,7 +16,9 @@
  */
 
 /* This file contains descripive functions that should only ever be
- * used by the test harness.
+ * used by the test harness.  Note that this is not really true: it might
+ * be convenient to have the ability to display state in the terminal,
+ * so we should clean this code up and expect it to remain in production.
  */
 #include "smtx.h"
 
