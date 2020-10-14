@@ -661,8 +661,6 @@ build_bindings(void)
 
 	m = &S.modes[control];
 	initialize_mode(m, bad_key);
-	add_key(m->keys, L':', transition, "command");
-
 	add_key(m->keys, S.ctlkey, transition, "*enter");
 	add_key(m->keys, L'\r', transition, "enter");
 	add_key(m->keys, L'\n', transition, "enter");
@@ -673,7 +671,6 @@ build_bindings(void)
 	/* If default bindings for scrollh are changed, edit README.rst */
 	add_key(m->keys, L'>', scrollh, ">");
 	add_key(m->keys, L'<', scrollh, "<");
-
 	add_key(m->keys, L'=', equalize, NULL);
 	add_key(m->keys, L'c', create, NULL);
 	add_key(m->keys, L'C', create, "C");
@@ -702,10 +699,6 @@ build_bindings(void)
 	add_key(m->keys, L'7', digit, "7");
 	add_key(m->keys, L'8', digit, "8");
 	add_key(m->keys, L'9', digit, "9");
-
-	m = &S.modes[command];
-	initialize_mode(m, append_command);
-	add_key(m->keys, L'\r', transition, "enter");
 
 	add_key(code_keys, KEY_RESIZE, reshape_root, NULL);
 	add_key(code_keys, KEY_F(1), send, "\033OP");
@@ -760,11 +753,8 @@ main_loop(void)
 			reshape_root(NULL);
 		}
 		draw(S.c);
-		char *s = *S.errmsg ? S.errmsg : S.command;
-		if( *s || S.mode == command ) {
-			int iscmd = S.mode == command;
-			(iscmd ? wattroff : wattron)(S.werr, A_REVERSE);
-			mvwprintw(S.werr, 0, 0, "%s%s", iscmd ? ":" : "", s);
+		if( *S.errmsg ) {
+			mvwprintw(S.werr, 0, 0, "%s", S.errmsg);
 			wclrtoeol(S.werr);
 			draw_pane(S.werr, LINES - 1, 0);
 		}
@@ -859,6 +849,7 @@ init(void)
 	start_color();
 	use_default_colors();
 	resize_pad(&S.werr, 1, COLS);
+	wattron(S.werr, A_REVERSE);
 	create(NULL);
 	S.f = S.c;
 	if( S.c == NULL || S.werr == NULL ) {

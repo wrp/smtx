@@ -48,8 +48,6 @@ TODO:
 	Redo the whole architecture and dump the tree structure.  Windows
 	should just be in a list with size and origin.
 
-	Add readline support for command mode.  (Or get rid of command mode.)
-
 BUGS:
 	Need to handle memory allocation errors more thoroughly.
 

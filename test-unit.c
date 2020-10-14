@@ -142,7 +142,6 @@ int
 test_command(int fd)
 {
 	send_cmd(fd, NULL, ":bad_key");
-	send_cmd(fd, "unknown function: xaqx", ":xaqx   with arg");
 	return 0;
 }
 

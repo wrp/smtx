@@ -18,17 +18,6 @@
 #include "smtx.h"
 
 void
-append_command(const char *arg)
-{
-	assert( *arg == 1 );
-	unsigned len = strlen(S.command);
-	if( len < sizeof S.command - 1 ) {
-		S.command[len++] = arg[1];
-		S.command[len] = '\0';
-	}
-}
-
-void
 attach(const char *arg)
 {
 	struct canvas *n = S.f;
@@ -86,38 +75,6 @@ equalize(const char *arg)
 	(void)arg;
 	balance(S.f);
 	S.reshape = 1;
-}
-
-/* lut of callable functions */
-static struct name_func_siz {
-	const char *name;
-	action *f;
-	size_t s;
-} nfs_lut[] = {
-	{ "bad_key", bad_key, 7 },
-#ifndef NDEBUG
-	{ "show_state", show_state, 10 },
-	{ "show_layout", show_layout, 11 },
-#endif
-	{ NULL, NULL, 0 }
-};
-static void
-execute(char *arg)
-{
-	struct name_func_siz *nfs = nfs_lut;
-	for( ; nfs->name; nfs += 1 ) {
-		if( !strncmp(nfs->name, arg, nfs->s) ) {
-			nfs->f(arg + nfs->s);
-			break;
-		}
-	}
-	if( !nfs->name ) {
-		char *space = strchr(arg, ' ');
-		if( space ) {
-			*space = '\0';
-		}
-		err_check(1, "unknown function: %s", arg);
-	}
 }
 
 static struct canvas *
@@ -365,16 +322,10 @@ transition(const char *arg)
 		arg += 1;
 	}
 	S.errmsg[0] = 0; /* Clear any existing error message */
-	if( S.mode == command ) {
-		execute(S.command);
-	}
-	S.command[0] = 0;
 	if( ! strcmp(arg, "enter") ) {
 		S.mode = enter;
 	} else if( ! strcmp(arg, "control") ) {
 		S.mode = control;
-	} else if( ! strcmp(arg, "command") ) {
-		S.mode = command;
 	}
 	scrollbottom(S.f);
 }

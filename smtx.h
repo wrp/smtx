@@ -100,14 +100,13 @@ struct state {
 	int history; /* Size of newly created ptys */
 	int count;
 	struct mode modes[3];
-	enum { enter, control, command } mode; /* The current mode */
+	enum { enter, control } mode; /* The current mode */
 	struct canvas *c;  /* Root of all canvasses */
 	struct canvas *f;  /* Currently focused canvas */;
 	struct pty *p;     /* Head of list of all pty */
 	fd_set fds;
 	WINDOW *werr;
 	int reshape;
-	char command[256];
 	char errmsg[256];
 };
 
@@ -167,7 +166,6 @@ extern int resize_pad(WINDOW **, int, int);
 extern void reshape_window(struct pty *);
 extern void reshape(struct canvas *n, int y, int x, int h, int w);
 
-extern action append_command;
 extern action attach;
 extern action bad_key;
 extern action transition;
