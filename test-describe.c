@@ -223,8 +223,12 @@ void
 show_state(const char *arg)
 {
 	char buf[1024];
-	int k = sprintf(buf, "state: ");
-	size_t s = describe_state(buf + k, sizeof buf - k);
-	rewrite(1, buf, s + k);
-	show_layout(*arg ? arg : "53");
+	if( *arg == 'r' ) {
+		show_row(arg + 1);
+	} else {
+		int k = sprintf(buf, "state: ");
+		size_t s = describe_state(buf + k, sizeof buf - k);
+		rewrite(1, buf, s + k);
+		show_layout(*arg ? arg : "53");
+	}
 }

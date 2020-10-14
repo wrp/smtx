@@ -245,7 +245,7 @@ get_row(int fd, int row, char *buf, size_t siz)
 	int fd2;
 
 	fd2 = get_secondary_fd(fd);
-	int len = snprintf(buf, siz, "\033]60;%d\007", row - 1);
+	int len = snprintf(buf, siz, "\033]62;r%d\007", row - 1);
 	write(fd2, buf, len);
 	close(fd2);
 
