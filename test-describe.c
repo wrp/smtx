@@ -200,12 +200,14 @@ show_layout(const char *arg)
 	int w = strlen(buf);
 	int flag = strtol(*arg == ';' ? arg + 1 : arg, NULL, 10);
 	struct canvas *c = flag & 0x20 ? S.f : S.c;
-	size_t s = describe_layout(buf + w, sizeof buf - w - 1, c, flag);
+	size_t s = describe_layout(buf + w, sizeof buf - w - 3, c, flag);
 	for( size_t i = w; i < w + s; i++ ) {
 		assert( buf[i] != ':' );
 	}
-	buf[w + s] = ':';
-	rewrite(STDOUT_FILENO, buf, s + w + 1);
+	buf[w + s++] = ':';
+	buf[w + s++] = '\r';
+	buf[w + s++] = '\n';
+	rewrite(STDOUT_FILENO, buf, s + w);
 }
 
 static void
@@ -226,7 +228,7 @@ show_status(const char *arg)
 	if( *arg == 'r' ) {
 		show_row(arg + 1);
 	} else {
-		int k = sprintf(buf, "state: ");
+		int k = sprintf(buf, "\r\nstate: ");
 		size_t s = describe_state(buf + k, sizeof buf - k);
 		rewrite(1, buf, s + k);
 		show_layout(*arg ? arg : "53");
