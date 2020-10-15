@@ -97,7 +97,7 @@ get_layout(int fd, int flag, char *buf, size_t siz)
 	ssize_t s = 0;
 	const char *end = buf + siz;
 	int fd2 = get_secondary_fd(fd);
-	int len = snprintf(buf, siz, "\033]62;%d\007", flag);
+	int len = snprintf(buf, siz, "\033]62;%x\007", flag);
 	write(fd2, buf, len);
 	close(fd2);
 

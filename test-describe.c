@@ -30,7 +30,7 @@ describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 	int recurse = flags & 0x1;
 	int show_id = flags & 0x4;
 	int show_pos = flags & 0x10;
-	int show_2nd = flags & 0x20;  /* TODO: Fix: this is used twice */
+	int show_2nd = flags & 0x40;
 
 	char *isfocus = recurse && c == S.f ? "*" : "";
 	d += snprintf(d, e - d, "%s%dx%d", isfocus, c->extent.y, c->extent.x);
@@ -198,7 +198,7 @@ show_layout(const char *arg)
 {
 	char buf[1024] = "layout: ";
 	int w = strlen(buf);
-	int flag = strtol(*arg == ';' ? arg + 1 : arg, NULL, 10);
+	int flag = strtol(*arg == ';' ? arg + 1 : arg, NULL, 16);
 	struct canvas *c = flag & 0x20 ? S.f : S.c;
 	size_t s = describe_layout(buf + w, sizeof buf - w - 3, c, flag);
 	for( size_t i = w; i < w + s; i++ ) {
@@ -231,6 +231,6 @@ show_status(const char *arg)
 		int k = sprintf(buf, "\r\nstate: ");
 		size_t s = describe_state(buf + k, sizeof buf - k);
 		rewrite(1, buf, s + k);
-		show_layout(*arg ? arg : "53");
+		show_layout(*arg ? arg : "55");
 	}
 }
