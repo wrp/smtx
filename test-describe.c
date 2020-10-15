@@ -30,7 +30,7 @@ describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 	int recurse = flags & 0x1;
 	int show_id = flags & 0x4;
 	int show_pos = flags & 0x10;
-	int show_2nd = flags & 0x20;
+	int show_2nd = flags & 0x20;  /* TODO: Fix: this is used twice */
 
 	char *isfocus = recurse && c == S.f ? "*" : "";
 	d += snprintf(d, e - d, "%s%dx%d", isfocus, c->extent.y, c->extent.x);

@@ -689,6 +689,18 @@ test_pnm(int fd)
 }
 
 int
+test_prune(int fd)
+{
+	int rv = validate_row(fd, 1, "%-80s", "ps1>");
+	send_cmd(fd, NULL, "3c"); /* Create 3 new canvasses */
+	send_cmd(fd, NULL, "j");  /* Move down 1 */
+	rv |= check_layout(fd, 0x1, "5x80; *5x80; 5x80; 5x80");
+	send_cmd(fd, NULL, "x");  /* prune */
+	rv |= check_layout(fd, 0x1, "5x80; *8x80; 8x80");
+	return rv;
+}
+
+int
 test_quit(int fd)
 {
 	send_cmd(fd, NULL, "%dq", SIGBUS); /* Invalid signal */

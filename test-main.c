@@ -414,6 +414,7 @@ main(int argc, char *const argv[])
 	F(test_nel, "TERM", "smtx");
 	F(test_pager ,"MORE", "");
 	F(test_pnm);
+	F(test_prune);
 	F(test_quit);
 	F(test_repc);
 	F(test_resend);
