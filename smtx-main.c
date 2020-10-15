@@ -179,11 +179,17 @@ new_pty(int rows, int cols)
 struct canvas *
 newcanvas(void)
 {
-	struct canvas *n = calloc(1, sizeof *n);
+	struct canvas *n = S.free.c ? S.free.c : calloc(1, sizeof *n);
+	if( S.free.c ) {
+		S.free.c = n->c[0];
+		n->c[0] = n->c[1] = NULL;
+		n->manualscroll = n->offset.y = n->offset.x = 0;
+	}
 	if( !n ) {
 		err_check(1, "calloc");
 	} else if( ( n->p = new_pty(LINES, MAX(COLS, S.width))) == NULL ) {
-		free(n);
+		n->c[0] = S.free.c;
+		S.free.c = n;
 		n = NULL;
 	} else {
 		n->split_point[0] = 1.0;
@@ -196,17 +202,6 @@ void
 focus(struct canvas *n)
 {
 	S.f = n ? n : S.c;
-}
-
-static void
-freecanvas(struct canvas *n)
-{
-	if( n ) {
-		delwinnul(&n->wtit);
-		delwinnul(&n->wdiv);
-		delwinnul(&n->bkg);
-		free(n);
-	}
 }
 
 static void
@@ -380,7 +375,8 @@ prune(const char *arg)
 	focus(n ? n : p);
 	for( ; f; f = n ) {
 		n = f->c[!d];
-		freecanvas(f);
+		f->c[0] = S.free.c;
+		S.free.c = f;
 	}
 	S.reshape = 1;
 }
