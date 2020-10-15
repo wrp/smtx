@@ -106,12 +106,6 @@ free_proc(struct pty *p)
 		free(p->tabs);
 		delwinnul(&p->pri.win);
 		delwinnul(&p->alt.win);
-		struct pty *t, *prev = NULL;
-		for( t = S.p; t; prev = t, t = t->next ) {
-			if( t == p ) {
-				*(prev ? &prev->next : &S.p) = t->next;
-			}
-		}
 		free(p);
 	}
 }
@@ -136,6 +130,8 @@ resize_pad(WINDOW **p, int h, int w)
 static struct pty *
 new_pty(int rows, int cols)
 {
+	/* TODO: reuse pty instead of always allocating new
+	Need to figure out the UX for reaping. */
 	struct pty *p = calloc(1, sizeof *p);
 	assert( rows <= S.history );
 	if( ! err_check(p == NULL, "new_pty") ) {
@@ -475,21 +471,17 @@ wait_child(struct pty *p)
 		}
 		FD_CLR(p->fd, &S.fds);
 		err_check(close(p->fd) ,"close fd %d", p->fd);
-		p->fd = -1;
-		struct pty *t, *prev = NULL;
-		for( t = S.p; t; prev = t, t = t->next ) {
-			if( t == p ) {
-				*(prev ? &prev->next : &S.p) = p->next;
-			}
-		}
-		*(prev ? &prev->next : &S.p) = p;
-		p->next = NULL;
 		snprintf(p->status, sizeof p->status, fmt, k);
+		p->fd = -1; /* (1) */
 		p->id = p->pid;
 		p->pid = -1;
 		S.reshape = 1;
 	}
 }
+/* (1) We do not free(p) because we wish to retain error messages.
+ * The windows will persist until the user explicitly destroys them, so
+ * that any error messages can be viewed until then.
+ */
 
 static void
 getinput(void) /* check stdin and all pty's for input. */
@@ -521,6 +513,7 @@ getinput(void) /* check stdin and all pty's for input. */
 	}
 	for( struct pty *t = S.p; t; t = t->next ) {
 		if( t->fd > 0 && FD_ISSET(t->fd, &sfds) ) {
+			FD_CLR(t->fd, &sfds);
 			char iobuf[BUFSIZ];
 			ssize_t r = read(t->fd, iobuf, sizeof iobuf);
 			if( r > 0 ) {
