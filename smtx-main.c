@@ -615,7 +615,7 @@ add_key(struct handler *b, wchar_t k, action act, const char *arg)
  * wctomb( ..., k) followed by the resultant multi-byte value.
  */
 static char key_lut[128 * 2];
-static char wc_lut[(KEY_MAX - KEY_MIN) * ( 1 + MB_LEN_MAX )];
+static char wc_lut[(KEY_MAX - KEY_MIN + 1) * ( 1 + MB_LEN_MAX )];
 
 static void
 initialize_mode(struct mode *m, action a)
