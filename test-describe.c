@@ -225,10 +225,19 @@ void
 show_status(const char *arg)
 {
 	char buf[1024];
+	int k;
 	if( *arg == 'r' ) {
 		show_row(arg + 1);
-	} else {
-		int k = sprintf(buf, "\r\nstate: ");
+	} else switch( S.count ) {
+	case 1:
+		for( struct pty *p = S.p; p; p = p->next ) {
+			k = snprintf(buf, sizeof buf, "\r\n%d %d %s",
+				p->id, p->pid, p->status);
+			rewrite(1, buf, k);
+		}
+		break;
+	default:
+		k = sprintf(buf, "\r\nstate: ");
 		size_t s = describe_state(buf + k, sizeof buf - k);
 		rewrite(1, buf, s + k);
 		show_layout(*arg ? arg : "55");
