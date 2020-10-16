@@ -358,13 +358,13 @@ prune(const char *arg)
 	struct canvas *f = S.f;
 	struct canvas *p = f->parent;
 	int d = f->typ;
-	struct canvas *n = f->c[d];
+	struct canvas *child = f->c[d];
 	(void)arg;
 
-	if( n ) {
-		n->parent = p;
-		n->origin = f->origin;
-		*(p ? &p->c[d] : &S.c) = n;
+	if( child ) {
+		child->parent = p;
+		child->origin = f->origin;
+		*(p ? &p->c[d] : &S.c) = child;
 	} else if( p ) {
 		p->split_point[d] = 1.0;
 		p->c[d] = NULL;
@@ -372,9 +372,9 @@ prune(const char *arg)
 		S.c = NULL;
 	}
 	assert( S.f == f );
-	focus(n ? n : p);
-	for( ; f; f = n ) {
-		n = f->c[!d];
+	focus(child ? child : p);
+	for( ; f; f = child ) {
+		child = f->c[!d];
 		f->c[0] = S.free.c;
 		S.free.c = f;
 	}
