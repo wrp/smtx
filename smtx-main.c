@@ -645,7 +645,6 @@ initialize_mode(struct mode *m, action a)
 void
 build_bindings(void)
 {
-	assert( KEY_MAX - KEY_MIN < 2048 ); /* Avoid overly large luts */
 	for( wchar_t k = KEY_MIN; k < KEY_MAX; k++ ) {
 		assert( MB_LEN_MAX < 128 );
 		int i = (k - KEY_MIN) * (1 + MB_LEN_MAX);
