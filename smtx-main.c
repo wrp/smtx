@@ -356,23 +356,23 @@ static void
 prune(const char *arg)
 {
 	struct canvas *f = S.f;
-	struct canvas *p = f->parent;
+	struct canvas *parent = f->parent;
 	int d = f->typ;
 	struct canvas *child = f->c[d];
 	(void)arg;
 
 	if( child ) {
-		child->parent = p;
+		child->parent = parent;
 		child->origin = f->origin;
-		*(p ? &p->c[d] : &S.c) = child;
-	} else if( p ) {
-		p->split_point[d] = 1.0;
-		p->c[d] = NULL;
+		*(parent ? &parent->c[d] : &S.c) = child;
+	} else if( parent ) {
+		parent->split_point[d] = 1.0;
+		parent->c[d] = NULL;
 	} else {
 		S.c = NULL;
 	}
 	assert( S.f == f );
-	focus(child ? child : p);
+	focus(child ? child : parent);
 	for( ; f; f = child ) {
 		child = f->c[!d];
 		f->c[0] = S.free.c;
