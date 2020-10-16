@@ -172,14 +172,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	p0[0] = argv && argc > 0 ? argv[0] : 0;
 	p0[1] = argv && argc > 0 ? argv[0] : 1;
 	p1 = argv && argc > 1 ? argv[1] : 1;
-	#ifndef NDEBUG
-	{
-		int x1, y1;
-		getyx(win, y1, x1);
-		assert( y1 == s->c.y );
-		assert( x1 == s->c.x );
-	}
-	#endif
+	getyx(win, s->c.y, s->c.x);
 	getmaxyx(win, tos, t1);
 
 	tos -= p->ws.ws_row;
