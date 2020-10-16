@@ -247,8 +247,8 @@ static struct state csi_intermediate = {
 		[0x1a]          = {docontrol, &ground},
 		[0x1b]          = {ignore, &esc},
 		[0x1c ... 0x1f] = {docontrol, NULL},
-		[0x20 ... 0x2f] = {collect, NULL},
-		[0x30 ... 0x3f] = {ignore, &csi_ignore},
+		[0x20 ... 0x2f] = {collect, NULL},       /* !"#$%&'()*+,-./ */
+		[0x30 ... 0x3f] = {ignore, &csi_ignore}, /* 0-9 :;<=>? */
 		[0x40 ... 0x7e] = {docsi, &ground},
 		[0x7f]          = {ignore, NULL},
 	}
@@ -261,9 +261,9 @@ static struct state osc_string = {
 		[0x01 ... 0x06] = {docontrol, NULL},
 		[0x07]          = {doosc, &ground},
 		[0x08 ... 0x09] = {docontrol, NULL},
-		[0x0a]          = {doosc, &ground},
+		[0x0a]          = {doosc, &ground},  /* \n */
 		[0x0b ... 0x0c] = {docontrol, NULL},
-		[0x0d]          = {doosc, &ground},
+		[0x0d]          = {doosc, &ground},  /* \r */
 		[0x0e ... 0x17] = {docontrol, NULL},
 		[0x18]          = {docontrol, &ground},
 		[0x19]          = {docontrol, NULL},
