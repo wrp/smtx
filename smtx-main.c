@@ -102,11 +102,17 @@ delwinnul(WINDOW **w)
 static void
 free_proc(struct pty *p)
 {
-	if( p != NULL ) {
-		free(p->tabs);
-		delwinnul(&p->pri.win);
-		delwinnul(&p->alt.win);
-		free(p);
+	/* Move p to the free list (if fd == -1) */
+	assert( p != NULL );
+	if( p->fd == -1 ) {
+               struct pty *t, *prev = NULL;
+               for( t = S.p; t; prev = t, t = t->next ) {
+                       if( t == p ) {
+                               *(prev ? &prev->next : &S.p) = t->next;
+                       }
+               }
+	       p->next = S.free.p;
+	       S.free.p = p;
 	}
 }
 
@@ -130,9 +136,11 @@ resize_pad(WINDOW **p, int h, int w)
 static struct pty *
 new_pty(int rows, int cols)
 {
-	/* TODO: reuse pty instead of always allocating new
-	Need to figure out the UX for reaping. */
-	struct pty *p = calloc(1, sizeof *p);
+	struct pty *p = S.free.p ? S.free.p : calloc(1, sizeof *p);
+
+	if( S.free.p ) {
+		S.free.p = p->next;
+	}
 	assert( rows <= S.history );
 	if( ! err_check(p == NULL, "new_pty") ) {
 		const char *sh = getshell();
@@ -168,7 +176,10 @@ new_pty(int rows, int cols)
 			bname = bname ? bname + 1 : sh;
 			strncpy(p->status, bname, sizeof p->status - 1);
 		} else {
-			free_proc(p);
+			free(p->tabs);
+			delwinnul(&p->pri.win);
+			delwinnul(&p->alt.win);
+			free(p);
 			err_check(1, "new_pty");
 			p = NULL;
 		}
@@ -359,8 +370,10 @@ prune(const char *arg)
 	struct canvas *parent = f->parent;
 	int d = f->typ;
 	struct canvas *child = f->c[d];
-	(void)arg;
 
+	if(arg && *arg) {
+		free_proc(f->p);
+	}
 	if( child ) {
 		child->parent = parent;
 		child->origin = f->origin;
@@ -371,10 +384,10 @@ prune(const char *arg)
 	} else {
 		S.c = NULL;
 	}
-	assert( S.f == f );
 	focus(child ? child : parent);
-	for( ; f; f = child ) {
-		child = f->c[!d];
+	/* Push all non-dominant children to the free list */
+	for( struct canvas *next = f; next; f = next ) {
+		next = f->c[!d];
 		f->c[0] = S.free.c;
 		S.free.c = f;
 	}
@@ -689,6 +702,7 @@ build_bindings(void)
 	add_key(m->keys, L'W', set_width, NULL);
 	add_key(m->keys, L'Z', set_history, NULL);
 	add_key(m->keys, L'x', prune, NULL);
+	add_key(m->keys, L'X', prune, "X");
 	add_key(m->keys, L'0', digit, "0");
 	add_key(m->keys, L'1', digit, "1");
 	add_key(m->keys, L'2', digit, "2");
