@@ -637,7 +637,7 @@ build_bindings(void)
 		assert( MB_LEN_MAX < 128 );
 		int i = (k - KEY_MIN) * (1 + MB_LEN_MAX);
 		int v = wctomb(wc_lut + i + 1, k);
-		assert( v < 128 && v >= -2 );
+		assert( v < 128 && v > -2 );
 		wc_lut[ i ] = v == -1 ? 0 : v;
 		add_key(code_keys, k, passthru, wc_lut + i);
 	}
