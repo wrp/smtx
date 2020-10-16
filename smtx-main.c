@@ -607,21 +607,21 @@ add_key(struct handler *b, wchar_t k, action act, const char *arg)
  * receive a pointer into these tables.  The tables
  * are constructed so that passthru gets a read count in the first position,
  * and writes that many subsequent char to the underlying fd.
- * That is, key_lut[3x] will be set to 1 and key_lut[3x+1] == x
+ * That is, key_lut[2x] will be set to 1 and key_lut[2x+1] == x
  * This way, passthru reads the 1 and writes 1 char of data.
  *
  * wc_lut is built from the output of wctomb, so that for k such that
  * k % (1 + MB_LEN_MAX) == 0, wc_lut[k] is the value returned by
- * wctomb( ..., k) and the char after is the resultant multi-byte value.
+ * wctomb( ..., k) followed by the resultant multi-byte value.
  */
-static char key_lut[128 * 3];
+static char key_lut[128 * 2];
 static char wc_lut[(KEY_MAX - KEY_MIN) * ( 1 + MB_LEN_MAX )];
 
 static void
 initialize_mode(struct mode *m, action a)
 {
 	for( wchar_t k = 0; k < 128; k++ ) {
-		add_key(m->keys, k, a, key_lut + 3 * k);
+		add_key(m->keys, k, a, key_lut + 2 * k);
 	}
 }
 
@@ -630,9 +630,8 @@ build_bindings(void)
 {
 	assert( KEY_MAX - KEY_MIN < 2048 ); /* Avoid overly large luts */
 	for( unsigned i = 0; i < 128; i += 1 ) {
-		key_lut[3 * i] = 1;
-		key_lut[3 * i + 1] = i;
-		key_lut[3 * i + 2] = 0;
+		key_lut[2 * i] = 1;
+		key_lut[2 * i + 1] = i;
 	}
 	for( wchar_t k = KEY_MIN; k < KEY_MAX; k++ ) {
 		assert( MB_LEN_MAX < 128 );
