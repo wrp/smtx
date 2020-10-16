@@ -231,8 +231,8 @@ get_secondary_fd(int fd)
 		}
 	} while( *p != ')' && ++p < end -1 );
 	*p = '\0';
-	if( (fd2 = open(path, O_WRONLY)) == -1) {
-		err(1, path);
+	if( (fd2 = open(path, O_WRONLY)) == -1 ) {
+		err(1, "%s", path);
 	}
 	return fd2;
 }
