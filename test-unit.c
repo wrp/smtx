@@ -99,7 +99,12 @@ test_attach(int fd)
 int
 test_bighist(int fd)
 {
-	/* Use -s INT_MAX to trigger a memory allocation error. */
+	/*
+	 * Use -s INT_MAX to trigger a memory allocation error.
+	 * This test always returns 0.  The main test driver is expecting
+	 * the underlying process to fail, and will flag the test as a failure
+	 * if that does not happen.
+	 */
 	(void)fd;
 	return 0;
 }
