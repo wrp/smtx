@@ -868,7 +868,7 @@ init(void)
 	S.f = S.c;
 	if( S.c == NULL || S.werr == NULL ) {
 		endwin();
-		fprintf(stderr, "Unable to create root window\n");
+		err(EXIT_FAILURE, "Unable to create root window");
 	}
 }
 
@@ -880,7 +880,7 @@ smtx_main(int argc, char *argv[])
 	main_loop();
 	endwin();
 	if( interrupted ) {
-		write(STDERR_FILENO, "\nterminated\n", 12);
+		fputs("terminated", stderr);
 	}
 	return EXIT_SUCCESS;
 }

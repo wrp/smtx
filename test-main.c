@@ -388,7 +388,7 @@ main(int argc, char *const argv[])
 	F(test_ack);
 	F(test_alt);
 	F(test_attach);
-	F(test_bighist, "NOWAIT", "1", "args", "-s", bigint);
+	F(test_bighist, "NOWAIT", "1", "STATUS", "1", "args", "-s", bigint);
 	F(test_bighist2);
 	F(test_changehist, "args", "-s", "128");
 	F(test_cols, "COLUMNS", "92", "args", "-w", "97");
@@ -539,6 +539,7 @@ execute_test(struct st *v, const char *name)
 	unsetenv("LINES");
 	unsetenv("COLUMNS");
 	unsetenv("NOWAIT");
+	unsetenv("STATUS");
 	for( char **a = v->env; a && *a; a += 2 ) {
 		setenv(a[0], a[1], 1);
 	}
@@ -584,7 +585,11 @@ execute_test(struct st *v, const char *name)
 static int
 check_test_status(int rv, int status, int pty, const char *name)
 {
-	if( WIFEXITED(status) && WEXITSTATUS(status) != 0 ) {
+	char *expect = getenv("STATUS");
+	int expect_stat = expect ? strtol(expect, NULL, 10) : 0;
+	int expected = WIFEXITED(status) && WEXITSTATUS(status) == expect_stat;
+
+	if( ! expected ) {
 		char iobuf[BUFSIZ];
 		ssize_t r = read(pty, iobuf, sizeof iobuf - 1);
 		if( r > 0 ) {
@@ -602,5 +607,5 @@ check_test_status(int rv, int status, int pty, const char *name)
 	if( rv ) {
 		fprintf(stderr, "FAILED: %s\n", name);
 	}
-	return (!rv && WIFEXITED(status)) ? WEXITSTATUS(status) : EXIT_FAILURE;
+	return (!rv && expected) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
