@@ -196,10 +196,9 @@ newcanvas(void)
 		if( (n = S.free.c) != NULL ) {
 			S.free.c = n->c[0];
 		} else {
-			n = calloc(1 , sizeof *n);
+			check((n = calloc(1 , sizeof *n)) != NULL, "calloc");
 		}
-		if( n || check((n = calloc(1 , sizeof *n)) != NULL,
-				"calloc") ) {
+		if( n ) {
 			n->c[0] = n->c[1] = NULL;
 			n->manualscroll = n->offset.y = n->offset.x = 0;
 			n->p = p;
