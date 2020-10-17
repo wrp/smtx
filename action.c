@@ -29,7 +29,7 @@ attach(const char *arg)
 			return;
 		}
 	}
-	err_check(1, "No pty exists with id %d", target);
+	check(0, "No pty exists with id %d", target);
 }
 
 void
@@ -115,13 +115,13 @@ quit(const char *arg)
 	case SIGKILL: case SIGTERM: case SIGUSR1: case SIGHUP:
 	case SIGUSR2: case SIGINT:
 		if( p != -1 ) {
-			err_check(kill(p, s) == -1, "kill %d, %d", p, s);
+			check(kill(p, s) != -1, "kill %d, %d", p, s);
 		} else {
-			err_check(1, "invalid process. No signal sent");
+			check(0, "invalid process. No signal sent");
 		}
 		break;
 	default:
-		err_check(1, "invalid signal: %d", s);
+		check(0, "invalid signal: %d", s);
 	}
 }
 
@@ -310,7 +310,7 @@ swap(const char *arg)
 		t->p = tmp;
 		S.reshape = 1;
 	} else {
-		err_check(1, "Cannot find target canvas");
+		check(0, "Cannot find target canvas");
 	}
 }
 

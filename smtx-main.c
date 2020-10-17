@@ -29,40 +29,40 @@ struct state S = {
 };
 
 int
-err_check(int rv, const char *fmt, ...)
+check(int rv, const char *fmt, ...)
 {
-	if( rv ) {
+	if( !rv ) {
 		int e = errno;
 		va_list ap;
 		va_start(ap, fmt);
 		if( S.werr ) {
 			size_t len = sizeof S.errmsg;
-			int rv = vsnprintf(S.errmsg, len, fmt, ap);
-			if( e && rv + 3 < (int)len ) {
-				strncat(S.errmsg, ": ", len - rv);
-				strncat(S.errmsg, strerror(e), len - rv - 2);
+			int n = vsnprintf(S.errmsg, len, fmt, ap);
+			if( e && n + 3 < (int)len ) {
+				strncat(S.errmsg, ": ", len - n);
+				strncat(S.errmsg, strerror(e), len - n - 2);
 			}
 		} else {
 			errno = e;
-			verrx(rv, fmt, ap);
+			verrx(!rv, fmt, ap);
 		}
 		va_end(ap);
 		errno = e;
 	}
-	return rv;
+	return !!rv;
 }
 
 int
 rewrite(int fd, const char *b, size_t n)
 {
 	const char *e = b + n;
-	int rv = 0;
+	int rv = 1;
 	if( n > 0 ) do {
 		ssize_t s = write(fd, b, e - b);
-		rv = err_check(s < 0 && errno != EINTR, "write to fd %d", fd);
+		rv = check(s >= 0 || errno == EINTR, "write to fd %d", fd);
 		b += s < 0 ? 0 : s;
-	} while( b < e && rv == 0 );
-	return rv;
+	} while( b < e && rv );
+	return !rv;
 }
 
 static const char *
@@ -76,7 +76,7 @@ getshell(void)
 void
 pty_size(struct pty *p)
 {
-	err_check(p->fd != -1 && ioctl(p->fd, TIOCGWINSZ, &p->ws),
+	check(p->fd == -1 || ! ioctl(p->fd, TIOCGWINSZ, &p->ws),
 		"ioctl error getting size of pty %d", p->id);
 }
 
@@ -95,7 +95,7 @@ extend_tabs(struct pty *p, int tabstop)
 static void
 delwinnul(WINDOW **w)
 {
-	err_check((*w ? delwin(*w) : OK) != OK, "Error deleting window");
+	check((*w ? delwin(*w) : OK) == OK, "Error deleting window");
 	*w = NULL;
 }
 
@@ -121,9 +121,9 @@ resize_pad(WINDOW **p, int h, int w)
 {
 	int rv = -1;
 	if( *p ) {
-		err_check(wresize(*p, h, w ) != OK, "Error creating window");
+		check(wresize(*p, h, w ) == OK, "Error creating window");
 	} else if( (*p = newpad(h, w)) == NULL ) {
-		err_check(1, "Error resizing window");
+		check(0, "Error resizing window");
 	} else {
 		wtimeout(*p, 0);
 		scrollok(*p, TRUE);
@@ -142,7 +142,7 @@ new_pty(int rows, int cols)
 		S.free.p = p->next;
 	}
 	assert( rows <= S.history );
-	if( ! err_check(p == NULL, "new_pty") ) {
+	if( check(p != NULL, "new_pty") ) {
 		const char *sh = getshell();
 		p->ws.ws_row = rows - 1;
 		p->ws.ws_col = cols;
@@ -152,7 +152,7 @@ new_pty(int rows, int cols)
 			signal(SIGCHLD, SIG_DFL);
 			execl(sh, sh, NULL);
 			err(EXIT_FAILURE, "exec SHELL='%s'", sh);
-		} else if( ! err_check(p->pid < 0, "forkpty" ) ) {
+		} else if( check(p->pid > 0, "forkpty" ) ) {
 			resize_pad(&p->pri.win, S.history, cols);
 			resize_pad(&p->alt.win, S.history, cols);
 		}
@@ -180,7 +180,7 @@ new_pty(int rows, int cols)
 			delwinnul(&p->pri.win);
 			delwinnul(&p->alt.win);
 			free(p);
-			err_check(1, "new_pty");
+			check(0, "new_pty");
 			p = NULL;
 		}
 	}
@@ -198,7 +198,7 @@ newcanvas(void)
 		} else {
 			n = calloc(1 , sizeof *n);
 		}
-		if( n || ! err_check((n = calloc(1 , sizeof *n)) == NULL,
+		if( n || check((n = calloc(1 , sizeof *n)) != NULL,
 				"calloc") ) {
 			n->c[0] = n->c[1] = NULL;
 			n->manualscroll = n->offset.y = n->offset.x = 0;
@@ -277,8 +277,8 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 void
 reshape_window(struct pty *p)
 {
-	err_check(ioctl(p->fd, TIOCSWINSZ, &p->ws), "ioctl on %d", p->id);
-	err_check(kill(p->pid, SIGWINCH), "send WINCH to %d", (int)p->pid);
+	check(ioctl(p->fd, TIOCSWINSZ, &p->ws) == 0, "ioctl on %d", p->id);
+	check(kill(p->pid, SIGWINCH) == 0, "send WINCH to %d", (int)p->pid);
 }
 
 static void
@@ -469,7 +469,7 @@ wait_child(struct pty *p)
 	int status, k = 0;
 	const char *fmt = "exited %d";
 	switch( waitpid(p->pid, &status, WNOHANG) ) {
-	case -1: err_check(1, "waitpid %d", p->pid);
+	case -1: check(0, "waitpid %d", p->pid);
 	case 0: break;
 	default:
 		if( WIFEXITED(status) ) {
@@ -480,7 +480,7 @@ wait_child(struct pty *p)
 			k = WTERMSIG(status);
 		}
 		FD_CLR(p->fd, &S.fds);
-		err_check(close(p->fd) ,"close fd %d", p->fd);
+		check(close(p->fd) == 0, "close fd %d", p->fd);
 		snprintf(p->status, sizeof p->status, fmt, k);
 		p->fd = -1; /* (1) */
 		p->id = p->pid;
@@ -498,7 +498,7 @@ getinput(void) /* check stdin and all pty's for input. */
 {
 	fd_set sfds = S.fds;
 	if( select(S.p->fd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
-		err_check(errno != EINTR , "select");
+		check(errno == EINTR, "select");
 		return;
 	}
 	if( FD_ISSET(STDIN_FILENO, &sfds) ) {
@@ -821,7 +821,7 @@ parse_args(int argc, char *const*argv)
 			break;
 		default:
 			errno = 0;
-			err_check(1, "Unknown option: %c", optopt);
+			check(0, "Unknown option: %c", optopt);
 			exit(EXIT_FAILURE);
 		}
 	}
