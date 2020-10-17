@@ -190,21 +190,22 @@ new_pty(int rows, int cols)
 struct canvas *
 newcanvas(void)
 {
-	struct canvas *n = S.free.c ? S.free.c : calloc(1, sizeof *n);
-	if( S.free.c ) {
-		S.free.c = n->c[0];
-		n->c[0] = n->c[1] = NULL;
-		n->manualscroll = n->offset.y = n->offset.x = 0;
-	}
-	if( !n ) {
-		err_check(1, "calloc");
-	} else if( ( n->p = new_pty(LINES, MAX(COLS, S.width))) == NULL ) {
-		n->c[0] = S.free.c;
-		S.free.c = n;
-		n = NULL;
-	} else {
-		n->split_point[0] = 1.0;
-		n->split_point[1] = 1.0;
+	struct canvas *n = NULL;
+	struct pty *p = new_pty(LINES, MAX(COLS, S.width));
+	if( p != NULL ) {
+		if( (n = S.free.c) != NULL ) {
+			S.free.c = n->c[0];
+		} else {
+			n = calloc(1 , sizeof *n);
+		}
+		if( n || ! err_check((n = calloc(1 , sizeof *n)) == NULL,
+				"calloc") ) {
+			n->c[0] = n->c[1] = NULL;
+			n->manualscroll = n->offset.y = n->offset.x = 0;
+			n->p = p;
+			n->split_point[0] = 1.0;
+			n->split_point[1] = 1.0;
+		}
 	}
 	return n;
 }
