@@ -66,6 +66,7 @@ test test_ack;
 test test_alt;
 test test_attach;
 test test_bighist;
+test test_bighist2;
 test test_changehist;
 test test_cols;
 test test_csr;

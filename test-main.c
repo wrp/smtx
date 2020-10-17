@@ -389,6 +389,7 @@ main(int argc, char *const argv[])
 	F(test_alt);
 	F(test_attach);
 	F(test_bighist, "NOWAIT", "1", "args", "-s", bigint);
+	F(test_bighist2);
 	F(test_changehist, "args", "-s", "128");
 	F(test_cols, "COLUMNS", "92", "args", "-w", "97");
 	F(test_csr);

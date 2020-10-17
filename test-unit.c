@@ -105,6 +105,14 @@ test_bighist(int fd)
 }
 
 int
+test_bighist2(int fd)
+{
+	/* Modify the history on the fly to be too large */
+	(void)fd;
+	return 0;
+}
+
+int
 test_changehist(int fd)
 {
 	int rv = 0;
