@@ -484,6 +484,15 @@ wait_child(struct pty *p)
 		check(close(p->fd) == 0, "close fd %d", p->fd);
 		snprintf(p->status, sizeof p->status, fmt, k);
 		p->fd = -1; /* (1) */
+		struct pty *t, *prev = NULL;
+		/* Push this pty to the end of the list */
+		for( t = S.p; t; prev = t, t = t->next ) {
+		       if( t == p ) {
+			       *(prev ? &prev->next : &S.p) = p->next;
+		       }
+		}
+		*(prev ? &prev->next : &S.p) = p;
+		p->next = NULL;
 		p->id = p->pid;
 		p->pid = -1;
 		S.reshape = 1;
@@ -764,7 +773,7 @@ handle_term(int s)
 static void
 main_loop(void)
 {
-	while( S.c != NULL && S.p && ! interrupted ) {
+	while( S.c != NULL && S.p && S.p->fd > 0 && ! interrupted ) {
 		if( S.reshape ) {
 			reshape_root(NULL);
 		}
