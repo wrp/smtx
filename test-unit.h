@@ -18,6 +18,7 @@
 #include <ctype.h>
 #include <err.h>
 #include <errno.h>
+#include <limits.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -67,7 +68,6 @@ test test_ack;
 test test_alt;
 test test_attach;
 test test_bighist;
-test test_bighist2;
 test test_changehist;
 test test_cols;
 test test_csr;

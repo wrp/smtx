@@ -141,7 +141,9 @@ new_pty(int rows, int cols)
 	if( S.free.p ) {
 		S.free.p = p->next;
 	}
-	assert( rows <= S.history );
+	if( rows > S.history ) {
+		S.history = rows;
+	}
 	if( check(p != NULL, "new_pty") ) {
 		const char *sh = getshell();
 		p->ws.ws_row = rows - 1;

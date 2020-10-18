@@ -110,17 +110,13 @@ test_bighist(int fd)
 }
 
 int
-test_bighist2(int fd)
-{
-	/* Modify the history on the fly to be too large */
-	(void)fd;
-	return 0;
-}
-
-int
 test_changehist(int fd)
 {
 	int rv = 0;
+	char bigint[128];
+
+	snprintf(bigint, sizeof bigint, "%d", INT_MAX);
+
 	/* Test begins with -s 128 */
 	send_cmd(fd, NULL, "120Z"); /* Invalid (too small) */
 	send_txt(fd, "un1>", "PS1=un'1>'; yes | nl -s '' | sed 127q");
@@ -137,6 +133,28 @@ test_changehist(int fd)
 	rv |= validate_row(fd, -105, "un1>%-76s", cmd);
 	rv |= validate_row(fd, -104, "     1%-74s", "y");
 	rv |= validate_row(fd, 23, "%-80s", "un2>");
+
+	/* Create two new windows */
+	send_cmd(fd, NULL, "cc");
+	rv = check_layout(fd, 0x1, "*7x80; 7x80; 7x80");
+
+	/* Set history to an absurdly high number */
+	send_cmd(fd, NULL, "%sZ", bigint);
+
+	/* Kill one window to put an alloc'd pty on the free list */
+	send_txt(fd, "exited", "exit");
+	send_cmd(fd, NULL, "X");
+	rv = check_layout(fd, 0x1, "*11x80; 11x80");
+
+	return 0;
+
+	/* Create one new window */
+	send_cmd(fd, NULL, "c");
+	rv = check_layout(fd, 0x1, "*7x80; 7x80; 7x80");
+
+	/* Fail to create a new window */
+	send_cmd(fd, NULL, "c");
+	rv = check_layout(fd, 0x1, "*7x80; 7x80; 7x80");
 
 	return rv;
 }
