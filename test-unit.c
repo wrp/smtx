@@ -733,6 +733,13 @@ test_prune(int fd)
 	send_cmd(fd, NULL, "l");  /* move right */
 	send_txt(fd, "ps2>", "PS1=ps2'>'");
 	rv |= check_layout(fd, 0x1, "5x80; 8x40; 8x80; *8x39");
+
+	/* Kill last pty and ensure process does not terminate */
+	send_txt(fd, "exited", "exit");
+	rv |= check_layout(fd, 0x1, "5x80; 8x40; 8x80; *8x39");
+
+	send_cmd(fd, NULL, "h");  /* move left*/
+	rv |= check_layout(fd, 0x1, "5x80; *8x40; 8x80; 8x39");
 	return rv;
 }
 
