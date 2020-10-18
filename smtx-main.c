@@ -764,7 +764,7 @@ handle_term(int s)
 static void
 main_loop(void)
 {
-	while( S.c != NULL && S.p && S.p->fd > 0 && ! interrupted ) {
+	while( S.c != NULL && S.p && ! interrupted ) {
 		if( S.reshape ) {
 			reshape_root(NULL);
 		}
