@@ -165,15 +165,11 @@ new_pty(int rows, int cols)
 			setupevents(&p->vp);
 
 			FD_SET(p->fd, &S.fds);
+			S.maxfd = p->fd > S.maxfd ? p->fd : S.maxfd;
 			fcntl(p->fd, F_SETFL, O_NONBLOCK);
 			p->id = p->fd - 2;
-			struct pty **t = &S.p;
-			/* Insert into ordered list */
-			while( *t && (*t)->next && (*t)->next->fd > p->fd ) {
-				t = &(*t)->next;
-			}
-			p->next = *t;
-			*t = p;
+			p->next = S.p;
+			S.p = p;
 			const char *bname = strrchr(sh, '/');
 			bname = bname ? bname + 1 : sh;
 			strncpy(p->status, bname, sizeof p->status - 1);
@@ -484,15 +480,6 @@ wait_child(struct pty *p)
 		check(close(p->fd) == 0, "close fd %d", p->fd);
 		snprintf(p->status, sizeof p->status, fmt, k);
 		p->fd = -1; /* (1) */
-		struct pty *t, *prev = NULL;
-		/* Push this pty to the end of the list */
-		for( t = S.p; t; prev = t, t = t->next ) {
-		       if( t == p ) {
-			       *(prev ? &prev->next : &S.p) = p->next;
-		       }
-		}
-		*(prev ? &prev->next : &S.p) = p;
-		p->next = NULL;
 		p->id = p->pid;
 		p->pid = -1;
 		S.reshape = 1;
@@ -507,7 +494,7 @@ static void
 getinput(void) /* check stdin and all pty's for input. */
 {
 	fd_set sfds = S.fds;
-	if( select(S.p->fd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
+	if( select(S.maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
 		check(errno == EINTR, "select");
 		return;
 	}
@@ -773,7 +760,7 @@ handle_term(int s)
 static void
 main_loop(void)
 {
-	while( S.c != NULL && S.p && S.p->fd > 0 && ! interrupted ) {
+	while( S.c != NULL && ! interrupted ) {
 		if( S.reshape ) {
 			reshape_root(NULL);
 		}

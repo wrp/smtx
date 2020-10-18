@@ -109,6 +109,7 @@ struct state {
 		struct pty *p;    /* unused ptys */
 	} free;
 	fd_set fds;
+	int maxfd;
 	WINDOW *werr;
 	int reshape;
 	char errmsg[256];
