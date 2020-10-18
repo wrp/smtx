@@ -22,7 +22,6 @@
 static int read_timeout = 1;  /* Set to 0 when interactively debugging */
 static int main_timeout = 2;
 static int check_test_status(int rv, int status, int pty, const char *name);
-static void grep(int fd, const char *needle);
 static int get_secondary_fd(int fd);
 int ctlkey = CTL('g');
 
@@ -196,7 +195,7 @@ timed_read(int fd, void *buf, size_t count, const char *n)
  * to delay the test until data is seen to verify that the underlying
  * shell has processed input.
  */
-static void
+void
 grep(int fd, const char *needle)
 {
 	assert( needle != NULL );

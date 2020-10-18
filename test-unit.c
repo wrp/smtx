@@ -105,7 +105,7 @@ test_bighist(int fd)
 	 * the underlying process to fail, and will flag the test as a failure
 	 * if that does not happen.
 	 */
-	(void)fd;
+	grep(fd, "Unable to create root window");
 	return 0;
 }
 

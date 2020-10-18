@@ -57,6 +57,7 @@ validate_row(int fd, int row, const char *fmt, ... );
 int get_layout(int fd, int flag, char *layout, size_t siz);
 int get_state(int fd, char *state, size_t siz);
 int get_row(int fd, int row, char *buf, size_t siz);
+void grep(int fd, const char *needle);
 
 int __attribute__((format(printf,3,4)))
 check_layout(int fd, int flag, const char *fmt, ...);
