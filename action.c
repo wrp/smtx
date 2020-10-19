@@ -105,9 +105,8 @@ void
 quit(const char *arg)
 {
 	struct canvas *n = S.f;
-	(void)arg;
 	pid_t p = n->p->pid;
-	int s = S.count;
+	int s = S.count == -1 ? SIGINT : S.count;
 	switch( s ) {
 	case SIGUSR1 + 128: case SIGUSR2 + 128: case SIGTERM + 128:
 		p = getpid();
@@ -117,7 +116,7 @@ quit(const char *arg)
 		if( p != -1 ) {
 			check(kill(p, s) != -1, "kill %d, %d", p, s);
 		} else {
-			check(0, "invalid process. No signal sent");
+			prune(arg);
 		}
 		break;
 	default:

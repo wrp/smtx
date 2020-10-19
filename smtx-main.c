@@ -361,7 +361,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 	}
 }
 
-static void
+void
 prune(const char *arg)
 {
 	struct canvas *f = S.f;
@@ -501,7 +501,7 @@ getinput(void) /* check stdin and all pty's for input. */
 	if( FD_ISSET(STDIN_FILENO, &sfds) ) {
 		int r;
 		wint_t w;
-		while( (r = wget_wch(S.f->p->s->win, &w)) != ERR ) {
+		while( S.f && (r = wget_wch(S.f->p->s->win, &w)) != ERR ) {
 			struct handler *b = NULL;
 			if( r == OK && w > 0 && w < 128 ) {
 				b = S.modes[S.mode].keys + w;
