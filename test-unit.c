@@ -746,16 +746,20 @@ test_prune(int fd)
 int
 test_quit(int fd)
 {
+	int rv = validate_row(fd, 1, "%-80s", "ps1>");
 	send_cmd(fd, NULL, "%dq", SIGBUS); /* Invalid signal */
-	send_cmd(fd, NULL, "q");
-	send_cmd(fd, "exited", "c\rexit"); /* (1) */
-	send_cmd(fd, NULL, "%dq", SIGTERM);  /* Invalid window */
-	send_cmd(fd, NULL, "%dq", SIGTERM + 128);  /* Terminate SMTX */
-	return 0;
+	send_cmd(fd, "ps1>", "c");
+	rv |= check_layout(fd, 0x1, "*11x80; 11x80");
+	send_cmd(fd, NULL, "q");  /* Does not prune */
+	rv |= check_layout(fd, 0x1, "*11x80; 11x80");
+	send_txt(fd, "exited", "exit"); /* Exit the shell */
+	send_cmd(fd, NULL, "q"); /* Should prune */
+	send_txt(fd, "ab1>", "PS1=ab1'>'");
+	rv |= check_layout(fd, 0x1, "*23x80");
+	send_txt(fd, "exited", "exit"); /* Exit the shell; smtx does not exit */
+	send_cmd(fd, NULL, "q"); /* smtx should now exit */
+	return rv;
 }
-/*
-(1) The string "exited" is expected to appear in the title line.
-*/
 
 int
 test_repc(int fd)
