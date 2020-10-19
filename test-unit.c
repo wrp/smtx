@@ -143,7 +143,7 @@ test_changehist(int fd)
 
 	/* Kill one window to put an alloc'd pty on the free list */
 	send_txt(fd, "exited", "exit");
-	send_cmd(fd, NULL, "X");
+	send_cmd(fd, NULL, "q");
 	rv = check_layout(fd, 0x1, "*11x80; 11x80");
 
 	return 0;
@@ -727,7 +727,7 @@ test_prune(int fd)
 	send_cmd(fd, NULL, "j");  /* Move down 1 */
 	rv |= check_layout(fd, 0x1, "5x80; *5x80; 5x80; 5x80");
 	send_txt(fd, "exited", "exit");
-	send_cmd(fd, NULL, "X");  /* prune */
+	send_cmd(fd, NULL, "q");  /* prune */
 	rv |= check_layout(fd, 0x1, "5x80; *8x80; 8x80");
 	send_cmd(fd, NULL, "C");  /* create pty */
 	send_cmd(fd, NULL, "l");  /* move right */
@@ -747,6 +747,7 @@ int
 test_quit(int fd)
 {
 	send_cmd(fd, NULL, "%dq", SIGBUS); /* Invalid signal */
+	send_cmd(fd, NULL, "q");
 	send_cmd(fd, "exited", "c\rexit"); /* (1) */
 	send_cmd(fd, NULL, "%dq", SIGTERM);  /* Invalid window */
 	send_cmd(fd, NULL, "%dq", SIGTERM + 128);  /* Terminate SMTX */

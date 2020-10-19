@@ -369,7 +369,7 @@ prune(const char *arg)
 	int d = f->typ;
 	struct canvas *child = f->c[d];
 
-	if(arg && *arg) {
+	if( arg && *arg == 'X' ) {
 		free_proc(f->p);
 	}
 	if( child ) {
@@ -700,7 +700,6 @@ build_bindings(void)
 	add_key(m->keys, L'W', set_width, NULL);
 	add_key(m->keys, L'Z', set_history, NULL);
 	add_key(m->keys, L'x', prune, NULL);
-	add_key(m->keys, L'X', prune, "X");
 	add_key(m->keys, L'0', digit, "0");
 	add_key(m->keys, L'1', digit, "1");
 	add_key(m->keys, L'2', digit, "2");

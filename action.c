@@ -107,16 +107,14 @@ quit(const char *arg)
 	struct canvas *n = S.f;
 	pid_t p = n->p->pid;
 	int s = S.count == -1 ? SIGINT : S.count;
+	(void)arg;
 	switch( s ) {
-	case SIGUSR1 + 128: case SIGUSR2 + 128: case SIGTERM + 128:
-		p = getpid();
-		s -= 128; /* Fall thru */
 	case SIGKILL: case SIGTERM: case SIGUSR1: case SIGHUP:
 	case SIGUSR2: case SIGINT:
 		if( p != -1 ) {
 			check(kill(p, s) != -1, "kill %d, %d", p, s);
 		} else {
-			prune(arg);
+			prune("X");
 		}
 		break;
 	default:
