@@ -91,6 +91,13 @@ find_canvas(struct canvas *c, int id)
 	return r;
 }
 
+static void
+pty_size(struct pty *p)
+{
+	check(p->fd == -1 || ! ioctl(p->fd, TIOCGWINSZ, &p->ws),
+		"ioctl error getting size of pty %d", p->id);
+}
+
 void
 new_tabstop(const char *arg)
 {

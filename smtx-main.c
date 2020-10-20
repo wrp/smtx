@@ -74,13 +74,6 @@ getshell(void)
 }
 
 void
-pty_size(struct pty *p)
-{
-	check(p->fd == -1 || ! ioctl(p->fd, TIOCGWINSZ, &p->ws),
-		"ioctl error getting size of pty %d", p->id);
-}
-
-void
 extend_tabs(struct pty *p, int tabstop)
 {
 	int w = p->ws.ws_col;
