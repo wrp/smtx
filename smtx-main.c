@@ -93,13 +93,6 @@ extend_tabs(struct pty *p, int tabstop)
 }
 
 static void
-delwinnul(WINDOW **w)
-{
-	check((*w ? delwin(*w) : OK) == OK, "Error deleting window");
-	*w = NULL;
-}
-
-static void
 free_proc(struct pty *p)
 {
 	/* Move p to the free list (if fd == -1) */
@@ -175,8 +168,12 @@ new_pty(int rows, int cols)
 			strncpy(p->status, bname, sizeof p->status - 1);
 		} else {
 			free(p->tabs);
-			delwinnul(&p->pri.win);
-			delwinnul(&p->alt.win);
+			if( p->pri.win ) {
+				delwin(p->pri.win);
+			}
+			if( p->alt.win ) {
+				delwin(p->alt.win);
+			}
 			free(p);
 			check(0, "new_pty");
 			p = NULL;
@@ -324,13 +321,9 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		assert(n->split_point[1] <= 1.0);
 		if( have_div ) {
 			resize_pad(&n->wdiv, n->typ ? h : h1, 1);
-		} else {
-			delwinnul(&n->wdiv);
 		}
 		if( have_title ) {
 			resize_pad(&n->wtit, 1, w1);
-		} else {
-			delwinnul(&n->wtit);
 		}
 
 		reshape(n->c[0], y + h1, x, h - h1, n->typ ? w1 : w);
