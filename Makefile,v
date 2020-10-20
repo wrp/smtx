@@ -23,7 +23,7 @@ log
 text
 @# A stub Makefile used to bootstrap.
 
-BUILDDIR = build/$(shell uname -s)
+BUILDDIR = build/$(shell uname -s)/$(shell uname -m)
 
 .PHONY: all
 all: $(BUILDDIR)/smtx
