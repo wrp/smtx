@@ -25,7 +25,7 @@ text
 
 BUILDDIR = build/$(shell uname -s)/$(shell uname -m)
 
-.PHONY: all
+.PHONY: all check clean distclean
 all: $(BUILDDIR)/smtx
 
 configure:
@@ -43,4 +43,10 @@ $(BUILDDIR)/smtx: $(BUILDDIR)/Makefile
 
 check:
 	cd $(BUILDDIR) && make check
+
+clean:
+	cd $(BUILDDIR) && make clean
+
+distclean:
+	cd $(BUILDDIR) && make distclean
 @
