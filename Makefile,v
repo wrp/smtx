@@ -1,0 +1,46 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.1
+date	2020.10.19.16.14.18;	author williamp;	state Exp;
+branches;
+next	;
+
+
+desc
+@A stub Makefile to bootstrap the project
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@# A stub Makefile used to bootstrap.
+
+BUILDDIR = build/$(shell uname -s)
+
+.PHONY: all
+all: $(BUILDDIR)/smtx
+
+configure:
+	autoreconf -ivf
+
+$(BUILDDIR)/Makefile: configure $(BUILDDIR)
+	s=$$(pwd); cd $(BUILDDIR) && $${s}/configure CFLAGS="${CFLAGS} --coverage -g -O0"
+	echo '$(BUILDDIR) configured'
+
+$(BUILDDIR):
+	mkdir -p $(BUILDDIR)
+
+$(BUILDDIR)/smtx: $(BUILDDIR)/Makefile
+	cd $(BUILDDIR) && make all
+
+check:
+	cd $(BUILDDIR) && make check
+@
