@@ -24,7 +24,7 @@ struct state S = {
 	.ctlkey = CTL('g'),
 	.width = 80,
 	.mode = enter,
-	.history = 1024, /* History provided to new WINDOWS */
+	.history = 1024,
 	.count = -1,
 };
 
@@ -52,17 +52,15 @@ check(int rv, const char *fmt, ...)
 	return !!rv;
 }
 
-int
+void
 rewrite(int fd, const char *b, size_t n)
 {
 	const char *e = b + n;
-	int rv = 1;
+	ssize_t s;
 	if( n > 0 ) do {
-		ssize_t s = write(fd, b, e - b);
-		rv = check(s >= 0 || errno == EINTR, "write to fd %d", fd);
+		s = write(fd, b, e - b);
 		b += s < 0 ? 0 : s;
-	} while( b < e && rv );
-	return !rv;
+	} while( b < e && check(s >= 0 || errno == EINTR, "write fd %d", fd) );
 }
 
 static const char *

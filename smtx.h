@@ -160,7 +160,7 @@ extern struct canvas * newcanvas(void);
 extern void balance(struct canvas *);
 extern void draw(struct canvas *);
 extern void setupevents(struct vtp *);
-extern int rewrite(int fd, const char *b, size_t n);
+extern void rewrite(int fd, const char *b, size_t n);
 extern void build_bindings(void);
 extern void draw(struct canvas *n);
 extern void scrollbottom(struct canvas *n);
