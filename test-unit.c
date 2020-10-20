@@ -147,6 +147,14 @@ test_changehist(int fd)
 	rv = check_layout(fd, 0x1, "*11x80; 11x80");
 
 	return 0;
+	/* TODO: This does not work.  The idea is that we should retain
+	 * the data structure from the destroyed window so that we can
+	 * use its screens if we cannot allocate new ones. But the current
+	 * implementation calls wresize() and attempts to use the high
+	 * history count, and that wresize is taking a long time and
+	 * timing out this test.  Will need to reconsider how to handle
+	 * this.  For now, just punt and skip the remainder of the test.
+	 */
 
 	/* Create one new window */
 	send_cmd(fd, NULL, "c");
