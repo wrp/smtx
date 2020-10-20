@@ -114,6 +114,8 @@ test_changehist(int fd)
 {
 	int rv = 0;
 	char bigint[128];
+	char buf[1024];
+	char buf2[128];
 
 	snprintf(bigint, sizeof bigint, "%d", INT_MAX);
 
@@ -146,23 +148,40 @@ test_changehist(int fd)
 	send_cmd(fd, NULL, "q");
 	rv = check_layout(fd, 0x1, "*11x80; 11x80");
 
-	return 0;
-	/* TODO: This does not work.  The idea is that we should retain
-	 * the data structure from the destroyed window so that we can
-	 * use its screens if we cannot allocate new ones. But the current
-	 * implementation calls wresize() and attempts to use the high
-	 * history count, and that wresize is taking a long time and
-	 * timing out this test.  Will need to reconsider how to handle
-	 * this.  For now, just punt and skip the remainder of the test.
-	 */
-
 	/* Create one new window */
 	send_cmd(fd, NULL, "c");
 	rv = check_layout(fd, 0x1, "*7x80; 7x80; 7x80");
 
-	/* Fail to create a new window */
+	/* Validate history is as expected */
+	get_state(fd, buf, sizeof buf);
+	if( sscanf(buf, "history=%128[^,], y=24, x=80, w=80", buf2) != 1 ) {
+		fprintf(stderr, "Unexpected state: %s", buf);
+		rv = 1;
+	}
+	if( strcmp(bigint, buf2) ) {
+		fprintf(stderr, "Unexpected history: %s", buf2);
+		rv = 1;
+	}
+
+	/* Fail to create a new window (out of memory) */
 	send_cmd(fd, NULL, "c");
 	rv = check_layout(fd, 0x1, "*7x80; 7x80; 7x80");
+
+	/* Set history smaller than screen size */
+	send_cmd(fd, NULL, "1Z");
+	send_cmd(fd, NULL, "c"); /* Create window */
+	get_state(fd, buf, sizeof buf);
+
+	/* Validate that the history did not get smaller than LINES */
+	if( sscanf(buf, "history=%128[^,], y=24, x=80, w=80", buf2) != 1 ) {
+		fprintf(stderr, "Unexpected state: %s", buf);
+		rv = 1;
+	}
+	if( strcmp("24", buf2) ) {
+		fprintf(stderr, "Unexpected reduced history: %s", buf2);
+		rv = 1;
+	}
+	rv = check_layout(fd, 0x1, "*5x80; 5x80; 5x80; 5x80");
 
 	return rv;
 }
