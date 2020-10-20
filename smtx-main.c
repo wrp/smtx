@@ -91,14 +91,14 @@ free_proc(struct pty *p)
 	/* Move p to the free list (if fd == -1) */
 	assert( p != NULL );
 	if( p->fd == -1 ) {
-               struct pty *t, *prev = NULL;
-               for( t = S.p; t; prev = t, t = t->next ) {
-                       if( t == p ) {
-                               *(prev ? &prev->next : &S.p) = t->next;
-                       }
-               }
-	       p->next = S.free.p;
-	       S.free.p = p;
+		struct pty *t = S.p, *prev = NULL;
+		while( t && t != p ) {
+			prev = t;
+			t = t->next;
+		}
+		*(prev ? &prev->next : &S.p) = p->next;
+		p->next = S.free.p;
+		S.free.p = p;
 	}
 }
 
