@@ -25,7 +25,7 @@ text
 
 BUILDDIR = build/$(shell uname -s)/$(shell uname -m)
 
-.PHONY: all check clean distclean
+.PHONY: all check clean distclean loc
 all: $(BUILDDIR)/smtx
 
 configure:
@@ -40,6 +40,16 @@ $(BUILDDIR):
 
 $(BUILDDIR)/smtx: $(BUILDDIR)/Makefile
 	cd $(BUILDDIR) && make all
+
+loc:
+	@@cd $(BUILDDIR) && \
+	for file in action handler smtx-main vtparser; do \
+		gcov $${file}.c -o .libs; \
+	done | tr -d "'" | awk ' \
+		/^File/ {file=$$2; gsub(".*/", "", file)} \
+		/Lines executed/{printf "%32s:\t%s\n", file, $$4; t+= $$4} \
+		END{printf "%32s:\t%s\n", "Total", t} \
+	'
 
 check:
 	cd $(BUILDDIR) && make check
