@@ -43,9 +43,9 @@ loc:
 	@@cd $(BUILDDIR) && \
 	for file in action handler smtx-main vtparser; do \
 		gcov $${file}.c -o .libs; \
-	done | tr -d "'" | awk ' \
+	done | tr "':" ' '| awk ' \
 		/^File/ {file=$$2; gsub(".*/", "", file)} \
-		/Lines executed/{printf "%32s:\t%s\n", file, $$4; t+= $$4} \
+		/Lines executed/{printf "%32s:\t%s\t(%s)\n", file, $$5, $$3; t+= $$5} \
 		END{printf "%32s:\t%s\n", "Total", t}'
 
 install: $(BUILDDIR) $(BUILDDIR)/Makefile
