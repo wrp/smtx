@@ -381,7 +381,16 @@ main(int argc, char *const argv[])
 	int fail_count = 0;
 	int total_count = 0;
 	const char *argv0 = argv[0];
+	char *base;
 	struct st *tab = NULL, *v;
+	char buf[PATH_MAX];
+
+	strcpy(buf, argv0);
+	if( (base = strrchr(buf, '/')) != NULL ) {
+		*base = '\0';
+		chdir(buf);
+		argv0 = base + 1;
+	}
 
 	snprintf(bigint, sizeof bigint, "%d", INT_MAX);
 	F(test_ack);

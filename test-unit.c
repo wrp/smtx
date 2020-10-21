@@ -961,6 +961,7 @@ test_scrollh(int fd)
 	/* Scroll 200 to the right (should stop at 52) */
 	send_cmd(fd, "uniq3", "%s", "200>\rprintf '%52s'u'n'i'q'3\\n");
 	rv |= validate_row(fd, 4, "%-26s", buf + 52);
+
 	return rv;
 }
 
