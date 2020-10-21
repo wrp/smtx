@@ -107,6 +107,7 @@ resize_pad(WINDOW **p, int h, int w)
 	if( *p ) {
 		check(wresize(*p, h, w ) == OK, "Error creating window");
 	} else if( (*p = newpad(h, w)) == NULL ) {
+		errno = ENOMEM;
 		check(0, "Error resizing window");
 	} else {
 		wtimeout(*p, 0);
