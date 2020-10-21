@@ -167,12 +167,8 @@ new_pty(int rows, int cols)
 			strncpy(p->status, bname, sizeof p->status - 1);
 		} else {
 			free(p->tabs);
-			if( p->pri.win ) {
-				delwin(p->pri.win);
-			}
-			if( p->alt.win ) {
-				delwin(p->alt.win);
-			}
+			delwin(p->pri.win);
+			delwin(p->alt.win);
 			free(p);
 			p = NULL;
 		}
