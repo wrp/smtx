@@ -26,7 +26,7 @@ text
 srcdir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 BUILDDIR := $(srcdir)/build/$(shell uname -s)/$(shell uname -m)
 
-.PHONY: all check clean distclean loc install
+.PHONY: all check clean dist distclean install loc
 all: $(BUILDDIR) $(BUILDDIR)/Makefile
 	cd $(BUILDDIR) && make all
 
@@ -46,17 +46,20 @@ loc:
 	done | tr -d "'" | awk ' \
 		/^File/ {file=$$2; gsub(".*/", "", file)} \
 		/Lines executed/{printf "%32s:\t%s\n", file, $$4; t+= $$4} \
-		END{printf "%32s:\t%s\n", "Total", t} \
-	'
-install:
+		END{printf "%32s:\t%s\n", "Total", t}'
+
+install: $(BUILDDIR) $(BUILDDIR)/Makefile
 	cd $(BUILDDIR) && make install
 
-check:
+check: $(BUILDDIR) $(BUILDDIR)/Makefile
 	cd $(BUILDDIR) && make check
 
-clean:
+clean: $(BUILDDIR) $(BUILDDIR)/Makefile
 	cd $(BUILDDIR) && make clean
 
-distclean:
+dist: $(BUILDDIR) $(BUILDDIR)/Makefile
+	cd $(BUILDDIR) && make version && make dist
+
+distclean: $(BUILDDIR) $(BUILDDIR)/Makefile
 	cd $(BUILDDIR) && make distclean
 @
