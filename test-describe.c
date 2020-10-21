@@ -224,22 +224,26 @@ show_row(const char *arg)
 void
 show_status(const char *arg)
 {
+	const char *banner = "************************\r\n";
 	char buf[1024];
 	int k;
+	rewrite(1, "\r\n", 2);
+	rewrite(1, banner, strlen(banner));
 	if( *arg == 'r' ) {
 		show_row(arg + 1);
 	} else switch( S.count ) {
 	case 1:
 		for( struct pty *p = S.p; p; p = p->next ) {
-			k = snprintf(buf, sizeof buf, "\r\n%d %d %s",
+			k = snprintf(buf, sizeof buf, "%d %d %s\r\n",
 				p->id, p->pid, p->status);
 			rewrite(1, buf, k);
 		}
 		break;
 	default:
-		k = sprintf(buf, "\r\nstate: ");
+		k = sprintf(buf, "state: ");
 		size_t s = describe_state(buf + k, sizeof buf - k);
 		rewrite(1, buf, s + k);
 		show_layout(*arg ? arg : "55");
 	}
+	rewrite(1, banner, strlen(banner));
 }
