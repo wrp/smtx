@@ -916,14 +916,25 @@ test_scrollback(int fd)
 int
 test_scrollh(int fd)
 {
+	struct winsize ws;
+	int rv = ioctl(fd, TIOCGWINSZ, &ws);
 	char buf[79];
+
+	if( rv ) {
+		fprintf(stderr, "ioctl error getting size of pty\n");
+	}
+	if( ws.ws_col != 26 ) {
+		fprintf(stderr, "Unexpected width: %d\n", ws.ws_col);
+		rv = 1;
+	}
+
 	for(unsigned i = 0; i < sizeof buf - 1; i++) {
 		buf[i] = 'a' + i % 26;
 	}
 	buf[sizeof buf - 1] = 0;
 
 	send_txt(fd, "uniq", "tput cols; echo %s'u'n'i'q", buf);
-	int rv = validate_row(fd, 3, "%-26s", "78");
+	rv |= validate_row(fd, 3, "%-26s", "78");
 
 	buf[26] = 0;
 	rv |= validate_row(fd, 4, "%-26s", buf);
