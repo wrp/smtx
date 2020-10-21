@@ -919,6 +919,8 @@ test_scrollh(int fd)
 	struct winsize ws;
 	int rv = ioctl(fd, TIOCGWINSZ, &ws);
 	char buf[79];
+	int id[2];
+	char desc[1024];
 
 	if( rv ) {
 		fprintf(stderr, "ioctl error getting size of pty\n");
@@ -959,9 +961,34 @@ test_scrollh(int fd)
 	buf[26 + 32] = 'a' + 6;
 
 	/* Scroll 200 to the right (should stop at 52) */
-	send_cmd(fd, "uniq3", "%s", "200>\rprintf '%52s'u'n'i'q'3\\n");
+	send_cmd(fd, "uniq3", "%s", "200>\rprintf '%52s'u'n'i'q3\\n' ''");
 	rv |= validate_row(fd, 4, "%-26s", buf + 52);
+	rv |= check_layout(fd, 1, "*23x26");
 
+	/* Create two new windows and scroll left */
+	send_cmd(fd, "zw2>", "cC200<\r\rPS1=zw2'> '");
+	get_layout(fd, 5, desc, sizeof desc);
+	if( sscanf(desc, "*11x13(id=%*d); 11x26(id=%d); "
+			"11x12(id=%d)", id, id + 1) != 2 ) {
+		fprintf(stderr, "received layout: '%s'\n", desc);
+		rv = 1;
+	}
+	/* Attach the two leftmost canvasses, and move to lower left */
+	send_cmd(fd, "ab1>", "%daj\rPS1=ab1'> '; clear", *id);
+	rv |= validate_row(fd, 1, "%-13s", "ab1>         ");
+	/* Print a longish string */
+	send_raw(fd, "Z", "%s", "printf '01234567890123456%s' '78Z'");
+	/* Manual scroll is on in this canvas, so it should not scroll */
+	rv |= validate_row(fd, 1, "%-13s", "ab1> printf '");
+	/* Move to upper left canvas and finish the printf*/
+	/* Lower left canvas should autoscroll and print the 5678Z */
+	send_cmd(fd, "5678Z", "kh\r");
+	rv |= check_layout(fd, 1, "*11x13; 11x26; 11x12");
+	rv |= validate_row(fd, 2, "%-13s", "0123456789012");
+	/* TODO: really need to be able to validate rows in non root canvas */
+	for(int i=3; i < 12; i++ ) {
+		rv |= validate_row(fd, i, "%-13s", "");
+	}
 	return rv;
 }
 
