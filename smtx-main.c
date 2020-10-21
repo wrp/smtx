@@ -173,7 +173,6 @@ new_pty(int rows, int cols)
 				delwin(p->alt.win);
 			}
 			free(p);
-			check(0, "new_pty");
 			p = NULL;
 		}
 	}
