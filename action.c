@@ -119,7 +119,7 @@ quit(const char *arg)
 	case SIGKILL: case SIGTERM: case SIGUSR1: case SIGHUP:
 	case SIGUSR2: case SIGINT:
 		if( p != -1 ) {
-			check(kill(p, s) != -1, "kill %d, %d", p, s);
+			check(kill(-p, s) != -1, "kill %d, %d", p, s);
 		} else {
 			prune("X");
 		}
