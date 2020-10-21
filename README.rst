@@ -4,7 +4,11 @@ Introduction
 smtx -- Simple Modal Terminal Multiplexer
 
 smtx is designed for simplicity in the implementation and ease of use
-in a limited environment (eg, on a small physical device).
+in a limited environment (eg, on a small physical device).  It provides
+a simple mechanism for providing ptys that are wider than the physical
+device, and makes it simple to have multiple views in different
+locations of the pty. Also, it provides a simple mechanism for generating
+screen layouts dynamically.
 
 Quickstart
 ==========
