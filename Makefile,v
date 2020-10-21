@@ -27,14 +27,13 @@ srcdir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 BUILDDIR := $(srcdir)/build/$(shell uname -s)/$(shell uname -m)
 
 .PHONY: all check clean distclean loc install
-all: $(BUILDDIR)/smtx
+all: $(BUILDDIR) $(BUILDDIR)/smtx
 
 configure:
 	autoreconf -ivf
 
-$(BUILDDIR)/Makefile: configure $(BUILDDIR)
+$(BUILDDIR)/Makefile: configure
 	cd $(BUILDDIR) && $(srcdir)/configure CFLAGS="${CFLAGS} --coverage -g -O0"
-	echo '$(BUILDDIR) configured'
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
