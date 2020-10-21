@@ -27,7 +27,8 @@ srcdir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 BUILDDIR := $(srcdir)/build/$(shell uname -s)/$(shell uname -m)
 
 .PHONY: all check clean distclean loc install
-all: $(BUILDDIR) $(BUILDDIR)/smtx
+all: $(BUILDDIR) $(BUILDDIR)/Makefile
+	cd $(BUILDDIR) && make all
 
 configure:
 	autoreconf -ivf
@@ -37,9 +38,6 @@ $(BUILDDIR)/Makefile: configure
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
-
-$(BUILDDIR)/smtx: $(BUILDDIR)/Makefile
-	cd $(BUILDDIR) && make all
 
 loc:
 	@@cd $(BUILDDIR) && \
