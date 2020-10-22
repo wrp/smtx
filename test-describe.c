@@ -46,7 +46,7 @@ describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 	if( ! c->p->pnm ) {
 		d += snprintf(d, e - d, "#"); /* Numeric keypad  */
 	}
-	if( show_2nd && c->p ) {
+	if( show_2nd && c->p && c->p->fd != -1 ) {
 		d += snprintf(d, e - d, "(2nd=%s)", c->p->secondary );
 	}
 	for( int i = 0; recurse && i < 2; i ++ ) {
