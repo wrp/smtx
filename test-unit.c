@@ -778,7 +778,8 @@ int
 test_quit(int fd)
 {
 	int rv = validate_row(fd, 1, "%-80s", "ps1>");
-	send_cmd(fd, NULL, "%dq", SIGBUS); /* Invalid signal */
+	send_raw(fd, "invalid", "%c%dq", ctlkey, SIGBUS); /* Invalid signal */
+	send_raw(fd, NULL, "\r");
 	send_cmd(fd, "ps1>", "c");
 	rv |= check_layout(fd, 0x1, "*11x80; 11x80");
 	send_cmd(fd, NULL, "q");  /* Does not prune */
