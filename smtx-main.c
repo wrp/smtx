@@ -338,6 +338,17 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 	}
 }
 
+static void
+freecanvas(struct canvas * n)
+{
+	if(n) {
+		freecanvas(n->c[0]);
+		freecanvas(n->c[1]);
+		n->c[0] = S.free.c;
+		S.free.c = n;
+	}
+}
+
 void
 prune(const char *arg)
 {
@@ -346,6 +357,7 @@ prune(const char *arg)
 	int d = f->typ;
 	struct canvas *child = f->c[d];
 
+	f->c[d] = NULL;
 	if( arg && *arg == 'X' ) {
 		free_proc(f->p);
 	}
@@ -360,12 +372,7 @@ prune(const char *arg)
 		S.c = NULL;
 	}
 	focus(child ? child : parent);
-	/* Push all non-dominant children to the free list */
-	for( struct canvas *next = f; next; f = next ) {
-		next = f->c[!d];
-		f->c[0] = S.free.c;
-		S.free.c = f;
-	}
+	freecanvas(f);
 	S.reshape = 1;
 }
 
