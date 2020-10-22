@@ -20,8 +20,7 @@ int
 test_alt(int fd)
 {
 	/* Emit csi sequence to use alternate screen */
-
-	int rv = 0;
+	int rv = validate_row(fd, 1, "%-80s", "ps1>");
 
 	/* Write some lines of text on primary screen */
 	send_txt(fd, "ps1>", "echo prim line 2");
@@ -74,9 +73,10 @@ test_attach(int fd)
 	int id;
 	char desc[1024];
 
+	int rv = validate_row(fd, 1, "%-80s", "ps1>");
 	send_cmd(fd, NULL, "cc1000a");  /* Invalid attach */
 	send_txt(fd, "sync", "printf '\\ns'y'n'c'\\n'");
-	int rv = validate_row(fd, 3, "%-80s", "sync");
+	rv |= validate_row(fd, 3, "%-80s", "sync");
 
 	/* Write "other" in lower left canvas */
 	send_cmd(fd, "other", "j\rprintf '\\no't'h'er'\\n'");
@@ -112,11 +112,11 @@ test_bighist(int fd)
 int
 test_changehist(int fd)
 {
-	int rv = 0;
 	char bigint[128];
 	char buf[1024];
 	char buf2[128];
 
+	int rv = validate_row(fd, 1, "%-80s", "ps1>");
 	snprintf(bigint, sizeof bigint, "%d", INT_MAX);
 
 	/* Test begins with -s 128 */
@@ -190,7 +190,7 @@ int
 test_cols(int fd)
 {
 	/* Ensure that tput correctly identifies the width */
-	int rv;
+	int rv = validate_row(fd, 1, "%-80s", "ps1>");
 	send_txt(fd, "uniq1", "%s", "tput cols; printf 'uniq%s\\n' 1");
 	rv = validate_row(fd, 2, "%-92s", "97");
 	return rv;
@@ -199,7 +199,7 @@ test_cols(int fd)
 int
 test_csr(int fd)
 {
-	int rv = 0;
+	int rv = validate_row(fd, 1, "%-80s", "ps1>");
 	/* Change scroll region */
 	send_txt(fd, PROMPT, "%s;%s", "tput csr 6 12; yes | nl -s: | sed 25q",
 		"printf 'uni%s\\n' q1");
