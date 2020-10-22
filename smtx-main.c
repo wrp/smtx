@@ -442,29 +442,22 @@ wait_child(struct pty *p)
 {
 	int status, k = 0;
 	const char *fmt = "exited %d";
-	switch( waitpid(p->pid, &status, WNOHANG) ) {
-	case -1: check(0, "waitpid %d", p->pid);
-	case 0: break;
-	default:
+	if( check(waitpid(p->pid, &status, WNOHANG) != -1, "waitpid") ) {
 		if( WIFEXITED(status) ) {
 			k = WEXITSTATUS(status);
-		} else {
-			assert( WIFSIGNALED(status) );
+		} else if( WIFSIGNALED(status) ) {
 			fmt = "caught signal %d";
 			k = WTERMSIG(status);
 		}
 		FD_CLR(p->fd, &S.fds);
 		check(close(p->fd) == 0, "close fd %d", p->fd);
 		snprintf(p->status, sizeof p->status, fmt, k);
-		p->fd = -1; /* (1) */
-		p->id = p->pid;
-		p->pid = -1;
+		p->pid = p->fd = -1; /* (1) */
 		S.reshape = 1;
 	}
 }
 /* (1) We do not free(p) because we wish to retain error messages.
- * The windows will persist until the user explicitly destroys them, so
- * that any error messages can be viewed until then.
+ * The windows will persist until the user explicitly destroys them.
  */
 
 static void
