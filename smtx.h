@@ -111,6 +111,7 @@ struct state {
 	fd_set fds;
 	int maxfd;
 	WINDOW *werr;
+	WINDOW *wbkg;
 	int reshape;
 	char errmsg[256];
 };

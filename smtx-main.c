@@ -220,6 +220,12 @@ draw_window(struct canvas *n)
 			}
 		}
 		pnoutrefresh(n->p->s->win, off.y, off.x, o.y, o.x, e.y, e.x);
+		if( n->p->ws.ws_col < n->extent.x ) {
+			assert( n->offset.x == 0 );
+			pnoutrefresh(S.wbkg, 0, 0, o.y, o.x + n->p->ws.ws_col,
+				e.y, e.x);
+		}
+
 	}
 }
 
@@ -831,6 +837,8 @@ init(void)
 	start_color();
 	use_default_colors();
 	resize_pad(&S.werr, 1, COLS);
+	resize_pad(&S.wbkg, LINES, COLS);
+	wbkgd(S.wbkg, ACS_BULLET);
 	wattron(S.werr, A_REVERSE);
 	create(NULL);
 	S.f = S.c;

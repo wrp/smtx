@@ -143,6 +143,7 @@ reshape_root(const char *arg)
 		set_pty_history(p, LINES);
 	}
 	resize_pad(&S.werr, 1, COLS);
+	resize_pad(&S.wbkg, LINES, COLS);
 	reshape(S.c, 0, 0, LINES, COLS);
 	S.reshape = 0;
 }
