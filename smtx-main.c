@@ -324,24 +324,10 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		n->extent.y = h1 - have_title;
 		n->extent.x = w1;
 		if( p ) {
-			bool changed = n->extent.y > p->ws.ws_row;
-			if( p->fd >= 0 && changed ) {
+			if( p->fd >= 0 && n->extent.y > p->ws.ws_row ) {
 				set_height(n);
 			}
-			if( n->extent.x > p->ws.ws_col ) {
-				int d = n->extent.x - p->ws.ws_col;
-				resize_pad(&n->bkg, n->extent.y, d);
-				wbkgd(n->bkg, ACS_CKBOARD);
-				pnoutrefresh(n->bkg, 0, 0,
-					n->origin.y,
-					n->origin.x + p->ws.ws_col,
-					n->origin.y + n->extent.y - 1,
-					n->origin.x + n->extent.x - 1
-				);
-			}
 			scrollbottom(n);
-		} else if( w1 && h1 > 1 ) {
-			resize_pad(&n->bkg, n->extent.y, n->extent.x);
 		}
 	}
 }
