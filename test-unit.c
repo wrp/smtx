@@ -1456,6 +1456,18 @@ test_vis(int fd)
 }
 
 int
+test_wait(int fd)
+{
+	int rv = validate_row(fd, 1, "%-80s", "ps1>");
+	send_cmd(fd, NULL, "c");
+	send_txt(fd, "caught", "kill -9 $$");
+	send_cmd(fd, NULL, "j");
+	rv |= check_layout(fd, 1, "11x80; *11x80");
+
+	return rv;
+}
+
+int
 test_width(int fd)
 {
 	int rv = 0;

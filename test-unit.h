@@ -112,4 +112,5 @@ test test_title;
 test test_tput;
 test test_utf;
 test test_vis;
+test test_wait;
 test test_width;

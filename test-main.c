@@ -441,6 +441,7 @@ main(int argc, char *const argv[])
 	F(test_tput);
 	F(test_utf);
 	F(test_vis);
+	F(test_wait);
 	F(test_width);
 	for( v = tab; v && ( argc < 2 || *++argv ); v = v ? v->next : NULL ) {
 		const char *name = *argv;
