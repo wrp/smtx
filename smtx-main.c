@@ -780,7 +780,6 @@ parse_args(int argc, char *const*argv)
 		default:
 			errno = 0;
 			check(0, "Unknown option: %c", optopt);
-			exit(EXIT_FAILURE);
 		}
 	}
 }
