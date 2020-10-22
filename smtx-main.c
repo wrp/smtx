@@ -772,15 +772,7 @@ parse_args(int argc, char *const*argv)
 			term = optarg;
 			break;
 		case 'v':
-			printf("%s-%s%s\n",
-				PACKAGE_NAME,
-				PACKAGE_VERSION,
-				#ifndef NDEBUG
-				" (assertions enabled)"
-				#else
-				""
-				#endif
-			);
+			printf("%s-%s\n", PACKAGE_NAME, PACKAGE_VERSION);
 			exit(EXIT_SUCCESS);
 		case 'w':
 			S.width = strtol(optarg, NULL, 10);
