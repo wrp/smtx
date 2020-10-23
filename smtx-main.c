@@ -122,56 +122,56 @@ static struct pty *
 new_pty(int rows, int cols)
 {
 	struct pty *p = S.free.p ? S.free.p : calloc(1, sizeof *p);
-
+	if( check(p == NULL, "calloc") ) {
+		return NULL;
+	}
 	if( S.free.p ) {
 		S.free.p = p->next;
 	}
 	if( rows > S.history ) {
 		S.history = rows;
 	}
-	if( check(p != NULL, "new_pty") ) {
-		const char *sh = getshell();
-		if( p->fd < 1 ) {
-			p->ws.ws_row = rows - 1;
-			p->ws.ws_col = cols;
-			p->pid = forkpty(&p->fd, p->secondary, NULL, &p->ws);
-			if( check(p->pid != -1, "forkpty")) switch(p->pid) {
-			case 0:
-				setsid();
-				signal(SIGCHLD, SIG_DFL);
-				execl(sh, sh, NULL);
-				err(EXIT_FAILURE, "exec SHELL='%s'", sh);
-			default:
-				if( ! p->pri.win ) {
-					resize_pad(&p->pri.win, S.history, cols);
-				}
-				if( ! p->alt.win ) {
-					resize_pad(&p->alt.win, S.history, cols);
-				}
+	const char *sh = getshell();
+	if( p->fd < 1 ) {
+		p->ws.ws_row = rows - 1;
+		p->ws.ws_col = cols;
+		p->pid = forkpty(&p->fd, p->secondary, NULL, &p->ws);
+		if( check(p->pid != -1, "forkpty")) switch(p->pid) {
+		case 0:
+			setsid();
+			signal(SIGCHLD, SIG_DFL);
+			execl(sh, sh, NULL);
+			err(EXIT_FAILURE, "exec SHELL='%s'", sh);
+		default:
+			if( ! p->pri.win ) {
+				resize_pad(&p->pri.win, S.history, cols);
+			}
+			if( ! p->alt.win ) {
+				resize_pad(&p->alt.win, S.history, cols);
 			}
 		}
-		if( p->pri.win && p->alt.win ) {
-			p->s = &p->pri;
-			p->vp.p = p;
-			extend_tabs(p, p->tabstop = 8);
-			setupevents(&p->vp);
+	}
+	if( p->pri.win && p->alt.win ) {
+		p->s = &p->pri;
+		p->vp.p = p;
+		extend_tabs(p, p->tabstop = 8);
+		setupevents(&p->vp);
 
-			FD_SET(p->fd, &S.fds);
-			S.maxfd = p->fd > S.maxfd ? p->fd : S.maxfd;
-			fcntl(p->fd, F_SETFL, O_NONBLOCK);
-			p->id = p->fd - 2;
-			p->next = S.p;
-			S.p = p;
-			const char *bname = strrchr(sh, '/');
-			bname = bname ? bname + 1 : sh;
-			strncpy(p->status, bname, sizeof p->status - 1);
-		} else {
-			free(p->tabs);
-			delwin(p->pri.win);
-			delwin(p->alt.win);
-			free(p);
-			p = NULL;
-		}
+		FD_SET(p->fd, &S.fds);
+		S.maxfd = p->fd > S.maxfd ? p->fd : S.maxfd;
+		fcntl(p->fd, F_SETFL, O_NONBLOCK);
+		p->id = p->fd - 2;
+		p->next = S.p;
+		S.p = p;
+		const char *bname = strrchr(sh, '/');
+		bname = bname ? bname + 1 : sh;
+		strncpy(p->status, bname, sizeof p->status - 1);
+	} else {
+		free(p->tabs);
+		delwin(p->pri.win);
+		delwin(p->alt.win);
+		free(p);
+		p = NULL;
 	}
 	return p;
 }
