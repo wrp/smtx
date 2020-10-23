@@ -190,9 +190,9 @@ int
 test_cols(int fd)
 {
 	/* Ensure that tput correctly identifies the width */
-	int rv = validate_row(fd, 1, "%-80s", "ps1>");
+	int rv = validate_row(fd, 1, "%-92s", "ps1>");
 	send_txt(fd, "uniq1", "%s", "tput cols; printf 'uniq%s\\n' 1");
-	rv = validate_row(fd, 2, "%-92s", "97");
+	rv |= validate_row(fd, 2, "%-92s", "97");
 	return rv;
 }
 
