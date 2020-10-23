@@ -129,23 +129,25 @@ new_pty(int rows, int cols)
 	if( rows > S.history ) {
 		S.history = rows;
 	}
-	if( check(p != NULL, "new_pty") && p->fd < 1 ) {
+	if( check(p != NULL, "new_pty") ) {
 		const char *sh = getshell();
-		p->ws.ws_row = rows - 1;
-		p->ws.ws_col = cols;
-		p->pid = forkpty(&p->fd, p->secondary, NULL, &p->ws);
-		if( check(p->pid != -1, "forkpty")) switch(p->pid) {
-		case 0:
-			setsid();
-			signal(SIGCHLD, SIG_DFL);
-			execl(sh, sh, NULL);
-			err(EXIT_FAILURE, "exec SHELL='%s'", sh);
-		default:
-			if( ! p->pri.win ) {
-				resize_pad(&p->pri.win, S.history, cols);
-			}
-			if( ! p->alt.win ) {
-				resize_pad(&p->alt.win, S.history, cols);
+		if( p->fd < 1 ) {
+			p->ws.ws_row = rows - 1;
+			p->ws.ws_col = cols;
+			p->pid = forkpty(&p->fd, p->secondary, NULL, &p->ws);
+			if( check(p->pid != -1, "forkpty")) switch(p->pid) {
+			case 0:
+				setsid();
+				signal(SIGCHLD, SIG_DFL);
+				execl(sh, sh, NULL);
+				err(EXIT_FAILURE, "exec SHELL='%s'", sh);
+			default:
+				if( ! p->pri.win ) {
+					resize_pad(&p->pri.win, S.history, cols);
+				}
+				if( ! p->alt.win ) {
+					resize_pad(&p->alt.win, S.history, cols);
+				}
 			}
 		}
 		if( p->pri.win && p->alt.win ) {
