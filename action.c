@@ -279,7 +279,7 @@ set_history(const char *arg)
 {
 	struct canvas *n = S.f;
 	struct pty *p = n->p;
-	S.history = arg ? strtol(arg, NULL, 10) : S.count;
+	S.history = MAX(LINES, arg ? strtol(arg, NULL, 10) : S.count);
 	set_pty_history(p, S.history);
 	S.reshape = 1;
 }
