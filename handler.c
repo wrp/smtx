@@ -43,9 +43,11 @@ handle_osc(struct pty *p, const char *arg)
 	case 2:
 		snprintf(p->status, sizeof p->status, "%s", parm);
 		break;
+#ifndef NDEBUG
 	case 62:
 		show_status(parm);
 		break;
+#endif
 	}
 }
 

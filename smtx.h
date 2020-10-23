@@ -194,4 +194,6 @@ extern action set_width;
 extern action swap;
 
 /* Debugging/test harness */
+#ifndef NDEBUG
 extern action show_status;
+#endif

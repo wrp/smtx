@@ -571,8 +571,6 @@ navigate(enum direction dir, int count, int type)
 void
 mov(const char *arg)
 {
-	struct canvas *n = S.f;
-	assert( n == S.f && n != NULL );
 	int count = S.count < 1 ? 1 : S.count;
 	enum direction dir = *arg == 'k' ? up : *arg == 'j' ? down :
 			*arg == 'h' ? left : *arg == 'l' ? right : nil;
@@ -671,7 +669,9 @@ build_bindings(void)
 	add_key(m->keys, L'L', resize, "L");
 	add_key(m->keys, L'H', resize, "H");
 	add_key(m->keys, L'q', quit, NULL);
+#ifndef NDEBUG
 	add_key(m->keys, L'Q', show_status, "");
+#endif
 	add_key(m->keys, L's', swap, NULL);
 	add_key(m->keys, L't', new_tabstop, NULL);
 	add_key(m->keys, L'W', set_width, NULL);
