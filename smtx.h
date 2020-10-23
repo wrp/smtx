@@ -67,7 +67,7 @@ struct screen {
 	WINDOW *win;
 };
 struct pty {
-	int fd, ntabs, tabstop, id;
+	int fd, ntabs, tabstop, id, count;
 	struct winsize ws;
 	pid_t pid;
 	bool *tabs, pnm, decom, lnm;

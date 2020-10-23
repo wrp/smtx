@@ -24,7 +24,10 @@ attach(const char *arg)
 	int target = arg ? strtol(arg, NULL, 10) : S.count;
 	for( struct pty *t = S.p; t; t = t->next ) {
 		if( t->id == target ) {
+			assert( n->p->count > 0 );
+			n->p->count -= 1;
 			n->p = t;
+			t->count += 1;
 			S.reshape = 1;
 			return;
 		}
@@ -95,9 +98,8 @@ void
 prune(const char *arg)
 {
 	struct canvas *f = S.f;
-	if( arg && *arg == 'X' ) {
-		free_proc(f->p);
-	}
+	(void)arg;
+	free_proc(f->p);
 	prune_canvas(f);
 }
 
@@ -131,7 +133,7 @@ quit(const char *arg)
 		if( p != -1 ) {
 			check(kill(-p, s) != -1, "kill %d, %d", p, s);
 		} else {
-			prune("X");
+			prune(NULL);
 		}
 		break;
 	default:

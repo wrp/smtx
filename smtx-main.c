@@ -86,9 +86,9 @@ extend_tabs(struct pty *p, int tabstop)
 void
 free_proc(struct pty *p)
 {
-	/* Move p to the free list (if fd == -1) */
 	assert( p != NULL );
-	if( p->fd == -1 ) {
+
+	if( --p->count == 0 ) {
 		struct pty *t = S.p, *prev = NULL;
 		while( t && t != p ) {
 			prev = t;
@@ -129,7 +129,7 @@ new_pty(int rows, int cols)
 	if( rows > S.history ) {
 		S.history = rows;
 	}
-	if( check(p != NULL, "new_pty") ) {
+	if( check(p != NULL, "new_pty") && p->fd < 1 ) {
 		const char *sh = getshell();
 		p->ws.ws_row = rows - 1;
 		p->ws.ws_col = cols;
@@ -189,6 +189,7 @@ newcanvas(void)
 			n->c[0] = n->c[1] = NULL;
 			n->manualscroll = n->offset.y = n->offset.x = 0;
 			n->p = p;
+			p->count += 1;
 			n->split.y = 1.0;
 			n->split.x = 1.0;
 		}
