@@ -122,7 +122,7 @@ static struct pty *
 new_pty(int rows, int cols)
 {
 	struct pty *p = S.free.p ? S.free.p : calloc(1, sizeof *p);
-	if( check(p == NULL, "calloc") ) {
+	if( ! check(p != NULL, "calloc") ) {
 		return NULL;
 	}
 	if( S.free.p ) {
