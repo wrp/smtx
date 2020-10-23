@@ -343,6 +343,7 @@ static void
 freecanvas(struct canvas * n)
 {
 	if(n) {
+		free_proc(n->p);
 		freecanvas(n->c[0]);
 		freecanvas(n->c[1]);
 		n->c[0] = S.free.c;

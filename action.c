@@ -99,7 +99,6 @@ prune(const char *arg)
 {
 	struct canvas *f = S.f;
 	(void)arg;
-	free_proc(f->p);
 	prune_canvas(f);
 }
 
