@@ -751,7 +751,7 @@ test_prune(int fd)
 {
 	int rv = validate_row(fd, 1, "%-80s", "ps1>");
 	send_cmd(fd, NULL, "3c"); /* Create 3 new canvasses */
-	send_cmd(fd, NULL, "j");  /* Move down 1 */
+	send_cmd(fd, "abx>", "j\rPS1=ab'x>'");  /* Move down 1 */
 	rv |= check_layout(fd, 0x1, "5x80; *5x80; 5x80; 5x80");
 	send_txt(fd, "exited", "exit");
 	send_cmd(fd, NULL, "q");  /* prune */
@@ -763,7 +763,7 @@ test_prune(int fd)
 	send_txt(fd, "exited", "exit");
 	send_cmd(fd, NULL, "q");  /* prune */
 	rv |= check_layout(fd, 0x1, "5x80; *8x80; 8x80");
-	send_cmd(fd, NULL, "Cl");
+	send_cmd(fd, "cd3>", "Cl\rPS1=cd'3>'");
 
 	/* Kill last pty and ensure process does not terminate */
 	send_txt(fd, "exited", "exit");
