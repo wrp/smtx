@@ -26,9 +26,14 @@ text
 srcdir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 BUILDDIR := $(srcdir)/build/$(shell uname -s)/$(shell uname -m)
 
-.PHONY: all check clean dist distclean install loc
+.PHONY: all check clean dist distclean install loc release
 all: $(BUILDDIR) $(BUILDDIR)/Makefile
 	cd $(BUILDDIR) && make all
+
+release: $(BUILDDIR)
+	-cd $(BUILDDIR) && make distclean
+	make all
+	cd $(BUILDDIR) && make version && make distcheck
 
 configure:
 	autoreconf -ivf
