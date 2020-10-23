@@ -224,11 +224,11 @@ show_row(const char *arg)
 static void
 show_procs(void)
 {
-	char buf[1024] = "procs:\tid\tpid\ttitle\r\n";
+	char buf[1024] = "procs:\tid\tpid\tcount\ttitle\r\n";
 	rewrite(1, buf, strlen(buf));
 	for( struct pty *p = S.p; p; p = p->next ) {
-		int k = snprintf(buf, sizeof buf, "\t%d\t%d\t%s\r\n",
-			p->id, p->pid, p->status);
+		int k = snprintf(buf, sizeof buf, "\t%d\t%d\t%d\t%s\r\n",
+			p->id, p->pid, p->count, p->status);
 		rewrite(1, buf, k);
 	}
 }
