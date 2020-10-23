@@ -354,17 +354,18 @@ void
 prune_canvas(struct canvas *f)
 {
 	struct canvas *parent = f->parent;
-	int d = f->typ;
+	int d = !f->c[f->typ] ? !f->typ : f->typ;
+	int c = parent ? f == parent->c[1] : d;
 	struct canvas *child = f->c[d];
 
 	f->c[d] = NULL;
 	if( child ) {
 		child->parent = parent;
 		child->origin = f->origin;
-		*(parent ? &parent->c[d] : &S.c) = child;
+		*(parent ? &parent->c[c] : &S.c) = child;
 	} else if( parent ) {
-		*(d ? &parent->split.x : &parent->split.y) = 1.0;
-		parent->c[d] = NULL;
+		*(c ? &parent->split.x : &parent->split.y) = 1.0;
+		parent->c[c] = NULL;
 	} else {
 		S.c = NULL;
 	}
