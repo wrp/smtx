@@ -83,7 +83,7 @@ extend_tabs(struct pty *p, int tabstop)
 	}
 }
 
-static void
+void
 free_proc(struct pty *p)
 {
 	/* Move p to the free list (if fd == -1) */
@@ -350,17 +350,13 @@ freecanvas(struct canvas * n)
 }
 
 void
-prune(const char *arg)
+prune_canvas(struct canvas *f)
 {
-	struct canvas *f = S.f;
 	struct canvas *parent = f->parent;
 	int d = f->typ;
 	struct canvas *child = f->c[d];
 
 	f->c[d] = NULL;
-	if( arg && *arg == 'X' ) {
-		free_proc(f->p);
-	}
 	if( child ) {
 		child->parent = parent;
 		child->origin = f->origin;

@@ -91,6 +91,16 @@ find_canvas(struct canvas *c, int id)
 	return r;
 }
 
+void
+prune(const char *arg)
+{
+	struct canvas *f = S.f;
+	if( arg && *arg == 'X' ) {
+		free_proc(f->p);
+	}
+	prune_canvas(f);
+}
+
 static void
 pty_size(struct pty *p)
 {
