@@ -127,7 +127,7 @@ struct canvas {
 	/*
 	A canvas contains both c[0] and c[1], and shows only the upper
 	left corner.  eg: if extent = {8, 42}, p->s.win = {3, 13}, typ = 0
-	    split_point = { 0.5, 0.333 }
+	    split = { 0.5, 0.333 }
 
 	             |<-wdiv
 	  p->s.win   |              c[1]
@@ -142,7 +142,7 @@ struct canvas {
 	(Note that w.x + c1->w.x == extent.x - 1, subtracting 1 for wdiv)
 	*/
 	struct canvas *c[2];
-	double split_point[2]; /* percent of screen dedicated to window */
+	struct { double y,x; } split;
 	int manualscroll;
 	WINDOW *wtit;  /* Window for title */
 	WINDOW *wdiv;  /* Window for divider */

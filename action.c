@@ -160,15 +160,16 @@ resize(const char *arg)
 	while( n && n->c[typ] == NULL ) {
 		n = n->parent;
 	}
-	if( !n || !n->c[typ] || n->split_point[typ] == 0 || s < 1) {
+	double split = !n ? 0 : typ ? n->split.x : n->split.y;
+	if( !n || !n->c[typ] || split == 0 || s < 1) {
 		return;
 	}
-	double full = s / n->split_point[typ];
+	double full = s / split;
 	double new = s + count * dir;
 	if( new > 0 ) {
-		n->split_point[typ] = MIN(new / full, 1.0);
+		*(typ ? &n->split.x : &n->split.y) = MIN(new / full, 1.0);
 	} else {
-		n->split_point[typ] = 0.0;
+		*(typ ? &n->split.x : &n->split.y) = 0.0;
 		focus(S.c);
 	}
 	S.reshape = 1;

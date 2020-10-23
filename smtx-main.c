@@ -189,8 +189,8 @@ newcanvas(void)
 			n->c[0] = n->c[1] = NULL;
 			n->manualscroll = n->offset.y = n->offset.x = 0;
 			n->p = p;
-			n->split_point[0] = 1.0;
-			n->split_point[1] = 1.0;
+			n->split.y = 1.0;
+			n->split.x = 1.0;
 		}
 	}
 	return n;
@@ -308,15 +308,15 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		struct pty *p = n->p;
 		n->origin.y = y;
 		n->origin.x = x;
-		int h1 = h * n->split_point[0];
-		int w1 = w * n->split_point[1];
+		int h1 = h * n->split.y;
+		int w1 = w * n->split.x;
 		int have_title = h1 > 0 && w1 > 0;
 		int have_div = h1 > 0 && w1 > 0 && n->c[1];
 
-		assert(n->split_point[0] >= 0.0);
-		assert(n->split_point[0] <= 1.0);
-		assert(n->split_point[1] >= 0.0);
-		assert(n->split_point[1] <= 1.0);
+		assert(n->split.y >= 0.0);
+		assert(n->split.y <= 1.0);
+		assert(n->split.x >= 0.0);
+		assert(n->split.x <= 1.0);
 		if( have_div ) {
 			resize_pad(&n->wdiv, n->typ ? h : h1, 1);
 		}
@@ -366,7 +366,7 @@ prune(const char *arg)
 		child->origin = f->origin;
 		*(parent ? &parent->c[d] : &S.c) = child;
 	} else if( parent ) {
-		parent->split_point[d] = 1.0;
+		*(d ? &parent->split.x : &parent->split.y) = 1.0;
 		parent->c[d] = NULL;
 	} else {
 		S.c = NULL;
@@ -433,7 +433,7 @@ balance(struct canvas *n)
 			n = n->c[dir];
 		}
 		for(int count = 1; n; n = n->parent ) {
-			n->split_point[dir] = 1.0 / count++;
+			*(dir ? &n->split.x : &n->split.y) = 1.0 / count++;
 			if( n->parent && n->parent->c[dir] != n ) {
 				break;
 			}
