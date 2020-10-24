@@ -174,10 +174,10 @@ new_pty(int rows, int cols)
 }
 
 struct canvas *
-newcanvas(void)
+newcanvas(struct pty *p)
 {
 	struct canvas *n = NULL;
-	struct pty *p = new_pty(LINES, MAX(COLS, S.width));
+	p = p ? p : new_pty(LINES, MAX(COLS, S.width));
 	if( p != NULL ) {
 		if( (n = S.free.c) != NULL ) {
 			S.free.c = n->c[0];
