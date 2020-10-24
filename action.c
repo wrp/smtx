@@ -163,27 +163,14 @@ void
 resize(const char *arg)
 {
 	struct canvas *n = S.f;
-	int typ = strchr("JK", *arg) ? 0 : 1;
-	int dir = strchr("JL", *arg) ? 1 : -1;
-	int count = S.count < 1 ? 1 : S.count;
-	int s = *(typ ? &n->extent.x : &n->extent.y) + 1;
-
-	while( n && n->c[typ] == NULL ) {
-		n = n->parent;
+	double *s = strchr("J", *arg) ? &n->split.y : &n->split.x;
+	int count = S.count < 0 ? 50 : S.count > 100 ? 100 : S.count;
+	if( count ) {
+		*s = count / 100.0;
+		S.reshape = 1;
+	} else { /* TODO: handle zero split more cleanly */
+		prune_canvas(n);
 	}
-	double split = !n ? 0 : typ ? n->split.x : n->split.y;
-	if( !n || !n->c[typ] || split == 0 || s < 1) {
-		return;
-	}
-	double full = s / split;
-	double new = s + count * dir;
-	if( new > 0 ) {
-		*(typ ? &n->split.x : &n->split.y) = MIN(new / full, 1.0);
-	} else {
-		*(typ ? &n->split.x : &n->split.y) = 0.0;
-		focus(S.c);
-	}
-	S.reshape = 1;
 }
 
 void

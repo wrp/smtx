@@ -485,8 +485,8 @@ test_el(int fd)
 int
 test_equalize(int fd)
 {
-	send_cmd(fd, "un1>", "%s", "cc5J\rPS1=un'1>'");
-	int status = check_layout(fd, 0x1, "*12x80; 4x80; 5x80");
+	send_cmd(fd, "un1>", "%s", "cc50J\rPS1=un'1>'");
+	int status = check_layout(fd, 0x1, "*11x80; 5x80; 5x80");
 	send_cmd(fd, "un2>", "%s", "=\rPS1=un'2>'");
 	status |= check_layout(fd, 0x1, "*7x80; 7x80; 7x80");
 	return status;
@@ -815,14 +815,14 @@ int
 test_resize(int fd)
 {
 	int status = 0;
-	send_cmd(fd, "uniq1", "%s\r%s", "JccC", "printf 'uniq%s\\n' 1");
+	send_cmd(fd, "uniq1", "%s\r%s", "ccC", "printf 'uniq%s\\n' 1");
 	status |= check_layout(fd, 0x1, "*7x40; 7x80; 7x80; 7x39");
-	send_cmd(fd, "uniq2", "%s\r%s", "5J", "printf 'uniq%s\\n' 2");
-	status |= check_layout(fd, 0x1, "*12x40; 4x80; 5x80; 12x39");
-	send_cmd(fd, "uniq3", "%s\r%s", "jj10K", "printf 'uniq%s\\n' 3");
-	status |= check_layout(fd, 0x1, "*12x40; 0x80; 10x80; 12x39");
-	send_cmd(fd, "uniq4", "%s\r%s", "kkl20H", "printf 'uniq%s\\n' 4");
-	status |= check_layout(fd, 0x1, "12x20; 0x80; 10x80; *12x59");
+	send_cmd(fd, "uniq2", "%s\r%s", "75J", "printf 'uniq%s\\n' 2");
+	status |= check_layout(fd, 0x1, "*17x40; 2x80; 2x80; 17x39");
+	send_cmd(fd, "uniq3", "%s\r%s", "jC10H", "printf 'uniq%s\\n' 3");
+	status |= check_layout(fd, 0x1, "17x40; *2x8; 2x80; 2x71; 17x39");
+	send_cmd(fd, "uniq4", "%s\r%s", "0J", "printf 'uniq%s\\n' 4");
+	status |= check_layout(fd, 0x1, "17x40; *5x80; 17x39");
 	return status;
 }
 

@@ -663,8 +663,6 @@ build_bindings(void)
 	add_key(m->keys, L'l', mov, "l");
 	add_key(m->keys, L'h', mov, "h");
 	add_key(m->keys, L'J', resize, "J");
-	add_key(m->keys, L'K', resize, "K");
-	add_key(m->keys, L'L', resize, "L");
 	add_key(m->keys, L'H', resize, "H");
 	add_key(m->keys, L'q', quit, NULL);
 #ifndef NDEBUG
