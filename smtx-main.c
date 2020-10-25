@@ -158,8 +158,11 @@ new_pty(int rows, int cols)
 		S.maxfd = p->fd > S.maxfd ? p->fd : S.maxfd;
 		fcntl(p->fd, F_SETFL, O_NONBLOCK);
 		p->id = p->fd - 2;
-		p->next = S.p;
-		S.p = p;
+		struct pty *t = S.p;
+		while( t && t->next ) {
+			t = t->next;
+		}
+		*(t ? &t->next : &S.p) = p;
 		const char *bname = strrchr(sh, '/');
 		bname = bname ? bname + 1 : sh;
 		strncpy(p->status, bname, sizeof p->status - 1);
@@ -868,12 +871,13 @@ would be described by: ".5:.5 .25:.66 .5:.66 .5:.83 .5:1 1:.25 1:1"
 Note that order matters.
  */
 static struct canvas *
-add_canvas(const char **lp, double oy, double ox, double ey, double ex)
+add_canvas(const char **lp, double oy, double ox, double ey, double ex,
+	struct pty *p)
 {
 	double y, x;
 	int e;
 	const char *layout = *lp;
-	struct canvas *n = newcanvas(S.p);
+	struct canvas *n = newcanvas(p);
 	if( n == NULL ) {
 		goto fail;
 	}
@@ -914,12 +918,13 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex)
 		}
 		n->c[!n->typ] = add_canvas(&layout,
 			n->typ ? y : oy, n->typ ? ox : x,
-			n->typ ? ey : y, n->typ ? x : ex
+			n->typ ? ey : y, n->typ ? x : ex,
+			p ? p->next : NULL
 		);
 	}
 	n->c[n->typ] = add_canvas(&layout,
 		n->typ ? oy : y, n->typ ? x : ox,
-		ey, ex
+		ey, ex, p ? p->next : NULL
 	);
 
 	return n;
@@ -932,7 +937,7 @@ fail:
 void
 build_layout(const char *layout)
 {
-	struct canvas *n = add_canvas(&layout, 0.0, 0.0, 1.0, 1.0);
+	struct canvas *n = add_canvas(&layout, 0.0, 0.0, 1.0, 1.0, S.p);
 	if( n ) {
 		prune_canvas(S.c);
 		S.c = n;
