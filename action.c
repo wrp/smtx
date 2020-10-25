@@ -272,6 +272,21 @@ set_history(const char *arg)
 }
 
 void
+set_layout(const char *arg)
+{
+	(void)arg;
+	switch(S.count) {
+	case -1: case 0: case 1: build_layout("1:1"); break;
+	case 2: build_layout(".5:1 1:1"); break;
+	case 3: build_layout("1:.5 .5:1 1:1"); break;
+	case 4: build_layout(".5:.5 .5:1 1:.5 1:1"); break;
+	case 5: build_layout("1:.5 1:1"); break;
+	case 6: build_layout(".5:1 1:.5 1:1"); break;
+	case 7: build_layout(".5:1 1:.33 1:.666 1:1"); break;
+	}
+}
+
+void
 set_width(const char *arg)
 {
 	struct canvas *n = S.f;

@@ -564,6 +564,27 @@ test_layout(int fd)
 	send_cmd(fd, "foobaz", "l\rprintf 'foo%%s' baz\r");
 	rv |= check_layout(fd, 0x11, "11x80@0,0; 11x40@12,0; *11x39@12,41");
 
+	send_cmd(fd, "aq1>", "1v\rPS1=aq1'> '");
+	rv |= check_layout(fd, 0x1, "*23x80");
+
+	send_cmd(fd, "br2>", "2v\rPS1=br2'> '");
+	rv |= check_layout(fd, 0x1, "*11x80; 11x80");
+
+	send_cmd(fd, "cs3>", "3v\rPS1=cs3'> '");
+	rv |= check_layout(fd, 0x1, "*23x40; 11x39; 11x39");
+
+	send_cmd(fd, "dt4>", "4v\rPS1=dt4'> '");
+	rv |= check_layout(fd, 0x1, "*11x40; 11x40; 11x39; 11x39");
+
+	send_cmd(fd, "eu5>", "5v\rPS1=eu5'> '");
+	rv |= check_layout(fd, 0x1, "*23x40; 23x39");
+
+	send_cmd(fd, "fv6>", "6v\rPS1=fv6'> '");
+	rv |= check_layout(fd, 0x1, "*11x80; 11x40; 11x39");
+
+	send_cmd(fd, "gw7>", "7v\rPS1=gw7'> '");
+	rv |= check_layout(fd, 0x1, "*11x80; 11x26; 11x26; 11x26");
+
 	return rv;
 }
 

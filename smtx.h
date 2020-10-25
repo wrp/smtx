@@ -191,6 +191,7 @@ extern action scrolln;
 extern action scrollh;
 extern action send;
 extern action set_history;
+extern action set_layout;
 extern action set_width;
 extern action swap;
 

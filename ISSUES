@@ -1,17 +1,7 @@
 
 TODO:
-	Change behavior of 'v' to use preset window layouts. eg, '1v'
-	should make one window visible, while (perhaps):
-	(in each, we just specify the lower right corner of a window)
-	Note that before we try to implement dynamic screen layouts, we
-	need to consider overlapping windows.  I really want to be
-	able to overlap.
-	2v -> ".5,1 1,1"  (2 screens, top and bottom)
-	3v -> "1,.5 .5,1 1,1" (3 screens, left full length, right half split)
-	4v -> ".5,.5 .5,1 1,.5, 1 1"
-	5v -> "1,.5 1,1"  (2 screens, left and right)
-	6v -> ".5,1 1,.5 1,1" (3 screen, top full width, bottom split)
-	7v -> ".5,1 1,.33 1,.666 1,1" (4 screens top full width, bottom split in 3)
+	(?) Make it possible for windows to overlap
+
 	Perhaps implement 's' to save the current layout into a register.  Make
 	the presets modifiable at startup.
 
