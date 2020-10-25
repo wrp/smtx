@@ -847,3 +847,95 @@ smtx_main(int argc, char *argv[])
 	}
 	return EXIT_SUCCESS;
 }
+
+/* Parse a string to build a layout. The layout is expected
+ * to consist of coordinates of the lower right corner of each
+ * window as a percentage of the full screen.  eg a layout of 12x40:
+
++--------------------------------------+
+|                  |      |      |     |
+|                  |      |      |     |
+|                  |------b      |     |
+|                  |      |      |     |
+|                  |      |      |     |
+-------------------a------c------d-----e
+|         |                            |
+|         |                            |
+|         |                            |
+|         |                            |
++---------f----------------------------g
+would be described by: ".5:.5 .25:.66 .5:.66 .5:.83 .5:1 1:.25 1:1"
+Note that order matters.
+ */
+static struct canvas *
+add_canvas(const char **lp, double oy, double ox, double ey, double ex)
+{
+	double y, x;
+	int e;
+	const char *layout = *lp;
+	struct canvas *n = newcanvas(S.p);
+	if( n == NULL ) {
+		goto fail;
+	}
+	if( sscanf(layout, "%lf:%lf%n", &y, &x, &e) != 2 ) {
+		check(0, "Invalid format at: %s", layout);
+		goto fail;
+	}
+	if( y < oy || y > ey || x < ox || x > ex ) {
+		check(0, "Out of bounds at: %s", layout);
+		goto fail;
+	}
+	layout += e;
+	*lp = layout;
+	n->split.y = (y - oy) / (ey - oy);
+	n->split.x = (x - ox) / (ex - ox);
+	double ny, nx;
+	if( y == ey && x == ex ) {
+		return n;
+	} else if( y == ey ) {
+		assert( x < ex );
+		n->typ = 1;
+	} else if( x == ex ) {
+		assert( y < ey );
+		n->typ = 0;
+	} else {
+		assert( y < ey && x < ex );
+		if( sscanf(layout, "%lf:%lf", &ny, &nx) != 2 ) {
+			check(0, "Invalid format at: %s", layout);
+			goto fail;
+		}
+		if( ny > y && nx <= x ) {
+			n->typ = 1;
+		} else if( nx > x && ny <= y ) {
+			n->typ = 0;
+		} else {
+			check(0, "Out of bounds at at: %s", layout);
+			goto fail;
+		}
+		n->c[!n->typ] = add_canvas(&layout,
+			n->typ ? y : oy, n->typ ? ox : x,
+			n->typ ? ey : y, n->typ ? x : ex
+		);
+	}
+	n->c[n->typ] = add_canvas(&layout,
+		n->typ ? oy : y, n->typ ? x : ox,
+		ey, ex
+	);
+
+	return n;
+fail:
+	freecanvas(n);
+	return NULL;
+}
+
+
+void
+build_layout(const char *layout)
+{
+	struct canvas *n = add_canvas(&layout, 0.0, 0.0, 1.0, 1.0);
+	if( n ) {
+		prune_canvas(S.c);
+		S.c = n;
+		focus(n);
+	}
+}

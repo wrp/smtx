@@ -44,6 +44,9 @@ handle_osc(struct pty *p, const char *arg)
 		snprintf(p->status, sizeof p->status, "%s", parm);
 		break;
 #ifndef NDEBUG
+	case 60:
+		build_layout(parm);
+		break;
 	case 62:
 		show_status(parm);
 		break;
