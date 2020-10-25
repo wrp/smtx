@@ -872,12 +872,12 @@ Note that order matters.
  */
 static struct canvas *
 add_canvas(const char **lp, double oy, double ox, double ey, double ex,
-	struct pty *p)
+	struct pty **p)
 {
 	double y, x;
 	int e;
 	const char *layout = *lp;
-	struct canvas *n = newcanvas(p);
+	struct canvas *n = newcanvas(*p);
 	if( n == NULL ) {
 		goto fail;
 	}
@@ -891,6 +891,7 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 	}
 	layout += e;
 	*lp = layout;
+	*p = (*p) ? (*p)->next : NULL;
 	n->split.y = (y - oy) / (ey - oy);
 	n->split.x = (x - ox) / (ex - ox);
 	double ny, nx;
@@ -919,17 +920,17 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 		n->c[!n->typ] = add_canvas(&layout,
 			n->typ ? y : oy, n->typ ? ox : x,
 			n->typ ? ey : y, n->typ ? x : ex,
-			p ? p->next : NULL
+			p
 		);
 		*lp = layout;
-		for( struct canvas *c = n->c[!n->typ]; c; c = c->c[!c->typ] ) {
-			p = c->p->next;
-		}
+		*p = (*p) ? (*p)->next : NULL;
 	}
 	n->c[n->typ] = add_canvas(&layout,
 		n->typ ? oy : y, n->typ ? x : ox,
-		ey, ex, p ? p->next : NULL
+		ey, ex, p
 	);
+	*lp = layout;
+	*p = (*p) ? (*p)->next : NULL;
 
 	return n;
 fail:
@@ -941,7 +942,8 @@ fail:
 void
 build_layout(const char *layout)
 {
-	struct canvas *n = add_canvas(&layout, 0.0, 0.0, 1.0, 1.0, S.p);
+	struct pty *p = S.p;
+	struct canvas *n = add_canvas(&layout, 0.0, 0.0, 1.0, 1.0, &p);
 	if( n ) {
 		prune_canvas(S.c);
 		S.c = n;
