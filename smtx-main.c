@@ -921,6 +921,10 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 			n->typ ? ey : y, n->typ ? x : ex,
 			p ? p->next : NULL
 		);
+		*lp = layout;
+		for( struct canvas *c = n->c[!n->typ]; c; c = c->c[!c->typ] ) {
+			p = c->p->next;
+		}
 	}
 	n->c[n->typ] = add_canvas(&layout,
 		n->typ ? oy : y, n->typ ? x : ox,
