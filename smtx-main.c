@@ -791,7 +791,7 @@ Note that order matters.
  */
 static struct canvas *
 add_canvas(const char **lp, double oy, double ox, double ey, double ex,
-	struct pty **pp)
+	struct pty **pp, struct canvas *parent)
 {
 	double y, x;
 	int e;
@@ -801,6 +801,7 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 	if( n == NULL ) {
 		goto fail;
 	}
+	n->parent = parent;
 	if( sscanf(layout, "%lf:%lf%n", &y, &x, &e) != 2 ) {
 		check(0, "Invalid format at: %s", layout);
 		goto fail;
@@ -837,18 +838,20 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 			check(0, "Out of bounds at at: %s", layout);
 			goto fail;
 		}
-		n->c[!n->typ] = add_canvas(&layout,
-			n->typ ? y : oy, n->typ ? ox : x,
-			n->typ ? ey : y, n->typ ? x : ex,
-			&p
-		);
+		if( (n->c[!n->typ] = add_canvas(&layout,
+				n->typ ? y : oy, n->typ ? ox : x,
+				n->typ ? ey : y, n->typ ? x : ex,
+				&p, n)) == NULL ) {
+			goto fail;
+		}
 		*lp = layout;
 		*pp = p ? p->next : NULL;
 	}
-	n->c[n->typ] = add_canvas(&layout,
-		n->typ ? oy : y, n->typ ? x : ox,
-		ey, ex, &p
-	);
+	if( (n->c[n->typ] = add_canvas(&layout,
+			n->typ ? oy : y, n->typ ? x : ox,
+			ey, ex, &p, n)) == NULL ) {
+		goto fail;
+	}
 	*lp = layout;
 	*pp = p ? p->next : NULL;
 
@@ -858,12 +861,11 @@ fail:
 	return NULL;
 }
 
-
 void
 build_layout(const char *layout)
 {
 	struct pty *p = S.p;
-	struct canvas *n = add_canvas(&layout, 0.0, 0.0, 1.0, 1.0, &p);
+	struct canvas *n = add_canvas(&layout, 0.0, 0.0, 1.0, 1.0, &p, NULL);
 	if( n ) {
 		freecanvas(S.c);
 		S.c = n;
