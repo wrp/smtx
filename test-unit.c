@@ -897,7 +897,7 @@ test_scrollback(int fd)
 
 	send_txt(fd, "uniq>", "a='%s'\rPS1='un'i'q>'", string);
 	send_cmd(fd, NULL, "100<"); /* Cover invalid scroll left */
-	send_txt(fd, "uniq>", "yes \"$a\" | nl |\rsed 50q");
+	send_txt(fd, "50", "yes \"$a\" | nl |\rsed 5'0q'");
 	snprintf(trunc, 19, "%s", string);
 	status |= validate_row(fd, 1, "%6d  %-18s", 29, trunc);
 	status |= validate_row(fd, 22, "%6d  %-18s", 50, trunc);
@@ -910,12 +910,7 @@ test_scrollback(int fd)
 	snprintf(trunc, 27, "%s", string);
 	send_cmd(fd, "foobaz", "h8>l\rprintf 'foo%%s' baz");
 	status |= validate_row(fd, 14, "%-26s", trunc);
-
-	/* Exit all pty instead of killing.  This was triggering a segfault
-	 * on macos.  The test still times out whether we kill the SMTX
-	 * or exit. */
 	status |= check_layout(fd, 0x1, "23x26; *23x26; 23x26");
-	send_txt(fd, NULL, "kill $SMTX");
 
 	return status;
 }
