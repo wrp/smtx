@@ -23,7 +23,8 @@
 #include "smtx.h"
 
 static size_t
-describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
+describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags,
+	int tab)
 {
 	/* Describe a layout. */
 	const char * const e = d + siz;
@@ -31,6 +32,7 @@ describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 	int show_id = flags & 0x4;
 	int show_pos = flags & 0x10;
 	int show_2nd = flags & 0x40;
+	int indent = flags & 0x80;
 
 	char *isfocus = recurse && c == S.f ? "*" : "";
 	d += snprintf(d, e - d, "%s%dx%d", isfocus, c->extent.y, c->extent.x);
@@ -50,10 +52,13 @@ describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags)
 		d += snprintf(d, e - d, "(2nd=%s)", c->p->secondary );
 	}
 	for( int i = 0; recurse && i < 2; i ++ ) {
-		if( e - d > 3 && c->c[i] ) {
-			*d++ = ';';
-			*d++ = ' ';
-			d += describe_layout(d, e - d, c->c[i], flags);
+		if( e - d > 3 + tab && c->c[i] ) {
+			*d++ = indent ? '\r' : ';';
+			*d++ = indent ? '\n' : ' ';
+			for( int i = 0; indent && i < tab; i++ ) {
+				*d++ = '\t';
+			}
+			d += describe_layout(d, e - d, c->c[i], flags, tab + 1);
 		}
 	}
 	return siz - ( e - d );
@@ -197,10 +202,13 @@ static void
 show_layout(const char *arg)
 {
 	char buf[1024] = "layout: ";
-	int w = strlen(buf);
 	int flag = strtol(*arg == ';' ? arg + 1 : arg, NULL, 16);
 	struct canvas *c = flag & 0x20 ? S.f : S.c;
-	size_t s = describe_layout(buf + w, sizeof buf - w - 3, c, flag);
+	if( flag & 0x80 ) {
+		strcat(buf, "\r\n");
+	}
+	int w = strlen(buf);
+	size_t s = describe_layout(buf + w, sizeof buf - w - 3, c, flag, 1);
 	for( size_t i = w; i < w + s; i++ ) {
 		assert( buf[i] != ':' );
 	}
@@ -258,7 +266,7 @@ show_status(const char *arg)
 	} else {
 		show_procs();
 		show_state();
-		show_layout(*arg ? arg : "55");
+		show_layout(*arg ? arg : "d5");
 	}
 	rewrite(1, banner, strlen(banner));
 }
