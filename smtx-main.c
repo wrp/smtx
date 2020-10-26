@@ -357,17 +357,17 @@ freecanvas(struct canvas * n)
 void
 prune_canvas(struct canvas *f)
 {
-	if( f && f->parent ) {
+	if( S.count == 9 ) {
+		S.c = NULL;
+	} else if( f && f->parent ) {
 		int c = f == f->parent->c[1];
 		*(c ? &f->parent->split.x : &f->parent->split.y) = 1.0;
 		f->parent->c[c] = NULL;
 		focus(f->parent);
 		freecanvas(f);
 		S.reshape = 1;
-	} else if( f ) {
-		prune_canvas(S.c->c[S.count == -1 ? !S.c->typ : S.c->typ]);
-	} else if( S.count == 9 ) {
-		S.c = NULL;
+	} else if( f == S.c ) {
+		prune_canvas(f->c[S.count == -1 ? !f->typ : !!S.count]);
 	}
 }
 
