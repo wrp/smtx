@@ -641,45 +641,8 @@ build_bindings(void)
 	add_key(m->keys, S.ctlkey, transition, "control");
 
 	m = &S.modes[control];
-	initialize_mode(m, bad_key);
+	memcpy(m, &ctl, sizeof *m);
 	add_key(m->keys, S.ctlkey, transition, "*enter");
-	add_key(m->keys, L'\r', transition, "enter");
-	add_key(m->keys, L'\n', transition, "enter");
-	/* TODO: rebind b,f,<,> to hjkl in different binding */
-	add_key(m->keys, L'a', attach, NULL);
-	add_key(m->keys, L'b', scrolln, "-");
-	add_key(m->keys, L'f', scrolln, "+");
-	/* If default bindings for scrollh are changed, edit README.rst */
-	add_key(m->keys, L'>', scrollh, ">");
-	add_key(m->keys, L'<', scrollh, "<");
-	add_key(m->keys, L'=', equalize, NULL);
-	add_key(m->keys, L'c', create, NULL);
-	add_key(m->keys, L'C', create, "C");
-	add_key(m->keys, L'j', mov, "j");
-	add_key(m->keys, L'k', mov, "k");
-	add_key(m->keys, L'l', mov, "l");
-	add_key(m->keys, L'h', mov, "h");
-	add_key(m->keys, L'J', resize, "J");
-	add_key(m->keys, L'H', resize, "H");
-#ifndef NDEBUG
-	add_key(m->keys, L'Q', show_status, "");
-#endif
-	add_key(m->keys, L's', swap, NULL);
-	add_key(m->keys, L't', new_tabstop, NULL);
-	add_key(m->keys, L'v', set_layout, NULL);
-	add_key(m->keys, L'W', set_width, NULL);
-	add_key(m->keys, L'Z', set_history, NULL);
-	add_key(m->keys, L'x', prune, NULL);
-	add_key(m->keys, L'0', digit, "0");
-	add_key(m->keys, L'1', digit, "1");
-	add_key(m->keys, L'2', digit, "2");
-	add_key(m->keys, L'3', digit, "3");
-	add_key(m->keys, L'4', digit, "4");
-	add_key(m->keys, L'5', digit, "5");
-	add_key(m->keys, L'6', digit, "6");
-	add_key(m->keys, L'7', digit, "7");
-	add_key(m->keys, L'8', digit, "8");
-	add_key(m->keys, L'9', digit, "9");
 
 	add_key(code_keys, KEY_RESIZE, reshape_root, NULL);
 	add_key(code_keys, KEY_F(1), send, "\033OP");

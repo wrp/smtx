@@ -94,6 +94,7 @@ struct mode {
 	struct handler keys[128];
 };
 extern struct handler k1[128];
+extern struct handler ctl[128];
 
 struct state {
 	char ctlkey;
