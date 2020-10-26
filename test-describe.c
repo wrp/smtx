@@ -32,9 +32,12 @@ describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags,
 	int show_id = flags & 0x4;
 	int show_pos = flags & 0x10;
 	int show_2nd = flags & 0x40;
-	int indent = flags & 0x80;
+	int human = flags & 0x80;
 
 	char *isfocus = recurse && c == S.f ? "*" : "";
+	if( human ) {
+		d += snprintf(d, e - d, "%c", c->typ ? '|' : '-');
+	}
 	d += snprintf(d, e - d, "%s%dx%d", isfocus, c->extent.y, c->extent.x);
 	if( show_pos) {
 		d += snprintf(d, e - d, "@%d,%d", c->origin.y, c->origin.x);
@@ -53,9 +56,9 @@ describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags,
 	}
 	for( int i = 0; recurse && i < 2; i ++ ) {
 		if( e - d > 3 + tab && c->c[i] ) {
-			*d++ = indent ? '\r' : ';';
-			*d++ = indent ? '\n' : ' ';
-			for( int i = 0; indent && i < tab; i++ ) {
+			*d++ = human ? '\r' : ';';
+			*d++ = human ? '\n' : ' ';
+			for( int i = 0; human && i < tab; i++ ) {
 				*d++ = '\t';
 			}
 			d += describe_layout(d, e - d, c->c[i], flags, tab + 1);
