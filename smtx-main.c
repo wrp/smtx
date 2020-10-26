@@ -94,8 +94,12 @@ free_proc(struct pty *p)
 			t = t->next;
 		}
 		*(prev ? &prev->next : &S.p) = p->next;
-		p->next = S.free.p;
-		S.free.p = p;
+		for( t = S.free.p, prev = NULL; t && t->id < p->id; ) {
+			prev = t;
+			t = t->next;
+		}
+		p->next = prev ? prev->next : t;
+		*(prev ? &prev->next : &S.free.p) = p;
 	}
 }
 
