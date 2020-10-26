@@ -776,7 +776,7 @@ test_prune(int fd)
 	send_cmd(fd, "abx>", "j\rPS1=ab'x>'");  /* Move down 1 */
 	rv |= check_layout(fd, 0x1, "5x80; *5x80; 5x80; 5x80");
 	send_txt(fd, "exited", "exit");
-	send_cmd(fd, NULL, "q");  /* prune */
+	send_cmd(fd, NULL, "x");  /* prune */
 	rv |= check_layout(fd, 0x1, "*23x80");
 	send_cmd(fd, NULL, "C");  /* create pty */
 	send_cmd(fd, NULL, "l");  /* move right */
@@ -792,26 +792,6 @@ test_prune(int fd)
 
 	send_cmd(fd, NULL, "h");  /* move left*/
 	rv |= check_layout(fd, 0x1, "*23x40; 23x39");
-	return rv;
-}
-
-int
-test_quit(int fd)
-{
-	int rv = validate_row(fd, 1, "%-80s", "ps1>");
-	return 0;
-	send_raw(fd, "invalid", "%c%dq", ctlkey, SIGBUS); /* Invalid signal */
-	send_raw(fd, NULL, "\r");
-	send_cmd(fd, "ps1>", "c");
-	rv |= check_layout(fd, 0x1, "*11x80; 11x80");
-	send_cmd(fd, NULL, "q");  /* Does not prune */
-	rv |= check_layout(fd, 0x1, "*11x80; 11x80");
-	send_txt(fd, "exited", "exit"); /* Exit the shell */
-	send_cmd(fd, NULL, "q"); /* Should prune */
-	send_txt(fd, "ab1>", "PS1=ab1'>'");
-	rv |= check_layout(fd, 0x1, "*23x80");
-	send_txt(fd, "exited", "exit"); /* Exit the shell; smtx does not exit */
-	send_cmd(fd, NULL, "q"); /* smtx should now exit */
 	return rv;
 }
 

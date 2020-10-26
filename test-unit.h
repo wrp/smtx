@@ -94,7 +94,6 @@ test test_nel;
 test test_pager;
 test test_pnm;
 test test_prune;
-test test_quit;
 test test_repc;
 test test_resend;
 test test_resize;

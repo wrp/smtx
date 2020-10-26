@@ -119,27 +119,6 @@ new_tabstop(const char *arg)
 	extend_tabs(n->p, n->p->tabstop = c);
 }
 
-void
-quit(const char *arg)
-{
-	struct canvas *n = S.f;
-	pid_t p = n->p->pid;
-	int s = S.count == -1 ? SIGINT : S.count;
-	(void)arg;
-	switch( s ) {
-	case SIGKILL: case SIGTERM: case SIGUSR1: case SIGHUP:
-	case SIGUSR2: case SIGINT:
-		if( p != -1 ) {
-			check(kill(-p, s) != -1, "kill %d, %d", p, s);
-		} else {
-			prune(NULL);
-		}
-		break;
-	default:
-		check(0, "invalid signal: %d", s);
-	}
-}
-
 static void set_pty_history(struct pty *p, int siz);
 
 void
