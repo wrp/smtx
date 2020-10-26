@@ -321,9 +321,9 @@ transition(const char *arg)
 	}
 	S.errmsg[0] = 0; /* Clear any existing error message */
 	if( ! strcmp(arg, "enter") ) {
-		S.mode = enter;
+		S.binding = k1;
 	} else if( ! strcmp(arg, "control") ) {
-		S.mode = control;
+		S.binding = ctl;
 	}
 	scrollbottom(S.f);
 }

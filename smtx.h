@@ -101,8 +101,7 @@ struct state {
 	int width;
 	int history; /* Size of newly created ptys */
 	int count;
-	struct mode modes[3];
-	enum { enter, control } mode; /* current mode */
+	struct handler *binding;
 	struct canvas *c;  /* root of all canvasses in use */
 	struct canvas *f;  /* currently focused canvas */;
 	struct pty *p;     /* list of all pty in use */

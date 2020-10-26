@@ -23,7 +23,7 @@ static struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 struct state S = {
 	.ctlkey = CTL('g'),
 	.width = 80,
-	.mode = enter,
+	.binding = k1,
 	.history = 1024,
 	.count = -1,
 };
@@ -236,7 +236,7 @@ void
 fixcursor(void) /* Move the terminal cursor to the active window. */
 {
 	struct canvas *f = S.f;
-	int show = S.mode == enter && f->p->s->vis;
+	int show = S.binding == k1 && f->p->s->vis;
 	if( f->p && f->p->s && f->extent.y ) {
 		struct screen *s = f->p->s;
 		int y, x;
@@ -410,7 +410,7 @@ void
 draw(struct canvas *n) /* Draw a canvas. */
 {
 	if( n != NULL && n->extent.y > 0 ) {
-		int rev = S.mode == control && n == S.f;
+		int rev = S.binding == ctl && n == S.f;
 		draw(n->c[0]);
 		draw(n->c[1]);
 		draw_div(n, rev && !n->extent.x);
@@ -476,7 +476,7 @@ getinput(void) /* check stdin and all pty's for input. */
 		while( S.f && (r = wget_wch(S.f->p->s->win, &w)) != ERR ) {
 			struct handler *b = NULL;
 			if( r == OK && w > 0 && w < 128 ) {
-				b = S.modes[S.mode].keys + w;
+				b = S.binding + w;
 			} else if( r == KEY_CODE_YES ) {
 				assert( w >= KEY_MIN && w <= KEY_MAX );
 				b = &code_keys[w - KEY_MIN];
@@ -603,14 +603,8 @@ build_bindings(void)
 		add_key(code_keys, k, passthru, wc_lut + i);
 	}
 
-	struct mode *m = &S.modes[enter];
-	assert( sizeof k1 == sizeof *m );
-	memcpy(m, &k1, sizeof k1);
-	add_key(m->keys, S.ctlkey, transition, "control");
-
-	m = &S.modes[control];
-	memcpy(m, &ctl, sizeof *m);
-	add_key(m->keys, S.ctlkey, transition, "*enter");
+	add_key(k1, S.ctlkey, transition, "control");
+	add_key(ctl, S.ctlkey, transition, "*enter");
 
 	add_key(code_keys, KEY_RESIZE, reshape_root, NULL);
 	add_key(code_keys, KEY_F(1), send, "\033OP");
