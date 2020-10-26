@@ -262,6 +262,10 @@ void
 show_status(const char *arg)
 {
 	const char *banner = "************************\r\n";
+	for( int i = 0; i < LINES * COLS; i++ ) {
+		putchar(' ');
+	}
+	fflush(stdout);
 	rewrite(1, "\r\n", 2);
 	rewrite(1, banner, strlen(banner));
 	if( *arg == 'r' ) {
