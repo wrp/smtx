@@ -51,13 +51,9 @@ create(const char *arg)
 		n = n->c[dir]; /* Split last window in a chain. */
 	}
 	for( int count = S.count < 1 ? 1 : S.count; count; count -= 1 ) {
-		struct canvas *v = *( n ? &n->c[dir] : &S.c ) = newcanvas(NULL);
+		struct canvas *v = *(n ? &n->c[dir] : &S.c) = newcanvas(0, n);
 		if( v != NULL ) {
 			v->typ = dir;
-			v->parent = n;
-			if( n && n->c[!dir] == NULL ) {
-				n->typ = dir;
-			}
 			n = v;
 		}
 	}

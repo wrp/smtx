@@ -157,7 +157,7 @@ extern int id;
 extern void fixcursor(void);
 extern void focus(struct canvas *n);
 
-extern struct canvas * newcanvas(struct pty *);
+extern struct canvas * newcanvas(struct pty *, struct canvas *);
 extern void balance(struct canvas *);
 extern void draw(struct canvas *);
 extern void setupevents(struct vtp *);

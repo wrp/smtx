@@ -177,7 +177,7 @@ new_pty(int rows, int cols)
 }
 
 struct canvas *
-newcanvas(struct pty *p)
+newcanvas(struct pty *p, struct canvas *parent)
 {
 	struct canvas *n = NULL;
 	p = p ? p : new_pty(LINES, MAX(COLS, S.width));
@@ -191,6 +191,7 @@ newcanvas(struct pty *p)
 			n->c[0] = n->c[1] = NULL;
 			n->manualscroll = n->offset.y = n->offset.x = 0;
 			n->p = p;
+			n->parent = parent;
 			p->count += 1;
 			n->split.y = 1.0;
 			n->split.x = 1.0;
@@ -797,11 +798,10 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 	int e;
 	const char *layout = *lp;
 	struct pty *p = *pp;
-	struct canvas *n = newcanvas(p);
+	struct canvas *n = newcanvas(p, parent);
 	if( n == NULL ) {
 		goto fail;
 	}
-	n->parent = parent;
 	if( sscanf(layout, "%lf:%lf%n", &y, &x, &e) != 2 ) {
 		check(0, "Invalid format at: %s", layout);
 		goto fail;
