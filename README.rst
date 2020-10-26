@@ -8,7 +8,10 @@ in a limited environment (eg, on a small physical device).  It provides
 a simple mechanism for providing ptys that are wider than the physical
 device, and makes it simple to have multiple views in different
 locations of the pty. Also, it provides a simple mechanism for generating
-screen layouts dynamically.
+screen layouts dynamically.  For example, sending the osc string
+".5:.5 .5:1 1:.5 1:1" (eg, printf '\033]60;.5:.5 .5:1 1:.5 1:1\\007')
+will generate 4 windows in a grid.  There are several pre-set screen layouts
+that can be rendered with the 'v' command.
 
 Quickstart
 ==========
@@ -30,8 +33,7 @@ Windows
 =======
 
 New windows are created in `command` mode with `create`, which is by
-default bound to the keystrokes `c` and `C`.  New windows will split
-the currently focused window.
+default bound to the keystrokes `c` and `C`.
 To switch among the windows use `j`, `k`, `l`, and `h`.
 
 Usage
