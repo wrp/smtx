@@ -55,6 +55,9 @@ create(const char *arg)
 		if( v != NULL ) {
 			v->typ = dir;
 			v->parent = n;
+			if( n && n->c[!dir] == NULL ) {
+				n->typ = dir;
+			}
 			n = v;
 		}
 	}
