@@ -93,6 +93,7 @@ extern struct state S;
 struct mode {
 	struct handler keys[128];
 };
+extern struct handler k1[128];
 
 struct state {
 	char ctlkey;

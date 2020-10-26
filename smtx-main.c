@@ -636,9 +636,9 @@ build_bindings(void)
 	}
 
 	struct mode *m = &S.modes[enter];
-	initialize_mode(m, passthru);
+	assert( sizeof k1 == sizeof *m );
+	memcpy(m, &k1, sizeof k1);
 	add_key(m->keys, S.ctlkey, transition, "control");
-	add_key(m->keys, L'\r', send, "\r");
 
 	m = &S.modes[control];
 	initialize_mode(m, bad_key);
