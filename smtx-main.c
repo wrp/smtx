@@ -87,7 +87,6 @@ void
 free_proc(struct pty *p)
 {
 	assert( p != NULL );
-
 	if( --p->count == 0 ) {
 		struct pty *t = S.p, *prev = NULL;
 		while( t && t != p ) {
@@ -163,6 +162,7 @@ new_pty(int rows, int cols)
 			t = t->next;
 		}
 		*(t ? &t->next : &S.p) = p;
+		p->next = NULL;
 		const char *bname = strrchr(sh, '/');
 		bname = bname ? bname + 1 : sh;
 		strncpy(p->status, bname, sizeof p->status - 1);
@@ -344,11 +344,12 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 static void
 freecanvas(struct canvas * n)
 {
-	if(n) {
+	if( n ) {
 		free_proc(n->p);
 		freecanvas(n->c[0]);
 		freecanvas(n->c[1]);
 		n->c[0] = S.free.c;
+		n->c[1] = NULL;
 		S.free.c = n;
 	}
 }
@@ -356,25 +357,18 @@ freecanvas(struct canvas * n)
 void
 prune_canvas(struct canvas *f)
 {
-	struct canvas *parent = f->parent;
-	int d = !f->c[f->typ] ? !f->typ : f->typ;
-	int c = parent ? f == parent->c[1] : d;
-	struct canvas *child = f->c[d];
-
-	f->c[d] = NULL;
-	if( child ) {
-		child->parent = parent;
-		child->origin = f->origin;
-		*(parent ? &parent->c[c] : &S.c) = child;
-	} else if( parent ) {
-		*(c ? &parent->split.x : &parent->split.y) = 1.0;
-		parent->c[c] = NULL;
-	} else {
+	if( f && f->parent ) {
+		int c = f == f->parent->c[1];
+		*(c ? &f->parent->split.x : &f->parent->split.y) = 1.0;
+		f->parent->c[c] = NULL;
+		focus(f->parent);
+		freecanvas(f);
+		S.reshape = 1;
+	} else if( f ) {
+		prune_canvas(S.c->c[S.count == -1 ? !S.c->typ : S.c->typ]);
+	} else if( S.count == 9 ) {
 		S.c = NULL;
 	}
-	focus(child ? child : parent);
-	freecanvas(f);
-	S.reshape = 1;
 }
 
 static void
@@ -947,8 +941,9 @@ build_layout(const char *layout)
 	struct pty *p = S.p;
 	struct canvas *n = add_canvas(&layout, 0.0, 0.0, 1.0, 1.0, &p);
 	if( n ) {
-		prune_canvas(S.c);
+		freecanvas(S.c);
 		S.c = n;
 		focus(n);
 	}
+	S.reshape = 1;
 }

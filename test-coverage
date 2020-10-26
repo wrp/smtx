@@ -39,7 +39,7 @@ handler 95
 smtx 100
 smtx-main 85
 vtparser 100
-action 100
+action 95
 EOF
 {
 RV=0
