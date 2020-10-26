@@ -578,10 +578,10 @@ test_layout(int fd)
 	rv |= check_layout(fd, 0x1, "*11x40; 11x40; 11x39; 11x39");
 
 	send_cmd(fd, "eu5>", "5v\rPS1=eu5'> '");
-	rv |= check_layout(fd, 0x1, "*23x40; 23x39");
+	rv |= check_layout(fd, 0x1, "*23x40; 5x39; 5x39; 5x39; 5x39");
 
 	send_cmd(fd, "fv6>", "6v\rPS1=fv6'> '");
-	rv |= check_layout(fd, 0x1, "*11x80; 11x40; 11x39");
+	rv |= check_layout(fd, 0x1, "*11x80; 5x40; 5x26; 5x26; 5x26; 5x39");
 
 	send_cmd(fd, "gw7>", "7v\rPS1=gw7'> '");
 	rv |= check_layout(fd, 0x1, "*11x80; 11x26; 11x26; 11x26");

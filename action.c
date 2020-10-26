@@ -257,8 +257,8 @@ set_layout(const char *arg)
 	case 2: arg = ".5:1 1:1"; break;
 	case 3: arg = "1:.5 .5:1 1:1"; break;
 	case 4: arg = ".5:.5 .5:1 1:.5 1:1"; break;
-	case 5: arg = "1:.5 1:1"; break;
-	case 6: arg = ".5:1 1:.5 1:1"; break;
+	case 5: arg = "1:.5 .25:1 .5:1 .75:1 1:1"; break;
+	case 6: arg = ".5:1 .75:.5 .75:1 1:.33 1:.66 1:1"; break;
 	case 7: arg = ".5:1 1:.33 1:.666 1:1"; break;
 	}
 	build_layout(arg);
