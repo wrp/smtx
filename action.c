@@ -22,9 +22,9 @@ attach(const char *arg)
 {
 	struct canvas *n = S.f;
 	int target = arg ? strtol(arg, NULL, 10) : S.count;
+	assert( n->p->count > 0 );
 	for( struct pty *t = S.p; t; t = t->next ) {
 		if( t->id == target ) {
-			assert( n->p->count > 0 );
 			n->p->count -= 1;
 			n->p = t;
 			t->count += 1;
