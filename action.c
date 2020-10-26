@@ -322,6 +322,7 @@ transition(const char *arg)
 	S.errmsg[0] = 0; /* Clear any existing error message */
 	if( ! strcmp(arg, "enter") ) {
 		S.binding = k1;
+		wrefresh(curscr);
 	} else if( ! strcmp(arg, "control") ) {
 		S.binding = ctl;
 	}
