@@ -171,6 +171,7 @@ extern int resize_pad(WINDOW **, int, int);
 extern void reshape_window(struct pty *);
 extern void reshape(struct canvas *n, int y, int x, int h, int w);
 extern void free_proc(struct pty *p);
+extern void freecanvas(struct canvas * n);
 extern void build_layout(const char *);
 
 extern action attach;

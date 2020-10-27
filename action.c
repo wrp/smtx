@@ -109,6 +109,33 @@ new_tabstop(const char *arg)
 	extend_tabs(n->p, n->p->tabstop = c);
 }
 
+void
+passthru(const char *arg)
+{
+	struct canvas *n = S.f;
+	if( n->p && n->p->fd > 0 && arg[0] > 0 ) {
+		scrollbottom(n);
+		rewrite(n->p->fd, arg + 1, arg[0]);
+	}
+}
+
+void
+prune(const char *arg)
+{
+	(void)arg;
+	struct canvas *f = S.f;
+	if( S.count == 9 ) {
+		S.c = NULL;
+	} else if( f && f->parent ) {
+		int c = f == f->parent->c[1];
+		*(c ? &f->parent->split.x : &f->parent->split.y) = 1.0;
+		f->parent->c[c] = NULL;
+		focus(f->parent);
+		freecanvas(f);
+		S.reshape = 1;
+	}
+}
+
 static void set_pty_history(struct pty *p, int siz);
 
 void
