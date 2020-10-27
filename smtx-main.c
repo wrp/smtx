@@ -207,7 +207,23 @@ newcanvas(struct pty *p, struct canvas *parent)
 void
 focus(struct canvas *n)
 {
-	S.f = n ? n : S.c;
+	if( n ) {
+		S.f = n;
+		/* Move this pty to the top of the proc stack */
+		if( n->p != S.p ) {
+			struct pty *t = S.p->next, *prev = S.p;
+			while( t && t != n->p ) {
+				prev = t;
+				t = t->next;
+			}
+			assert( t && t == n->p );
+			prev->next = t->next;
+			t->next = S.p;
+			S.p = t;
+		}
+	} else {
+		S.f = S.c;
+	}
 }
 
 static void
