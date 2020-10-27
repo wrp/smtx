@@ -158,7 +158,6 @@ extern void fixcursor(void);
 extern void focus(struct canvas *n);
 
 extern struct canvas * newcanvas(struct pty *, struct canvas *);
-extern void balance(struct canvas *);
 extern void draw(struct canvas *);
 extern void setupevents(struct vtp *);
 extern void rewrite(int fd, const char *b, size_t n);
@@ -176,6 +175,7 @@ extern void build_layout(const char *);
 
 extern action attach;
 extern action bad_key;
+extern action balance;
 extern action transition;
 extern action create;
 extern action digit;

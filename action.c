@@ -44,7 +44,7 @@ bad_key(const char *arg)
 void
 create(const char *arg)
 {
-	struct canvas *n = S.f;
+	struct canvas *n = S.f, *o = S.f;
 	int dir = arg && *arg == 'C' ? 1 : 0;
 	while( n && n->c[dir] != NULL ) {
 		n = n->c[dir]; /* Split last window in a chain. */
@@ -53,10 +53,11 @@ create(const char *arg)
 		struct canvas *v = *(n ? &n->c[dir] : &S.c) = newcanvas(0, n);
 		if( v != NULL ) {
 			v->typ = dir;
-			n = v;
+			S.f = n = v;
 		}
 	}
-	balance(n);
+	balance(NULL);
+	S.f = o;
 	reshape_root(NULL);
 	if( n ) {
 		struct screen*s = n->p->s;
@@ -73,8 +74,7 @@ digit(const char *arg)
 void
 equalize(const char *arg)
 {
-	(void)arg;
-	balance(S.f);
+	balance(arg);
 	S.reshape = 1;
 }
 

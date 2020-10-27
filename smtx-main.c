@@ -408,8 +408,9 @@ draw(struct canvas *n) /* Draw a canvas. */
 }
 
 void
-balance(struct canvas *n)
+balance(const char *arg)
 {
+	struct canvas *n = S.f;
 	if( n ) {
 		int dir = n->typ;
 		while( n->c[dir] != NULL ) {
