@@ -508,8 +508,8 @@ spawn_test(struct st *v, const char *argv0)
 			}
 			wait(NULL);
 		} else {
-			fprintf(stderr, "%s timed out\n", v->name);
-			if( kill(pid[1], SIGINT) )  {
+			fprintf(stderr, "FAIL: %s timed out\n", v->name);
+			if( kill(pid[1], SIGKILL) )  {
 				perror("kill");
 			}
 			wait(&status);
