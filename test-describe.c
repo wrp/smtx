@@ -261,13 +261,17 @@ show_state(void)
 void
 show_status(const char *arg)
 {
-	const char *banner = "************************\r\n";
-	for( int i = 0; i < LINES * COLS; i++ ) {
-		putchar(' ');
+	if( S.count == -1 && !arg ) {
+		for( int i = 0; i < LINES * COLS; i++ ) {
+			putchar(' ');
+		}
+		putchar('\r');
+		putchar('\n');
+		fflush(stdout);
 	}
-	fflush(stdout);
-	rewrite(1, "\r\n", 2);
-	rewrite(1, banner, strlen(banner));
+	if( !arg ) {
+		arg = "";
+	}
 	if( *arg == 'r' ) {
 		show_row(arg + 1);
 	} else {
@@ -275,5 +279,4 @@ show_status(const char *arg)
 		show_state();
 		show_layout(*arg ? arg : "d5");
 	}
-	rewrite(1, banner, strlen(banner));
 }

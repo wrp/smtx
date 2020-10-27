@@ -293,7 +293,7 @@ struct handler ctl[128] = {
 	[L'J' ] = { resize, "J" },
 	[L'H' ] = { resize, "H" },
 #ifndef NDEBUG
-	[L'Q' ] = { show_status, "" },
+	[L'Q' ] = { show_status, NULL },
 #endif
 	[L's' ] = { swap, NULL },
 	[L't' ] = { new_tabstop, NULL },

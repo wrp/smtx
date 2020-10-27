@@ -221,7 +221,7 @@ get_secondary_fd(int fd)
 	char path[PATH_MAX];
 	char *p = path;
 	const char *end = path + sizeof path;
-	send_cmd(fd, NULL, "Q");
+	send_cmd(fd, NULL, "1Q");
 	grep(fd, "layout:");
 	grep(fd, "2nd=");
 	do {
@@ -283,7 +283,6 @@ get_row(int fd, int row, char *buf, size_t siz)
 int
 validate_row(int fd, int row, const char *fmt, ... )
 {
-
 	char buf[1024];
 	if( get_row(fd, row, buf, sizeof buf) == -1 ) {
 		return -1;
