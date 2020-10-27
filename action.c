@@ -25,9 +25,8 @@ attach(const char *arg)
 	assert( n->p->count > 0 );
 	for( struct pty *t = S.p; t; t = t->next ) {
 		if( t->id == target ) {
-			n->p->count -= 1;
-			n->p = t;
-			t->count += 1;
+			(n->p    )->count -= 1;
+			(n->p = t)->count += 1;
 			S.reshape = 1;
 			return;
 		}
