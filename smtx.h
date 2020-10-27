@@ -179,7 +179,6 @@ extern action balance;
 extern action transition;
 extern action create;
 extern action digit;
-extern action equalize;
 extern action mov;
 extern action new_tabstop;
 extern action passthru;

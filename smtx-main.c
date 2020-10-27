@@ -407,27 +407,6 @@ draw(struct canvas *n) /* Draw a canvas. */
 	}
 }
 
-void
-balance(const char *arg)
-{
-	struct canvas *n = S.f;
-	if( n ) {
-		int dir = n->typ;
-		while( n->c[dir] != NULL ) {
-			n = n->c[dir];
-		}
-		for(int count = 1; n; n = n->parent ) {
-			*(dir ? &n->split.x : &n->split.y) = 1.0 / count++;
-			if( n->parent && n->parent->c[dir] != n ) {
-				break;
-			}
-			if( n->typ != dir ) {
-				break;
-			}
-		}
-	}
-}
-
 static void
 wait_child(struct pty *p)
 {

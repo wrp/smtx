@@ -42,6 +42,28 @@ bad_key(const char *arg)
 }
 
 void
+balance(const char *arg)
+{
+	struct canvas *n = S.f;
+	if( n ) {
+		int dir = n->typ;
+		while( n->c[dir] != NULL ) {
+			n = n->c[dir];
+		}
+		for(int count = 1; n; n = n->parent ) {
+			*(dir ? &n->split.x : &n->split.y) = 1.0 / count++;
+			if( n->parent && n->parent->c[dir] != n ) {
+				break;
+			}
+			if( n->typ != dir ) {
+				break;
+			}
+		}
+		S.reshape = 1;
+	}
+}
+
+void
 create(const char *arg)
 {
 	struct canvas *n = S.f, *o = S.f;
@@ -69,13 +91,6 @@ void
 digit(const char *arg)
 {
 	S.count = 10 * (S.count == -1 ? 0 : S.count) + *arg - '0';
-}
-
-void
-equalize(const char *arg)
-{
-	balance(arg);
-	S.reshape = 1;
 }
 
 static struct canvas *

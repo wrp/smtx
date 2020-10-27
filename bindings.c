@@ -283,7 +283,7 @@ struct handler ctl[128] = {
 	[L'f' ] = { scrolln, "+" },
 	[L'>' ] = { scrollh, ">" },
 	[L'<' ] = { scrollh, "<" },
-	[L'=' ] = { equalize, NULL },
+	[L'=' ] = { balance, NULL },
 	[L'c' ] = { create, NULL },
 	[L'C' ] = { create, "C" },
 	[L'j' ] = { mov, "j" },
