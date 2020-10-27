@@ -1415,6 +1415,9 @@ test_transpose(int fd)
 
 	send_cmd(fd, "cd3>", "T\rPS1=cd3'> '");
 	rv |= check_layout(fd, 0x1, "*23x40; 11x19; 11x19; 6x19; 7x19; 8x19");
+
+	send_cmd(fd, "ef4>", "llT\rPS1=ef4'> '");
+	rv |= check_layout(fd, 0x1, "23x40; 11x19; 11x19; 6x19; 16x9; *16x9");
 	return rv;
 }
 

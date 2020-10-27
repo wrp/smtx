@@ -377,6 +377,10 @@ void
 transpose(const char *arg)
 {
 	(void)arg;
-	transpose_r(S.f);
+	if( S.f && !S.f->c[0] && !S.f->c[1] ) {
+		transpose_r(S.f->parent);
+	} else {
+		transpose_r(S.f);
+	}
 	S.reshape = 1;
 }
