@@ -139,15 +139,15 @@ void
 prune(const char *arg)
 {
 	(void)arg;
-	struct canvas *f = S.f;
 	if( S.count == 9 ) {
 		S.c = NULL;
-	} else if( f && f->parent ) {
-		int c = f == f->parent->c[1];
-		*(c ? &f->parent->split.x : &f->parent->split.y) = 1.0;
-		f->parent->c[c] = NULL;
-		focus(f->parent);
-		freecanvas(f);
+	} else if( S.f && S.f->parent ) {
+		struct canvas *p = S.f->parent;
+		int c = S.f == p->c[1];
+		*(c ? &p->split.x : &p->split.y) = 1.0;
+		p->c[c] = NULL;
+		freecanvas(S.f);
+		focus(p);
 		S.reshape = 1;
 	}
 }
