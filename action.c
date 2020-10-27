@@ -45,6 +45,7 @@ void
 balance(const char *arg)
 {
 	struct canvas *n = S.f;
+	(void)arg;
 	if( n ) {
 		int dir = n->typ;
 		while( n->c[dir] != NULL ) {
