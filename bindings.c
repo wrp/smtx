@@ -297,6 +297,7 @@ struct handler ctl[128] = {
 #endif
 	[L's' ] = { swap, NULL },
 	[L't' ] = { new_tabstop, NULL },
+	[L'T' ] = { transpose, NULL },
 	[L'v' ] = { set_layout, NULL },
 	[L'W' ] = { set_width, NULL },
 	[L'Z' ] = { set_history, NULL },

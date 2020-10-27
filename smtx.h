@@ -143,7 +143,7 @@ struct canvas {
 	(Note that w.x + c1->w.x == extent.x - 1, subtracting 1 for wdiv)
 	*/
 	struct canvas *c[2];
-	struct { double y,x; } split;
+	struct { double y, x; } split;
 	int manualscroll;
 	WINDOW *wtit;  /* Window for title */
 	WINDOW *wdiv;  /* Window for divider */
@@ -176,7 +176,6 @@ extern void build_layout(const char *);
 extern action attach;
 extern action bad_key;
 extern action balance;
-extern action transition;
 extern action create;
 extern action digit;
 extern action mov;
@@ -186,13 +185,15 @@ extern action prune;
 extern action reorient;
 extern action reshape_root;
 extern action resize;
-extern action scrolln;
 extern action scrollh;
+extern action scrolln;
 extern action send;
 extern action set_history;
 extern action set_layout;
 extern action set_width;
 extern action swap;
+extern action transition;
+extern action transpose;;
 
 /* Debugging/test harness */
 #ifndef NDEBUG

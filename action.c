@@ -361,3 +361,25 @@ transition(const char *arg)
 	}
 	scrollbottom(S.f);
 }
+
+static void
+transpose_r(struct canvas *c)
+{
+	if( c ) {
+		c->typ = !c->typ;
+		struct canvas *t = c->c[0];
+		double s = c->split.y;
+		c->split.y = c->split.x;
+		c->split.x = s;
+		transpose_r(c->c[0] = c->c[1]);
+		transpose_r(c->c[1] = t);
+	}
+}
+
+void
+transpose(const char *arg)
+{
+	(void)arg;
+	transpose_r(S.f);
+	S.reshape = 1;
+}

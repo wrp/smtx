@@ -1403,6 +1403,18 @@ test_tput(int fd)
 }
 
 int
+test_transpose(int fd)
+{
+	int rv = validate_row(fd, 1, "%-80s", "ps1>");
+	send_cmd(fd, "ab2>", "6v\rPS1=ab2'> '");
+	rv |= check_layout(fd, 0x1, "*11x80; 5x40; 5x26; 5x26; 5x26; 5x39");
+
+	send_cmd(fd, "cd3>", "T\rPS1=cd3'> '");
+	rv |= check_layout(fd, 0x1, "*23x40; 11x19; 11x19; 6x19; 7x19; 8x19");
+	return rv;
+}
+
+int
 test_utf(int fd)
 {
 	int rv = validate_row(fd, 1, "%-80s", "ps1>");

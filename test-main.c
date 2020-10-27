@@ -437,6 +437,7 @@ main(int argc, char *const argv[])
 	F(test_tabstop);
 	F(test_title);
 	F(test_tput);
+	F(test_transpose);
 	F(test_utf);
 	F(test_vis);
 	F(test_wait);
