@@ -85,19 +85,11 @@ find_canvas(struct canvas *c, int id)
 	if( c ) {
 		if( c->p->id == id ) {
 			r = c;
-		} else if( (r = find_canvas( c->c[0], id)) == NULL ) {
-			r = find_canvas( c->c[1], id);
+		} else if( (r = find_canvas(c->c[0], id)) == NULL ) {
+			r = find_canvas(c->c[1], id);
 		}
 	}
 	return r;
-}
-
-void
-prune(const char *arg)
-{
-	struct canvas *f = S.f;
-	(void)arg;
-	prune_canvas(f);
 }
 
 static void
@@ -146,7 +138,7 @@ resize(const char *arg)
 		*s = count / 100.0;
 		S.reshape = 1;
 	} else { /* TODO: handle zero split more cleanly */
-		prune_canvas(n);
+		prune(NULL);
 	}
 }
 

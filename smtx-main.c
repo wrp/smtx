@@ -360,8 +360,10 @@ freecanvas(struct canvas * n)
 }
 
 void
-prune_canvas(struct canvas *f)
+prune(const char *arg)
 {
+	(void)arg;
+	struct canvas *f = S.f;
 	if( S.count == 9 ) {
 		S.c = NULL;
 	} else if( f && f->parent ) {
@@ -371,8 +373,6 @@ prune_canvas(struct canvas *f)
 		focus(f->parent);
 		freecanvas(f);
 		S.reshape = 1;
-	} else if( f == S.c ) {
-		prune_canvas(f->c[S.count == -1 ? !f->typ : !!S.count]);
 	}
 }
 
