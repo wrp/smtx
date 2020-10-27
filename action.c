@@ -56,9 +56,6 @@ balance(const char *arg)
 			if( n->parent && n->parent->c[dir] != n ) {
 				break;
 			}
-			if( n->typ != dir && count > 1 ) {
-				break;
-			}
 		}
 		S.reshape = 1;
 	}
