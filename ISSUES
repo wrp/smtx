@@ -1,27 +1,13 @@
 
 TODO:
-	(?) Make it possible for windows to overlap
-
-	Perhaps implement 's' to save the current layout into a register.  Make
-	the presets modifiable at startup.
+	Make the preset keybindings modifiable at startup.
 
 	Add a command to start up a new shell in a canvas where the shell is dead.
 
 	Determine if colors should be saved with save/restore cursor and implement
 	accordingly.
 
-	Implement an "insert mode".  That is, have a command from command mode
-	that sets the keybinding so that all keys except 'return/enter' are
-	passed through, and return is bound to transition to command mode.
-	This would allow the user to easily enter one line of text to the tty.
-
 	In full-screen mode, make hjkl scroll the pty.
-
-	Make it easy to swap bindings.  eg, so that hjkl could be used for
-	scrolling in non-full screen mode.  Maybe have labelled bindings,
-	so perhaps 'a or 'b would select binding a or b.  Would be simpler
-	to use numbers, so 1B or 2B could select bindings 1 or 2.  It seems
-	hjkl would be better for scrolling than <> and fb
 
 	Copy-mode, with stack of registers and ability to edit.
 	Or, maybe just have a binding (s) that dumps the current content
@@ -38,10 +24,12 @@ TODO:
 
 	Make it possible for windows to overlap.
 
-	Redo the whole architecture and dump the tree structure.  Windows
-	should just be in a list with size and origin.
+	Dump select() and use libev or libevent
 
 BUGS:
+	This is dog slow on macos.  top regularly reports 100% cpu. This
+	is probably because select is broken.
+
 	Need to handle memory allocation errors more thoroughly.
 
 	Right arrow (in control mode) currently splits the screen.  This regression was
@@ -93,6 +81,13 @@ BUGS:
 
 
 MAYBE TODO:
+
+	Make it easy to swap bindings.  eg, so that hjkl could be used for
+	scrolling in non-full screen mode.  Maybe have labelled bindings,
+	so perhaps 'a or 'b would select binding a or b.  Would be simpler
+	to use numbers, so 1B or 2B could select bindings 1 or 2.  It seems
+	hjkl would be better for scrolling than <> and fb
+
 	Register signal handlers for TERM and HUP.  Need to ensure
 	that endwin is called.
 
@@ -100,19 +95,7 @@ MAYBE TODO:
 	Multi-key bindings (?)
 	Pass master fd of a pty through a socket.
 
-Partially implemented/vague ideas:
 	Implement decent error reporting.
-
-	Make a csi sequence (or osc) to change pty width.
-
-	Change key bindings to change screen width. Eg, perhaps 'w' to set width of the
-	focused window, and `W` to change the tty.  Then +/- to adjust
-	width of window, and maybe </> to adjust width of tty.  Or </>
-	should scroll the window.  But +/- should also change number
-	of rows in a type 0 canvas.  Maybe use one binding in which
-	hjkl navigate windows, one in which hjkl grows windows, and one in
-	which hjkl changes scroll in pty.  Also use <tab> to scroll right
-	one tabstop in the pty.
 
 	Needs to be easier to navigate in full screen mode.   Perhaps
 	title bar would show title of windows above, below, to the
@@ -130,3 +113,8 @@ Partially implemented/vague ideas:
 	the format of the title bar.  Also, the title bar/row should probably
 	be a subwindow rather than just consuming one line of the main window.
 	All the '-1' in the code get confusing.
+
+	Make it possible for windows to overlap.
+
+	Implement method to save the current layout into a register.
+
