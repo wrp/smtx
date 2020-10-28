@@ -180,7 +180,7 @@ extern action digit;
 extern action mov;
 extern action new_tabstop;
 extern action passthru;
-extern action prune;
+extern action0 prune;
 extern action reorient;
 extern action reshape_root;
 extern action resize;

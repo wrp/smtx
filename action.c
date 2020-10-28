@@ -124,9 +124,8 @@ passthru(const char *arg)
 }
 
 void
-prune(const char *arg)
+prune(void)
 {
-	(void)arg;
 	if( S.count == 9 ) {
 		S.c = NULL;
 	} else if( S.f && S.f->parent ) {
@@ -169,7 +168,7 @@ resize(const char *arg)
 		*s = count / 100.0;
 		S.reshape = 1;
 	} else { /* TODO: handle zero split more cleanly */
-		prune(NULL);
+		prune();
 	}
 }
 
