@@ -17,7 +17,7 @@
  */
 #include "smtx.h"
 
-void
+int
 attach(void)
 {
 	struct canvas *n = S.f;
@@ -26,14 +26,13 @@ attach(void)
 		if( t->id == S.count ) {
 			(n->p    )->count -= 1;
 			(n->p = t)->count += 1;
-			S.reshape = 1;
-			return;
+			return S.reshape = 1;
 		}
 	}
-	check(0, "No pty exists with id %d", S.count);
+	return check(0, "No pty exists with id %d", S.count);
 }
 
-void
+int
 balance(void)
 {
 	struct canvas *n = S.f;
@@ -48,8 +47,8 @@ balance(void)
 				break;
 			}
 		}
-		S.reshape = 1;
 	}
+	return S.reshape = 1;
 }
 
 void
@@ -123,7 +122,7 @@ passthru(const char *arg)
 	}
 }
 
-void
+int
 prune(void)
 {
 	if( S.count == 9 ) {
@@ -135,8 +134,8 @@ prune(void)
 		p->c[c] = NULL;
 		freecanvas(S.f);
 		focus(p);
-		S.reshape = 1;
 	}
+	return S.reshape = 1;
 }
 
 static void set_pty_history(struct pty *p, int siz);
@@ -247,21 +246,21 @@ set_pty_history(struct pty *p, int siz)
 	}
 }
 
-void
+int
 set_history(void)
 {
 	struct canvas *n = S.f;
 	struct pty *p = n->p;
 	S.history = MAX(LINES, S.count);
 	set_pty_history(p, S.history);
-	S.reshape = 1;
+	return S.reshape = 1;
 }
 
-void
-set_layout(const char *arg)
+int
+set_layout(void)
 {
-	if( !*arg ) switch(S.count) {
-	case -1: case 0: case 1: arg = "1:1"; break;
+	const char *arg = "1:1";
+	switch( S.count ) {
 	case 2: arg = ".5:1 1:1"; break;
 	case 3: arg = "1:.5 .5:1 1:1"; break;
 	case 4: arg = ".5:.5 .5:1 1:.5 1:1"; break;
@@ -270,6 +269,7 @@ set_layout(const char *arg)
 	case 7: arg = ".5:1 1:.33 1:.666 1:1"; break;
 	}
 	build_layout(arg);
+	return 1;
 }
 
 void
@@ -296,7 +296,7 @@ set_width(const char *arg)
 	}
 }
 
-void
+int
 swap(void)
 {
 	struct canvas *n = S.f;
@@ -316,6 +316,7 @@ swap(void)
 	} else {
 		check(0, "Cannot find target canvas");
 	}
+	return 1;
 }
 
 void

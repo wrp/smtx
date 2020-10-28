@@ -84,7 +84,7 @@ struct pty {
 };
 
 typedef void(action)(const char *arg);
-typedef void(action0)(void);
+typedef int(action0)(void);
 struct handler {
 	union {
 		action *a;
@@ -188,7 +188,7 @@ extern action scrollh;
 extern action scrolln;
 extern action send;
 extern action0 set_history;
-extern action set_layout;
+extern action0 set_layout;
 extern action set_width;
 extern action0 swap;
 extern action transition;
