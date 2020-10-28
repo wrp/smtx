@@ -105,10 +105,8 @@ static struct pty *
 get_freepty(void)
 {
 	struct pty *t = S.p;
-	for( ; t; t = t->next ) {
-		if( t->count == 0 && t->fd < 0 ) {
-			return t;
-		}
+	while( t && (t->count || t->fd > 0) ) {
+		t = t->next;
 	}
 	return t;
 }
