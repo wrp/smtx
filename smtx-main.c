@@ -83,7 +83,7 @@ extend_tabs(struct pty *p, int tabstop)
 	}
 }
 
-void
+static void
 free_proc(struct pty *p)
 {
 	assert( p != NULL );
