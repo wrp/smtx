@@ -278,7 +278,7 @@ struct handler ctl[128] = {
 
 	[L'\r'] = { { .a = transition}, "enter" },
 	[L'\n'] = { { .a = transition}, "enter" },
-	[L'a' ] = { { .a = attach}, NULL },
+	[L'a' ] = { { .a = attach}, "" }, /* NULL */
 	[L'b' ] = { { .a = scrolln}, "-" },
 	[L'f' ] = { { .a = scrolln}, "+" },
 	[L'>' ] = { { .a = scrollh}, ">" },

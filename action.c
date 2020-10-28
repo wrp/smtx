@@ -21,17 +21,17 @@ void
 attach(const char *arg)
 {
 	struct canvas *n = S.f;
-	int target = arg ? strtol(arg, NULL, 10) : S.count;
+	(void) arg;
 	assert( n->p->count > 0 );
 	for( struct pty *t = S.p; t; t = t->next ) {
-		if( t->id == target ) {
+		if( t->id == S.count ) {
 			(n->p    )->count -= 1;
 			(n->p = t)->count += 1;
 			S.reshape = 1;
 			return;
 		}
 	}
-	check(0, "No pty exists with id %d", target);
+	check(0, "No pty exists with id %d", S.count);
 }
 
 void
