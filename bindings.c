@@ -283,8 +283,8 @@ struct handler ctl[128] = {
 	[L'f' ] = { { .a = scrolln}, "+" },
 	[L'>' ] = { { .a = scrollh}, ">" },
 	[L'<' ] = { { .a = scrollh}, "<" },
-	[L'=' ] = { { .a = balance}, NULL },
-	[L'c' ] = { { .a = create}, NULL },
+	[L'=' ] = { { .a = balance}, "" }, /* NULL */
+	[L'c' ] = { { .a = create}, "c" },
 	[L'C' ] = { { .a = create}, "C" },
 	[L'j' ] = { { .a = mov}, "j" },
 	[L'k' ] = { { .a = mov}, "k" },
@@ -295,8 +295,8 @@ struct handler ctl[128] = {
 #ifndef NDEBUG
 	[L'Q' ] = { { .a = show_status}, NULL },
 #endif
-	[L's' ] = { { .a = swap}, NULL },
-	[L't' ] = { { .a = new_tabstop}, NULL },
+	[L's' ] = { { .a = swap}, "" }, /* NULL */
+	[L't' ] = { { .a = new_tabstop}, "" }, /* NULL */
 	[L'T' ] = { { .a = transpose}, NULL },
 	[L'v' ] = { { .a = set_layout}, NULL },
 	[L'W' ] = { { .a = set_width}, NULL },

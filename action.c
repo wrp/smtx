@@ -116,10 +116,10 @@ void
 new_tabstop(const char *arg)
 {
 	struct canvas *n = S.f;
-	int c = arg ? strtol(arg, NULL, 10) : S.count > -1 ? S.count : 8;
+	(void)arg;
 	n->p->ntabs = 0;
 	pty_size(n->p); /* Update n->p->ws */
-	extend_tabs(n->p, n->p->tabstop = c);
+	extend_tabs(n->p, n->p->tabstop = S.count > -1 ? S.count : 8);
 }
 
 void
