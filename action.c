@@ -350,14 +350,13 @@ transpose_r(struct canvas *c)
 	}
 }
 
-void
-transpose(const char *arg)
+int
+transpose(void)
 {
-	(void)arg;
 	if( S.f && !S.f->c[0] && !S.f->c[1] ) {
 		transpose_r(S.f->parent);
 	} else {
 		transpose_r(S.f);
 	}
-	S.reshape = 1;
+	return S.reshape = 1;
 }

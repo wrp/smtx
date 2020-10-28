@@ -192,7 +192,7 @@ extern action0 set_layout;
 extern action set_width;
 extern action0 swap;
 extern action transition;
-extern action transpose;;
+extern action0 transpose;;
 
 /* Debugging/test harness */
 #ifndef NDEBUG
