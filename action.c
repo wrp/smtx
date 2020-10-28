@@ -233,20 +233,6 @@ send(const char *arg)
 	}
 }
 
-static int
-replacewin(WINDOW **src, int rows, int cols, int delta)
-{
-	int rv = -1;
-	WINDOW *new = NULL;
-	if( resize_pad(&new, rows, cols)) {
-		copywin(*src, new, 0, 0, delta, 0, rows - 1, cols - 1, 1);
-		delwin(*src);
-		*src = new;
-		rv = 0;
-	}
-	return rv;
-}
-
 static void
 set_pty_history(struct pty *p, int siz)
 {
@@ -257,13 +243,14 @@ set_pty_history(struct pty *p, int siz)
 		getmaxyx(s->win, my, x);
 
 		if( my < siz ) {
-			WINDOW *orig = s->win;
 			int y;
-
 			getyx(s->win, y, x);
-			replacewin(&s->win, siz, p->ws.ws_col, siz - my);
-
-			if( orig != s->win ) {
+			WINDOW *new = NULL;
+			if( resize_pad(&new, siz, p->ws.ws_col) ) {
+				copywin(s->win, new, 0, 0, siz - my, 0, siz - 1,
+					p->ws.ws_col - 1, 1);
+				delwin(s->win);
+				s->win = new;
 				wmove(s->win, s->c.y = y + siz - my, x);
 			}
 		}
