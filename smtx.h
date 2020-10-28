@@ -105,9 +105,7 @@ struct state {
 	struct canvas *c;  /* root of all canvasses in use */
 	struct canvas *f;  /* currently focused canvas */;
 	struct pty *p;     /* list of all pty in use */
-	struct {
-		struct canvas *c; /* unused canvasses */
-	} free;
+	struct canvas *unused; /* unused canvasses */
 	fd_set fds;
 	int maxfd;
 	WINDOW *werr;

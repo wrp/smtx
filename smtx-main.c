@@ -178,8 +178,8 @@ newcanvas(struct pty *p, struct canvas *parent)
 	struct canvas *n = NULL;
 	p = p ? p : new_pty(LINES, MAX(COLS, S.width));
 	if( p != NULL ) {
-		if( (n = S.free.c) != NULL ) {
-			S.free.c = n->c[0];
+		if( (n = S.unused) != NULL ) {
+			S.unused = n->c[0];
 		} else {
 			check((n = calloc(1 , sizeof *n)) != NULL, "calloc");
 		}
@@ -345,9 +345,9 @@ freecanvas(struct canvas * n)
 		n->p->count -= 1;
 		freecanvas(n->c[0]);
 		freecanvas(n->c[1]);
-		n->c[0] = S.free.c;
+		n->c[0] = S.unused;
 		n->c[1] = NULL;
-		S.free.c = n;
+		S.unused = n;
 	}
 }
 
