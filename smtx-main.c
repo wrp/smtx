@@ -431,9 +431,8 @@ getinput(void) /* check stdin and all pty's for input. */
 				b = &code_keys[w - KEY_MIN];
 			}
 			if( b ) {
-				assert( b->act );
-				b->act(b->arg);
-				if( b->act != digit ) {
+				b->act.a(b->arg);
+				if( b->act.a != digit ) {
 					S.count = -1;
 				}
 			}
@@ -529,7 +528,7 @@ add_key(struct handler *b, wchar_t k, action act, const char *arg)
 		k -= KEY_MIN;
 	}
 	assert( k >= 0 && k <= KEY_MAX - KEY_MIN );
-	b[k].act = act;
+	b[k].act.a = act;
 	b[k].arg = arg;
 }
 

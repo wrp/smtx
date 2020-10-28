@@ -84,8 +84,12 @@ struct pty {
 };
 
 typedef void(action)(const char *arg);
+typedef void(action0)(void);
 struct handler {
-	action *act;
+	union {
+		action *a;
+		action0 *v;
+	} act;
 	const char *arg;
 };
 
