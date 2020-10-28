@@ -76,7 +76,7 @@ extend_tabs(struct pty *p, int tabstop)
 {
 	int w = p->ws.ws_col;
 	typeof(*p->tabs) *n;
-	if( p->ntabs < w && ( n = realloc(p->tabs, w * sizeof *n)) != NULL ) {
+	if( p->ntabs < w && (n = realloc(p->tabs, w * sizeof *n)) != NULL ) {
 		for( p->tabs = n; p->ntabs < w; p->ntabs++ ) {
 			p->tabs[p->ntabs] = tabstop && p->ntabs % tabstop == 0;
 		}
@@ -115,8 +115,7 @@ static struct pty *
 new_pty(int rows, int cols)
 {
 	struct pty *p = get_freepty();
-	p = p ? p : calloc(1, sizeof *p);
-	if( ! check(p != NULL, "calloc") ) {
+	if( ! check((p = p ? p : calloc(1, sizeof *p)) != NULL, "calloc") ) {
 		return NULL;
 	}
 	const char *sh = getshell();
@@ -130,14 +129,11 @@ new_pty(int rows, int cols)
 			signal(SIGCHLD, SIG_DFL);
 			execl(sh, sh, NULL);
 			err(EXIT_FAILURE, "exec SHELL='%s'", sh);
-		default:
-			if( ! p->pri.win ) {
-				resize_pad(&p->pri.win, S.history, cols);
-			}
-			if( ! p->alt.win ) {
-				resize_pad(&p->alt.win, S.history, cols);
-			}
 		}
+	}
+	if( !p->s ) {
+		resize_pad(&p->pri.win, S.history, cols);
+		resize_pad(&p->alt.win, S.history, cols);
 	}
 	if( p->pri.win && p->alt.win ) {
 		p->s = &p->pri;
