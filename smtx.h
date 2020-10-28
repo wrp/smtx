@@ -190,7 +190,7 @@ extern action send;
 extern action set_history;
 extern action set_layout;
 extern action set_width;
-extern action swap;
+extern action0 swap;
 extern action transition;
 extern action transpose;;
 

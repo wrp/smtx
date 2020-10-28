@@ -299,11 +299,10 @@ set_width(const char *arg)
 }
 
 void
-swap(const char *arg)
+swap(void)
 {
 	struct canvas *n = S.f;
 	struct canvas *t;
-	(void) arg;
 	if( S.count == -1 ) {
 		t = n->c[n->typ];
 		t = t ? t : n->c[!n->typ];
