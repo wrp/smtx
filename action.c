@@ -238,7 +238,7 @@ replacewin(WINDOW **src, int rows, int cols, int delta)
 {
 	int rv = -1;
 	WINDOW *new = NULL;
-	if( resize_pad(&new, rows, cols) == 0 ) {
+	if( resize_pad(&new, rows, cols)) {
 		copywin(*src, new, 0, 0, delta, 0, rows - 1, cols - 1, 1);
 		delwin(*src);
 		*src = new;

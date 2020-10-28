@@ -86,7 +86,7 @@ extend_tabs(struct pty *p, int tabstop)
 int
 resize_pad(WINDOW **p, int h, int w)
 {
-	int rv = -1;
+	int rv = 0; /* 0 is failure */
 	if( *p ) {
 		check(wresize(*p, h, w ) == OK, "Error creating window");
 	} else if( (*p = newpad(h, w)) == NULL ) {
@@ -96,7 +96,7 @@ resize_pad(WINDOW **p, int h, int w)
 		wtimeout(*p, 0);
 		scrollok(*p, TRUE);
 		keypad(*p, TRUE);
-		rv = 0;
+		rv = 1;
 	}
 	return rv;
 }
