@@ -458,7 +458,7 @@ getinput(void) /* check stdin and all pty's for input. */
 			}
 		}
 	}
-	for( struct pty *t = S.p; t; t = t->next ) {
+	for( struct pty *t = S.p; t; ) {
 		if( t->fd > 0 && FD_ISSET(t->fd, &sfds) ) {
 			FD_CLR(t->fd, &sfds);
 			char iobuf[BUFSIZ];
@@ -469,6 +469,7 @@ getinput(void) /* check stdin and all pty's for input. */
 				wait_child(t);
 			}
 		}
+		t = (!t->next && t->count) ? S.free.p : t->next;
 	}
 }
 
