@@ -162,11 +162,11 @@ new_pty(int rows, int cols)
 		fcntl(p->fd, F_SETFL, O_NONBLOCK);
 		p->id = p->fd - 2;
 		struct pty *t = S.p;
-		while( t && t->next ) {
+		while( t && t->next && p->id < t->next->id ) {
 			t = t->next;
 		}
+		p->next = t ? t->next : NULL;
 		*(t ? &t->next : &S.p) = p;
-		p->next = NULL;
 		const char *bname = strrchr(sh, '/');
 		bname = bname ? bname + 1 : sh;
 		strncpy(p->status, bname, sizeof p->status - 1);
