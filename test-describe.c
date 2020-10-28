@@ -256,7 +256,7 @@ show_state(void)
 void
 show_status(const char *arg)
 {
-	if( S.count == -1 && !arg ) {
+	if( S.count == -1 && *arg == 'x') {
 		for( int i = 0; i < LINES * COLS; i++ ) {
 			putchar(' ');
 		}
@@ -264,8 +264,8 @@ show_status(const char *arg)
 		putchar('\n');
 		fflush(stdout);
 	}
-	if( !arg ) {
-		arg = "";
+	if( *arg == 'x' ) {
+		arg += 1;
 	}
 	if( *arg == 'r' ) {
 		show_row(arg + 1);

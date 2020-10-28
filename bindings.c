@@ -293,7 +293,7 @@ struct handler ctl[128] = {
 	[L'J' ] = { { .a = resize}, "J" },
 	[L'H' ] = { { .a = resize}, "H" },
 #ifndef NDEBUG
-	[L'Q' ] = { { .a = show_status}, NULL },
+	[L'Q' ] = { { .a = show_status}, "x" },
 #endif
 	[L's' ] = { { .a = swap}, "" }, /* NULL */
 	[L't' ] = { { .a = new_tabstop}, "" }, /* NULL */
