@@ -86,19 +86,18 @@ extend_tabs(struct pty *p, int tabstop)
 int
 resize_pad(WINDOW **p, int h, int w)
 {
-	int rv = 0; /* 0 is failure */
 	if( *p ) {
-		check(wresize(*p, h, w ) == OK, "Error creating window");
+		check(wresize(*p, h, w ) == OK, "Error resizing window");
 	} else if( (*p = newpad(h, w)) == NULL ) {
 		errno = ENOMEM;
-		check(0, "Error resizing window");
+		check(0, "Error creating window");
 	} else {
 		wtimeout(*p, 0);
-		scrollok(*p, TRUE);
-		keypad(*p, TRUE);
-		rv = 1;
+		scrollok(*p, 1);
+		keypad(*p, 1);
+		return 1;
 	}
-	return rv;
+	return 0; /* 0 is failure */
 }
 
 static struct pty *
