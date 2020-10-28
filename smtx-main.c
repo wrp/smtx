@@ -162,7 +162,7 @@ new_pty(int rows, int cols)
 		fcntl(p->fd, F_SETFL, O_NONBLOCK);
 		p->id = p->fd - 2;
 		struct pty *t = S.p;
-		while( t && t->next && p->id < t->next->id ) {
+		while( t && t->next && p->id > t->next->id ) {
 			t = t->next;
 		}
 		p->next = t ? t->next : NULL;
