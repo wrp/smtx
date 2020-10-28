@@ -242,11 +242,6 @@ show_procs(void)
 			p->id, p->pid, p->count, p->status);
 		rewrite(1, buf, k);
 	}
-	for( struct pty *p = S.free.p; p; p = p->next ) {
-		int k = snprintf(buf, sizeof buf, "\t%d\t%d\t%d\t%s\r\n",
-			p->id, p->pid, p->count, p->status);
-		rewrite(1, buf, k);
-	}
 }
 
 static void

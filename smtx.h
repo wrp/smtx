@@ -107,7 +107,6 @@ struct state {
 	struct pty *p;     /* list of all pty in use */
 	struct {
 		struct canvas *c; /* unused canvasses */
-		struct pty *p;    /* unused ptys */
 	} free;
 	fd_set fds;
 	int maxfd;

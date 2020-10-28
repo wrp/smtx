@@ -144,7 +144,7 @@ test_changehist(int fd)
 	send_cmd(fd, NULL, "%sZjj", bigint);
 	rv = check_layout(fd, 0x1, "7x80; 7x80; *7x80");
 
-	/* Kill one window to put an alloc'd pty on the free list */
+	/* Kill one window to get a free pty */
 	send_txt(fd, "exited", "exit");
 	send_cmd(fd, NULL, "xh");
 	rv = check_layout(fd, 0x1, "7x80; *15x80");

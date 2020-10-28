@@ -83,26 +83,6 @@ extend_tabs(struct pty *p, int tabstop)
 	}
 }
 
-static void
-free_proc(struct pty *p)
-{
-	assert( p != NULL );
-	if( --p->count == 0 ) {
-		struct pty *t = S.p, *prev = NULL;
-		while( t && t != p ) {
-			prev = t;
-			t = t->next;
-		}
-		*(prev ? &prev->next : &S.p) = p->next;
-		for( t = S.free.p, prev = NULL; t && t->id < p->id; ) {
-			prev = t;
-			t = t->next;
-		}
-		p->next = prev ? prev->next : t;
-		*(prev ? &prev->next : &S.free.p) = p;
-	}
-}
-
 int
 resize_pad(WINDOW **p, int h, int w)
 {
@@ -122,14 +102,24 @@ resize_pad(WINDOW **p, int h, int w)
 }
 
 static struct pty *
+get_freepty(void)
+{
+	struct pty *t = S.p;
+	for( ; t; t = t->next ) {
+		if( t->count == 0 && t->fd < 0 ) {
+			return t;
+		}
+	}
+	return t;
+}
+
+static struct pty *
 new_pty(int rows, int cols)
 {
-	struct pty *p = S.free.p ? S.free.p : calloc(1, sizeof *p);
+	struct pty *p = get_freepty();
+	p = p ? p : calloc(1, sizeof *p);
 	if( ! check(p != NULL, "calloc") ) {
 		return NULL;
-	}
-	if( S.free.p ) {
-		S.free.p = p->next;
 	}
 	const char *sh = getshell();
 	if( p->fd < 1 ) {
@@ -165,8 +155,10 @@ new_pty(int rows, int cols)
 		while( t && t->next && p->id > t->next->id ) {
 			t = t->next;
 		}
-		p->next = t ? t->next : NULL;
-		*(t ? &t->next : &S.p) = p;
+		if( !t || t->next != p ) {
+			p->next = t ? t->next : NULL;
+			*(t ? &t->next : &S.p) = p;
+		}
 		const char *bname = strrchr(sh, '/');
 		bname = bname ? bname + 1 : sh;
 		strncpy(p->status, bname, sizeof p->status - 1);
@@ -350,7 +342,7 @@ void
 freecanvas(struct canvas * n)
 {
 	if( n ) {
-		free_proc(n->p);
+		n->p->count -= 1;
 		freecanvas(n->c[0]);
 		freecanvas(n->c[1]);
 		n->c[0] = S.free.c;
@@ -458,7 +450,7 @@ getinput(void) /* check stdin and all pty's for input. */
 			}
 		}
 	}
-	for( struct pty *t = S.p; t; ) {
+	for( struct pty *t = S.p; t; t = t->next ) {
 		if( t->fd > 0 && FD_ISSET(t->fd, &sfds) ) {
 			FD_CLR(t->fd, &sfds);
 			char iobuf[BUFSIZ];
@@ -469,7 +461,6 @@ getinput(void) /* check stdin and all pty's for input. */
 				wait_child(t);
 			}
 		}
-		t = (!t->next && t->count) ? S.free.p : t->next;
 	}
 }
 
