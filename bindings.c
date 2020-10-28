@@ -300,7 +300,7 @@ struct handler ctl[128] = {
 	[L'T' ] = { { .a = transpose}, "" }, /* NULL */
 	[L'v' ] = { { .a = set_layout}, "" }, /* NULL */
 	[L'W' ] = { { .a = set_width}, "" },
-	[L'Z' ] = { { .a = set_history}, "", }, /* NULL */
+	[L'Z' ] = { { .v = set_history}, NULL },
 	[L'x' ] = { { .v = prune}, NULL },
 	[L'0' ] = { { .a = digit}, "0" },
 	[L'1' ] = { { .a = digit}, "1" },
