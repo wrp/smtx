@@ -296,7 +296,7 @@ struct handler ctl[128] = {
 	[L'Q' ] = { { .a = show_status}, "x" },
 #endif
 	[L's' ] = { { .v = swap}, NULL },
-	[L't' ] = { { .a = new_tabstop}, "" }, /* NULL */
+	[L't' ] = { { .v = new_tabstop}, NULL },
 	[L'T' ] = { { .v = transpose}, NULL },
 	[L'v' ] = { { .v = set_layout}, NULL },
 	[L'W' ] = { { .a = set_width}, "" },

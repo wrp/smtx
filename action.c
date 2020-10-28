@@ -102,14 +102,14 @@ pty_size(struct pty *p)
 		"ioctl error getting size of pty %d", p->id);
 }
 
-void
-new_tabstop(const char *arg)
+int
+new_tabstop(void)
 {
 	struct canvas *n = S.f;
-	(void)arg;
 	n->p->ntabs = 0;
 	pty_size(n->p); /* Update n->p->ws */
 	extend_tabs(n->p, n->p->tabstop = S.count > -1 ? S.count : 8);
+	return 1;
 }
 
 void
