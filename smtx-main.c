@@ -207,23 +207,7 @@ newcanvas(struct pty *p, struct canvas *parent)
 void
 focus(struct canvas *n)
 {
-	if( n ) {
-		S.f = n;
-		/* Move this pty to the top of the proc stack */
-		if( n->p != S.p ) {
-			struct pty *t = S.p->next, *prev = S.p;
-			while( t && t != n->p ) {
-				prev = t;
-				t = t->next;
-			}
-			assert( t && t == n->p );
-			prev->next = t->next;
-			t->next = S.p;
-			S.p = t;
-		}
-	} else {
-		S.f = S.c;
-	}
+	S.f = n ? n : S.c;
 }
 
 static void
@@ -835,7 +819,7 @@ fail:
 void
 build_layout(const char *layout)
 {
-	struct pty *p = S.p;
+	struct pty *p = (layout && ! strcmp(layout, "1:1")) ? S.f->p : S.p;
 	struct canvas *n = add_canvas(&layout, 0.0, 0.0, 1.0, 1.0, &p, NULL);
 	if( n ) {
 		freecanvas(S.c);
