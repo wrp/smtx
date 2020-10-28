@@ -173,9 +173,9 @@ extern void reshape(struct canvas *n, int y, int x, int h, int w);
 extern void freecanvas(struct canvas * n);
 extern void build_layout(const char *);
 
-extern action attach;
+extern action0 attach;
 extern action bad_key;
-extern action balance;
+extern action0 balance;
 extern action create;
 extern action digit;
 extern action mov;

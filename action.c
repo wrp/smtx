@@ -18,10 +18,9 @@
 #include "smtx.h"
 
 void
-attach(const char *arg)
+attach(void)
 {
 	struct canvas *n = S.f;
-	(void) arg;
 	assert( n->p->count > 0 );
 	for( struct pty *t = S.p; t; t = t->next ) {
 		if( t->id == S.count ) {
@@ -42,10 +41,9 @@ bad_key(const char *arg)
 }
 
 void
-balance(const char *arg)
+balance(void)
 {
 	struct canvas *n = S.f;
-	(void)arg;
 	if( n ) {
 		int dir = n->typ;
 		while( n->c[dir] != NULL ) {
@@ -76,7 +74,7 @@ create(const char *arg)
 			S.f = n = v;
 		}
 	}
-	balance(NULL);
+	balance();
 	S.f = o;
 	reshape_root(NULL);
 	if( n ) {

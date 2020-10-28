@@ -431,7 +431,7 @@ getinput(void) /* check stdin and all pty's for input. */
 				b = &code_keys[w - KEY_MIN];
 			}
 			if( b ) {
-				b->act.a(b->arg);
+				b->arg ? b->act.a(b->arg) : b->act.v();
 				if( b->act.a != digit ) {
 					S.count = -1;
 				}
