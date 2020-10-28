@@ -34,13 +34,6 @@ attach(void)
 }
 
 void
-bad_key(const char *arg)
-{
-	(void)arg;
-	beep();
-}
-
-void
 balance(void)
 {
 	struct canvas *n = S.f;
