@@ -297,9 +297,9 @@ struct handler ctl[128] = {
 #endif
 	[L's' ] = { { .a = swap}, "" }, /* NULL */
 	[L't' ] = { { .a = new_tabstop}, "" }, /* NULL */
-	[L'T' ] = { { .a = transpose}, NULL },
-	[L'v' ] = { { .a = set_layout}, NULL },
-	[L'W' ] = { { .a = set_width}, NULL },
+	[L'T' ] = { { .a = transpose}, "" }, /* NULL */
+	[L'v' ] = { { .a = set_layout}, "" }, /* NULL */
+	[L'W' ] = { { .a = set_width}, "" },
 	[L'Z' ] = { { .a = set_history}, NULL },
 	[L'x' ] = { { .a = prune}, NULL },
 	[L'0' ] = { { .a = digit}, "0" },

@@ -270,7 +270,7 @@ set_history(const char *arg)
 void
 set_layout(const char *arg)
 {
-	if( !arg ) switch(S.count) {
+	if( !*arg ) switch(S.count) {
 	case -1: case 0: case 1: arg = "1:1"; break;
 	case 2: arg = ".5:1 1:1"; break;
 	case 3: arg = "1:.5 .5:1 1:1"; break;
@@ -287,7 +287,7 @@ set_width(const char *arg)
 {
 	struct canvas *n = S.f;
 	struct pty *p = n->p;
-	int w = arg ? strtol(arg, NULL, 10) : S.count;
+	int w = *arg ? strtol(arg, NULL, 10) : S.count;
 	if( w == -1 ) {
 		w = n->extent.x;
 	}
