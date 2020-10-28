@@ -820,7 +820,7 @@ fail:
 void
 build_layout(const char *layout)
 {
-	struct pty *p = (layout && ! strcmp(layout, "1:1")) ? S.f->p : S.p;
+	struct pty *p = S.f->p;
 	struct canvas *n = add_canvas(&layout, 0.0, 0.0, 1.0, 1.0, &p, NULL);
 	if( n ) {
 		freecanvas(S.c);
