@@ -67,11 +67,11 @@ create(const char *arg)
 	}
 	if( n ) {
 		balance();
-		S.f = o;
 		reshape_root();
 		struct screen*s = n->p->s;
 		wmove(s->win, s->c.y = n->offset.y, s->c.x = 0);
 	}
+	S.f = o;
 }
 
 void
