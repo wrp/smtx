@@ -704,12 +704,10 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 	if( n == NULL ) {
 		goto fail;
 	}
-	if( sscanf(layout, "%lf:%lf%n", &y, &x, &e) != 2 ) {
-		check(0, "Invalid format at: %s", layout);
-		goto fail;
-	}
-	if( y < oy || y > ey || x < ox || x > ex ) {
-		check(0, "Out of bounds at: %s", layout);
+	if( 2 != sscanf(layout, "%lf:%lf%n", &y, &x, &e)
+		|| y < oy || y > ey || x < ox || x > ex
+	) {
+		check(0, "Invalid layout format: %s", layout);
 		goto fail;
 	}
 	layout += e;
@@ -768,8 +766,7 @@ build_layout(const char *layout)
 	struct canvas *n = add_canvas(&layout, 0.0, 0.0, 1.0, 1.0, &p, NULL);
 	if( n ) {
 		freecanvas(S.c);
-		S.c = n;
-		focus(n);
+		focus(S.c = n);
 	}
 	S.reshape = 1;
 }
