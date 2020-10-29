@@ -145,8 +145,8 @@ test_changehist(int fd)
 	rv = check_layout(fd, 0x1, "7x80; 7x80; *7x80");
 
 	/* Kill one window to get a free pty */
-	send_txt(fd, "exited", "exit");
-	send_cmd(fd, NULL, "xh");
+	send_txt(fd, NULL, "exit");
+	send_cmd(fd, "ab1>", "xh\rPS1=ab'1> '");
 	rv = check_layout(fd, 0x1, "7x80; *15x80");
 
 	/* Create one new window */
