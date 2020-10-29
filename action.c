@@ -259,16 +259,17 @@ set_history(void)
 int
 set_layout(void)
 {
-	const char *arg = "1:1";
-	switch( S.count ) {
-	case 2: arg = ".5:1 1:1"; break;
-	case 3: arg = "1:.5 .5:1 1:1"; break;
-	case 4: arg = ".5:.5 .5:1 1:.5 1:1"; break;
-	case 5: arg = "1:.5 .25:1 .5:1 .75:1 1:1"; break;
-	case 6: arg = ".5:1 .75:.5 .75:1 1:.33 1:.66 1:1"; break;
-	case 7: arg = ".5:1 1:.33 1:.666 1:1"; break;
-	}
-	build_layout(arg);
+	const char *layouts[] = {
+		"1:1",                                /* 0 */
+		"1:1",                                /* 1 */
+		".5:1 1:1",                           /* 2 */
+		"1:.5 .5:1 1:1",                      /* 3 */
+		".5:.5 .5:1 1:.5 1:1",                /* 4 */
+		"1:.5 .25:1 .5:1 .75:1 1:1",          /* 5 */
+		".5:1 .75:.5 .75:1 1:.33 1:.66 1:1",  /* 6 */
+		".5:1 1:.33 1:.666 1:1",              /* 7 */
+	};
+	build_layout(layouts[S.count >= 0 && S.count < 8 ? S.count : 0]);
 	return 1;
 }
 
