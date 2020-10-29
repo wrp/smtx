@@ -554,32 +554,34 @@ build_bindings(void)
 	k1[S.ctlkey] = (struct handler){ { .a = transition }, "control" };
 	ctl[S.ctlkey] = (struct handler){ { .a = transition }, "*enter" };
 
-	add_key(code_keys, KEY_RESIZE, reshape_root, NULL);
-	add_key(code_keys, KEY_F(1), send, "\033OP");
-	add_key(code_keys, KEY_F(2), send, "\033OQ");
-	add_key(code_keys, KEY_F(3), send, "\033OR");
-	add_key(code_keys, KEY_F(4), send, "\033OS");
-	add_key(code_keys, KEY_F(5), send, "\033[15~");
-	add_key(code_keys, KEY_F(6), send, "\033[17~");
-	add_key(code_keys, KEY_F(7), send, "\033[18~");
-	add_key(code_keys, KEY_F(8), send, "\033[19~");
-	add_key(code_keys, KEY_F(9), send, "\033[20~");
-	add_key(code_keys, KEY_F(10), send, "\033[21~");
-	add_key(code_keys, KEY_F(11), send, "\033[23~");
-	add_key(code_keys, KEY_F(12), send, "\033[24~");
-	add_key(code_keys, KEY_HOME, send, "\033[1~");
-	add_key(code_keys, KEY_END, send, "\033[4~");
-	add_key(code_keys, KEY_PPAGE, send, "\033[5~");
-	add_key(code_keys, KEY_NPAGE, send, "\033[6~");
-	add_key(code_keys, KEY_BACKSPACE, send, "\177");
-	add_key(code_keys, KEY_DC, send, "\033[3~");
-	add_key(code_keys, KEY_IC, send, "\033[2~");
-	add_key(code_keys, KEY_BTAB, send, "\033[Z");
-	add_key(code_keys, KEY_ENTER, send, "\r");
-	add_key(code_keys, KEY_UP, sendarrow, "A");
-	add_key(code_keys, KEY_DOWN, sendarrow, "B");
-	add_key(code_keys, KEY_RIGHT, sendarrow, "C");
-	add_key(code_keys, KEY_LEFT, sendarrow, "D");
+#define K(a) code_keys[a - KEY_MIN]
+	K(KEY_RESIZE) = (struct handler){ { .a = reshape_root }, NULL };
+	K(KEY_F(1)) = (struct handler){ { .a = send }, "\033" };
+	K(KEY_F(2)) = (struct handler){ { .a = send }, "\033OQ" };
+	K(KEY_F(3)) = (struct handler){ { .a = send }, "\033OR" };
+	K(KEY_F(4)) = (struct handler){ { .a = send }, "\033OS" };
+	K(KEY_F(5)) = (struct handler){ { .a = send }, "\033[15~" };
+	K(KEY_F(6)) = (struct handler){ { .a = send }, "\033[17~" };
+	K(KEY_F(7)) = (struct handler){ { .a = send }, "\033[18~" };
+	K(KEY_F(8)) = (struct handler){ { .a = send }, "\033[19~" };
+	K(KEY_F(9)) = (struct handler){ { .a = send }, "\033[20~" };
+	K(KEY_F(10)) = (struct handler){ { .a = send }, "\033[21~" };
+	K(KEY_F(11)) = (struct handler){ { .a = send }, "\033[23~" };
+	K(KEY_F(12)) = (struct handler){ { .a = send }, "\033[24~" };
+	K(KEY_HOME) = (struct handler){ { .a = send }, "\033[1~" };
+	K(KEY_END) = (struct handler){ { .a = send }, "\033[4~" };
+	K(KEY_PPAGE) = (struct handler){ { .a = send }, "\033[5~" };
+	K(KEY_NPAGE) = (struct handler){ { .a = send }, "\033[6~" };
+	K(KEY_BACKSPACE) = (struct handler){ { .a = send }, "\177" };
+	K(KEY_DC) = (struct handler){ { .a = send }, "\033[3~" };
+	K(KEY_IC) = (struct handler){ { .a = send }, "\033[2~" };
+	K(KEY_BTAB) = (struct handler){ { .a = send }, "\033[Z" };
+	K(KEY_ENTER) = (struct handler){ { .a = send }, "\r" };
+	K(KEY_UP) = (struct handler){ { .a = sendarrow }, "A" };
+	K(KEY_DOWN) = (struct handler){ { .a = sendarrow }, "B" };
+	K(KEY_RIGHT) = (struct handler){ { .a = sendarrow }, "C" };
+	K(KEY_LEFT) = (struct handler){ { .a = sendarrow }, "D" };
+#undef K
 }
 
 static volatile sig_atomic_t interrupted;
