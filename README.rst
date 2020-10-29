@@ -20,21 +20,51 @@ smtx is a window manager.  When first started, smtx creates a single
 window with a pty running the program specified in SHELL.  The window
 that is created will fill the physical screen, and the underlying pty
 that it is viewing will have a width at least as much as that specified
-at startup (default is 80).  The width of the underlying pty can be
-changed at runtime.  The `CMD` keysequence (default is
-`CTRL+g`) will put smtx in `command` mode, in which key sequences are
-interpreted to manipulate the windows.  Transition back to `keypress`
-mode by pressing `RETURN` or `CMD`.  Pressing `RETURN` transitions
-mode without sending a key to the underlying pty, while pressing `CMD`
-transitions and sends the keystroke.  To scroll a window horizontally,
-use the `scrollh` command (by default bound to `<` and `>`).
+at startup (default is 80).  The `CMD` keysequence (default is `CTRL+g`)
+will put smtx in `command` mode, in which key sequences are interpreted to
+manipulate the windows.  Transition back to `keypress` mode by pressing
+`RETURN` or `CMD`.  Pressing `RETURN` transitions mode without sending
+a key to the underlying pty, while pressing `CMD` transitions and sends
+the keystroke.  To destroy all of the ptys and exit, use `CMD`-9x
+
+Features
+========
+
+smtx is modal; you can create 5 new windows with `CMD`-ccccc, or `CMD`-5c
+There are several preset layouts, so you can get a layout of 5 windows
+with `CMD`-5v.  You can also generate a layout with an osc sequence.
+That is, to generate a layout with seven windows, you could do::
+
+    printf '\033]60;.5:.5 .25:.66 .5:.66 .5:.83 .5:1 1:.25 1:1\007'
+
+where each coordinate pair represents the lower right hand corner of the window
+as a fraction of the full screen (note that order matters).  You can
+recursively convert an axial split to a sagittal split with `T` (transpose),
+and you can discard the currently focused window and all its children
+with `x`.  To attach the current window to a different pty, use `a`
+To swap the pty of the current window with a pty in a different window,
+us `s`.  Change the width of the pty in the currectly focused window
+with `W`.
+
 
 Windows
 =======
 
 New windows are created in `command` mode with `create`, which is by
-default bound to the keystrokes `c` and `C`.
-To switch among the windows use `j`, `k`, `l`, and `h`.
+default bound to the keystrokes `c` and `C`.  To navigate  among the
+windows use `j`, `k`, `l`, and `h`.  Each window belongs to one "canvas",
+which is simply a node in the tree used to keep track of windows.
+The root canvas fills the entire physical screen and contains the window
+in the upper left.  Each canvas can have 0, 1, or 2 children.  If the root
+window is split on the axial plane (ie, split top to bottom), the root
+canvas is said to be of "type 0" and has one child.  If the root window
+is split on the sagittal plane (ie, split left to right), the root
+canvas is of "type 1".  That is, a layout with 3 windows in which the
+left half of the screen is full height and the right half of the screen
+is split into 2 half-height windows indicates a root canvas of type 1.
+In that layout, the root canvas has one child (the right half of the screen),
+and that child (which is a type 0 canvas) has one child.
+
 
 Usage
 =====

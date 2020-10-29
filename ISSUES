@@ -9,6 +9,10 @@ TODO:
 
 	In full-screen mode, make hjkl scroll the pty.
 
+	Perhaps -1v should make the focused canvas the root and keep
+	the layout below it instead of making it single screen.  Perhaps
+	0v should attempt to layout all windows at one line each.
+
 	Copy-mode, with stack of registers and ability to edit.
 	Or, maybe just have a binding (s) that dumps the current content
 	of the scrollback region to a file like ~/.smtx-pid-timestamp
