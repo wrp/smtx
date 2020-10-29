@@ -462,51 +462,34 @@ find_window(struct canvas *n, int y, int x)
 	return r;
 }
 
-enum direction {nil, up, down, left, right};
-
-static void
-navigate(enum direction dir, int count, int type)
-{
-	struct canvas *n = S.f;
-	struct canvas *t = S.f;
-	struct canvas *q = NULL;
-	int startx = t->origin.x;
-	int starty = t->origin.y + t->extent.y;
-	while( t && count-- && dir != nil ) {
-		struct point target = {starty, startx};
-		switch( dir ) {
-		case up:
-			target.y = t->origin.y - 1;
-			q = t->parent;
-			break;
-		case down:
-			target.y = t->origin.y + t->extent.y + 1;
-			q = t->c[0];
-			break;
-		case right:
-			target.x = t->origin.x + t->extent.x + 1;
-			q = t->c[1];
-			break;
-		case left:
-			target.x = t->origin.x - 1;
-			q = t->parent;
-			break;
-		case nil:
-			;
-		}
-		t = type ? q : find_window(S.c, target.y, target.x);
-		n = t ? t : n;
-	}
-	S.f = n ? n : S.c;
-}
-
 void
 mov(const char *arg)
 {
 	int count = S.count < 1 ? 1 : S.count;
-	enum direction dir = *arg == 'k' ? up : *arg == 'j' ? down :
-			*arg == 'h' ? left : *arg == 'l' ? right : nil;
-	navigate(dir, count, 0);
+	struct canvas *n = S.f;
+	struct canvas *t = S.f;
+	int startx = t->origin.x;
+	int starty = t->origin.y + t->extent.y;
+	while( t && count-- ) {
+		struct point target = {starty, startx};
+		switch( *arg ) {
+		case 'k':
+			target.y = t->origin.y - 1;
+			break;
+		case 'j':
+			target.y = t->origin.y + t->extent.y + 1;
+			break;
+		case 'l':
+			target.x = t->origin.x + t->extent.x + 1;
+			break;
+		case 'h':
+			target.x = t->origin.x - 1;
+			break;
+		}
+		t = find_window(S.c, target.y, target.x);
+		n = t ? t : n;
+	}
+	S.f = n ? n : S.c;
 }
 
 /*
