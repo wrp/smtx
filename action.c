@@ -323,7 +323,7 @@ void
 transition(const char *arg)
 {
 	if( *arg == '*' ) {
-		rewrite(S.f->p->fd, &S.ctlkey, 1);
+		rewrite(S.f->p->fd, (char *)&S.ctlkey, 1);
 		arg += 1;
 	}
 	S.errmsg[0] = 0; /* Clear any existing error message */

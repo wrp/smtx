@@ -551,8 +551,8 @@ build_bindings(void)
 		add_key(code_keys, k, passthru, wc_lut + i);
 	}
 
-	add_key(k1, S.ctlkey, transition, "control");
-	add_key(ctl, S.ctlkey, transition, "*enter");
+	k1[S.ctlkey] = (struct handler){ { .a = transition }, "control" };
+	ctl[S.ctlkey] = (struct handler){ { .a = transition }, "*enter" };
 
 	add_key(code_keys, KEY_RESIZE, reshape_root, NULL);
 	add_key(code_keys, KEY_F(1), send, "\033OP");

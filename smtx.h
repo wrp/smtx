@@ -101,7 +101,7 @@ extern struct handler k1[128];
 extern struct handler ctl[128];
 
 struct state {
-	char ctlkey;
+	unsigned char ctlkey;
 	int width;
 	int history; /* Size of newly created ptys */
 	int count;
