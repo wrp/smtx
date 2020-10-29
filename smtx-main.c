@@ -715,7 +715,6 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 	p = *pp = p ? p->next : NULL;
 	n->split.y = (y - oy) / (ey - oy);
 	n->split.x = (x - ox) / (ex - ox);
-	double ny, nx;
 	if( y == ey && x == ex ) {
 		return n;
 	} else if( y == ey ) {
@@ -725,19 +724,15 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 		assert( y < ey );
 		n->typ = 0;
 	} else {
+		double ny, nx;
 		assert( y < ey && x < ex );
-		if( sscanf(layout, "%lf:%lf", &ny, &nx) != 2 ) {
-			check(0, "Invalid format at: %s", layout);
+		if( 2 != sscanf(layout, "%lf:%lf", &ny, &nx)
+			|| (ny > y && nx > x )
+		) {
+			check(0, "Invalid format: %s", layout);
 			goto fail;
 		}
-		if( ny > y && nx <= x ) {
-			n->typ = 1;
-		} else if( nx > x && ny <= y ) {
-			n->typ = 0;
-		} else {
-			check(0, "Out of bounds at at: %s", layout);
-			goto fail;
-		}
+		n->typ = y < ny;
 		if( (n->c[!n->typ] = add_canvas(&layout,
 				n->typ ? y : oy, n->typ ? ox : x,
 				n->typ ? ey : y, n->typ ? x : ex,
