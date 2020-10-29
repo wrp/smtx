@@ -549,7 +549,7 @@ main_loop(void)
 {
 	while( S.c != NULL && ! interrupted ) {
 		if( S.reshape ) {
-			reshape_root();
+			reshape(S.c, 0, 0, LINES, COLS);
 		}
 		draw(S.c);
 		if( *S.errmsg ) {
