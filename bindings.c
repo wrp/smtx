@@ -290,8 +290,8 @@ struct handler ctl[128] = {
 	[L'k' ] = { { .a = mov}, "k" },
 	[L'l' ] = { { .a = mov}, "l" },
 	[L'h' ] = { { .a = mov}, "h" },
-	[L'J' ] = { { .a = resize}, "J" },
-	[L'H' ] = { { .a = resize}, "H" },
+	[L'-' ] = { { .a = resize}, "-" },
+	[L'|' ] = { { .a = resize}, "|" },
 #ifndef NDEBUG
 	[L'Q' ] = { { .a = show_status}, "x" },
 #endif

@@ -157,7 +157,7 @@ void
 resize(const char *arg)
 {
 	struct canvas *n = S.f;
-	double *s = strchr("J", *arg) ? &n->split.y : &n->split.x;
+	double *s = strchr("-", *arg) ? &n->split.y : &n->split.x;
 	int count = S.count < 0 ? 50 : S.count > 100 ? 100 : S.count;
 	if( count ) {
 		*s = count / 100.0;

@@ -19,8 +19,6 @@ TODO:
 	Perhaps use (e) to edit the file (eg, spawn $EDITOR), then (p)
 	to paste it.
 
-	Use | and - instead of H and J to set split point.
-
 	List all windows with titles, with ability to navigate.
 
 	Figure out initialization.  Maybe just use a "source" command to read
