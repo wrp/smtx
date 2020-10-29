@@ -157,7 +157,6 @@ extern wchar_t CSET_GRAPH[0x7f]; /* Graphics Set One */
 extern int tabstop;
 extern int id;
 extern void fixcursor(void);
-extern void focus(struct canvas *n);
 
 extern struct canvas * newcanvas(struct pty *, struct canvas *);
 extern void draw(struct canvas *);

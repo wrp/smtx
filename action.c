@@ -133,7 +133,7 @@ prune(void)
 		*(c ? &p->split.x : &p->split.y) = 1.0;
 		p->c[c] = NULL;
 		freecanvas(S.f);
-		focus(p);
+		S.f = p;
 	}
 	return S.reshape = 1;
 }

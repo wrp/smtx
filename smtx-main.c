@@ -180,12 +180,6 @@ newcanvas(struct pty *p, struct canvas *parent)
 	return n;
 }
 
-void
-focus(struct canvas *n)
-{
-	S.f = n ? n : S.c;
-}
-
 static void
 draw_window(struct canvas *n)
 {
@@ -503,7 +497,7 @@ navigate(enum direction dir, int count, int type)
 		t = type ? q : find_window(S.c, target.y, target.x);
 		n = t ? t : n;
 	}
-	focus(n);
+	S.f = n ? n : S.c;
 }
 
 void
@@ -754,7 +748,7 @@ build_layout(const char *layout)
 	struct canvas *n = add_canvas(&layout, 0.0, 0.0, 1.0, 1.0, &p, NULL);
 	if( n ) {
 		freecanvas(S.c);
-		focus(S.c = n);
+		S.f = S.c = n;
 	}
 	S.reshape = 1;
 }
