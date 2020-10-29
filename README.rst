@@ -3,29 +3,31 @@ Introduction
 
 smtx -- Simple Modal Terminal Multiplexer
 
-smtx is designed for simplicity in the implementation and ease of use
-in a limited environment (eg, on a small physical device).  It provides
-a simple mechanism for providing ptys that are wider than the physical
-device, and makes it simple to have multiple views in different
-locations of the pty. Also, it provides a simple mechanism for generating
-screen layouts dynamically.  For example, sending the osc string
-".5:.5 .5:1 1:.5 1:1" (eg, printf '\033]60;.5:.5 .5:1 1:.5 1:1\\007')
-will generate 4 windows in a grid.  There are several pre-set screen layouts
-that can be rendered with the 'v' command.
+Designed for simplicity and ease of use in a limited environment (eg,
+on a small physical device), smtx provides provides ptys that are wider
+than the physical device and the ability to have multiple views in
+different locations of the pty.
 
 Quickstart
 ==========
 
-smtx is a window manager.  When first started, smtx creates a single
-window with a pty running the program specified in SHELL.  The window
-that is created will fill the physical screen, and the underlying pty
-that it is viewing will have a width at least as much as that specified
-at startup (default is 80).  The `CMD` keysequence (default is `CTRL+g`)
-will put smtx in `command` mode, in which key sequences are interpreted to
-manipulate the windows.  Transition back to `keypress` mode by pressing
-`RETURN` or `CMD`.  Pressing `RETURN` transitions mode without sending
-a key to the underlying pty, while pressing `CMD` transitions and sends
-the keystroke.  To destroy all of the ptys and exit, use `CMD`-9x
+When first started, `smtx` creates a single window with a pty running
+the program specified in SHELL.  The window that is created will fill
+the physical screen, and the underlying pty that it is viewing will have
+a width of at least 80.  The `CMD` keysequence (default is `CTRL+g`)
+will put smtx in `command` mode, in which key sequences are interpreted
+to manipulate the windows.  Press `RETURN` to exit command mode.
+Press `CMD` to exit command mode and send `CMD` to the underlying pty.
+In command mode, create new windows using `c` or `C`.  Use `hjkl` to
+navigate between windows.  Use `<` and `>` to horizontally scroll the
+underlying pty.  Most commands accept a count, so you could create 5 new
+windows with `5c` and move down N times with `Nj`. (In the follwoing, `N`
+will represent an arbitrary integer).  Choose one of the preset layouts
+with `Nv`.  To attach the current window to a different pty, use `Na`.
+To change the pty in the current window with the pty in a different
+window, use `Ns`.  To transpose the orientation of the current window,
+use `T`.  To close the currently focused window (the underlying pty is
+not affected), use `x`.  To destroy all of the ptys and exit, use `9x`.
 
 Features
 ========
