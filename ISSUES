@@ -86,6 +86,7 @@ BUGS:
 	curs_set is not returning ERR.  This is probably me abusing ncurses, or
 	not understanding it, or ... something.
 
+	Title bars are wonky with zero height canvas.
 
 MAYBE TODO:
 
