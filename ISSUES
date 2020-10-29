@@ -33,8 +33,11 @@ TODO:
 	Dump select() and use libev or libevent
 
 BUGS:
-	This is dog slow on macos.  top regularly reports 100% cpu. This
-	is probably because select is broken.
+	Syntax highlighting doesn't work in vim.
+
+	This is dog slow on macos.  top regularly reports 100% cpu.  Should
+	stop using select and switch to kqueue.  Probably not worth the
+	effort to use libevent or libev.
 
 	Need to handle memory allocation errors more thoroughly.
 
@@ -101,15 +104,6 @@ MAYBE TODO:
 	Multi-key bindings (?)
 	Pass master fd of a pty through a socket.
 
-	Implement decent error reporting.
-
-	Needs to be easier to navigate in full screen mode.   Perhaps
-	title bar would show title of windows above, below, to the
-	left, and right.  Then hjkl navigation would stay in full
-	screen mode while going between them. (Note that we still need
-	to implement "full screen mode", and indeed need to define what
-	I mean by that.)
-
 	Possibly add character in title bar to indicate mode.  Need to make
 	title bar more functional in general, so this thought should probably
 	be consumed by that.  Probably want to be able to send arbitrary
@@ -123,4 +117,3 @@ MAYBE TODO:
 	Make it possible for windows to overlap.
 
 	Implement method to save the current layout into a register.
-
