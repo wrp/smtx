@@ -85,18 +85,15 @@ extend_tabs(struct pty *p, int tabstop)
 int
 resize_pad(WINDOW **p, int h, int w)
 {
+	int rv = 0;
 	if( *p ) {
-		check(wresize(*p, h, w ) == OK, "Error resizing window");
-	} else if( (*p = newpad(h, w)) == NULL ) {
-		errno = ENOMEM;
-		check(0, "Error creating window");
-	} else {
+		rv = check(wresize(*p, h, w ) == OK, "Out of memory");
+	} else if( check((*p = newpad(h, w)) != NULL, "Out of memory") ) {
 		wtimeout(*p, 0);
 		scrollok(*p, 1);
-		keypad(*p, 1);
-		return 1;
+		rv = (keypad(*p, 1) == OK);
 	}
-	return 0; /* 0 is failure */
+	return rv; /* 0 is failure */
 }
 
 static struct pty *
