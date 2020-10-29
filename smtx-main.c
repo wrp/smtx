@@ -701,13 +701,10 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 	const char *layout = *lp;
 	struct pty *p = *pp;
 	struct canvas *n = newcanvas(p, parent);
-	if( n == NULL ) {
-		goto fail;
-	}
-	if( 2 != sscanf(layout, "%lf:%lf%n", &y, &x, &e)
-		|| y < oy || y > ey || x < ox || x > ex
-	) {
-		check(0, "Invalid layout format: %s", layout);
+	if( n == NULL || ! check(
+			2 == sscanf(layout, "%lf:%lf%n", &y, &x, &e)
+			&& y >= oy && y <= ey && x >= ox && x <= ex,
+			"Invalid layout format: %s", layout) ) {
 		goto fail;
 	}
 	layout += e;
