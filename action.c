@@ -68,7 +68,7 @@ create(const char *arg)
 	}
 	balance();
 	S.f = o;
-	reshape_root(NULL);
+	reshape_root();
 	if( n ) {
 		struct screen*s = n->p->s;
 		wmove(s->win, s->c.y = n->offset.y, s->c.x = 0);
@@ -140,10 +140,9 @@ prune(void)
 
 static void set_pty_history(struct pty *p, int siz);
 
-void
-reshape_root(const char *arg)
+int
+reshape_root(void)
 {
-	(void)arg;
 	if( LINES > S.history ) {
 		S.history = LINES;
 	}
@@ -154,7 +153,7 @@ reshape_root(const char *arg)
 	resize_pad(&S.werr, 1, COLS);
 	resize_pad(&S.wbkg, LINES, COLS);
 	reshape(S.c, 0, 0, LINES, COLS);
-	S.reshape = 0;
+	return S.reshape = 0;
 }
 
 void

@@ -183,7 +183,7 @@ extern action0 new_tabstop;
 extern action passthru;
 extern action0 prune;
 extern action reorient;
-extern action reshape_root;
+extern action0 reshape_root;
 extern action resize;
 extern action scrollh;
 extern action scrolln;

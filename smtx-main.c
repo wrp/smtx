@@ -559,7 +559,7 @@ main_loop(void)
 {
 	while( S.c != NULL && ! interrupted ) {
 		if( S.reshape ) {
-			reshape_root(NULL);
+			reshape_root();
 		}
 		draw(S.c);
 		if( *S.errmsg ) {

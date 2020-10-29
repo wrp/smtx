@@ -316,7 +316,7 @@ struct handler ctl[128] = {
 
 struct handler code_keys[KEY_MAX - KEY_MIN + 1] = {
 #define K(a) [a - KEY_MIN]
-	K(KEY_RESIZE)    = { { .a = reshape_root }, NULL },
+	K(KEY_RESIZE)    = { { .v = reshape_root }, NULL },
 	K(KEY_F(1))      = { { .a = send }, "\033" },
 	K(KEY_F(2))      = { { .a = send }, "\033OQ" },
 	K(KEY_F(3))      = { { .a = send }, "\033OR" },
