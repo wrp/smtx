@@ -43,7 +43,7 @@ describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags,
 		d += snprintf(d, e - d, "@%d,%d", c->origin.y, c->origin.x);
 	}
 	if( show_id && c->p ) {
-		d += snprintf(d, e - d, "(id=%d)", c->p->id);
+		d += snprintf(d, e - d, "(id=%d)", c->p->fd - 2);
 	}
 	if( c->p->s && ! c->p->s->vis ) {
 		d += snprintf(d, e - d, "!"); /* Cursor hidden */
@@ -239,7 +239,7 @@ show_procs(void)
 	rewrite(1, buf, strlen(buf));
 	for( struct pty *p = S.p; p; p = p->next ) {
 		int k = snprintf(buf, sizeof buf, "\t%d\t%d\t%d\t%s\r\n",
-			p->id, p->pid, p->count, p->status);
+			p->fd - 2, p->pid, p->count, p->status);
 		rewrite(1, buf, k);
 	}
 }

@@ -23,7 +23,7 @@ attach(void)
 	struct canvas *n = S.f;
 	assert( n->p->count > 0 );
 	for( struct pty *t = S.p; t; t = t->next ) {
-		if( t->id == S.count ) {
+		if( t->fd - 2 == S.count ) {
 			(n->p    )->count -= 1;
 			(n->p = t)->count += 1;
 			return S.reshape = 1;
@@ -86,7 +86,7 @@ find_canvas(struct canvas *c, int id)
 {
 	struct canvas *r = NULL;
 	if( c ) {
-		if( c->p->id == id ) {
+		if( c->p->fd == id + 2 ) {
 			r = c;
 		} else if( (r = find_canvas(c->c[0], id)) == NULL ) {
 			r = find_canvas(c->c[1], id);
@@ -99,7 +99,7 @@ static void
 pty_size(struct pty *p)
 {
 	check(p->fd == -1 || ! ioctl(p->fd, TIOCGWINSZ, &p->ws),
-		"ioctl error getting size of pty %d", p->id);
+		"ioctl error getting size of pty %d", p->fd - 2);
 }
 
 int

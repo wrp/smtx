@@ -135,9 +135,8 @@ new_pty(int rows, int cols)
 		FD_SET(p->fd, &S.fds);
 		S.maxfd = p->fd > S.maxfd ? p->fd : S.maxfd;
 		fcntl(p->fd, F_SETFL, O_NONBLOCK);
-		p->id = p->fd - 2;
 		struct pty *t = S.p;
-		while( t && t->next && p->id > t->next->id ) {
+		while( t && t->next && p->fd > t->next->fd ) {
 			t = t->next;
 		}
 		if( !t || t->next != p ) {
@@ -254,7 +253,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 void
 reshape_window(struct pty *p)
 {
-	check(ioctl(p->fd, TIOCSWINSZ, &p->ws) == 0, "ioctl on %d", p->id);
+	check(ioctl(p->fd, TIOCSWINSZ, &p->ws) == 0, "ioctl on %d", p->fd);
 	check(kill(p->pid, SIGWINCH) == 0, "send WINCH to %d", (int)p->pid);
 }
 
@@ -350,7 +349,7 @@ draw_title(struct canvas *n, int r)
 	assert( n->wtit );
 	assert( n->p );
 	wattrset(n->wtit, r ? A_REVERSE : A_NORMAL);
-	mvwprintw(n->wtit, 0, 0, "%d %s ", n->p->id, n->p->status);
+	mvwprintw(n->wtit, 0, 0, "%d %s ", n->p->fd - 2, n->p->status);
 	int x = n->offset.x;
 	int w = n->p->ws.ws_col;
 	if( x > 0 || x + n->extent.x < w ) {
