@@ -104,20 +104,18 @@ pty_size(struct pty *p)
 int
 new_tabstop(void)
 {
-	struct canvas *n = S.f;
-	n->p->ntabs = 0;
-	pty_size(n->p); /* Update n->p->ws */
-	extend_tabs(n->p, n->p->tabstop = S.count > -1 ? S.count : 8);
+	S.f->p->ntabs = 0;
+	pty_size(S.f->p); /* Update S.f->p->ws */
+	extend_tabs(S.f->p, S.f->p->tabstop = S.count > -1 ? S.count : 8);
 	return 1;
 }
 
 void
 passthru(const char *arg)
 {
-	struct canvas *n = S.f;
-	if( n->p && n->p->fd > 0 && arg[0] > 0 ) {
-		scrollbottom(n);
-		rewrite(n->p->fd, arg + 1, arg[0]);
+	if( S.f->p && S.f->p->fd > 0 && arg[0] > 0 ) {
+		scrollbottom(S.f);
+		rewrite(S.f->p->fd, arg + 1, arg[0]);
 	}
 }
 
