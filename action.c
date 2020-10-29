@@ -36,16 +36,15 @@ int
 balance(void)
 {
 	struct canvas *n = S.f;
-	if( n ) {
-		int dir = n->typ;
-		while( n->c[dir] != NULL ) {
-			n = n->c[dir];
-		}
-		for(int count = 0; n; n = n->parent ) {
-			*(dir ? &n->split.x : &n->split.y) = 1.0 / ++count;
-			if( n->parent && n->parent->c[dir] != n ) {
-				break;
-			}
+	assert( n );
+	int dir = n->typ;
+	while( n->c[dir] != NULL ) {
+		n = n->c[dir];
+	}
+	for(int count = 0; n; n = n->parent ) {
+		*(dir ? &n->split.x : &n->split.y) = 1.0 / ++count;
+		if( n->parent && n->parent->c[dir] != n ) {
+			break;
 		}
 	}
 	return S.reshape = 1;
@@ -66,10 +65,10 @@ create(const char *arg)
 			S.f = n = v;
 		}
 	}
-	balance();
-	S.f = o;
-	reshape_root();
 	if( n ) {
+		balance();
+		S.f = o;
+		reshape_root();
 		struct screen*s = n->p->s;
 		wmove(s->win, s->c.y = n->offset.y, s->c.x = 0);
 	}
