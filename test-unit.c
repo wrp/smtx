@@ -837,8 +837,8 @@ test_resize(int fd)
 	status |= check_layout(fd, 0x1, "*17x40; 2x80; 2x80; 17x39");
 	send_cmd(fd, "uniq3", "%s\r%s", "jC10|", "printf 'uniq%s\\n' 3");
 	status |= check_layout(fd, 0x1, "17x40; *2x8; 2x80; 2x71; 17x39");
-	send_cmd(fd, "uniq4", "%s\r%s", "0-", "printf 'uniq%s\\n' 4");
-	status |= check_layout(fd, 0x1, "*23x40; 23x39");
+	send_cmd(fd, "un4>", "0-j\r%s", "PS1=un4'> '");
+	status |= check_layout(fd, 0x1, "17x40; 0x8; *5x80; 0x72; 17x39");
 	return status;
 }
 

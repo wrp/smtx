@@ -305,7 +305,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		reshape(n->c[0], y + h1, x, h - h1, n->typ ? w1 : w);
 		reshape(n->c[1], y, x + w1 + have_div,
 			n->typ ? h : h1, w - w1 - have_div);
-		n->extent.y = h1 - have_title;
+		n->extent.y = h1 > 0 ?  h1 - 1 : 0;
 		n->extent.x = w1;
 		if( p ) {
 			if( p->fd >= 0 && n->extent.y > p->ws.ws_row ) {
