@@ -520,18 +520,6 @@ mov(const char *arg)
 	navigate(dir, count, 0);
 }
 
-static void
-add_key(struct handler *b, wchar_t k, action act, const char *arg)
-{
-	if( b == code_keys ) {
-		assert( k >= KEY_MIN && k <= KEY_MAX );
-		k -= KEY_MIN;
-	}
-	assert( k >= 0 && k <= KEY_MAX - KEY_MIN );
-	b[k].act.a = act;
-	b[k].arg = arg;
-}
-
 /*
  * wc_lut is built from the output of wctomb, so that for k such that
  * k % (1 + MB_LEN_MAX) == 0, wc_lut[k] is the value returned by
@@ -542,19 +530,19 @@ static char wc_lut[(KEY_MAX - KEY_MIN + 1) * ( 1 + MB_LEN_MAX )];
 void
 build_bindings(void)
 {
+
+	k1[S.ctlkey] = (struct handler){ { .a = transition }, "control" };
+	ctl[S.ctlkey] = (struct handler){ { .a = transition }, "*enter" };
+
+#define K(a) code_keys[a - KEY_MIN]
 	for( wchar_t k = KEY_MIN; k < KEY_MAX; k++ ) {
 		assert( MB_LEN_MAX < 128 );
 		int i = (k - KEY_MIN) * (1 + MB_LEN_MAX);
 		int v = wctomb(wc_lut + i + 1, k);
 		assert( v < 128 && v > -2 );
 		wc_lut[ i ] = v == -1 ? 0 : v;
-		add_key(code_keys, k, passthru, wc_lut + i);
+		K(k) = (struct handler){ { .a = passthru }, wc_lut + i };
 	}
-
-	k1[S.ctlkey] = (struct handler){ { .a = transition }, "control" };
-	ctl[S.ctlkey] = (struct handler){ { .a = transition }, "*enter" };
-
-#define K(a) code_keys[a - KEY_MIN]
 	K(KEY_RESIZE) = (struct handler){ { .a = reshape_root }, NULL };
 	K(KEY_F(1)) = (struct handler){ { .a = send }, "\033" };
 	K(KEY_F(2)) = (struct handler){ { .a = send }, "\033OQ" };
