@@ -313,3 +313,34 @@ struct handler ctl[128] = {
 	[L'8' ] = { { .a = digit}, "8" },
 	[L'9' ] = { { .a = digit}, "9" },
 };
+
+struct handler code_keys[KEY_MAX - KEY_MIN + 1] = {
+#define K(a) [a - KEY_MIN]
+	K(KEY_RESIZE)    = { { .a = reshape_root }, NULL },
+	K(KEY_F(1))      = { { .a = send }, "\033" },
+	K(KEY_F(2))      = { { .a = send }, "\033OQ" },
+	K(KEY_F(3))      = { { .a = send }, "\033OR" },
+	K(KEY_F(4))      = { { .a = send }, "\033OS" },
+	K(KEY_F(5))      = { { .a = send }, "\033[15~" },
+	K(KEY_F(6))      = { { .a = send }, "\033[17~" },
+	K(KEY_F(7))      = { { .a = send }, "\033[18~" },
+	K(KEY_F(8))      = { { .a = send }, "\033[19~" },
+	K(KEY_F(9))      = { { .a = send }, "\033[20~" },
+	K(KEY_F(10))     = { { .a = send }, "\033[21~" },
+	K(KEY_F(11))     = { { .a = send }, "\033[23~" },
+	K(KEY_F(12))     = { { .a = send }, "\033[24~" },
+	K(KEY_HOME)      = { { .a = send }, "\033[1~" },
+	K(KEY_END)       = { { .a = send }, "\033[4~" },
+	K(KEY_PPAGE)     = { { .a = send }, "\033[5~" },
+	K(KEY_NPAGE)     = { { .a = send }, "\033[6~" },
+	K(KEY_BACKSPACE) = { { .a = send }, "\177" },
+	K(KEY_DC)        = { { .a = send }, "\033[3~" },
+	K(KEY_IC)        = { { .a = send }, "\033[2~" },
+	K(KEY_BTAB)      = { { .a = send }, "\033[Z" },
+	K(KEY_ENTER)     = { { .a = send }, "\r" },
+	K(KEY_UP)        = { { .a = sendarrow }, "A" },
+	K(KEY_DOWN)      = { { .a = sendarrow }, "B" },
+	K(KEY_RIGHT)     = { { .a = sendarrow }, "C" },
+	K(KEY_LEFT)      = { { .a = sendarrow }, "D" },
+#undef K
+};

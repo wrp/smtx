@@ -99,6 +99,7 @@ struct mode {
 };
 extern struct handler k1[128];
 extern struct handler ctl[128];
+extern struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 
 struct state {
 	unsigned char ctlkey;
@@ -187,6 +188,7 @@ extern action resize;
 extern action scrollh;
 extern action scrolln;
 extern action send;
+extern action sendarrow;
 extern action0 set_history;
 extern action0 set_layout;
 extern action set_width;
