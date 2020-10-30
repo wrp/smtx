@@ -106,6 +106,17 @@ get_freepty(void)
 	return t;
 }
 
+static int
+newscreens(struct pty *p, int h, int w)
+{
+	int rv = resize_pad(&p->pri.win, h, w) && resize_pad(&p->alt.win, h, w);
+	if( rv ) {
+		p->s = &p->pri;
+		setupevents(&p->vp);
+	}
+	return rv;
+}
+
 static struct pty *
 new_pty(int rows, int cols)
 {
@@ -130,11 +141,7 @@ new_pty(int rows, int cols)
 		S.maxfd = p->fd > S.maxfd ? p->fd : S.maxfd;
 		fcntl(p->fd, F_SETFL, O_NONBLOCK);
 	}
-	if( p->s || (resize_pad(&p->pri.win, S.history, cols)
-			&& resize_pad(&p->alt.win, S.history, cols)) ) {
-		p->s = &p->pri;
-		setupevents(&p->vp);
-
+	if( p->s || newscreens(p, S.history, cols) ) {
 		struct pty *t = S.p;
 		while( t && t->next && p->fd > t->next->fd ) {
 			t = t->next;
