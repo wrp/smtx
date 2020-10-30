@@ -790,7 +790,7 @@ test_prune(int fd)
 	send_cmd(fd, NULL, "3c"); /* Create 3 new canvasses */
 	send_cmd(fd, "abx>", "j\rPS1=ab'x>'");  /* Move down 1 */
 	rv |= check_layout(fd, 0x1, "5x80; *5x80; 5x80; 5x80");
-	send_txt(fd, "exited", "exit");
+	send_txt(fd, NULL, "exit");
 	send_cmd(fd, NULL, "x");  /* prune */
 	rv |= check_layout(fd, 0x1, "*23x80");
 	send_cmd(fd, NULL, "C");  /* create pty */
@@ -802,7 +802,7 @@ test_prune(int fd)
 	send_cmd(fd, "cd3>", "Cl\rPS1=cd'3>'");
 
 	/* Kill last pty and ensure process does not terminate */
-	send_txt(fd, "exited", "exit");
+	send_txt(fd, NULL, "exit");
 	rv |= check_layout(fd, 0x1, "23x40; *23x39");
 
 	send_cmd(fd, NULL, "h");  /* move left*/
