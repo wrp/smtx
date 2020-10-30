@@ -140,6 +140,9 @@ new_pty(int rows, int cols)
 		FD_SET(p->fd, &S.fds);
 		S.maxfd = p->fd > S.maxfd ? p->fd : S.maxfd;
 		fcntl(p->fd, F_SETFL, O_NONBLOCK);
+		const char *bname = strrchr(sh, '/');
+		bname = bname ? bname + 1 : sh;
+		strncpy(p->status, bname, sizeof p->status - 1);
 	}
 	if( p->s || newscreens(p, S.history, cols) ) {
 		struct pty *t = S.p;
@@ -150,9 +153,6 @@ new_pty(int rows, int cols)
 			p->next = t ? t->next : NULL;
 			*(t ? &t->next : &S.p) = p;
 		}
-		const char *bname = strrchr(sh, '/');
-		bname = bname ? bname + 1 : sh;
-		strncpy(p->status, bname, sizeof p->status - 1);
 	} else {
 		free(p->tabs);
 		delwin(p->pri.win);
