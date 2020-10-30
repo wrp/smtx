@@ -150,7 +150,7 @@ test_changehist(int fd)
 	rv = check_layout(fd, 0x1, "7x80; *15x80");
 
 	/* Create one new window */
-	send_cmd(fd, NULL, "c");
+	send_cmd(fd, "cd2>", "c\rPS1=cd'2> '");
 	rv = check_layout(fd, 0x1, "7x80; *7x80; 7x80");
 
 	/* Validate history is as expected */
@@ -165,7 +165,7 @@ test_changehist(int fd)
 	}
 
 	/* Fail to create a new window (out of memory) */
-	send_cmd(fd, NULL, "c");
+	send_cmd(fd, "ef3>", "c\rPS1=ef3'> '");
 	rv = check_layout(fd, 0x1, "7x80; *7x80; 7x80");
 
 	/* Set history smaller than screen size */

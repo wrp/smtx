@@ -55,14 +55,18 @@ create(const char *arg)
 {
 	struct canvas *n = S.f, *o = S.f;
 	int dir = arg && *arg == 'C' ? 1 : 0;
-	while( n && n->c[dir] != NULL ) {
-		n = n->c[dir]; /* Split last window in a chain. */
-	}
+	struct canvas *c = n ? n->c[dir] : NULL;
 	for( int count = S.count < 1 ? 1 : S.count; count; count -= 1 ) {
 		struct canvas *v = *(n ? &n->c[dir] : &S.c) = newcanvas(0, n);
 		if( v != NULL ) {
 			v->typ = dir;
+			v->c[dir] = c;
+			if( c ) {
+				c->parent = v;
+			}
 			S.f = n = v;
+		} else if( n ) {
+			n->c[dir] = c;
 		}
 	}
 	if( n ) {
