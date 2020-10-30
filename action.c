@@ -37,7 +37,7 @@ balance(void)
 {
 	struct canvas *n = S.f;
 	assert( n );
-	int dir = n->typ;
+	int dir = n->parent ? (n == n->parent->c[1]) : n->typ;
 	while( n->c[dir] != NULL ) {
 		n = n->c[dir];
 	}
