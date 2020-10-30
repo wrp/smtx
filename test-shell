@@ -1,9 +1,0 @@
-#!/bin/sh
-
-export SHELL=/bin/sh
-die() { echo "$*"; exit 1; } >&2
-
-./smtx -z && exit 1  # test invalid option
-./smtx -v || exit
-./smtx -h | grep -q usage: || exit
-toe | grep -q '^smtx ' || die "Tests are not reliable unless smtx.ti is installed"
