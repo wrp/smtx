@@ -1,13 +1,21 @@
 
 TODO:
-	Make the preset keybindings modifiable at startup.
+	(?) Make the preset keybindings modifiable at startup.
 
-	Add a command to start up a new shell in a canvas where the shell is dead.
+	(?) Add a command to start up a new shell in a canvas where the
+	shell is dead.
 
-	Determine if colors should be saved with save/restore cursor and implement
-	accordingly.
+	Determine if colors should be saved with save/restore cursor and
+	implement accordingly.
 
 	In full-screen mode, make hjkl scroll the pty.
+
+	Consider abandoning history.  It is convenient to be able to change
+	this size of the history buffer, but perhaps this violates the
+	design goal of simplicity.  Is scroll back really a necessary feature?
+	OTOH, we need to handle screen resizes (do we?), so we cannot avoid
+	reallocating screens, and that is the only complexity with modifying
+	the history buffer size, so maybe we ought to keep it.
 
 	Perhaps -1v should make the focused canvas the root and keep
 	the layout below it instead of making it single screen.  Perhaps

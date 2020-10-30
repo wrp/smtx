@@ -145,6 +145,7 @@ new_pty(int rows, int cols)
 		strncpy(p->status, bname, sizeof p->status - 1);
 	}
 	if( p->s || newscreens(p, S.history, cols) ) {
+		/* Insert the pty in the S.p list (1) */
 		struct pty *t = S.p;
 		while( t && t->next && p->fd > t->next->fd ) {
 			t = t->next;
@@ -162,6 +163,12 @@ new_pty(int rows, int cols)
 	}
 	return p;
 }
+/* (1) This should only be necessary with new pty.  However, if we
+   move this logic up into the previous block, test_changehist starts
+   to fail with IO error about 50% of the time.  Need to clean this
+   up to figure out why.  Or, abandon the features of scrollback
+   and changing history size; they violate the principle of simplicity.
+ */
 
 struct canvas *
 newcanvas(struct pty *p, struct canvas *parent)
