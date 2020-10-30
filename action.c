@@ -65,11 +65,10 @@ create(const char *arg)
 				c->parent = v;
 			}
 			S.f = n = v;
-		} else if( n ) {
-			n->c[dir] = c;
 		}
 	}
 	if( n ) {
+		n->c[dir] = c;
 		balance();
 		reshape_root();
 		struct screen*s = n->p->s;
