@@ -124,17 +124,17 @@ new_pty(int rows, int cols)
 			execl(sh, sh, NULL);
 			err(EXIT_FAILURE, "exec SHELL='%s'", sh);
 		}
+		p->vp.p = p;
+		extend_tabs(p, p->tabstop = 8);
+		FD_SET(p->fd, &S.fds);
+		S.maxfd = p->fd > S.maxfd ? p->fd : S.maxfd;
+		fcntl(p->fd, F_SETFL, O_NONBLOCK);
 	}
 	if( p->s || (resize_pad(&p->pri.win, S.history, cols)
 			&& resize_pad(&p->alt.win, S.history, cols)) ) {
 		p->s = &p->pri;
-		p->vp.p = p;
-		extend_tabs(p, p->tabstop = 8);
 		setupevents(&p->vp);
 
-		FD_SET(p->fd, &S.fds);
-		S.maxfd = p->fd > S.maxfd ? p->fd : S.maxfd;
-		fcntl(p->fd, F_SETFL, O_NONBLOCK);
 		struct pty *t = S.p;
 		while( t && t->next && p->fd > t->next->fd ) {
 			t = t->next;
