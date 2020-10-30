@@ -595,6 +595,9 @@ test_layout(int fd)
 	send_cmd(fd, "xy6>", "=\rPS1=xy6'> '");
 	rv |= check_layout(fd, 0x1, "*7x80; 7x40; 7x26; 7x26; 7x26; 7x39");
 
+	send_cmd(fd, "za6>", "c\rPS1=za6'> '");
+	rv |= check_layout(fd, 1, "*5x80; 5x80; 5x40; 5x26; 5x26; 5x26; 5x39");
+
 	send_cmd(fd, "gw7>", "7v\rPS1=gw7'> '");
 	rv |= check_layout(fd, 0x1, "*11x80; 11x26; 11x26; 11x26");
 
