@@ -35,7 +35,8 @@ attach(void)
 void
 balance(const char *arg)
 {
-	for( int d = *arg == '|', count = 0; d < 2 - (*arg == '-'); d++ ) {
+	for( ; *arg; arg++ ) {
+		int d = *arg == '|', count = 0;
 		for( struct canvas *n = S.f; n; n = n->c[d] ) {
 			count += 1;
 		}
@@ -49,7 +50,7 @@ balance(const char *arg)
 void
 create(const char *arg)
 {
-	int dir = *arg == 'C' ? 1 : 0;
+	int dir = *arg == '|';
 	struct canvas *n = S.f, *c = n->c[dir], dummy;
 	for( int count = S.count < 1 ? 1 : S.count; count; count -= 1 ) {
 		struct canvas *v = n->c[dir] = newcanvas(0, n);
@@ -63,7 +64,7 @@ create(const char *arg)
 		}
 	}
 	n->c[dir] = c;
-	balance(dir ? "|" : "-");
+	balance(arg);
 	reshape_root(); /* (1) */
 	wmove(n->p->s->win, n->p->s->c.y = n->offset.y, n->p->s->c.x = 0);
 }
