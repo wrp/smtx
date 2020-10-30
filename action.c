@@ -54,7 +54,7 @@ void
 create(const char *arg)
 {
 	struct canvas *n = S.f, *o = S.f;
-	int dir = arg && *arg == 'C' ? 1 : 0;
+	int dir = *arg == 'C' ? 1 : 0;
 	struct canvas *c = n ? n->c[dir] : NULL;
 	for( int count = S.count < 1 ? 1 : S.count; count; count -= 1 ) {
 		struct canvas *v = *(n ? &n->c[dir] : &S.c) = newcanvas(0, n);
@@ -70,12 +70,15 @@ create(const char *arg)
 	if( n ) {
 		n->c[dir] = c;
 		balance();
-		reshape_root();
+		reshape_root(); /* (1) */
 		struct screen*s = n->p->s;
 		wmove(s->win, s->c.y = n->offset.y, s->c.x = 0);
 	}
 	S.f = o;
 }
+/* (1): TODO: for some reason, it is not sufficient to call reshape()
+ * here.  We need to understand why that is.
+ */
 
 void
 digit(const char *arg)

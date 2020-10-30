@@ -625,12 +625,12 @@ init(void)
 	resize_pad(&S.wbkg, LINES, COLS);
 	wbkgd(S.wbkg, ACS_BULLET);
 	wattron(S.werr, A_REVERSE);
-	create(NULL);
-	S.f = S.c;
+	S.f = S.c = newcanvas(0, NULL);
 	if( S.c == NULL || S.werr == NULL ) {
 		endwin();
 		err(EXIT_FAILURE, "Unable to create root window");
 	}
+	reshape_root();
 }
 
 int
