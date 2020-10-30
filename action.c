@@ -32,18 +32,18 @@ attach(void)
 	return check(0, "No pty exists with id %d", S.count);
 }
 
-int
-balance(void)
+void
+balance(const char *arg)
 {
-	for( int dir = 0, count = 0; dir < 2; dir++ ) {
-		for( struct canvas *n = S.f; n; n = n->c[dir] ) {
+	for( int d = *arg == '|', count = 0; d < 2 - (*arg == '-'); d++ ) {
+		for( struct canvas *n = S.f; n; n = n->c[d] ) {
 			count += 1;
 		}
-		for( struct canvas *n = S.f; n; n = n->c[dir] ) {
-			*(dir ? &n->split.x : &n->split.y) = 1.0 / count--;
+		for( struct canvas *n = S.f; n; n = n->c[d] ) {
+			*(d ? &n->split.x : &n->split.y) = 1.0 / count--;
 		}
 	}
-	return S.reshape = 1;
+	S.reshape = 1;
 }
 
 void
@@ -63,7 +63,7 @@ create(const char *arg)
 		}
 	}
 	n->c[dir] = c;
-	balance();
+	balance(dir ? "|" : "-");
 	reshape_root(); /* (1) */
 	wmove(n->p->s->win, n->p->s->c.y = n->offset.y, n->p->s->c.x = 0);
 }

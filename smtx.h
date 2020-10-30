@@ -173,7 +173,7 @@ extern void freecanvas(struct canvas * n);
 extern void build_layout(const char *);
 
 extern action0 attach;
-extern action0 balance;
+extern action balance;
 extern action create;
 extern action digit;
 extern action mov;
