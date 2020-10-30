@@ -129,8 +129,7 @@ struct canvas {
 	struct canvas *parent;
 	/*
 	A canvas contains both c[0] and c[1], and shows only the upper
-	left corner.  eg: if extent = {8, 42}, p->s.win = {3, 13}, typ = 0
-	    split = { 0.5, 0.333 }
+	left corner.  eg: if extent = {3, 13}, typ = 0, split = { 0.5, 0.333 }
 
 	             |<-wdiv
 	  p->s.win   |              c[1]
