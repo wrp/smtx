@@ -35,16 +35,12 @@ attach(void)
 int
 balance(void)
 {
-	struct canvas *n = S.f;
-	assert( n );
-	int dir = n->parent ? (n == n->parent->c[1]) : n->typ;
-	while( n->c[dir] != NULL ) {
-		n = n->c[dir];
-	}
-	for(int count = 0; n; n = n->parent ) {
-		*(dir ? &n->split.x : &n->split.y) = 1.0 / ++count;
-		if( n->parent && n->parent->c[dir] != n ) {
-			break;
+	for( int dir = 0, count = 0; dir < 2; dir++ ) {
+		for( struct canvas *n = S.f; n; n = n->c[dir] ) {
+			count += 1;
+		}
+		for( struct canvas *n = S.f; n; n = n->c[dir] ) {
+			*(dir ? &n->split.x : &n->split.y) = 1.0 / count--;
 		}
 	}
 	return S.reshape = 1;
@@ -54,7 +50,7 @@ void
 create(const char *arg)
 {
 	int dir = *arg == 'C' ? 1 : 0;
-	struct canvas *n = S.f, *o = S.f, *c = n->c[dir], dummy;
+	struct canvas *n = S.f, *c = n->c[dir], dummy;
 	for( int count = S.count < 1 ? 1 : S.count; count; count -= 1 ) {
 		struct canvas *v = n->c[dir] = newcanvas(0, n);
 		if( n->c[!dir] == NULL ) {
@@ -63,14 +59,13 @@ create(const char *arg)
 		if( v != NULL ) {
 			v->c[dir] = c;
 			(c ? c : &dummy)->parent = v;
-			S.f = n = v;
+			n = v;
 		}
 	}
 	n->c[dir] = c;
 	balance();
 	reshape_root(); /* (1) */
 	wmove(n->p->s->win, n->p->s->c.y = n->offset.y, n->p->s->c.x = 0);
-	S.f = o;
 }
 /* (1): TODO: for some reason, it is not sufficient to call reshape()
  * here.  We need to understand why that is.

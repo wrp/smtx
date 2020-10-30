@@ -182,7 +182,7 @@ test_changehist(int fd)
 		fprintf(stderr, "Unexpected reduced history: %s", buf2);
 		rv = 1;
 	}
-	rv = check_layout(fd, 0x1, "5x80; *5x80; 5x80; 5x80");
+	rv = check_layout(fd, 0x1, "7x80; *4x80; 4x80; 5x80");
 
 	return rv;
 }
