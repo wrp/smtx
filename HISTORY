@@ -23,24 +23,24 @@ bindings to make the terminal usable on a device with limited keyboard (like
 termux on Android).  So the ultimate answer to the existential question is
 that smtx provides a window into ptys that are larger than the phsical
 device on which it is run.  Also, the ability to easily swap out preset
-layouts or generate layouts dynamically is not implementd.  For example,
+layouts or generate layouts dynamically.  For example,
 to access the preset layout with 5 screens, you could do: CMD-5v
 (or printf '\033[60;1:.5 .25:1 .5:1 .75:1 1:1\007') to generate
 a layout that looks like:
 
---------------------------------------------------------------------------------
++--------------------------------------+---------------------------------------+
 |                                      |                                       |
 |                                      |                                       |
-|                                      |---------------------------------------|
+|                                      +---------------------------------------+
 |                                      |                                       |
 |                                      |                                       |
-|                                      |----------------------------------------
+|                                      +---------------------------------------+
 |                                      |                                       |
 |                                      |                                       |
-|                                      |---------------------------------------|
+|                                      +---------------------------------------+
 |                                      |                                       |
 |                                      |                                       |
---------------------------------------------------------------------------------
++--------------------------------------+---------------------------------------+
 
 By generating layouts on the fly with an osc string, it is trivial to generate
 scripts to manipulate the windows.
