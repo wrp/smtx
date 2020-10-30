@@ -53,27 +53,21 @@ balance(void)
 void
 create(const char *arg)
 {
-	struct canvas *n = S.f, *o = S.f;
 	int dir = *arg == 'C' ? 1 : 0;
-	struct canvas *c = n ? n->c[dir] : NULL;
+	struct canvas *n = S.f, *o = S.f, *c = n->c[dir], dummy;
 	for( int count = S.count < 1 ? 1 : S.count; count; count -= 1 ) {
-		struct canvas *v = *(n ? &n->c[dir] : &S.c) = newcanvas(0, n);
+		struct canvas *v = n->c[dir] = newcanvas(0, n);
 		if( v != NULL ) {
 			v->typ = dir;
 			v->c[dir] = c;
-			if( c ) {
-				c->parent = v;
-			}
+			(c ? c : &dummy)->parent = v;
 			S.f = n = v;
 		}
 	}
-	if( n ) {
-		n->c[dir] = c;
-		balance();
-		reshape_root(); /* (1) */
-		struct screen*s = n->p->s;
-		wmove(s->win, s->c.y = n->offset.y, s->c.x = 0);
-	}
+	n->c[dir] = c;
+	balance();
+	reshape_root(); /* (1) */
+	wmove(n->p->s->win, n->p->s->c.y = n->offset.y, n->p->s->c.x = 0);
 	S.f = o;
 }
 /* (1): TODO: for some reason, it is not sufficient to call reshape()
