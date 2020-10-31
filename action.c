@@ -56,10 +56,8 @@ create(const char *arg)
 	struct canvas *n = S.f, *c = n->c[dir], dummy;
 	for( int count = S.count < 1 ? 1 : S.count; count; count -= 1 ) {
 		struct canvas *v = n->c[dir] = newcanvas(0, n);
-		if( n->c[!dir] == NULL ) {
-			n->typ = dir;
-		}
 		if( v != NULL ) {
+			n->typ = n->c[!dir] ? n->typ : dir;
 			v->c[dir] = c;
 			(c ? c : &dummy)->parent = v;
 			n = v;
