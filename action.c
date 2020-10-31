@@ -85,10 +85,9 @@ mov(const char *arg)
 {
 	int count = S.count < 1 ? 1 : S.count;
 	struct canvas *n = S.f;
-	struct canvas *t = S.f;
-	int startx = t->origin.x;
-	int starty = t->origin.y + t->extent.y;
-	while( t && count-- ) {
+	int startx = n->origin.x;
+	int starty = n->origin.y + n->extent.y;
+	for( struct canvas *t = S.f; t && count--; n = t ? t : n ) {
 		struct point target = {starty, startx};
 		switch( *arg ) {
 		case 'k':
@@ -105,7 +104,6 @@ mov(const char *arg)
 			break;
 		}
 		t = find_canvas_xy(S.c, target.y, target.x);
-		n = t ? t : n;
 	}
 	S.f = n ? n : S.c;
 }
