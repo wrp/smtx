@@ -126,7 +126,6 @@ new_pty(int rows, int cols)
 	}
 	const char *sh = getshell();
 	if( p->fd < 1 ) {
-		p->ws.ws_row = rows - 1;
 		p->ws.ws_col = cols;
 		p->pid = forkpty(&p->fd, p->secondary, NULL, &p->ws);
 		if( check(p->pid != -1, "forkpty") && p->pid == 0 ) {

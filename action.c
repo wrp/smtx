@@ -44,6 +44,7 @@ balance(const char *arg)
 		}
 		for( struct canvas *n = S.f; n; n = n->c[d] ) {
 			*(d ? &n->split.x : &n->split.y) = 1.0 / count--;
+			n->p->ws.ws_row = 0; /* rows is set during resize */
 		}
 	}
 	S.reshape = 1;
@@ -67,10 +68,6 @@ create(const char *arg)
 	}
 	n->c[dir] = c;
 	balance(arg);
-	for( struct pty *p = S.p; p; p = p->next ) {
-		p->ws.ws_row = 0;
-		set_pty_history(p, LINES);
-	}
 	reshape(S.c, 0, 0, LINES, COLS);
 	S.reshape = 0;
 	wmove(n->p->s->win, n->p->s->c.y = n->offset.y, n->p->s->c.x = 0);
@@ -160,7 +157,6 @@ reshape_root(void)
 		S.history = LINES;
 	}
 	for( struct pty *p = S.p; p; p = p->next ) {
-		p->ws.ws_row = 0;
 		set_pty_history(p, LINES);
 	}
 	resize_pad(&S.werr, 1, COLS);
