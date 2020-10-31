@@ -1541,7 +1541,7 @@ test_width(int fd)
 	}
 	buf[sizeof buf - 1] = '\0';
 	/* Clear screen, print 2 rows (160 chars) of alphabet */
-	send_txt(fd, "un3>", "PS1='%15su'n'3>'; clear; printf '%s\\n'",
+	send_txt(fd, "qr3>", "PS1='%20sq'r'3>'; clear; printf '%s\\n'",
 		"", buf
 	);
 	rv |= validate_row(fd, 1, "%-20s", "pqrstuvwxyzabcdefghi");
@@ -1549,7 +1549,7 @@ test_width(int fd)
 	/* Shift right 75 chars ( now looking at last 20 chars of pty)*/
 	send_cmd(fd, NULL, "75>");
 
-	send_txt(fd, "un3>", "PS1='%60su'n'3>'", "");
+	send_txt(fd, "xy3>", "PS1='%60sx'y'3>'", "");
 	/* Verify that the 160 chars of repeated alphabet is at end of rows */
 	rv |= validate_row(fd, 1, "%-20s", "ijklmnopqrstuvwxyzab");
 	rv |= validate_row(fd, 2, "%-20s", "klmnopqrstuvwxyzabcd");

@@ -49,6 +49,8 @@ balance(const char *arg)
 	S.reshape = 1;
 }
 
+static void set_pty_history(struct pty *p, int siz);
+
 void
 create(const char *arg)
 {
@@ -65,12 +67,14 @@ create(const char *arg)
 	}
 	n->c[dir] = c;
 	balance(arg);
-	reshape_root(); /* (1) */
+	for( struct pty *p = S.p; p; p = p->next ) {
+		p->ws.ws_row = 0;
+		set_pty_history(p, LINES);
+	}
+	reshape(S.c, 0, 0, LINES, COLS);
+	S.reshape = 0;
 	wmove(n->p->s->win, n->p->s->c.y = n->offset.y, n->p->s->c.x = 0);
 }
-/* (1): TODO: for some reason, it is not sufficient to call reshape()
- * here.  We need to understand why that is.
- */
 
 void
 digit(const char *arg)
@@ -148,8 +152,6 @@ prune(void)
 	}
 	return S.reshape = 1;
 }
-
-static void set_pty_history(struct pty *p, int siz);
 
 int
 reshape_root(void)
