@@ -283,7 +283,7 @@ struct handler ctl[128] = {
 	[L'f' ] = { { .a = scrolln}, "+" },
 	[L'>' ] = { { .a = scrollh}, ">" },
 	[L'<' ] = { { .a = scrollh}, "<" },
-	[L'=' ] = { { .a = balance}, "-|" },
+	[L'=' ] = { { .a = balance}, "=" },
 	[L'c' ] = { { .a = create}, "-" },
 	[L'C' ] = { { .a = create}, "|" },
 	[L'j' ] = { { .a = mov}, "j" },

@@ -32,10 +32,12 @@ attach(void)
 	return check(0, "No pty exists with id %d", S.count);
 }
 
+static const char *default_balance_arg[] = { "-|", "-", "|", "-|" };
 void
 balance(const char *arg)
 {
-	for( ; *arg; arg++ ) {
+	int c = MIN(S.count + 1, 3);
+	for( arg = (*arg == '=') ? default_balance_arg[c]: arg; *arg; arg++ ) {
 		int d = *arg == '|', count = 0;
 		for( struct canvas *n = S.f; n; n = n->c[d] ) {
 			count += 1;
@@ -154,10 +156,10 @@ reshape_root(void)
 void
 resize(const char *arg)
 {
-	struct canvas *n = S.f;
+	struct canvas *n = S.f, *child = S.f->c[!strchr("-", *arg)];
 	double *s = strchr("-", *arg) ? &n->split.y : &n->split.x;
 	int count = S.count < 0 ? 50 : S.count > 100 ? 100 : S.count;
-	*s = count / 100.0;
+	*s = child ? count / 100.0 : 1.0;
 	S.reshape = 1;
 }
 
