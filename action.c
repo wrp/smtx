@@ -88,22 +88,24 @@ mov(const char *arg)
 	int startx = n->origin.x;
 	int starty = n->origin.y + n->extent.y;
 	for( struct canvas *t = S.f; t && count--; n = t ? t : n ) {
-		struct point target = {starty, startx};
 		switch( *arg ) {
 		case 'k':
-			target.y = t->origin.y - 1;
+			t = (t->parent && t == t->parent->c[0]) ? t->parent :
+				find_canvas_xy(S.c, t->origin.y - 1, startx);
 			break;
 		case 'j':
-			target.y = t->origin.y + t->extent.y + 1;
+			t = t->c[0] ? t->c[0] : find_canvas_xy(S.c,
+				t->origin.y + t->extent.y + 1, startx);
 			break;
 		case 'l':
-			target.x = t->origin.x + t->extent.x + 1;
+			t = t->c[1] ? t->c[1] : find_canvas_xy(S.c,
+				starty, t->origin.x + t->extent.x + 1);
 			break;
 		case 'h':
-			target.x = t->origin.x - 1;
+			t = (t->parent && t == t->parent->c[1]) ? t->parent :
+				find_canvas_xy(S.c, starty, t->origin.x - 1);
 			break;
 		}
-		t = find_canvas_xy(S.c, target.y, target.x);
 	}
 	S.f = n ? n : S.c;
 }

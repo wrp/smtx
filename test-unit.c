@@ -716,24 +716,29 @@ test_mode(int fd)
 int
 test_navigate(int fd)
 {
+	int rv = validate_row(fd, 1, "%-80s", "ps1>");
 	send_cmd(fd, NULL, "cjkhl2Cjkhlc");
 	send_txt(fd, "foobar", "%s", "printf 'foo%s\\n' bar");
-	int status = check_layout(fd, 0x11, "%s; %s; %s; %s; %s",
+	rv |= check_layout(fd, 0x11, "%s; %s; %s; %s; %s",
 		"11x26@0,0",
 		"11x80@12,0",
 		"*5x26@0,27",
 		"5x26@6,27",
 		"11x26@0,54"
 	);
-	send_cmd(fd, NULL, "8chhk");
-	send_txt(fd, "foobaz", "%s", "printf 'foo%s\\n' baz");
-	status |= check_layout(fd, 0x11, "%s; %s; %s",
+
+	/* Test moving down from a canvas with no c[0] */
+	send_cmd(fd, NULL, "jj");
+	rv |= check_layout(fd, 0x1, "11x26; *11x80; 5x26; 5x26; 11x26");
+
+	send_cmd(fd, NULL, "kl8chhk");
+	send_txt(fd, "ab2>", "PS1=ab'2>'");
+	rv |= check_layout(fd, 0x11, "%s; %s; %s",
 		"*11x26@0,0; 11x80@12,0; 0x26@0,27",
 		"0x26@1,27; 0x26@2,27; 0x26@3,27; 0x26@4,27; 0x26@5,27",
 		"0x26@6,27; 0x26@7,27; 1x26@8,27; 1x26@10,27; 11x26@0,54"
 	);
-	send_cmd(fd, NULL, "%dq", SIGTERM + 128);  /* Terminate SMTX */
-	return status;
+	return rv;
 }
 
 int
@@ -1436,7 +1441,7 @@ test_transpose(int fd)
 	send_cmd(fd, "cd3>", "T\rPS1=cd3'> '");
 	rv |= check_layout(fd, 0x1, "*23x40; 11x19; 11x19; 6x19; 7x19; 8x19");
 
-	send_cmd(fd, "ef4>", "llT\rPS1=ef4'> '");
+	send_cmd(fd, "ef4>", "ljlT\rPS1=ef4'> '");
 	rv |= check_layout(fd, 0x1, "23x40; 11x19; 11x19; 6x19; 16x9; *16x9");
 	return rv;
 }
