@@ -565,7 +565,7 @@ test_layout(int fd)
 	send_cmd(fd, "foobaz", "l\rprintf 'foo%%s' baz\r");
 	rv |= check_layout(fd, 0x11, "11x80@0,0; 11x40@12,0; *11x39@12,41");
 
-	send_cmd(fd, NULL, "hk");
+	send_cmd(fd, NULL, "kk");
 
 	send_cmd(fd, "aq1>", "1v\rPS1=aq1'> '");
 	rv |= check_layout(fd, 0x5, "*23x80(id=1)");
@@ -717,7 +717,7 @@ int
 test_navigate(int fd)
 {
 	int rv = validate_row(fd, 1, "%-80s", "ps1>");
-	send_cmd(fd, NULL, "cjkhl2Cjkhlc");
+	send_cmd(fd, NULL, "c2Clc");
 	send_txt(fd, "foobar", "%s", "printf 'foo%s\\n' bar");
 	rv |= check_layout(fd, 0x11, "%s; %s; %s; %s; %s",
 		"11x26@0,0",
@@ -727,10 +727,10 @@ test_navigate(int fd)
 		"11x26@0,54"
 	);
 
-	send_cmd(fd, NULL, "hj");
+	send_cmd(fd, NULL, "kj");
 	rv |= check_layout(fd, 0x1, "11x26; *11x80; 5x26; 5x26; 11x26");
 
-	send_cmd(fd, NULL, "kl8chhk");
+	send_cmd(fd, NULL, "kl8ckkk");
 	send_txt(fd, "ab2>", "PS1=ab'2>'");
 	rv |= check_layout(fd, 0x11, "%s; %s; %s",
 		"*11x26@0,0; 11x80@12,0; 0x26@0,27",
@@ -818,7 +818,7 @@ test_prune(int fd)
 	send_txt(fd, NULL, "exit");
 	rv |= check_layout(fd, 0x1, "23x40; *23x39");
 
-	send_cmd(fd, NULL, "h");  /* move left*/
+	send_cmd(fd, NULL, "k");  /* move left*/
 	rv |= check_layout(fd, 0x1, "*23x40; 23x39");
 
 	send_cmd(fd, NULL, "9x");
@@ -938,7 +938,7 @@ test_scrollback(int fd)
 
 	/* Scrollright 8, then move to another term and write a unique string */
 	snprintf(trunc, 27, "%s", string);
-	send_cmd(fd, "foobaz", "h8>l\rprintf 'foo%%s' baz");
+	send_cmd(fd, "foobaz", "k8>l\rprintf 'foo%%s' baz");
 	status |= validate_row(fd, 14, "%-26s", trunc);
 	status |= check_layout(fd, 0x1, "23x26; *23x26; 23x26");
 
@@ -1006,7 +1006,7 @@ test_scrollh(int fd)
 		rv = 1;
 	}
 	/* Attach the two leftmost canvasses, and move to lower left */
-	send_cmd(fd, "ab1>", "%daj\rPS1=ab1'> '; clear", *id);
+	send_cmd(fd, "ab1>", "%dah\rPS1=ab1'> '; clear", *id);
 	rv |= validate_row(fd, 1, "%-13s", "ab1>         ");
 	/* Print a longish string */
 	send_raw(fd, "Z", "%s", "printf '01234567890123456%s' '78Z'");
@@ -1014,7 +1014,7 @@ test_scrollh(int fd)
 	rv |= validate_row(fd, 1, "%-13s", "ab1> printf '");
 	/* Move to upper left canvas and finish the printf*/
 	/* Lower left canvas should autoscroll and print the 5678Z */
-	send_cmd(fd, "5678Z", "kh\r");
+	send_cmd(fd, "5678Z", "kk\r");
 	rv |= check_layout(fd, 1, "*11x13; 11x26; 11x12");
 	rv |= validate_row(fd, 2, "%-13s", "0123456789012");
 	/* TODO: really need to be able to validate rows in non root canvas */
@@ -1310,9 +1310,9 @@ test_swap(int fd)
 	send_txt(fd, "ul1>", "PS1='u'l'1>'");
 	rv |= validate_row(fd, 3, "%-40s", "upperleft");
 
-	send_cmd(fd, NULL, "jl"); /* Move to lower right */
+	send_cmd(fd, NULL, "hl"); /* Move to lower right */
 	send_txt(fd, "lr1>", "PS1='l'r'1>'; echo; echo lowerright");
-	send_cmd(fd, NULL, "kh"); /* Move to upper left */
+	send_cmd(fd, NULL, "kk"); /* Move to upper left */
 	send_txt(fd, "ul2>", "PS1='u'l'2>'");
 	rv |= validate_row(fd, 3, "%-40s", "upperleft");
 	send_cmd(fd, NULL, "%ds", id[1]); /* Swap upper left and lower rt */
