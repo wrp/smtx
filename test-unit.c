@@ -146,7 +146,7 @@ test_changehist(int fd)
 
 	/* Kill one window to get a free pty */
 	send_txt(fd, NULL, "exit");
-	send_cmd(fd, "ab1>", "xh\rPS1=ab'1> '");
+	send_cmd(fd, "ab1>", "xj\rPS1=ab'1> '");
 	rv = check_layout(fd, 0x1, "7x80; *15x80");
 
 	/* Create one new window */
@@ -727,8 +727,7 @@ test_navigate(int fd)
 		"11x26@0,54"
 	);
 
-	/* Test moving down from a canvas with no c[0] */
-	send_cmd(fd, NULL, "jj");
+	send_cmd(fd, NULL, "hj");
 	rv |= check_layout(fd, 0x1, "11x26; *11x80; 5x26; 5x26; 11x26");
 
 	send_cmd(fd, NULL, "kl8chhk");
@@ -1441,7 +1440,7 @@ test_transpose(int fd)
 	send_cmd(fd, "cd3>", "T\rPS1=cd3'> '");
 	rv |= check_layout(fd, 0x1, "*23x40; 11x19; 11x19; 6x19; 7x19; 8x19");
 
-	send_cmd(fd, "ef4>", "ljlT\rPS1=ef4'> '");
+	send_cmd(fd, "ef4>", "lljjT\rPS1=ef4'> '");
 	rv |= check_layout(fd, 0x1, "23x40; 11x19; 11x19; 6x19; 16x9; *16x9");
 	return rv;
 }

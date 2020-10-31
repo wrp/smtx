@@ -462,19 +462,6 @@ sendarrow(const char *k)
 	rewrite(n->p->fd, buf, 3);
 }
 
-struct canvas *
-find_canvas_xy(struct canvas *n, int y, int x)
-{
-	struct canvas *r = n;
-	if( n && ( y < n->origin.y || y > n->origin.y + n->extent.y
-			|| x < n->origin.x || x > n->origin.x + n->extent.x) ) {
-		if( (r = find_canvas_xy(n->c[0], y, x)) == NULL ) {
-			r = find_canvas_xy(n->c[1], y, x);
-		}
-	}
-	return r;
-}
-
 /*
  * wc_lut is built from the output of wctomb, so that for k such that
  * k % (1 + MB_LEN_MAX) == 0, wc_lut[k] is the value returned by

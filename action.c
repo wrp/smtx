@@ -85,26 +85,12 @@ mov(const char *arg)
 {
 	int count = S.count < 1 ? 1 : S.count;
 	struct canvas *n = S.f;
-	int startx = n->origin.x;
-	int starty = n->origin.y + n->extent.y;
 	for( struct canvas *t = S.f; t && count--; n = t ? t : n ) {
 		switch( *arg ) {
-		case 'k':
-			t = (t->parent && t == t->parent->c[0]) ? t->parent :
-				find_canvas_xy(S.c, t->origin.y - 1, startx);
-			break;
-		case 'j':
-			t = t->c[0] ? t->c[0] : find_canvas_xy(S.c,
-				t->origin.y + t->extent.y + 1, startx);
-			break;
-		case 'l':
-			t = t->c[1] ? t->c[1] : find_canvas_xy(S.c,
-				starty, t->origin.x + t->extent.x + 1);
-			break;
 		case 'h':
-			t = (t->parent && t == t->parent->c[1]) ? t->parent :
-				find_canvas_xy(S.c, starty, t->origin.x - 1);
-			break;
+		case 'k': t = t->parent; break;
+		case 'j': t = t->c[0]; break;
+		case 'l': t = t->c[1];
 		}
 	}
 	S.f = n ? n : S.c;
