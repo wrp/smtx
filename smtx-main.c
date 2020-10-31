@@ -463,46 +463,16 @@ sendarrow(const char *k)
 }
 
 struct canvas *
-find_window(struct canvas *n, int y, int x)
+find_canvas_xy(struct canvas *n, int y, int x)
 {
 	struct canvas *r = n;
 	if( n && ( y < n->origin.y || y > n->origin.y + n->extent.y
 			|| x < n->origin.x || x > n->origin.x + n->extent.x) ) {
-		if( (r = find_window(n->c[0], y, x)) == NULL ) {
-			r = find_window(n->c[1], y, x);
+		if( (r = find_canvas_xy(n->c[0], y, x)) == NULL ) {
+			r = find_canvas_xy(n->c[1], y, x);
 		}
 	}
 	return r;
-}
-
-void
-mov(const char *arg)
-{
-	int count = S.count < 1 ? 1 : S.count;
-	struct canvas *n = S.f;
-	struct canvas *t = S.f;
-	int startx = t->origin.x;
-	int starty = t->origin.y + t->extent.y;
-	while( t && count-- ) {
-		struct point target = {starty, startx};
-		switch( *arg ) {
-		case 'k':
-			target.y = t->origin.y - 1;
-			break;
-		case 'j':
-			target.y = t->origin.y + t->extent.y + 1;
-			break;
-		case 'l':
-			target.x = t->origin.x + t->extent.x + 1;
-			break;
-		case 'h':
-			target.x = t->origin.x - 1;
-			break;
-		}
-		t = find_window(S.c, target.y, target.x);
-		n = t ? t : n;
-	}
-	S.f = n ? n : S.c;
 }
 
 /*

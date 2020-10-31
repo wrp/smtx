@@ -80,6 +80,36 @@ digit(const char *arg)
 	S.count = 10 * (S.count == -1 ? 0 : S.count) + *arg - '0';
 }
 
+void
+mov(const char *arg)
+{
+	int count = S.count < 1 ? 1 : S.count;
+	struct canvas *n = S.f;
+	struct canvas *t = S.f;
+	int startx = t->origin.x;
+	int starty = t->origin.y + t->extent.y;
+	while( t && count-- ) {
+		struct point target = {starty, startx};
+		switch( *arg ) {
+		case 'k':
+			target.y = t->origin.y - 1;
+			break;
+		case 'j':
+			target.y = t->origin.y + t->extent.y + 1;
+			break;
+		case 'l':
+			target.x = t->origin.x + t->extent.x + 1;
+			break;
+		case 'h':
+			target.x = t->origin.x - 1;
+			break;
+		}
+		t = find_canvas_xy(S.c, target.y, target.x);
+		n = t ? t : n;
+	}
+	S.f = n ? n : S.c;
+}
+
 static struct canvas *
 find_canvas(struct canvas *c, int id)
 {
