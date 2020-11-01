@@ -169,7 +169,7 @@ extern void extend_tabs(struct pty *p, int tabstop);
 extern int resize_pad(WINDOW **, int, int);
 extern void reshape_window(struct pty *);
 extern void reshape(struct canvas *n, int y, int x, int h, int w);
-extern void freecanvas(struct canvas * n);
+extern void freecanvas(struct canvas * n, int);
 extern void build_layout(const char *);
 
 extern action0 attach;

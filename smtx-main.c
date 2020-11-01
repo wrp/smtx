@@ -100,7 +100,7 @@ static struct pty *
 get_freepty(void)
 {
 	struct pty *t = S.p;
-	while( t && (t->count || t->fd > 0) ) {
+	while( t && t->count && t->fd != -1 ) {
 		t = t->next;
 	}
 	return t;
@@ -306,15 +306,18 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 }
 
 void
-freecanvas(struct canvas * n)
+freecanvas(struct canvas * n, int count)
 {
+	assert( count < 2 && count > -2 );
 	if( n ) {
-		n->p->count -= 1;
-		freecanvas(n->c[0]);
-		freecanvas(n->c[1]);
-		n->c[0] = S.unused;
-		n->c[1] = NULL;
-		S.unused = n;
+		n->p->count += count ? count : -1;
+		freecanvas(n->c[0], count);
+		freecanvas(n->c[1], count);
+		if( ! count ) {
+			n->c[0] = S.unused;
+			n->c[1] = NULL;
+			S.unused = n;
+		}
 	}
 }
 
@@ -666,7 +669,7 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 
 	return n;
 fail:
-	freecanvas(n);
+	freecanvas(n, 0);
 	return NULL;
 }
 
@@ -674,10 +677,15 @@ void
 build_layout(const char *layout)
 {
 	struct pty *p = S.f->p;
+	freecanvas(S.c, -1); /* (1) */
 	struct canvas *n = add_canvas(&layout, 0.0, 0.0, 1.0, 1.0, &p, NULL);
+	freecanvas(S.c, +1);
 	if( n ) {
-		freecanvas(S.c);
+		freecanvas(S.c, 0);
 		S.f = S.c = n;
 	}
 	S.reshape = 1;
 }
+/* (1) Decrement the view counts so that visible ptys will be availalbe for
+ * the new layout.
+ */

@@ -144,7 +144,7 @@ prune(void)
 		int c = S.f == p->c[1];
 		*(c ? &p->split.x : &p->split.y) = 1.0;
 		p->c[c] = NULL;
-		freecanvas(S.f);
+		freecanvas(S.f, 0);
 		S.f = p;
 	}
 	return S.reshape = 1;
