@@ -24,14 +24,14 @@ parse_args(int argc, char *const*argv)
 	while( (c = getopt(argc, argv, ":c:hs:t:vw:")) != -1 ) {
 		switch( c ) {
 		case 'h':
-			printf("usage: %s"
+			printf("usage: %s", name ? name + 1 : argv[0]);
+			puts(""
 				" [-c ctrl-key]"
 				" [-s history-size]"
 				" [-t terminal-type]"
 				" [-v]"
 				" [-w width]"
-				"\n",
-				name ? name + 1 : argv[0]);
+			);
 			exit(EXIT_SUCCESS);
 		case 'c':
 			S.ctlkey = CTL(optarg[0]);
