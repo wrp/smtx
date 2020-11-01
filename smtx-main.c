@@ -155,9 +155,9 @@ new_pty(int cols)
 struct canvas *
 newcanvas(struct pty *p, struct canvas *parent)
 {
-	struct canvas *n = S.unused;
+	struct canvas *n = NULL;
 	if( (p = p ? p : new_pty(MAX(COLS, S.width))) != NULL ) {
-		if( n != NULL ) {
+		if( (n = S.unused) != NULL ) {
 			S.unused = n->c[0];
 		} else {
 			check((n = calloc(1 , sizeof *n)) != NULL, "calloc");
