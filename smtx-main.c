@@ -17,10 +17,9 @@
  */
 #include "smtx.h"
 
-static char *term = "smtx";
-
 struct state S = {
 	.ctlkey = CTL('g'),
+	.term = "smtx",
 	.width = 80,
 	.binding = k1,
 	.history = 1024,
@@ -496,45 +495,6 @@ main_loop(void)
 }
 
 static void
-parse_args(int argc, char *const*argv)
-{
-	int c;
-	char *name = strrchr(argv[0], '/');
-	while( (c = getopt(argc, argv, ":c:hs:t:vw:")) != -1 ) {
-		switch( c ) {
-		case 'h':
-			printf("usage: %s"
-				" [-c ctrl-key]"
-				" [-s history-size]"
-				" [-t terminal-type]"
-				" [-v]"
-				" [-w width]"
-				"\n",
-				name ? name + 1 : argv[0]);
-			exit(0);
-		case 'c':
-			S.ctlkey = CTL(optarg[0]);
-			break;
-		case 's':
-			S.history = strtol(optarg, NULL, 10);
-			break;
-		case 't':
-			term = optarg;
-			break;
-		case 'v':
-			printf("%s-%s\n", PACKAGE_NAME, PACKAGE_VERSION);
-			exit(EXIT_SUCCESS);
-		case 'w':
-			S.width = strtol(optarg, NULL, 10);
-			break;
-		default:
-			errno = 0;
-			check(0, "Unknown option: %c", optopt);
-		}
-	}
-}
-
-static void
 init(void)
 {
 	char buf[16];
@@ -556,11 +516,11 @@ init(void)
 	setlocale(LC_ALL, "en_US.UTF-8");
 
 	build_bindings();
-	if( (new = newterm(term, stdin, stdout)) == NULL ) {
+	if( (new = newterm(S.term, stdin, stdout)) == NULL ) {
 		initscr();
 	} else {
 		set_term(new);
-		setenv("TERM", term, 1);
+		setenv("TERM", S.term, 1);
 	}
 	S.history = MAX(LINES, S.history);
 	raw();
@@ -583,9 +543,8 @@ init(void)
 }
 
 int
-smtx_main(int argc, char *argv[])
+smtx_main()
 {
-	parse_args(argc, argv);
 	init();
 	main_loop();
 	endwin();

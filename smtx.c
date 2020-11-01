@@ -16,10 +16,50 @@
  */
 #include "smtx.h"
 
+static void
+parse_args(int argc, char *const*argv)
+{
+	int c;
+	char *name = strrchr(argv[0], '/');
+	while( (c = getopt(argc, argv, ":c:hs:t:vw:")) != -1 ) {
+		switch( c ) {
+		case 'h':
+			printf("usage: %s"
+				" [-c ctrl-key]"
+				" [-s history-size]"
+				" [-t terminal-type]"
+				" [-v]"
+				" [-w width]"
+				"\n",
+				name ? name + 1 : argv[0]);
+			exit(EXIT_SUCCESS);
+		case 'c':
+			S.ctlkey = CTL(optarg[0]);
+			break;
+		case 's':
+			S.history = strtol(optarg, NULL, 10);
+			break;
+		case 't':
+			S.term = optarg;
+			break;
+		case 'v':
+			printf("%s-%s\n", PACKAGE_NAME, PACKAGE_VERSION);
+			exit(EXIT_SUCCESS);
+		case 'w':
+			S.width = strtol(optarg, NULL, 10);
+			break;
+		default:
+			fprintf(stderr, "Unknown option: %c", optopt);
+			exit(EXIT_FAILURE);
+		}
+	}
+}
+
 int
 main(int argc, char **argv)
 {
 	unsetenv("LINES");
 	unsetenv("COLUMNS");
-	return smtx_main(argc, argv);
+	parse_args(argc, argv);
+	return smtx_main();
 }

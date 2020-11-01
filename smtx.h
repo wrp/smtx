@@ -52,7 +52,7 @@
 
 #include "vtparser.h"
 
-extern int smtx_main(int, char **);
+extern int smtx_main(void);
 #define CTL(x) ((x) & 0x1f)
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
@@ -106,6 +106,7 @@ struct state {
 	int width;
 	int history; /* Size of newly created ptys */
 	int count;
+	const char *term;
 	struct handler *binding;
 	struct canvas *c;  /* root of all canvasses in use */
 	struct canvas *f;  /* currently focused canvas */;
