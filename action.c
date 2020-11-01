@@ -69,7 +69,6 @@ create(const char *arg)
 	n->c[dir] = c;
 	balance(arg);
 	reshape(S.c, 0, 0, LINES, COLS);
-	S.reshape = 0;
 	wmove(n->p->s->win, n->p->s->c.y = n->offset.y, n->p->s->c.x = 0);
 }
 
@@ -162,7 +161,7 @@ reshape_root(void)
 	resize_pad(&S.werr, 1, COLS);
 	resize_pad(&S.wbkg, LINES, COLS);
 	reshape(S.c, 0, 0, LINES, COLS);
-	return S.reshape = 0;
+	return 1;
 }
 
 void

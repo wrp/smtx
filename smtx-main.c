@@ -302,6 +302,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 			scrollbottom(n);
 		}
 	}
+	S.reshape = 0;
 }
 
 void

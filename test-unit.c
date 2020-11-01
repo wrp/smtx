@@ -929,13 +929,14 @@ test_scrollback(int fd)
 	status |= check_layout(fd, 0x1, "*23x26; 23x26; 23x26");
 
 	send_txt(fd, "uniq>", "a='%s'\rPS1=uni'q>'", string);
-	send_cmd(fd, "ab2>", "100<\rPS1=ab'2> '"); /* invalid scroll */
+	send_cmd(fd, "ab2>", "100<\rPS1=ab'2> '");
 	send_txt(fd, "50", "yes \"$a\" | nl |\rsed 5'0q'");
 	snprintf(trunc, 19, "%s", string);
 	status |= validate_row(fd, 1, "%6d  %-18s", 29, trunc);
 	status |= validate_row(fd, 22, "%6d  %-18s", 50, trunc);
 
 	/* Scrollback 3, then move to another term and write a unique string */
+	/* move to a different canvas to avoid scrollbottom */
 	send_cmd(fd, "foobar", "3bl\rprintf 'foo%%s' bar");
 	status |= validate_row(fd, 22, "%6d  %-18s", 47, trunc);
 
@@ -944,6 +945,16 @@ test_scrollback(int fd)
 	send_cmd(fd, "foobaz", "k8>l\rprintf 'foo%%s' baz");
 	status |= validate_row(fd, 14, "%-26s", trunc);
 	status |= check_layout(fd, 0x1, "23x26; *23x26; 23x26");
+
+	/* Ensure scrollback works after changing layout */
+	send_cmd(fd, NULL, "6v");
+	status |= check_layout(fd, 0x1, "*11x80; 5x40; 5x26; 5x26; 5x26; 5x39");
+	send_txt(fd, "zy3>", "PS1=zy'3> '");
+	send_txt(fd, "73", "yes | nl | sed 7'3q'");
+	status |= validate_row(fd, 10, "%-80s", "    73  y");
+	send_cmd(fd, NULL, "17bj");  /* Switch canvas with j to avoid scroll */
+	status |= check_layout(fd, 0x1, "11x80; *5x40; 5x26; 5x26; 5x26; 5x39");
+	status |= validate_row(fd, 9, "%-80s", "    55  y");
 
 	return status;
 }
