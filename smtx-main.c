@@ -346,11 +346,9 @@ draw_title(struct canvas *n, int r)
 static void
 draw_div(struct canvas *n, int rev)
 {
-	if( n->wdiv ) {
-		( rev ? &wattron : &wattroff )(n->wdiv, A_REVERSE);
-		mvwvline(n->wdiv, 0, 0, ACS_VLINE, INT_MAX);
-		draw_pane(n->wdiv, n->origin.y, n->origin.x + n->extent.x);
-	}
+	( rev ? &wattron : &wattroff )(n->wdiv, A_REVERSE);
+	mvwvline(n->wdiv, 0, 0, ACS_VLINE, INT_MAX);
+	draw_pane(n->wdiv, n->origin.y, n->origin.x + n->extent.x);
 }
 
 void
@@ -359,8 +357,10 @@ draw(struct canvas *n) /* Draw a canvas. */
 	if( n != NULL && n->extent.y > 0 ) {
 		int rev = S.binding == ctl && n == S.f;
 		draw(n->c[0]);
-		draw(n->c[1]);
-		draw_div(n, rev && !n->extent.x);
+		if( n->c[1] ) {
+			draw_div(n, rev && !n->extent.x);
+			draw(n->c[1]);
+		}
 		draw_window(n);
 		draw_title(n, rev);
 	}
