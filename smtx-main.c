@@ -118,7 +118,7 @@ newscreens(struct pty *p, int h, int w)
 }
 
 static struct pty *
-new_pty(int rows, int cols)
+new_pty(int cols)
 {
 	struct pty *p = get_freepty();
 	if( ! check((p = p ? p : calloc(1, sizeof *p)) != NULL, "calloc") ) {
@@ -173,7 +173,7 @@ struct canvas *
 newcanvas(struct pty *p, struct canvas *parent)
 {
 	struct canvas *n = S.unused;
-	if( (p = p ? p : new_pty(LINES, MAX(COLS, S.width))) != NULL ) {
+	if( (p = p ? p : new_pty(MAX(COLS, S.width))) != NULL ) {
 		if( n != NULL ) {
 			S.unused = n->c[0];
 		} else {
