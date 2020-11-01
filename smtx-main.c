@@ -300,20 +300,14 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		n->origin.x = x;
 		int h1 = h * n->split.y;
 		int w1 = w * n->split.x;
-		int have_title = h1 > 0 && w1 > 0;
 		int have_div = h1 > 0 && w1 > 0 && n->c[1];
 
 		assert(n->split.y >= 0.0);
 		assert(n->split.y <= 1.0);
 		assert(n->split.x >= 0.0);
 		assert(n->split.x <= 1.0);
-		if( have_div ) {
-			resize_pad(&n->wdiv, n->typ ? h : h1, 1);
-		}
-		if( have_title ) {
-			resize_pad(&n->wtit, 1, w1);
-		}
-
+		resize_pad(&n->wdiv, n->typ ? h : h1, 1);
+		resize_pad(&n->wtit, 1, w1);
 		reshape(n->c[0], y + h1, x, h - h1, n->typ ? w1 : w);
 		reshape(n->c[1], y, x + w1 + have_div,
 			n->typ ? h : h1, w - w1 - have_div);
