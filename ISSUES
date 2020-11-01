@@ -1,9 +1,5 @@
 
 TODO:
-	Fix n->typ.  Currently, in create(), we incorrectly assign the type to
-	the newly created canvas rather than the one being split.  All of the
-	logic in balance() is thus completely wonky.  Need to clean up.
-
 	(?) Make the preset keybindings modifiable at startup.
 
 	(?) Add a command to start up a new shell in a canvas where the

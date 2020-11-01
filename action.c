@@ -50,8 +50,6 @@ balance(const char *arg)
 	S.reshape = 1;
 }
 
-static void set_pty_history(struct pty *p, int siz);
-
 void
 create(const char *arg)
 {
@@ -149,6 +147,8 @@ prune(void)
 	return S.reshape = 1;
 }
 
+static void grow_screens(struct pty *p, int siz);
+
 int
 reshape_root(void)
 {
@@ -156,7 +156,7 @@ reshape_root(void)
 		S.history = LINES;
 	}
 	for( struct pty *p = S.p; p; p = p->next ) {
-		set_pty_history(p, LINES);
+		grow_screens(p, LINES);
 	}
 	resize_pad(&S.werr, 1, COLS);
 	resize_pad(&S.wbkg, LINES, COLS);
@@ -226,14 +226,13 @@ send(const char *arg)
 }
 
 static void
-set_pty_history(struct pty *p, int siz)
+grow_screens(struct pty *p, int siz)
 {
 	struct screen *w[] = { &p->pri, &p->alt, NULL };
 	for( struct screen **sp = w; *sp; sp++ ) {
 		struct screen *s = *sp;
 		int my, x;
 		getmaxyx(s->win, my, x);
-
 		if( my < siz ) {
 			int y;
 			getyx(s->win, y, x);
@@ -255,7 +254,7 @@ set_history(void)
 	struct canvas *n = S.f;
 	struct pty *p = n->p;
 	S.history = MAX(LINES, S.count);
-	set_pty_history(p, S.history);
+	grow_screens(p, S.history);
 	return S.reshape = 1;
 }
 
