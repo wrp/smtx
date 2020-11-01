@@ -210,6 +210,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 		struct screen *s = f->p->s;
 		int y, x;
 		getmaxyx(s->win, y, x);
+		assert( y > f->extent.y );
 		int top = y - f->extent.y;
 		getyx(s->win, y, x);
 		if( 0
