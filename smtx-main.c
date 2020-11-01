@@ -106,17 +106,6 @@ get_freepty(void)
 	return t;
 }
 
-static int
-newscreens(struct pty *p, int h, int w)
-{
-	int rv = resize_pad(&p->pri.win, h, w) && resize_pad(&p->alt.win, h, w);
-	if( rv ) {
-		p->s = &p->pri;
-		setupevents(&p->vp);
-	}
-	return rv;
-}
-
 static struct pty *
 new_pty(int cols)
 {
@@ -124,8 +113,25 @@ new_pty(int cols)
 	if( ! check((p = p ? p : calloc(1, sizeof *p)) != NULL, "calloc") ) {
 		return NULL;
 	}
-	const char *sh = getshell();
+	if( p->s == NULL ) {
+		if( resize_pad(&p->pri.win, S.history, cols)
+			&& resize_pad(&p->alt.win, S.history, cols)
+		) {
+			/* Append the new pty to the S.p list */
+			struct pty *t = S.p;
+			while( t && t->next ) {
+				t = t->next;
+			}
+			*(t ? &t->next : &S.p) = p;
+		} else {
+			delwin(p->pri.win);
+			delwin(p->alt.win);
+			free(p);
+			return NULL;
+		}
+	}
 	if( p->fd < 1 ) {
+		const char *sh = getshell();
 		p->ws.ws_col = cols;
 		p->pid = forkpty(&p->fd, p->secondary, NULL, &p->ws);
 		if( check(p->pid != -1, "forkpty") && p->pid == 0 ) {
@@ -143,31 +149,12 @@ new_pty(int cols)
 		bname = bname ? bname + 1 : sh;
 		strncpy(p->status, bname, sizeof p->status - 1);
 	}
-	if( p->s || newscreens(p, S.history, cols) ) {
-		/* Insert the pty in the S.p list (1) */
-		struct pty *t = S.p;
-		while( t && t->next && p->fd > t->next->fd ) {
-			t = t->next;
-		}
-		if( !t || t->next != p ) {
-			p->next = t ? t->next : NULL;
-			*(t ? &t->next : &S.p) = p;
-		}
-	} else {
-		free(p->tabs);
-		delwin(p->pri.win);
-		delwin(p->alt.win);
-		free(p);
-		p = NULL;
+	if( p->s == NULL ) {
+		p->s = &p->pri;
+		setupevents(&p->vp);
 	}
 	return p;
 }
-/* (1) This should only be necessary with new pty.  However, if we
-   move this logic up into the previous block, test_changehist starts
-   to fail with IO error about 50% of the time.  Need to clean this
-   up to figure out why.  Or, abandon the features of scrollback
-   and changing history size; they violate the principle of simplicity.
- */
 
 struct canvas *
 newcanvas(struct pty *p, struct canvas *parent)
