@@ -184,6 +184,9 @@ test_changehist(int fd)
 	}
 	rv = check_layout(fd, 0x1, "7x80; *4x80; 4x80; 5x80");
 
+	/* Check that the history in first pty is intact */
+	rv |= validate_row(fd, -176, "    %d%-74s", 57 + 16, "y");
+
 	return rv;
 }
 
