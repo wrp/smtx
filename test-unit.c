@@ -580,13 +580,13 @@ test_layout(int fd)
 	rv |= check_layout(fd, 0x1, "*11x40; 11x40; 11x39; 11x39");
 
 	send_cmd(fd, "dt4>", "jl"); /* Move to lower right */
-	rv |= check_layout(fd, 0x5, "11x40(id=1); 11x40(id=3); "
-		"*11x39(id=4); 11x39(id=2)");
+	rv |= check_layout(fd, 0x5, "11x40(id=1); 11x40(id=8); "
+		"*11x39(id=9); 11x39(id=7)");
 
 	send_cmd(fd, "eu5>", "5v\rPS1=eu5'> '");
 	/* The pty that had the focus (id=4) should be in the first window */
-	rv |= check_layout(fd, 0x5, "*23x40(id=4); 5x39(id=5); 5x39(id=6); "
-		"5x39(id=7); 5x39(id=8)");
+	rv |= check_layout(fd, 0x5, "*23x40(id=9); 5x39(id=8); 5x39(id=7); "
+		"5x39(id=6); 5x39(id=5)");
 
 	send_cmd(fd, "fv6>", "6v\rPS1=fv6'> '");
 	rv |= check_layout(fd, 0x1, "*11x80; 5x40; 5x26; 5x26; 5x26; 5x39");

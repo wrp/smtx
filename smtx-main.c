@@ -117,12 +117,8 @@ new_pty(int cols)
 		if( resize_pad(&p->pri.win, S.history, cols)
 			&& resize_pad(&p->alt.win, S.history, cols)
 		) {
-			/* Append the new pty to the S.p list */
-			struct pty *t = S.p;
-			while( t && t->next ) {
-				t = t->next;
-			}
-			*(t ? &t->next : &S.p) = p;
+			p->next = S.p;
+			S.p = p;
 		} else {
 			delwin(p->pri.win);
 			delwin(p->alt.win);
