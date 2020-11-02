@@ -9,6 +9,7 @@ noinst_LTLIBRARIES = libsmtx.la
 libsmtx_la_SOURCES = vtparser.c smtx-main.c cset.c handler.c action.c test-describe.c \
 	bindings.c
 check_PROGRAMS = test-main
+AM_TESTS_ENVIRONMENT = LC_ALL=en_US.UTF-8; export LC_ALL;
 TESTS = test-shell test-main test-coverage
 test_main_SOURCES = test-main.c test-unit.c
 test_main_DEPENDENCIES = smtx

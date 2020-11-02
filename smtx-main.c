@@ -508,10 +508,7 @@ init(void)
 	sigaction(SIGTERM, &sa, NULL);
 	FD_ZERO(&S.fds);
 	FD_SET(STDIN_FILENO, &S.fds);
-	/* Setting locale like this is absolutely the wrong thing to do.
-	 * TODO: figure out the right thing to do.
-	 */
-	setlocale(LC_ALL, "en_US.UTF-8");
+	setlocale(LC_ALL, "");
 
 	build_bindings();
 	if( (new = newterm(S.term, stdin, stdout)) == NULL ) {
