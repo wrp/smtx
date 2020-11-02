@@ -499,7 +499,6 @@ main_loop(void)
 static void
 init(void)
 {
-	char buf[16];
 	struct sigaction sa;
 	SCREEN *new;
 	memset(&sa, 0, sizeof sa);
@@ -509,9 +508,6 @@ init(void)
 	sigaction(SIGTERM, &sa, NULL);
 	FD_ZERO(&S.fds);
 	FD_SET(STDIN_FILENO, &S.fds);
-	snprintf(buf, sizeof buf - 1, "%d", getpid());
-	setenv("SMTX", buf, 1);
-	setenv("SMTX_VERSION", VERSION, 1);
 	/* Setting locale like this is absolutely the wrong thing to do.
 	 * TODO: figure out the right thing to do.
 	 */

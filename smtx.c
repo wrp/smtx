@@ -58,6 +58,10 @@ parse_args(int argc, char *const*argv)
 int
 main(int argc, char **argv)
 {
+	char buf[16];
+	snprintf(buf, sizeof buf - 1, "%d", getpid());
+	setenv("SMTX", buf, 1);
+	setenv("SMTX_VERSION", VERSION, 1);
 	unsetenv("LINES");
 	unsetenv("COLUMNS");
 	parse_args(argc, argv);
