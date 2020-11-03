@@ -508,7 +508,6 @@ init(void)
 	FD_ZERO(&S.fds);
 	FD_SET(STDIN_FILENO, &S.fds);
 	setlocale(LC_ALL, "");
-
 	build_bindings();
 	initscr(); /* exits on failure */
 	S.history = MAX(LINES, S.history);
@@ -523,8 +522,8 @@ init(void)
 	resize_pad(&S.wbkg, LINES, COLS);
 	wbkgd(S.wbkg, ACS_BULLET);
 	wattron(S.werr, A_REVERSE);
-	S.f = S.c = newcanvas(0, NULL);
-	if( S.c == NULL || S.werr == NULL ) {
+	S.f = S.c = newcanvas(NULL, NULL);
+	if( S.c == NULL || S.werr == NULL || S.wbkg == NULL ) {
 		endwin();
 		err(EXIT_FAILURE, "Unable to create root window");
 	}
