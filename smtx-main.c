@@ -278,7 +278,6 @@ void
 reshape(struct canvas *n, int y, int x, int h, int w)
 {
 	if( n ) {
-		struct pty *p = n->p;
 		n->origin.y = y;
 		n->origin.x = x;
 		int h1 = h * n->split.y;
@@ -296,8 +295,8 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 			n->typ ? h : h1, w - w1 - have_div);
 		n->extent.y = h1 > 0 ?  h1 - 1 : 0;
 		n->extent.x = w1;
-		if( p ) {
-			if( p->fd >= 0 && n->extent.y > p->ws.ws_row ) {
+		if( n->p ) {
+			if( n->p->fd >= 0 && n->extent.y > n->p->ws.ws_row ) {
 				set_height(n);
 			}
 			scrollbottom(n);
