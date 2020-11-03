@@ -395,14 +395,14 @@ main(int argc, char *const argv[])
 	F(test_ack);
 	F(test_alt);
 	F(test_attach);
-	F(test_bighist, "NOWAIT", "1", "STATUS", "1", "args", "-s", bigint);
+	F(test_bighist, "XFAIL", "1", "STATUS", "1", "args", "-s", bigint);
 	F(test_changehist, "args", "-s", "128");
 	F(test_cols, "COLUMNS", "92", "args", "-w", "97");
 	F(test_csr);
 	F(test_cup);
 	F(test_cursor);
 	F(test_dashc, "args", "-c", "l");
-	F(test_dasht, "args", "-t", "uninstalled_terminal_type");
+	F(test_dasht, "XFAIL", "1", "args", "-t", "uninstalled_terminal_type");
 	F(test_dch);
 	F(test_decaln);
 	F(test_decid);
@@ -545,8 +545,6 @@ execute_test(struct st *v, const char *name)
 	setenv("PS1", PROMPT, 1);
 	unsetenv("LINES");
 	unsetenv("COLUMNS");
-	unsetenv("NOWAIT");
-	unsetenv("STATUS");
 	for( char **a = v->env; a && *a; a += 2 ) {
 		setenv(a[0], a[1], 1);
 	}
@@ -572,7 +570,7 @@ execute_test(struct st *v, const char *name)
 		if( close(fd[1]) ) {
 			err(EXIT_FAILURE, "close secondary");
 		}
-		if( getenv("NOWAIT") == NULL ) {
+		if( getenv("XFAIL") == NULL ) {
 			grep(fd[0], PROMPT); /* Wait for shell to initialize */
 		}
 		rv = v->f(fd[0]);
@@ -592,7 +590,7 @@ execute_test(struct st *v, const char *name)
 static int
 check_test_status(int rv, int status, int pty, const char *name)
 {
-	char *expect = getenv("STATUS");
+	char *expect = getenv("XFAIL");
 	int expect_stat = expect ? strtol(expect, NULL, 10) : 0;
 	int expected = WIFEXITED(status) && WEXITSTATUS(status) == expect_stat;
 

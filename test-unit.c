@@ -349,13 +349,9 @@ test_dashc(int fd)
 int
 test_dasht(int fd)
 {
-	/* This test exercises -t with a terminal type that should not
-	 * exist in order to test the code path that uses initscr() */
-	send_cmd(fd, "uniq", "c\recho u'n'i'q'");
-	int rv = check_layout(fd, 0x1, "*11x80; 11x80");
-	rv |= validate_row(fd, 2, "%-80s", "uniq");
-	send_txt(fd, NULL, "kill $SMTX");
-	return rv;
+	/* This test exercises -t with a terminal type that should not exist. */
+	grep(fd, "Error opening terminal:");
+	return 0;
 }
 
 int

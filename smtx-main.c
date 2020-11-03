@@ -500,7 +500,6 @@ static void
 init(void)
 {
 	struct sigaction sa;
-	SCREEN *new;
 	memset(&sa, 0, sizeof sa);
 	sa.sa_flags = 0;
 	sigemptyset(&sa.sa_mask);
@@ -511,12 +510,7 @@ init(void)
 	setlocale(LC_ALL, "");
 
 	build_bindings();
-	if( (new = newterm(S.term, stdin, stdout)) == NULL ) {
-		initscr();
-	} else {
-		set_term(new);
-		setenv("TERM", S.term, 1);
-	}
+	initscr(); /* exits on failure */
 	S.history = MAX(LINES, S.history);
 	raw();
 	noecho();
