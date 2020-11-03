@@ -96,14 +96,14 @@ static struct canvas *
 find_canvas(struct canvas *c, int id)
 {
 	struct canvas *r = NULL;
-	if( c ) {
+	if( c && id > 0 ) {
 		if( c->p->fd == id + 2 ) {
 			r = c;
 		} else if( (r = find_canvas(c->c[0], id)) == NULL ) {
 			r = find_canvas(c->c[1], id);
 		}
 	}
-	return r;
+	return id < 1 ? S.f : r;
 }
 
 static void
@@ -134,15 +134,15 @@ passthru(const char *arg)
 int
 prune(void)
 {
-	if( S.count == 9 ) {
-		S.c = NULL;
-	} else if( S.f && S.f->parent ) {
-		struct canvas *p = S.f->parent;
-		int c = S.f == p->c[1];
+	struct canvas *t = find_canvas(S.c, S.count);
+	if( S.count == 0 ) {
+		S.c = NULL;  /* Trigger an exit from main loop */
+	} else if( t && t->parent ) {
+		struct canvas *p = t->parent;
+		int c = t == p->c[1];
 		*(c ? &p->split.x : &p->split.y) = 1.0;
 		p->c[c] = NULL;
-		freecanvas(S.f, 0);
-		S.f = p;
+		freecanvas(t, 0);
 	}
 	return S.reshape = 1;
 }

@@ -820,7 +820,7 @@ test_prune(int fd)
 	send_cmd(fd, NULL, "k");  /* move left*/
 	rv |= check_layout(fd, 0x1, "*23x40; 23x39");
 
-	send_cmd(fd, NULL, "9x");
+	send_cmd(fd, NULL, "0x");
 	return rv;
 }
 

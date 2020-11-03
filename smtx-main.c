@@ -310,6 +310,7 @@ freecanvas(struct canvas * n, int count)
 {
 	assert( count < 2 && count > -2 );
 	if( n ) {
+		S.f = n == S.f ? n->parent : S.f;
 		n->p->count += count ? count : -1;
 		freecanvas(n->c[0], count);
 		freecanvas(n->c[1], count);
