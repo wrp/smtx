@@ -306,15 +306,15 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 }
 
 void
-freecanvas(struct canvas * n, int count)
+change_count(struct canvas * n, int count, int pop)
 {
 	assert( count < 2 && count > -2 );
 	if( n ) {
 		S.f = n == S.f ? n->parent : S.f;
-		n->p->count += count ? count : -1;
-		freecanvas(n->c[0], count);
-		freecanvas(n->c[1], count);
-		if( ! count ) {
+		n->p->count += count;
+		change_count(n->c[0], count, pop);
+		change_count(n->c[1], count, pop);
+		if( pop && n->p->count == 0 ) {
 			n->c[0] = S.unused;
 			n->c[1] = NULL;
 			S.unused = n;
@@ -616,7 +616,7 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 
 	return n;
 fail:
-	freecanvas(n, 0);
+	change_count(n, -1, 1);
 	return NULL;
 }
 
@@ -624,11 +624,11 @@ void
 build_layout(const char *layout)
 {
 	struct pty *p = S.f->p;
-	freecanvas(S.c, -1); /* (1) */
+	change_count(S.c, -1, 0); /* (1) */
 	struct canvas *n = add_canvas(&layout, 0.0, 0.0, 1.0, 1.0, &p, NULL);
-	freecanvas(S.c, +1);
+	change_count(S.c, +1, 0);
 	if( n ) {
-		freecanvas(S.c, 0);
+		change_count(S.c, -1, 1);
 		S.f = S.c = n;
 	}
 	S.reshape = 1;

@@ -142,7 +142,7 @@ prune(void)
 		int c = t == p->c[1];
 		*(c ? &p->split.x : &p->split.y) = 1.0;
 		p->c[c] = NULL;
-		freecanvas(t, 0);
+		change_count(t, -1, 1);
 	}
 	return S.reshape = 1;
 }
