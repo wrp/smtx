@@ -1167,8 +1167,7 @@ test_sgr(int fd)
 		fprintf(stderr, "unable to get color count.\n");
 	}
 	char fmt[1024] = "PS1='%s''%d>'; clear; ";
-	char *cmd = fmt + strlen(fmt);
-	sprintf(cmd, "%s", "printf 'foo\\033[%dmbar\\033[%smbaz\\n'");
+	sprintf(fmt + strlen(fmt), "printf 'foo\\033[%%dmbar\\033[%%smbaz\\n'");
 
 	for( atp = attrs; atp->sgr; atp++ ) {
 		char ps[32];
