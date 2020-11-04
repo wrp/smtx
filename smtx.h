@@ -160,7 +160,7 @@ extern void fixcursor(void);
 
 extern struct canvas * newcanvas(struct pty *, struct canvas *);
 extern void draw(struct canvas *);
-extern void setupevents(struct vtp *);
+extern void setupevents(struct pty *);
 extern void rewrite(int fd, const char *b, size_t n);
 extern void build_bindings(void);
 extern void draw(struct canvas *n);

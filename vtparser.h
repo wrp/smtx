@@ -71,6 +71,5 @@ enum vtEvent {
 	PRINT
 };
 
-void vtonevent(struct vtp *vp, enum vtEvent t, wchar_t w,  int);
 void vtwrite(struct vtp *vp, const char *s, size_t n);
 #endif

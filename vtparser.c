@@ -275,19 +275,6 @@ static struct state osc_string = {
 };
 
 void
-vtonevent(struct vtp *vp, enum vtEvent t, wchar_t w, int cb)
-{
-	assert( w < MAXCALLBACK );
-	switch( t ) {
-        case CONTROL: vp->cons[w] = cb; break;
-        case ESCAPE:  vp->escs[w] = cb; break;
-        case CSI:     vp->csis[w] = cb; break;
-        case PRINT:   vp->print   = cb; break;
-        case OSC:     vp->osc     = cb; break;
-	}
-}
-
-void
 vtwrite(struct vtp *vp, const char *s, size_t n)
 {
 	wchar_t w = 0;

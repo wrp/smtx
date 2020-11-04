@@ -604,76 +604,87 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	}
 }
 
+static struct vtp vtp_base = {
+	.cons = {
+		[0x05] = ack,
+		[0x07] = bell,
+		[0x08] = cub,
+		[0x09] = tab,
+		[0x0a] = pnl,
+		[0x0b] = pnl,
+		[0x0c] = pnl,
+		[0x0d] = cr,
+		[0x0e] = so,
+		[0x0f] = so,
+	},
+	.csis = {
+		[L'A'] = cuu,
+		[L'B'] = cud,
+		[L'C'] = cuf,
+		[L'D'] = cub,
+		[L'E'] = cnl,
+		[L'F'] = cpl,
+		[L'G'] = hpa,
+		[L'H'] = cup,
+		[L'I'] = tab,
+		[L'J'] = ed,
+		[L'K'] = el,
+		[L'L'] = idl,
+		[L'M'] = idl,
+		[L'P'] = dch,
+		[L'S'] = su,
+		[L'T'] = su,
+		[L'X'] = ech,
+		[L'Z'] = tab,
+		[L'`'] = hpa,
+		[L'^'] = su,
+		[L'@'] = ich,
+		[L'a'] = hpr,
+		[L'b'] = rep,
+		[L'c'] = decid,
+		[L'd'] = vpa,
+		[L'e'] = vpr,
+		[L'f'] = cup,
+		[L'g'] = tbc,
+		[L'h'] = mode,
+		[L'l'] = mode,
+		[L'm'] = sgr,
+		[L'n'] = dsr,
+		[L'r'] = csr,
+		[L's'] = sc,
+		[L'u'] = rc,
+		[L'x'] = decreqtparm,
+	},
+	.escs = {
+		[L'0'] = scs,
+		[L'1'] = scs,
+		[L'2'] = scs,
+		[L'7'] = sc,
+		[L'8'] = rc,
+		[L'A'] = scs,
+		[L'B'] = scs,
+		[L'D'] = ind,
+		[L'E'] = nel,
+		[L'H'] = hts,
+		[L'M'] = ri,
+		[L'N'] = so,
+		[L'O'] = so,
+		[L'}'] = so,
+		[L'|'] = so,
+		[L'Z'] = decid,
+		[L'c'] = ris,
+		[L'p'] = vis,
+		[L'='] = numkp,
+		[L'>'] = numkp,
+	},
+	.print = print,
+	.osc = osc,
+};
+
 void
-setupevents(struct vtp *v)
+setupevents(struct pty *p)
 {
-	vtonevent(v, CONTROL, 0x05, ack);
-	vtonevent(v, CONTROL, 0x07, bell);
-	vtonevent(v, CONTROL, 0x08, cub);
-	vtonevent(v, CONTROL, 0x09, tab);
-	vtonevent(v, CONTROL, 0x0a, pnl);
-	vtonevent(v, CONTROL, 0x0b, pnl);
-	vtonevent(v, CONTROL, 0x0c, pnl);
-	vtonevent(v, CONTROL, 0x0d, cr);
-	vtonevent(v, CONTROL, 0x0e, so);
-	vtonevent(v, CONTROL, 0x0f, so);
-	vtonevent(v, CSI,     L'A', cuu);
-	vtonevent(v, CSI,     L'B', cud);
-	vtonevent(v, CSI,     L'C', cuf);
-	vtonevent(v, CSI,     L'D', cub);
-	vtonevent(v, CSI,     L'E', cnl);
-	vtonevent(v, CSI,     L'F', cpl);
-	vtonevent(v, CSI,     L'G', hpa);
-	vtonevent(v, CSI,     L'H', cup);
-	vtonevent(v, CSI,     L'I', tab);
-	vtonevent(v, CSI,     L'J', ed);
-	vtonevent(v, CSI,     L'K', el);
-	vtonevent(v, CSI,     L'L', idl);
-	vtonevent(v, CSI,     L'M', idl);
-	vtonevent(v, CSI,     L'P', dch);
-	vtonevent(v, CSI,     L'S', su);
-	vtonevent(v, CSI,     L'T', su);
-	vtonevent(v, CSI,     L'X', ech);
-	vtonevent(v, CSI,     L'Z', tab);
-	vtonevent(v, CSI,     L'`', hpa);
-	vtonevent(v, CSI,     L'^', su);
-	vtonevent(v, CSI,     L'@', ich);
-	vtonevent(v, CSI,     L'a', hpr);
-	vtonevent(v, CSI,     L'b', rep);
-	vtonevent(v, CSI,     L'c', decid);
-	vtonevent(v, CSI,     L'd', vpa);
-	vtonevent(v, CSI,     L'e', vpr);
-	vtonevent(v, CSI,     L'f', cup);
-	vtonevent(v, CSI,     L'g', tbc);
-	vtonevent(v, CSI,     L'h', mode);
-	vtonevent(v, CSI,     L'l', mode);
-	vtonevent(v, CSI,     L'm', sgr);
-	vtonevent(v, CSI,     L'n', dsr);
-	vtonevent(v, CSI,     L'r', csr);
-	vtonevent(v, CSI,     L's', sc);
-	vtonevent(v, CSI,     L'u', rc);
-	vtonevent(v, CSI,     L'x', decreqtparm);
-	vtonevent(v, ESCAPE,  L'0', scs);
-	vtonevent(v, ESCAPE,  L'1', scs);
-	vtonevent(v, ESCAPE,  L'2', scs);
-	vtonevent(v, ESCAPE,  L'7', sc);
-	vtonevent(v, ESCAPE,  L'8', rc);
-	vtonevent(v, ESCAPE,  L'A', scs);
-	vtonevent(v, ESCAPE,  L'B', scs);
-	vtonevent(v, ESCAPE,  L'D', ind);
-	vtonevent(v, ESCAPE,  L'E', nel);
-	vtonevent(v, ESCAPE,  L'H', hts);
-	vtonevent(v, ESCAPE,  L'M', ri);
-	vtonevent(v, ESCAPE,  L'N', so);
-	vtonevent(v, ESCAPE,  L'O', so);
-	vtonevent(v, ESCAPE,  L'}', so);
-	vtonevent(v, ESCAPE,  L'|', so);
-	vtonevent(v, ESCAPE,  L'Z', decid);
-	vtonevent(v, ESCAPE,  L'c', ris);
-	vtonevent(v, ESCAPE,  L'p', vis);
-	vtonevent(v, ESCAPE,  L'=', numkp);
-	vtonevent(v, ESCAPE,  L'>', numkp);
-	vtonevent(v, PRINT,   0,    print);
-	vtonevent(v, OSC,     0,    osc);
-	tput(v, L'c', 0, 0, NULL, ris);
+	memcpy(&p->vp, &vtp_base, sizeof p->vp);
+	p->vp.p = p;
+	tput(&p->vp, L'c', 0, 0, NULL, ris);
 }

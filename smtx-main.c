@@ -135,7 +135,6 @@ new_pty(int cols)
 			execl(sh, sh, NULL);
 			err(EXIT_FAILURE, "exec SHELL='%s'", sh);
 		}
-		p->vp.p = p;
 		extend_tabs(p, p->tabstop = 8);
 		FD_SET(p->fd, &S.fds);
 		S.maxfd = p->fd > S.maxfd ? p->fd : S.maxfd;
@@ -146,7 +145,7 @@ new_pty(int cols)
 	}
 	if( p->s == NULL ) {
 		p->s = &p->pri;
-		setupevents(&p->vp);
+		setupevents(p);
 	}
 	return p;
 }
