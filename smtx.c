@@ -43,7 +43,8 @@ parse_args(int argc, char *const*argv)
 			S.term = optarg;
 			break;
 		case 'v':
-			printf("%s-%s\n", PACKAGE_NAME, PACKAGE_VERSION);
+			printf("%s-%s (%s %s)\n", PACKAGE_NAME, PACKAGE_VERSION,
+				__DATE__, __TIME__);
 			exit(EXIT_SUCCESS);
 		case 'w':
 			S.width = strtol(optarg, NULL, 10);
