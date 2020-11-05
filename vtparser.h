@@ -63,13 +63,5 @@ typedef void (VTCALLBACK)(
 );
 extern VTCALLBACK tput;
 
-enum vtEvent {
-	CONTROL,
-	ESCAPE,
-	CSI,
-	OSC,
-	PRINT
-};
-
 void vtwrite(struct vtp *vp, const char *s, size_t n);
 #endif
