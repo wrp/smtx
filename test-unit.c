@@ -607,10 +607,10 @@ test_layout(int fd)
 	rv |= check_layout(fd, 1, "*5x80; 5x80; 5x40; 5x26; 5x26; 5x26; 5x39");
 
 	send_cmd(fd, "gw7>", "7v\rPS1=gw7'> '");
-	rv |= check_layout(fd, 1, "*18x80; 4x12; 4x13; 4x13; 4x12; 4x12; 4x13");
+	rv |= check_layout(fd, 1, "*8x80; 9x80; 4x16; 4x15; 4x15; 4x15; 4x15");
 
 	send_txt(fd, "Invalid", "printf '\\033]60;bad layout\\007'");
-	rv |= check_layout(fd, 1, "*18x80; 4x12; 4x13; 4x13; 4x12; 4x12; 4x13");
+	rv |= check_layout(fd, 1, "*8x80; 9x80; 4x16; 4x15; 4x15; 4x15; 4x15");
 
 	send_txt(fd, NULL, "printf '\\033]60;%s\\007'", "1:.5 .2:1 .8:1 1:1");
 	send_txt(fd, "iy9>", "PS1=iy9'> '");

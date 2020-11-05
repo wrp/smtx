@@ -271,9 +271,9 @@ set_layout(void)
 		".5:.5 .5:1 1:.5 1:1",                /* 4 */
 		"1:.5 .25:1 .5:1 .75:1 1:1",          /* 5 */
 		".5:1 .75:.5 .75:1 1:.33 1:.66 1:1",  /* 6 */
-		".8:1 1:.16 1:.33 1:.5 1:.66 1:.82 1:1", /* 7 */
+		".4:1 .8:1 1:.2 1:.4 1:.6 1:.8 1:1",  /* 7 */
 	};
-	int inrange = S.count + 1 < (int)sizeof def / sizeof *def;
+	int inrange = S.count + 1 < (int)(sizeof def / sizeof *def);
 	return inrange ? build_layout(def[S.count + 1]) : 0;
 }
 
