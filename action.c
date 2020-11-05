@@ -262,7 +262,8 @@ set_history(void)
 int
 set_layout(void)
 {
-	const char *layouts[] = {
+	const char *def[] = {
+		"1:1",                                /*-1 */
 		"1:1",                                /* 0 */
 		"1:1",                                /* 1 */
 		".5:1 1:1",                           /* 2 */
@@ -272,8 +273,8 @@ set_layout(void)
 		".5:1 .75:.5 .75:1 1:.33 1:.66 1:1",  /* 6 */
 		".8:1 1:.16 1:.33 1:.5 1:.66 1:.82 1:1", /* 7 */
 	};
-	build_layout(layouts[S.count >= 0 && S.count < 8 ? S.count : 0]);
-	return 1;
+	int inrange = S.count + 1 < (int)sizeof def / sizeof *def;
+	return inrange ? build_layout(def[S.count + 1]) : 0;
 }
 
 void

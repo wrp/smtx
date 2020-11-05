@@ -624,7 +624,7 @@ fail:
 	return NULL;
 }
 
-void
+int
 build_layout(const char *layout)
 {
 	struct pty *p = S.f->p;
@@ -634,8 +634,9 @@ build_layout(const char *layout)
 	if( n ) {
 		change_count(S.c, -1, 1);
 		S.f = S.c = n;
+		S.reshape = 1;
 	}
-	S.reshape = 1;
+	return S.reshape;
 }
 /* (1) Decrement the view counts so that visible ptys will be availalbe for
  * the new layout.
