@@ -876,10 +876,13 @@ test_resize(int fd)
 int
 test_resizepty(int fd)
 {
-	int rc = 0;
-	struct winsize ws = { .ws_row = 67, .ws_col = 80 };
+	struct winsize ws = { .ws_row = 67, .ws_col = 78 };
 	char buf[1024];
 	int history = 24;
+	int rv = validate_row(fd, 1, "%-80s", "ps1>");
+
+	send_cmd(fd, "fv6>", "6v\rPS1=fv6'> '");
+	rv |= check_layout(fd, 1, "*11x80; 5x40; 5x26; 5x26; 5x26; 5x39");
 
 	while( history != 67 ) {
 		if( ioctl(fd, TIOCSWINSZ, &ws) ) {
@@ -889,13 +892,14 @@ test_resizepty(int fd)
 		if( sscanf(buf, "history=%d", &history) != 1
 			|| ( history != 24 && history != 67 )
 		) {
-			rc = 1;
+			rv = 1;
 			fprintf(stderr, "unexpected response: %s\n", buf);
 			break;
 		}
 	}
-	send_cmd(fd, NULL, "143q"); /* Send SIGTERM */
-	return rc;
+	/* Resize should have triggered a layout change */
+	rv |= check_layout(fd, 1, "*32x78; 16x39; 16x25; 16x25; 16x26; 16x38");
+	return rv;
 }
 
 int
