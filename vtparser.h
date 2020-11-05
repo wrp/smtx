@@ -21,6 +21,14 @@
 #include <stddef.h>
 #include <wchar.h>
 
+/* The names for handlers come from their ANSI/ECMA/DEC mnemonics.  */
+enum cmd {
+	ack=1, bell, cnl, cpl, cr, csr, cub, cud, cuf, cup,
+	cuu, dch, decid, decreqtparm, dsr, ech, ed, el, hpa, hpr,
+	hts, ich, idl, ind, mode, nel, numkp, osc, pnl, print, rc, rep,
+	ri, ris, sc, scs, sgr, so, su, tab, tbc, vis, vpa, vpr
+};
+
 /*
  * VTPARSER_BAD_CHAR is the character that will be displayed when
  * an application sends an invalid multibyte sequence to the terminal.
@@ -46,8 +54,6 @@ struct vtp {
 	char oscbuf[MAXOSC + 1];
 	mbstate_t ms;
 	void *p;
-	int print;
-	int osc;
 	int escs[MAXCALLBACK];
 	int csis[MAXCALLBACK];
 };

@@ -17,14 +17,6 @@
  */
 #include "smtx.h"
 
-/* The names for handlers come from their ANSI/ECMA/DEC mnemonics.  */
-enum cmd {
-	ack=1, bell, cnl, cpl, cr, csr, cub, cud, cuf, cup,
-	cuu, dch, decid, decreqtparm, dsr, ech, ed, el, hpa, hpr,
-	hts, ich, idl, ind, mode, nel, numkp, osc, pnl, print, rc, rep,
-	ri, ris, sc, scs, sgr, so, su, tab, tbc, vis, vpa, vpr
-};
-
 static void
 handle_osc(struct pty *p, const char *arg)
 {
@@ -677,8 +669,6 @@ static struct vtp vtp_base = {
 		[L'='] = numkp,
 		[L'>'] = numkp,
 	},
-	.print = print,
-	.osc = osc,
 };
 
 void
