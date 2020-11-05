@@ -609,12 +609,8 @@ test_layout(int fd)
 	send_cmd(fd, "gw7>", "7v\rPS1=gw7'> '");
 	rv |= check_layout(fd, 1, "*18x80; 4x12; 4x13; 4x13; 4x12; 4x12; 4x13");
 
-/*
-TODO: this test currently fails badly (S.f <-- NULL).  Need to fix.
-	send_txt(fd, NULL, "printf '\\033]60;bad layout\\007'");
-	send_txt(fd, "hx8>", "PS1=hx8'> '");
-	rv |= check_layout(fd, 0x1, "*11x80; 11x26; 11x26; 11x26");
-*/
+	send_txt(fd, "Invalid", "printf '\\033]60;bad layout\\007'");
+	rv |= check_layout(fd, 1, "*18x80; 4x12; 4x13; 4x13; 4x12; 4x12; 4x13");
 
 	send_txt(fd, NULL, "printf '\\033]60;%s\\007'", "1:.5 .2:1 .8:1 1:1");
 	send_txt(fd, "iy9>", "PS1=iy9'> '");

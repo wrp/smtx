@@ -314,11 +314,11 @@ change_count(struct canvas * n, int count, int pop)
 {
 	assert( count < 2 && count > -2 );
 	if( n ) {
-		S.f = n == S.f ? n->parent : S.f;
 		n->p->count += count;
 		change_count(n->c[0], count, pop);
 		change_count(n->c[1], count, pop);
 		if( pop && n->p->count == 0 ) {
+			S.f = n == S.f ? n->parent : S.f;
 			n->c[0] = S.unused;
 			n->c[1] = NULL;
 			S.unused = n;
