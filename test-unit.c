@@ -607,7 +607,7 @@ test_layout(int fd)
 	rv |= check_layout(fd, 1, "*5x80; 5x80; 5x40; 5x26; 5x26; 5x26; 5x39");
 
 	send_cmd(fd, "gw7>", "7v\rPS1=gw7'> '");
-	rv |= check_layout(fd, 0x1, "*11x80; 11x26; 11x26; 11x26");
+	rv |= check_layout(fd, 1, "*18x80; 4x12; 4x13; 4x13; 4x12; 4x12; 4x13");
 
 /*
 TODO: this test currently fails badly (S.f <-- NULL).  Need to fix.
