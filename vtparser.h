@@ -48,10 +48,10 @@ struct vtp {
 	void *p;
 	int print;
 	int osc;
-	int cons[MAXCALLBACK];
 	int escs[MAXCALLBACK];
 	int csis[MAXCALLBACK];
 };
+extern int cons[MAXCALLBACK];
 
 typedef void (VTCALLBACK)(
 	struct vtp *,

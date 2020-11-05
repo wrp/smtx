@@ -78,7 +78,7 @@ static void
 docontrol(struct vtp *v, wchar_t w)
 {
 	assert( w < MAXCALLBACK );
-	tput(v, w, v->inter, 0, NULL, v->cons[w]);
+	tput(v, w, v->inter, 0, NULL, cons[w]);
 }
 
 static callback doescape;
