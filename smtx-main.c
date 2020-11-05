@@ -127,6 +127,7 @@ new_pty(int cols)
 	}
 	if( p->fd < 1 ) {
 		const char *sh = getshell();
+		p->pri.tos = p->alt.tos = S.history - LINES + 1;
 		p->ws.ws_row = LINES - 1;
 		p->ws.ws_col = cols;
 		p->pid = forkpty(&p->fd, p->secondary, NULL, &p->ws);
@@ -254,9 +255,9 @@ set_height(struct canvas *n)
 	struct pty *p = n->p;
 	getmaxyx(p->pri.win, y, x);
 	(void)x;
-
 	assert( y >= n->extent.y );
 	p->ws.ws_row = n->extent.y;
+	p->pri.tos = p->alt.tos = y - n->extent.y;
 	wsetscrreg(p->pri.win, 0, y - 1);
 	wsetscrreg(p->alt.win, 0, n->extent.y - 1);
 	wrefresh(p->s->win);
@@ -297,6 +298,8 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		n->extent.y = h1 > 0 ?  h1 - 1 : 0;
 		n->extent.x = w1;
 		if( n->p ) {
+			/* If the pty is visible in multile canvasses,
+			set ws.ws_row to the one with biggest extent.y */
 			if( n->p->fd >= 0 && n->extent.y > n->p->ws.ws_row ) {
 				set_height(n);
 			}

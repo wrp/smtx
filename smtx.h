@@ -60,7 +60,7 @@ extern int smtx_main(void);
 
 struct canvas;
 struct screen {
-	int vis;
+	int vis, tos;
 	struct { int x, y; short p; wchar_t *gc, *gs; } c, sc;
 	bool insert, oxenl, xenl;
 	attr_t sattr;

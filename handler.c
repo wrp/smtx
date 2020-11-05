@@ -173,6 +173,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	getmaxyx(win, tos, t1);
 
 	tos -= p->ws.ws_row;
+	assert( tos == s->tos || p->ws.ws_row == 0 );
 	y = s->c.y - tos;
 	wgetscrreg(win, &top, &bot);
 	bot += 1 - tos;

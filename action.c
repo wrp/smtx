@@ -243,6 +243,7 @@ grow_screens(struct pty *p, int siz)
 				delwin(s->win);
 				s->win = new;
 				wmove(s->win, s->c.y = y + siz - my, x);
+				s->tos += siz - my;
 			}
 		}
 	}
