@@ -25,7 +25,7 @@ parse_args(int argc, char *const*argv)
 		switch( c ) {
 		case 'h':
 			printf("usage: %s", name ? name + 1 : argv[0]);
-			puts(""
+			puts(
 				" [-c ctrl-key]"
 				" [-s history-size]"
 				" [-t terminal-type]"
@@ -43,8 +43,7 @@ parse_args(int argc, char *const*argv)
 			S.term = optarg;
 			break;
 		case 'v':
-			printf("%s-%s (%s %s)\n", PACKAGE_NAME, PACKAGE_VERSION,
-				__DATE__, __TIME__);
+			printf("%s-%s\n", PACKAGE_NAME, PACKAGE_VERSION);
 			exit(EXIT_SUCCESS);
 		case 'w':
 			S.width = strtol(optarg, NULL, 10);
