@@ -604,7 +604,8 @@ test_layout(int fd)
 	rv |= check_layout(fd, 0x1, "*7x80; 7x40; 7x26; 7x26; 7x26; 7x39");
 
 	send_cmd(fd, "za6>", "c\rPS1=za6'> '");
-	rv |= check_layout(fd, 1, "*5x80; 5x80; 5x40; 5x26; 5x26; 5x26; 5x39");
+	rv |= check_layout(fd, 0x1,
+		"*5x80; 5x40; 5x26; 5x26; 11x26; 11x26; 5x39");
 
 	send_cmd(fd, "gw7>", "7v\rPS1=gw7'> '");
 	rv |= check_layout(fd, 1, "*8x80; 9x80; 4x16; 4x15; 4x15; 4x15; 4x15");
@@ -623,6 +624,10 @@ test_layout(int fd)
 	send_cmd(fd, "be1>", "9v\rPS1=be1'> '");
 	rv |= check_layout(fd, 1, "*7x26; 7x26; 7x26; 7x26; 7x26; "
 		"7x26; 7x26; 7x26; 7x26");
+
+	send_cmd(fd, "zzt>", "kkkk1vCClc\rPS1=zzt'> '");
+	rv |= check_layout(fd, 0x11, "23x26@0,0; *11x26@0,27; 11x26@12,27; "
+		"23x26@0,54");
 
 	return rv;
 }

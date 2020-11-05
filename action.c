@@ -54,17 +54,18 @@ void
 create(const char *arg)
 {
 	int dir = *arg == '|';
-	struct canvas *n = S.f, *c = n->c[dir], dummy;
+	struct canvas *n = S.f;
+	while( n->c[dir] ) {
+		n = n->c[dir];
+	}
 	for( int count = S.count < 1 ? 1 : S.count; count; count -= 1 ) {
 		struct canvas *v = n->c[dir] = newcanvas(0, n, 1);
 		if( v != NULL ) {
-			n->typ = n->c[!dir] ? n->typ : dir;
-			v->c[dir] = c;
-			(c ? c : &dummy)->parent = v;
+			v->typ = n->typ = n->c[!dir] ? n->typ : dir;
+			assert(v->parent == n);
 			n = v;
 		}
 	}
-	n->c[dir] = c;
 	balance(arg);
 	reshape(S.c, 0, 0, LINES, COLS);
 	wmove(n->p->s->win, n->p->s->c.y = n->offset.y, n->p->s->c.x = 0);
