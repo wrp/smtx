@@ -616,6 +616,14 @@ test_layout(int fd)
 	send_txt(fd, "iy9>", "PS1=iy9'> '");
 	rv |= check_layout(fd, 0x1, "*23x40; 3x39; 14x39; 4x39");
 
+	send_cmd(fd, "hx8>", "8v\rPS1=hx8'> '");
+	rv |= check_layout(fd, 1, "*11x20; 11x20; 11x19; 11x19; "
+		"11x19; 11x19; 11x19; 11x19");
+
+	send_cmd(fd, "be1>", "9v\rPS1=be1'> '");
+	rv |= check_layout(fd, 1, "*7x26; 7x26; 7x26; 7x26; 7x26; "
+		"7x26; 7x26; 7x26; 7x26");
+
 	return rv;
 }
 
