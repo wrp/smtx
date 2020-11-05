@@ -146,7 +146,8 @@ new_pty(int cols)
 	}
 	if( p->s == NULL ) {
 		p->s = &p->pri;
-		setupevents(p);
+		p->vp.p = p;
+		tput(&p->vp, L'c', 0, 0, NULL, ris);
 	}
 	return p;
 }

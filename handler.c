@@ -646,8 +646,6 @@ int csis[MAXCALLBACK] = {
 	[L'u'] = rc,
 	[L'x'] = decreqtparm,
 };
-static struct vtp vtp_base = {
-};
 int escs[MAXCALLBACK] = {
 	[L'0'] = scs,
 	[L'1'] = scs,
@@ -670,10 +668,3 @@ int escs[MAXCALLBACK] = {
 	[L'='] = numkp,
 	[L'>'] = numkp,
 };
-
-void
-setupevents(struct pty *p)
-{
-	p->vp.p = p;
-	tput(&p->vp, L'c', 0, 0, NULL, ris);
-}
