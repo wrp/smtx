@@ -55,9 +55,9 @@ struct vtp {
 	mbstate_t ms;
 	void *p;
 	int escs[MAXCALLBACK];
-	int csis[MAXCALLBACK];
 };
 extern int cons[MAXCALLBACK];
+extern int csis[MAXCALLBACK];
 
 typedef void (VTCALLBACK)(
 	struct vtp *,

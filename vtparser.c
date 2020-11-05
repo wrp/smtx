@@ -94,7 +94,7 @@ static void
 docsi(struct vtp *v, wchar_t w)
 {
 	assert( w < MAXCALLBACK );
-	tput(v, w, v->inter, v->narg, v->args, v->csis[w]);
+	tput(v, w, v->inter, v->narg, v->args, csis[w]);
 }
 
 static callback doprint;
