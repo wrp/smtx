@@ -54,10 +54,10 @@ struct vtp {
 	char oscbuf[MAXOSC + 1];
 	mbstate_t ms;
 	void *p;
-	int escs[MAXCALLBACK];
 };
 extern int cons[MAXCALLBACK];
 extern int csis[MAXCALLBACK];
+extern int escs[MAXCALLBACK];
 
 typedef void (VTCALLBACK)(
 	struct vtp *,

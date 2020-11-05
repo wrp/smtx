@@ -86,7 +86,7 @@ static void
 doescape(struct vtp *v, wchar_t w)
 {
 	assert( w < MAXCALLBACK );
-	tput(v, w, v->inter, v->inter > 0, &v->inter, v->escs[w]);
+	tput(v, w, v->inter, v->inter > 0, &v->inter, escs[w]);
 }
 
 static callback docsi;

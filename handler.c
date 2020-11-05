@@ -647,34 +647,33 @@ int csis[MAXCALLBACK] = {
 	[L'x'] = decreqtparm,
 };
 static struct vtp vtp_base = {
-	.escs = {
-		[L'0'] = scs,
-		[L'1'] = scs,
-		[L'2'] = scs,
-		[L'7'] = sc,
-		[L'8'] = rc,
-		[L'A'] = scs,
-		[L'B'] = scs,
-		[L'D'] = ind,
-		[L'E'] = nel,
-		[L'H'] = hts,
-		[L'M'] = ri,
-		[L'N'] = so,
-		[L'O'] = so,
-		[L'}'] = so,
-		[L'|'] = so,
-		[L'Z'] = decid,
-		[L'c'] = ris,
-		[L'p'] = vis,
-		[L'='] = numkp,
-		[L'>'] = numkp,
-	},
+};
+int escs[MAXCALLBACK] = {
+	[L'0'] = scs,
+	[L'1'] = scs,
+	[L'2'] = scs,
+	[L'7'] = sc,
+	[L'8'] = rc,
+	[L'A'] = scs,
+	[L'B'] = scs,
+	[L'D'] = ind,
+	[L'E'] = nel,
+	[L'H'] = hts,
+	[L'M'] = ri,
+	[L'N'] = so,
+	[L'O'] = so,
+	[L'}'] = so,
+	[L'|'] = so,
+	[L'Z'] = decid,
+	[L'c'] = ris,
+	[L'p'] = vis,
+	[L'='] = numkp,
+	[L'>'] = numkp,
 };
 
 void
 setupevents(struct pty *p)
 {
-	memcpy(&p->vp, &vtp_base, sizeof p->vp);
 	p->vp.p = p;
 	tput(&p->vp, L'c', 0, 0, NULL, ris);
 }
