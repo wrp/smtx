@@ -68,7 +68,6 @@ create(const char *arg)
 	}
 	balance(arg);
 	reshape(S.c, 0, 0, LINES, COLS);
-	wmove(n->p->s->win, n->p->s->c.y = n->offset.y, n->p->s->c.x = 0);
 }
 
 void
