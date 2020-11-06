@@ -148,7 +148,7 @@ new_pty(int cols)
 	if( p->s == NULL ) {
 		p->s = &p->pri;
 		p->vp.p = p;
-		tput(&p->vp, L'c', 0, 0, NULL, ris);
+		tput(&p->vp, 0, 0, 0, NULL, ris);
 	}
 	return p;
 }
