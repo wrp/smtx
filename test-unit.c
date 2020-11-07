@@ -1008,14 +1008,14 @@ test_scrollh(int fd)
 	rv |= validate_row(fd, 4, "%-26s", buf);
 	buf[26] = 'a';
 
-	/* Scroll one tabstop to the right */
-	buf[26 + 8 ] = 0;  /* 8 is default tabstop */
-	send_cmd(fd, "foo", ">\recho '        f'o'o'");
+	/* Scroll 8 to the right */
+	buf[26 + 8 ] = 0;
+	send_cmd(fd, "foo", "8>\recho '        f'o'o'");
 	rv |= validate_row(fd, 4, "%-26s", buf + 8);
 	buf[26 + 8 ] = 'a' + 8;
 
 	/* Scroll one screen width (26) to the right */
-	send_cmd(fd, "uniq1", "%s", "0>\rprintf '%34s'u'n'i'q'1\\n");
+	send_cmd(fd, "uniq1", "%s", ">\rprintf '%34s'u'n'i'q'1\\n");
 	buf[26 + 34] = 0;
 	rv |= validate_row(fd, 4, "%-26s", buf + 34);
 	buf[26 + 34] = 'a' + 8;

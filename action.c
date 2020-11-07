@@ -179,8 +179,8 @@ scrollh(const char *arg)
 {
 	struct canvas *n = S.f;
 	if( n && n->p && n->p->s && n->p->s->win ) {
-		int c = S.count, count;
-		count = c == -1 ? n->p->tabstop : c == 0 ? n->extent.x : c;
+		int c = S.count;
+		int count = c < 0 ? n->extent.x : !c ? n->p->ws.ws_col : c;
 		n->offset.x += *arg == '<' ? -count : count;
 		if( n->offset.x < 0 ) {
 			n->offset.x = 0;
