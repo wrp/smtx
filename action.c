@@ -285,15 +285,9 @@ set_width(const char *arg)
 		w = n->extent.x;
 	}
 	if( p->fd > 0 && (pty_size(p), w != p->ws.ws_col) ) {
-		int py, ay, x;
-		getmaxyx(p->pri.win, py, x);
-		getmaxyx(p->alt.win, ay, x);
-		(void)x;
-		assert( py >= n->extent.y );
-		assert( ay >= n->extent.y );
 		p->ws.ws_col = w;
-		resize_pad(&p->pri.win, py, w);
-		resize_pad(&p->alt.win, ay, w);
+		resize_pad(&p->pri.win, p->pri.rows, w);
+		resize_pad(&p->alt.win, p->alt.rows, w);
 		extend_tabs(p, p->tabstop);
 		reshape_window(p);
 	}
