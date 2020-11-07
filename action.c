@@ -187,7 +187,7 @@ scrollh(const char *arg)
 		} else if( n->offset.x > n->p->ws.ws_col - n->extent.x ) {
 			n->offset.x = n->p->ws.ws_col - n->extent.x;
 		}
-		n->manualscroll = 1;
+		n->manualscroll = !!c;
 	}
 }
 
