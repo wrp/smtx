@@ -183,6 +183,7 @@ extern action create;
 extern action digit;
 extern action mov;
 extern action0 new_tabstop;
+extern action0 next;
 extern action passthru;
 extern action0 prune;
 extern action reorient;

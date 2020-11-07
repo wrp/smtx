@@ -85,14 +85,19 @@ test_attach(int fd)
 	if( sscanf(desc, "7x80(id=%*d); *7x80(id=%d);", &id) != 1 ) {
 		fprintf(stderr, "received unexpected: '%s'\n", desc);
 		rv = 1;
-	} else {
-		/* Move to upper left and attach to the pane with "other" */
-		send_cmd(fd, "uniq", "k%da\recho 'u'ni'q'", id);
 	}
+
+	/* Move to upper left and attach to the pane with "other" */
+	send_cmd(fd, "uniq", "k%da\recho 'u'ni'q'", id);
 	rv |= check_layout(fd, 0x1, "*7x80; 7x80; 7x80");
 
-	/* 2nd row of the first window should now be "other" */
+	/* 3rd row of the first window should now be "other" */
 	rv |= validate_row(fd, 3, "%-80s", "other");
+
+	/* Go to next pty */
+	send_cmd(fd, NULL, "N");
+	rv |= validate_row(fd, 3, "%-80s", "sync");
+
 	return rv;
 }
 

@@ -122,6 +122,12 @@ new_tabstop(void)
 	return 1;
 }
 
+int
+next(void)
+{
+	S.f->p = S.f->p->next ? S.f->p->next : S.p;
+}
+
 void
 passthru(const char *arg)
 {

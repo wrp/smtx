@@ -149,10 +149,11 @@ struct handler ctl[128] = {
 	[L'=' ] = { { .a = balance}, "=" },
 	[L'c' ] = { { .a = create}, "-" },
 	[L'C' ] = { { .a = create}, "|" },
+	[L'h' ] = { { .a = mov}, "h" },
 	[L'j' ] = { { .a = mov}, "j" },
 	[L'k' ] = { { .a = mov}, "k" },
 	[L'l' ] = { { .a = mov}, "l" },
-	[L'h' ] = { { .a = mov}, "h" },
+	[L'N' ] = { { .v = next}, NULL },
 #ifndef NDEBUG
 	[L'Q' ] = { { .a = show_status}, "x" },
 #endif
