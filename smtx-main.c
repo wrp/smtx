@@ -250,16 +250,11 @@ reshape_window(struct pty *p)
 static void
 set_height(struct canvas *n)
 {
-	int y, x;
 	struct pty *p = n->p;
-	getmaxyx(p->pri.win, y, x);
-	(void)x;
-	assert( y >= n->extent.y );
 	p->ws.ws_row = n->extent.y;
-	p->pri.tos = p->alt.tos = y - n->extent.y;
-	wsetscrreg(p->pri.win, 0, y - 1);
+	p->pri.tos = p->alt.tos = p->pri.rows - n->extent.y;
+	wsetscrreg(p->pri.win, 0, p->pri.rows - 1);
 	wsetscrreg(p->alt.win, 0, n->extent.y - 1);
-	wrefresh(p->s->win);
 	reshape_window(p);
 }
 
@@ -297,6 +292,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 			set ws.ws_row to the one with biggest extent.y */
 			if( n->p->fd >= 0 && n->extent.y > n->p->ws.ws_row ) {
 				set_height(n);
+				wrefresh(n->p->s->win);
 			}
 			scrollbottom(n);
 		}
