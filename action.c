@@ -227,20 +227,19 @@ grow_screens(struct pty *p, int siz)
 	struct screen *w[] = { &p->pri, &p->alt, NULL };
 	for( struct screen **sp = w; *sp; sp++ ) {
 		struct screen *s = *sp;
-		int my, x;
-		getmaxyx(s->win, my, x);
-		if( my < siz ) {
-			int y;
+		if( s->rows < siz ) {
+			int y, x;
 			getyx(s->win, y, x);
 			WINDOW *new = NULL;
 			if( resize_pad(&new, siz, p->ws.ws_col) ) {
-				copywin(s->win, new, 0, 0, siz - my, 0, siz - 1,
-					p->ws.ws_col - 1, 1);
+				copywin(s->win, new, 0, 0, siz - s->rows, 0,
+					siz - 1, p->ws.ws_col - 1, 1);
 				delwin(s->win);
 				s->win = new;
-				wmove(s->win, s->c.y = y + siz - my, x);
-				s->tos += siz - my;
-				s->maxy += siz - my;
+				wmove(s->win, s->c.y = y + siz - s->rows, x);
+				s->tos += siz - s->rows;
+				s->maxy += siz - s->rows;
+				s->rows = siz;
 			}
 		}
 	}
