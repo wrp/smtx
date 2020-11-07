@@ -174,7 +174,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	tos = MAX(0, s->maxy - p->ws.ws_row + 1);
 	y = s->c.y - tos;
 	wgetscrreg(win, &top, &bot);
-	bot += 1 - tos;
+	bot -= tos - 1;
 	top = top <= tos ? 0 : top - tos;
 	switch(c) {
 	case ack: /* Acknowledge Enquiry */
@@ -306,6 +306,10 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		/* We don't use insdelln here because it inserts above and
 		   not below, and has a few other edge cases. */
 		i = MIN(p0[1], p->ws.ws_row - 1 - y);
+
+		assert( y == s->c.y - tos);
+		assert( tos == 0 || p->ws.ws_row - 1 - y == s->maxy - s->c.y );
+
 		wgetscrreg(win, &t1, &t2);
 		wsetscrreg(win, s->c.y, t2);
 		wscrl(win, w == L'L' ? -i : i);
