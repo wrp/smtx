@@ -1,23 +1,19 @@
 
 TODO:
-	(?) Make the preset keybindings modifiable at startup.
+	Make the preset keybindings modifiable at startup.
+	(eg, implement bind_key as osc)
 
-	(?) Add a command to start up a new shell in a canvas where the
-	shell is dead.
+	Add a command to start up a new shell in a canvas where the shell is dead.
 
 	(?) Make an action on <tab> that scrolls one tabstop.
+
+	Implement g action to goto canvas.  (I'm still not sure if we should add
+	an id to a canvas to disambiguate when a pty is visible in 2 canvasses.)
 
 	Determine if colors should be saved with save/restore cursor and
 	implement accordingly.
 
-	In full-screen mode, make hjkl scroll the pty.
-
-	Consider abandoning history.  It is convenient to be able to change
-	this size of the history buffer, but perhaps this violates the
-	design goal of simplicity.  Is scroll back really a necessary feature?
-	OTOH, we need to handle screen resizes (do we?), so we cannot avoid
-	reallocating screens, and that is the only complexity with modifying
-	the history buffer size, so maybe we ought to keep it.
+	In full-screen mode, make hjkl scroll the pty.  Make n go to next pty.
 
 	Perhaps -1v should make the focused canvas the root and keep
 	the layout below it instead of making it single screen.  Perhaps
@@ -31,14 +27,9 @@ TODO:
 
 	List all windows with titles, with ability to navigate.
 
-	Figure out initialization.  Maybe just use a "source" command to read
-	from a file.  One could specify a fifo and inject it into the main
-	processing loop so the fifo gets selected in the main loop allowing
-	one to send arbitrary keystrokes.  Clearly, there are security issues.
+	(?) Make it possible for windows to overlap.
 
-	Make it possible for windows to overlap.
-
-	Dump select() and use libev or libevent
+	Dump select() and use libev or libevent, or at least kqueue/epoll
 
 BUGS:
 	Syntax highlighting doesn't work in vim.
