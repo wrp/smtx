@@ -1312,7 +1312,7 @@ test_su(int fd)
 int
 test_swap(int fd)
 {
-	int rv = 0;
+	int rv = validate_row(fd, 1, "%-80s", "ps1>");
 	int id[3];
 	char desc[1024];
 
@@ -1333,13 +1333,13 @@ test_swap(int fd)
 	send_txt(fd, "ul0>", "PS1='u'l'0>'; echo; echo upperleft");
 	rv |= validate_row(fd, 3, "%-40s", "upperleft");
 
-	send_cmd(fd, NULL, "1024s");   /* Invalid swap */
-	send_cmd(fd, NULL, "%ds", id[0]); /* Swap upper left and lower left */
+	send_cmd(fd, NULL, "1024S");   /* Invalid swap */
+	send_cmd(fd, NULL, "%dS", id[0]); /* Swap upper left and lower left */
 	send_txt(fd, "ll1>", "PS1='l'l'1>'; echo s2 line 5");
 	rv |= validate_row(fd, 3, "%-40s", "lowerleft");
 
 	/* Swap back (with no count, s swaps with parent or primary child) */
-	send_cmd(fd, NULL, "s");
+	send_cmd(fd, NULL, "S");
 	send_txt(fd, "ul1>", "PS1='u'l'1>'");
 	rv |= validate_row(fd, 3, "%-40s", "upperleft");
 
@@ -1348,7 +1348,7 @@ test_swap(int fd)
 	send_cmd(fd, NULL, "kk"); /* Move to upper left */
 	send_txt(fd, "ul2>", "PS1='u'l'2>'");
 	rv |= validate_row(fd, 3, "%-40s", "upperleft");
-	send_cmd(fd, NULL, "%ds", id[1]); /* Swap upper left and lower rt */
+	send_cmd(fd, NULL, "%dS", id[1]); /* Swap upper left and lower rt */
 	send_txt(fd, "ul3>", "PS1='u'l'3>'");
 	/*
 	TODO: why does this not work?  The attach seems to clear screen
@@ -1365,7 +1365,6 @@ test_swap(int fd)
 		fprintf(stderr, "unexpected id in first window: %s\n", desc);
 		rv = 1;
 	}
-	send_txt(fd, NULL, "kill -TERM $SMTX");
 	return rv;
 }
 

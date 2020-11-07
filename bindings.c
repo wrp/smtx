@@ -295,7 +295,7 @@ struct handler ctl[128] = {
 #ifndef NDEBUG
 	[L'Q' ] = { { .a = show_status}, "x" },
 #endif
-	[L's' ] = { { .v = swap}, NULL },
+	[L'S' ] = { { .v = swap}, NULL },
 	[L't' ] = { { .v = new_tabstop}, NULL },
 	[L'T' ] = { { .v = transpose}, NULL },
 	[L'v' ] = { { .v = set_layout}, NULL },
