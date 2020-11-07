@@ -394,8 +394,8 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		p->pri.vis = p->alt.vis = 1;
 		p->s = &p->pri;
 
-		wsetscrreg(p->pri.win, 0, p->ws.ws_row + p->pri.rows - 1);
-		wsetscrreg(p->alt.win, 0, p->ws.ws_row + p->alt.rows - 1);
+		wsetscrreg(p->pri.win, 0, p->pri.rows - 1);
+		wsetscrreg(p->alt.win, 0, p->alt.rows - 1);
 		memset(p->tabs, 0, p->ntabs * sizeof *p->tabs);
 		for( i = 0; i < p->ntabs; i += p->tabstop ) {
 			p->tabs[i] = true;
