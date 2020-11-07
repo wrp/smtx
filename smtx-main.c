@@ -116,6 +116,7 @@ new_pty(int cols)
 		if( resize_pad(&p->pri.win, S.history, cols)
 			&& resize_pad(&p->alt.win, S.history, cols)
 		) {
+			p->pri.rows = p->alt.rows = S.history;
 			p->next = S.p;
 			S.p = p;
 		} else {
@@ -211,9 +212,7 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	if( f->p && f->p->s && f->extent.y ) {
 		struct screen *s = f->p->s;
 		int y, x;
-		getmaxyx(s->win, y, x);
-		assert( y > f->extent.y );
-		int top = y - f->extent.y;
+		int top = s->maxy - f->extent.y + 1;
 		getyx(s->win, y, x);
 		if( 0
 			|| x < f->offset.x
@@ -268,11 +267,7 @@ void
 scrollbottom(struct canvas *n)
 {
 	if( n && n->p && n->p->s && n->extent.y ) {
-		int y, x;
-		getmaxyx(n->p->s->win, y, x);
-		(void)x;
-		assert( y >= n->extent.y );
-		n->offset.y = y - n->extent.y;
+		n->offset.y = MAX(n->p->s->maxy - n->extent.y + 1, 0);
 	}
 }
 
@@ -428,9 +423,11 @@ getinput(void) /* check stdin and all pty's for input. */
 		if( t->fd > 0 && FD_ISSET(t->fd, &sfds) ) {
 			FD_CLR(t->fd, &sfds);
 			char iobuf[BUFSIZ];
+			int oldmax = t->s->maxy;
 			ssize_t r = read(t->fd, iobuf, sizeof iobuf);
 			if( r > 0 ) {
 				vtwrite(&t->vp, iobuf, r);
+				t->s->delta = t->s->maxy - oldmax;
 			} else if( errno != EINTR && errno != EWOULDBLOCK ) {
 				wait_child(t);
 			}
@@ -482,6 +479,22 @@ handle_term(int s)
 }
 
 static void
+update_offset_r(struct canvas *n)
+{
+	if( n ) {
+		if( n->p && n->p->s && n->p->s->delta ) {
+			int d = n->p->s->delta;
+			int t = n->p->s->maxy - n->extent.y + 1;
+			if( t > 0 ) {
+				n->offset.y += MIN(d, t);
+			}
+		}
+		update_offset_r(n->c[0]);
+		update_offset_r(n->c[1]);
+	}
+}
+
+static void
 main_loop(void)
 {
 	while( S.c != NULL && ! interrupted ) {
@@ -497,6 +510,10 @@ main_loop(void)
 		fixcursor();
 		doupdate();
 		getinput();
+		update_offset_r(S.c);
+		for( struct pty *p = S.p; p; p = p->next ) {
+			p->s->delta = 0;
+		}
 	}
 }
 

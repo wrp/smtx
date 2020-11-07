@@ -61,7 +61,10 @@ extern int smtx_main(void);
 struct canvas;
 struct screen {
 	int vis, tos;
-	struct { int x, y; short p; wchar_t *gc, *gs; } c, sc;
+	int maxy; /* highest row in which the cursor has ever been */
+	int rows; /* Number of rows in the window */
+	int delta; /* Number of lines written by a vtwrite */
+	struct { int x, y; short p; wchar_t *gc, *gs; } sc, c; /* save/cursor */
 	bool insert, oxenl, xenl;
 	attr_t sattr;
 	WINDOW *win;
@@ -124,6 +127,7 @@ struct point { int y, x; };
 struct canvas {
 	struct point origin; /* position of upper left corner */
 	struct point extent; /* relative position of lower right corner */
+	/* extent.y is the actual number of rows visible in the window */
 	int typ; /* 0: c[0] is full width, 1: c[1] is full height */
 	struct point offset; /* Number of lines window is scrolled */
 	struct pty *p;

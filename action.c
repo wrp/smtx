@@ -197,11 +197,8 @@ scrolln(const char *arg)
 {
 	struct canvas *n = S.f;
 	if( n && n->p && n->p->s && n->p->s->win ) {
-		int y, x;
 		int count = S.count == -1 ? n->extent.y - 1 : S.count;
-		getmaxyx(n->p->s->win, y, x);
-		(void)x;
-		int top = y - n->extent.y;
+		int top = n->p->s->maxy - n->extent.y + 1;
 		n->offset.y += *arg == '-' ? -count : count;
 		n->offset.y = MIN(MAX(0, n->offset.y), top);
 	}
@@ -244,6 +241,7 @@ grow_screens(struct pty *p, int siz)
 				s->win = new;
 				wmove(s->win, s->c.y = y + siz - my, x);
 				s->tos += siz - my;
+				s->maxy += siz - my;
 			}
 		}
 	}

@@ -170,10 +170,8 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	p0[1] = argv && argc > 0 ? argv[0] : 1;
 	p1 = argv && argc > 1 ? argv[1] : 1;
 	getyx(win, s->c.y, s->c.x);
-	getmaxyx(win, tos, t1);
-
-	tos -= p->ws.ws_row;
-	assert( tos == s->tos || p->ws.ws_row == 0 );
+	s->maxy = MAX(s->c.y, s->maxy);
+	tos = MAX(0, s->maxy - p->ws.ws_row + 1);
 	y = s->c.y - tos;
 	wgetscrreg(win, &top, &bot);
 	bot += 1 - tos;
@@ -395,8 +393,9 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		p->decawm = p->pnm = true;
 		p->pri.vis = p->alt.vis = 1;
 		p->s = &p->pri;
-		wsetscrreg(p->pri.win, 0, p->ws.ws_row + tos - 1);
-		wsetscrreg(p->alt.win, 0, p->ws.ws_row - 1);
+
+		wsetscrreg(p->pri.win, 0, p->ws.ws_row + p->pri.rows - 1);
+		wsetscrreg(p->alt.win, 0, p->ws.ws_row + p->alt.rows - 1);
 		memset(p->tabs, 0, p->ntabs * sizeof *p->tabs);
 		for( i = 0; i < p->ntabs; i += p->tabstop ) {
 			p->tabs[i] = true;
@@ -595,6 +594,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	if( handler != sgr && handler != print ) {
 		p->repc = 0;
 	}
+	s->maxy = MAX(s->c.y, s->maxy);
 }
 
 int cons[MAXCALLBACK] = {
