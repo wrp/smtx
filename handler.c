@@ -58,15 +58,17 @@ clear_alt(struct pty *p, int top, int tos)
 static void
 restore_cursor(struct screen *s)
 {
-	cchar_t b;
-	s->c = s->sc;
-	wattr_set(s->win, s->sattr, s->c.p, NULL);
-	s->xenl = s->oxenl;
+	if( s->sc.gc ) {
+		cchar_t b;
+		s->c = s->sc;
+		wattr_set(s->win, s->sattr, s->c.p, NULL);
+		s->xenl = s->oxenl;
 
-	/* restore colors */
-	wcolor_set(s->win, s->c.p, NULL);
-	setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
-	wbkgrndset(s->win, &b);
+		/* restore colors */
+		wcolor_set(s->win, s->c.p, NULL);
+		setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
+		wbkgrndset(s->win, &b);
+	}
 }
 
 static void
@@ -298,9 +300,8 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	case rc: /* Restore Cursor */
 		if( iw == L'#' ) {
 			decaln(p, tos);
-		} else if( s->sc.gc ) {
-			restore_cursor(s);
 		}
+		restore_cursor(s);
 		break;
 	case ri: /* Reverse Index (scroll back) */
 		t1 = s->scroll.top;
