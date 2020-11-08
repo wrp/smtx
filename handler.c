@@ -399,12 +399,11 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 20: p->lnm = set;              break;
 			case 25: s->vis = set ? 1 : 0;      break;
 			case 34: s->vis = set ? 1 : 2;      break;
-			case 1048:
+			case 1048: case 1049:
 				(set ? save_cursor : restore_cursor)(s);
-				break;
-			case 1049:
-				(set ? save_cursor : restore_cursor)(s);
-				/* fall-thru */
+				if( handler == 1048 ) {
+					break;
+				} /* fall-thru */
 			case 47: case 1047:
 				if( set && p->s != &p->alt ) {
 					clear_alt(p, top, tos);
