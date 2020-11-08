@@ -59,14 +59,7 @@ extern int cons[MAXCALLBACK];
 extern int csis[MAXCALLBACK];
 extern int escs[MAXCALLBACK];
 
-typedef void (VTCALLBACK)(
-	struct vtp *,
-	wchar_t,
-	wchar_t,
-	int,
-	void *,
-	int
-);
+typedef void (VTCALLBACK)(struct vtp *, wchar_t, wchar_t, int, void *, int);
 extern VTCALLBACK tput;
 
 void vtwrite(struct vtp *vp, const char *s, size_t n);
