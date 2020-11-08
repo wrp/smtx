@@ -150,7 +150,6 @@ void
 tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 {
 	int p0[2];       /* First arg, defaulting to 0 or 1 */
-	int p1;          /* argv[1], defaulting to 1 */
 	int i, t1 = 0;
 	int y;           /* cursor position */
 	cchar_t b;
@@ -163,7 +162,6 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 
 	p0[0] = argv && argc > 0 ? argv[0] : 0;
 	p0[1] = argv && argc > 0 ? argv[0] : 1;
-	p1 = argv && argc > 1 ? argv[1] : 1;
 
 	int tos = s->tos;
 	y = s->c.y - tos;
@@ -203,7 +201,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	case cup: /* Cursor Position */
 		s->xenl = false;
 		s->c.y = tos + (p->decom ? top : 0) + p0[1] - 1;
-		s->c.x = p1 - 1;
+		s->c.x = argv && argc > 1 ? argv[1] - 1 : 0;
 		break;
 	case cuu: /* Cursor Up */
 		s->c.y = MAX(s->c.y - p0[1], tos + top);
