@@ -155,7 +155,6 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	int p1;          /* argv[1], defaulting to 1 */
 	int i, t1 = 0;
 	int y;           /* cursor position */
-	int tos;         /* top of screen */
 	char buf[32];
 	cchar_t b;
 
@@ -169,7 +168,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	p0[1] = argv && argc > 0 ? argv[0] : 1;
 	p1 = argv && argc > 1 ? argv[1] : 1;
 
-	tos = MAX(0, s->maxy - p->ws.ws_row + 1);
+	int tos = s->tos;
 	y = s->c.y - tos;
 	int bot = s->scroll.bot - tos + 1;
 	int top = MAX(0, s->scroll.top - tos);
@@ -599,6 +598,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		p->repc = 0;
 	}
 	s->maxy = MAX(s->c.y, s->maxy);
+	s->tos = MAX(0, s->maxy - p->ws.ws_row + 1);
 }
 
 int cons[MAXCALLBACK] = {

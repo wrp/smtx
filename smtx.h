@@ -60,7 +60,8 @@ extern int smtx_main(void);
 
 struct canvas;
 struct screen {
-	int vis, tos;
+	int vis;
+	int tos; /* top of screen */
 	int maxy; /* highest row in which the cursor has ever been */
 	int rows; /* Number of rows in the window */
 	int delta; /* Number of lines written by a vtwrite */

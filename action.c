@@ -244,8 +244,8 @@ grow_screens(struct pty *p, int siz)
 				delwin(s->win);
 				s->win = new;
 				wmove(s->win, s->c.y = y + siz - s->rows, x);
-				s->tos += siz - s->rows;
 				s->maxy += siz - s->rows;
+				s->tos = MAX(0, s->maxy - p->ws.ws_row + 1);
 				s->scroll.top += siz - s->rows;
 				s->scroll.bot += siz - s->rows;
 				s->rows = siz;
