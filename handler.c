@@ -60,7 +60,6 @@ restore_cursor(struct screen *s)
 {
 	cchar_t b;
 	s->c = s->sc;
-	wmove(s->win, s->c.y, s->c.x);
 	wattr_set(s->win, s->sattr, s->c.p, NULL);
 	s->xenl = s->oxenl;
 
@@ -103,7 +102,6 @@ decaln(struct pty *p, int tos)
 			mvwaddchnstr(p->s->win, tos + r, c, e, 1);
 		}
 	}
-	wmove(p->s->win, p->s->c.y, p->s->c.x);
 }
 
 
@@ -115,7 +113,6 @@ newline(struct pty *p, int cr, int y, int bot)
 		p->s->c.x = 0;
 	}
 	if( y == bot - 1 ) {
-		wmove(p->s->win, p->s->c.y, p->s->c.x);
 		scroll(p->s->win);
 	} else {
 		wmove(p->s->win, ++p->s->c.y, p->s->c.x);
