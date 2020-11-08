@@ -179,7 +179,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		break;
 	case cr: /* Carriage Return */
 		s->xenl = false;
-		wmove(win, s->c.y, s->c.x = 0);
+		s->c.x = 0;
 		break;
 	case csr: /* CSR - Change Scrolling Region */
 		t1 = argv && argc > 1 ? argv[1] : p->ws.ws_row;
@@ -188,31 +188,26 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			s->scroll.bot = tos + t1 - 1;
 			s->xenl = false;
 			s->c.y = tos + (p->decom ? top : 0);
-			wmove(s->win, s->c.y, s->c.x = 0);
+			s->c.x = 0;
 		}
 		break;
 	case cub: /* Cursor Backward */
 		s->xenl = false;
 		s->c.x = MAX(s->c.x - p0[1], 0);
-		wmove(win, s->c.y, s->c.x);
 		break;
 	case cud: /* Cursor Down */
 		s->c.y = MIN(s->c.y + p0[1], tos + bot - 1);
-		wmove(win, s->c.y, s->c.x);
 		break;
 	case cuf: /* Cursor Forward */
 		s->c.x = MIN(s->c.x + p0[1], p->ws.ws_col - 1);
-		wmove(win, s->c.y, s->c.x);
 		break;
 	case cup: /* Cursor Position */
 		s->xenl = false;
 		s->c.y = tos + (p->decom ? top : 0) + p0[1] - 1;
 		s->c.x = p1 - 1;
-		wmove(win, s->c.y, s->c.x);
 		break;
 	case cuu: /* Cursor Up */
 		s->c.y = MAX(s->c.y - p0[1], tos + top);
-		wmove(win, s->c.y, s->c.x);
 		break;
 	case dch: /* Delete Character */
 		for( i = 0; i < p0[1]; i++ ) {
@@ -244,7 +239,6 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
 		for( i = 0; i < p0[1]; i++ )
 			mvwadd_wchnstr(win, s->c.y, s->c.x + i, &b, 1);
-		wmove(win, s->c.y, s->c.x);
 		break;
 	case ed: /* Erase in Display */
 		switch( p0[0] ) {
@@ -265,7 +259,6 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			tput(v, w, iw, 1, argv, el);
 			break;
 		}
-		wmove(win, s->c.y, s->c.x);
 		break;
 	case el: /* Erase in Line */
 		setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
@@ -280,15 +273,12 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				mvwadd_wchnstr(win, s->c.y, i, &b, 1);
 			}
 		}
-		wmove(win, s->c.y, s->c.x);
 		break;
 	case hpa: /* Cursor Horizontal Absolute */
 		s->c.x = MIN(p0[1] - 1, p->ws.ws_col - 1);
-		wmove(win, s->c.y, s->c.x);
 		break;
 	case hpr: /* Cursor Horizontal Relative */
 		s->c.x = MIN(s->c.x + p0[1], p->ws.ws_col - 1);
-		wmove(win, s->c.y, s->c.x);
 		break;
 	case hts: /* Horizontal Tab Set */
 		if( s->c.x < p->ntabs && s->c.x > 0 ) {
@@ -309,7 +299,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		wsetscrreg(win, s->c.y, s->scroll.bot);
 		wscrl(win, w == L'L' ? -i : i);
 		wsetscrreg(win, s->scroll.top, s->scroll.bot);
-		wmove(win, s->c.y, s->c.x = 0);
+		s->c.x = 0;
 		break;
 	case numkp: /* Application/Numeric Keypad Mode */
 		p->pnm = (w == L'=');
@@ -325,7 +315,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		t1 = s->scroll.top;
 		wsetscrreg(win, t1 >= tos ? t1 : tos, s->scroll.bot);
 		if( y == top ) {
-			 wscrl(win, -1);
+			wscrl(win, -1);
 		} else {
 			s->c.y = MAX(tos, s->c.y - 1);
 			wmove(win, s->c.y, s->c.x);
@@ -345,7 +335,6 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				p0[1] -= 1;
 			}
 		}
-		wmove(win, s->c.y, s->c.x);
 		break;
 	case tbc: /* Tabulation Clear */
 		if( p->tabs != NULL ) {
@@ -366,11 +355,9 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		break;
 	case vpa: /* Cursor Vertical Absolute */
 		s->c.y = MIN(tos + bot - 1, MAX(tos + top, tos + p0[1] - 1));
-		wmove(win, s->c.y, s->c.x);
 		break;
 	case vpr: /* Cursor Vertical Relative */
 		s->c.y = MIN(tos + bot - 1, MAX(tos + top, s->c.y + p0[1]));
-		wmove(win, s->c.y, s->c.x);
 		break;
 	case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		if( p0[0] ) {
@@ -539,11 +526,11 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		break;
 	case cpl: /* CPL - Cursor Previous Line */
 		s->c.y = MAX(tos + top, s->c.y - p0[1]);
-		wmove(win, s->c.y, s->c.x = 0);
+		s->c.x = 0;
 		break;
 	case cnl: /* CNL - Cursor Next Line */
 		s->c.y = MIN(tos + bot - 1, s->c.y + p0[1]);
-		wmove(win, s->c.y, s->c.x = 0);
+		s->c.x = 0;
 		break;
 	case print: /* Print a character to the terminal */
 		if( wcwidth(w) > 0 ) {
@@ -595,6 +582,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	if( handler != sgr && handler != print ) {
 		p->repc = 0;
 	}
+	wmove(win, s->c.y, s->c.x);
 	s->maxy = MAX(s->c.y, s->maxy);
 	s->tos = MAX(0, s->maxy - p->ws.ws_row + 1);
 }
