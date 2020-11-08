@@ -194,13 +194,12 @@ draw_window(struct canvas *n)
 				n->offset.x = x - n->extent.x + 1;
 			}
 		}
-		pnoutrefresh(n->p->s->win, off.y, off.x, o.y, o.x, e.y, e.x);
 		if( n->p->ws.ws_col < n->extent.x ) {
 			assert( n->offset.x == 0 );
 			pnoutrefresh(S.wbkg, 0, 0, o.y, o.x + n->p->ws.ws_col,
 				e.y, e.x);
 		}
-
+		pnoutrefresh(n->p->s->win, off.y, off.x, o.y, o.x, e.y, e.x);
 	}
 }
 
