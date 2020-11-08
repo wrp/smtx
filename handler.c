@@ -128,12 +128,10 @@ print_char(wchar_t w, struct pty *p, int y, int bot)
 	if( p->s->insert ) {
 		insert_space(1, p->s->win);
 	}
-	if( p->s->xenl ) {
-		p->s->xenl = false;
-		if( p->decawm ) {
-			newline(p, 1, y, bot);
-		}
+	if( p->s->xenl && p->decawm ) {
+		newline(p, 1, y, bot);
 	}
+	p->s->xenl = false;
 	if( w < 0x7f && p->s->c.gc[w] ) {
 		w = p->s->c.gc[w];
 	}
