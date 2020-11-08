@@ -67,7 +67,8 @@ struct screen {
 	int delta; /* Number of lines written by a vtwrite */
 	struct { int top; int bot; } scroll;
 	struct { int x, y; short p; wchar_t *gc, *gs; } sc, c; /* save/cursor */
-	bool insert, oxenl, xenl;
+	bool insert;
+	bool oxenl, xenl;  /* newline ignored after 80 columns */
 	attr_t sattr;
 	WINDOW *win;
 };
