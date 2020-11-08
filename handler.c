@@ -507,13 +507,9 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	}
 		break;
 	case pnl: /* Newline */
-		newline(p, p->lnm, y, bot);
-		break;
 	case nel: /* Next Line */
-		newline(p, 1, y, bot);
-		break;
 	case ind: /* Index */
-		newline(p, 0, y, bot);
+		newline(p, handler == pnl ? p->lnm : handler == nel, y, bot);
 		break;
 	case cpl: /* CPL - Cursor Previous Line */
 		s->c.y = MAX(tos + top, s->c.y - p0[1]);
