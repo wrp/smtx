@@ -106,15 +106,13 @@ decaln(struct pty *p, int tos)
 
 
 static void
-newline(struct pty *p, int cr, int y, int bot)
+newline(struct pty *p, int cr)
 {
-	assert( y == p->s->c.y - p->s->tos );
-	assert( bot == p->s->scroll.bot - p->s->tos + 1 );
 	if( cr ) {
 		p->s->xenl = false;
 		p->s->c.x = 0;
 	}
-	if( y == bot - 1 ) {
+	if( p->s->c.y == p->s->scroll.bot ) {
 		scroll(p->s->win);
 	} else {
 		wmove(p->s->win, ++p->s->c.y, p->s->c.x);
@@ -122,13 +120,13 @@ newline(struct pty *p, int cr, int y, int bot)
 }
 
 static void
-print_char(wchar_t w, struct pty *p, int y, int bot)
+print_char(wchar_t w, struct pty *p)
 {
 	if( p->s->insert ) {
 		insert_space(1, p->s->win);
 	}
 	if( p->s->xenl && p->decawm ) {
-		newline(p, 1, y, bot);
+		newline(p, 1);
 	}
 	p->s->xenl = false;
 	if( w < 0x7f && p->s->c.gc[w] ) {
@@ -511,7 +509,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	case pnl: /* Newline */
 	case nel: /* Next Line */
 	case ind: /* Index */
-		newline(p, handler == pnl ? p->lnm : handler == nel, y, bot);
+		newline(p, handler == pnl ? p->lnm : handler == nel);
 		break;
 	case cpl: /* CPL - Cursor Previous Line */
 		s->c.y = MAX(tos + top, s->c.y - p0[1]);
@@ -523,12 +521,12 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		break;
 	case print: /* Print a character to the terminal */
 		if( wcwidth(w) > 0 ) {
-			print_char(w, p, y, bot);
+			print_char(w, p);
 		}
 		break;
 	case rep: /* REP - Repeat Character */
 		for( i=0; i < p0[1] && p->repc; i++ ) {
-			print_char(p->repc, p, y, bot);
+			print_char(p->repc, p);
 		}
 		break;
 	case scs: /* Select Character Set */
