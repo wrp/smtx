@@ -297,6 +297,9 @@ set_width(const char *arg)
 		p->ws.ws_col = w;
 		resize_pad(&p->pri.win, p->pri.rows, w);
 		resize_pad(&p->alt.win, p->alt.rows, w);
+		if( p->s->c.x > w - 1 ) {
+			wmove(p->s->win, p->s->c.y, p->s->c.x = w - 1);
+		}
 		extend_tabs(p, p->tabstop);
 		reshape_window(p);
 	}
