@@ -168,7 +168,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	p0[0] = argv && argc > 0 ? argv[0] : 0;
 	p0[1] = argv && argc > 0 ? argv[0] : 1;
 	p1 = argv && argc > 1 ? argv[1] : 1;
-	getyx(win, s->c.y, s->c.x);
+
 	s->maxy = MAX(s->c.y, s->maxy);
 	tos = MAX(0, s->maxy - p->ws.ws_row + 1);
 	y = s->c.y - tos;
