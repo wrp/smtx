@@ -108,6 +108,8 @@ decaln(struct pty *p, int tos)
 static void
 newline(struct pty *p, int cr, int y, int bot)
 {
+	assert( y == p->s->c.y - p->s->tos );
+	assert( bot == p->s->scroll.bot - p->s->tos + 1 );
 	if( cr ) {
 		p->s->xenl = false;
 		p->s->c.x = 0;
