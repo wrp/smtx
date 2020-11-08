@@ -153,10 +153,9 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 {
 	int p0[2];       /* First arg, defaulting to 0 or 1 */
 	int p1;          /* argv[1], defaulting to 1 */
-	int i, t1 = 0, t2 = 0;
+	int i, t1 = 0;
 	int y;           /* cursor position */
 	int tos;         /* top of screen */
-	int top = 0, bot = 0;/* the scrolling region */
 	char buf[32];
 	cchar_t b;
 
@@ -173,10 +172,8 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	s->maxy = MAX(s->c.y, s->maxy);
 	tos = MAX(0, s->maxy - p->ws.ws_row + 1);
 	y = s->c.y - tos;
-	top = s->scroll.top;
-	bot = s->scroll.bot;
-	bot -= tos - 1;
-	top = top <= tos ? 0 : top - tos;
+	int bot = s->scroll.bot - tos + 1;
+	int top = MAX(0, s->scroll.top - tos);
 	switch(c) {
 	case ack: /* Acknowledge Enquiry */
 		rewrite(p->fd, "\006", 1);
