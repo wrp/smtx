@@ -256,19 +256,18 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				wclrtoeol(win);
 			}
 			wmove(win, s->c.y, s->c.x);
-			tput(v, w, iw, 1, argv, el);
-			break;
+			goto delete_to_cursor;
 		}
 		break;
 	case el: /* Erase in Line */
-		setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
 		switch( argc > 0 ? argv[0] : 0 ) {
 		case 2:
 			wmove(win, s->c.y, 0); /* Fall Thru */
 		case 0:
 			wclrtoeol(win);
 			break;
-		case 1:
+		delete_to_cursor: case 1:
+			setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
 			for( i = 0; i <= s->c.x; i++ ) {
 				mvwadd_wchnstr(win, s->c.y, i, &b, 1);
 			}
