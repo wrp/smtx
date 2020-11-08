@@ -149,25 +149,22 @@ print_char(wchar_t w, struct pty *p, int y, int bot)
 void
 tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 {
-	int p0[2];       /* First arg, defaulting to 0 or 1 */
-	int i, t1 = 0;
-	int y;           /* cursor position */
+	int i, t1;
 	cchar_t b;
 
+	/* First arg, defaulting to 0 or 1 */
+	int p0[] = { argc ? *(int*)arg : 0, argc ? *(int*)arg : 1 };
 	int *argv = arg;
-	enum cmd c = handler;
 	struct pty *p = v->p;    /* the current pty */
 	struct screen *s = p->s; /* the current SCRN buffer */
 	WINDOW *win = s->win;    /* the current window */
 
-	p0[0] = argc ? argv[0] : 0;
-	p0[1] = argc ? argv[0] : 1;
-
 	int tos = s->tos;
-	y = s->c.y - tos;
+	int y = s->c.y - tos;   /* cursor position */
 	int bot = s->scroll.bot - tos + 1;
 	int top = MAX(0, s->scroll.top - tos);
-	switch(c) {
+
+	switch( (enum cmd)handler ) {
 	case ack: /* Acknowledge Enquiry */
 		rewrite(p->fd, "\006", 1);
 		break;
