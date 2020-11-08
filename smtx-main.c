@@ -214,6 +214,8 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 		int y, x;
 		int top = s->maxy - f->extent.y + 1;
 		getyx(s->win, y, x);
+		assert(s->c.y == y);
+		assert(s->c.x == x);
 		if( 0
 			|| x < f->offset.x
 			|| x > f->offset.x + f->extent.x - 1
