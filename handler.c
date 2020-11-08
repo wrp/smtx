@@ -160,8 +160,8 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	struct screen *s = p->s; /* the current SCRN buffer */
 	WINDOW *win = s->win;    /* the current window */
 
-	p0[0] = argv && argc > 0 ? argv[0] : 0;
-	p0[1] = argv && argc > 0 ? argv[0] : 1;
+	p0[0] = argc ? argv[0] : 0;
+	p0[1] = argc ? argv[0] : 1;
 
 	int tos = s->tos;
 	y = s->c.y - tos;
@@ -179,7 +179,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		s->c.x = 0;
 		break;
 	case csr: /* CSR - Change Scrolling Region */
-		t1 = argv && argc > 1 ? argv[1] : p->ws.ws_row;
+		t1 = argc > 1 ? argv[1] : p->ws.ws_row;
 		if( wsetscrreg(win, tos + p0[1] - 1, tos + t1 - 1) == OK ) {
 			s->scroll.top = tos + p0[1] - 1;
 			s->scroll.bot = tos + t1 - 1;
@@ -201,7 +201,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	case cup: /* Cursor Position */
 		s->xenl = false;
 		s->c.y = tos + (p->decom ? top : 0) + p0[1] - 1;
-		s->c.x = argv && argc > 1 ? argv[1] - 1 : 0;
+		s->c.x = argc > 1 ? argv[1] - 1 : 0;
 		break;
 	case cuu: /* Cursor Up */
 		s->c.y = MAX(s->c.y - p0[1], tos + top);
@@ -258,7 +258,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		}
 		break;
 	case el: /* Erase in Line */
-		switch( argc > 0 ? argv[0] : 0 ) {
+		switch( p0[0] ) {
 		case 2:
 			wmove(win, s->c.y, 0); /* Fall Thru */
 		case 0:
