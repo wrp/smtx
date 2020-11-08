@@ -208,10 +208,10 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 {
 	struct canvas *f = S.f;
 	int show = S.binding == k1 && f->p->s->vis;
-	if( f->p && f->p->s && f->extent.y ) {
+	if( show && f->p && f->p->s && f->extent.y ) {
 		struct screen *s = f->p->s;
 		int y, x;
-		int top = s->maxy - f->extent.y + 1;
+		int top = MAX(0, s->maxy - f->extent.y + 1);
 		getyx(s->win, y, x);
 		assert(s->c.y == y);
 		assert(s->c.x == x);
