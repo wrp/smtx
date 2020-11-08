@@ -64,6 +64,7 @@ struct screen {
 	int maxy; /* highest row in which the cursor has ever been */
 	int rows; /* Number of rows in the window */
 	int delta; /* Number of lines written by a vtwrite */
+	struct { int top; int bot; } scroll;
 	struct { int x, y; short p; wchar_t *gc, *gs; } sc, c; /* save/cursor */
 	bool insert, oxenl, xenl;
 	attr_t sattr;
@@ -80,10 +81,10 @@ struct pty {
 	wchar_t repc;
 	struct screen pri, alt, *s;
 	wchar_t *g0, *g1, *g2, *g3;
-	struct pty *next;
 	char status[32];
 	struct vtp vp;
 	char secondary[PATH_MAX];
+	struct pty *next;
 };
 
 typedef void(action)(const char *arg);

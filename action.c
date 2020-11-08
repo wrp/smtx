@@ -126,6 +126,7 @@ int
 next(void)
 {
 	S.f->p = S.f->p->next ? S.f->p->next : S.p;
+	return 1;
 }
 
 void
@@ -245,6 +246,8 @@ grow_screens(struct pty *p, int siz)
 				wmove(s->win, s->c.y = y + siz - s->rows, x);
 				s->tos += siz - s->rows;
 				s->maxy += siz - s->rows;
+				s->scroll.top += siz - s->rows;
+				s->scroll.bot += siz - s->rows;
 				s->rows = siz;
 			}
 		}

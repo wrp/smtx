@@ -253,8 +253,9 @@ set_height(struct canvas *n)
 	struct pty *p = n->p;
 	p->ws.ws_row = n->extent.y;
 	p->pri.tos = p->alt.tos = p->pri.rows - n->extent.y;
-	wsetscrreg(p->pri.win, 0, p->pri.rows - 1);
-	wsetscrreg(p->alt.win, 0, n->extent.y - 1);
+	p->pri.scroll.top = p->alt.scroll.top = 0;
+	wsetscrreg(p->pri.win, 0, p->pri.scroll.bot = p->pri.rows - 1);
+	wsetscrreg(p->alt.win, 0, p->alt.scroll.bot = n->extent.y - 1);
 	reshape_window(p);
 }
 

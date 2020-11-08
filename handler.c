@@ -173,7 +173,8 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	s->maxy = MAX(s->c.y, s->maxy);
 	tos = MAX(0, s->maxy - p->ws.ws_row + 1);
 	y = s->c.y - tos;
-	wgetscrreg(win, &top, &bot);
+	top = s->scroll.top;
+	bot = s->scroll.bot;
 	bot -= tos - 1;
 	top = top <= tos ? 0 : top - tos;
 	switch(c) {
@@ -190,6 +191,8 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	case csr: /* CSR - Change Scrolling Region */
 		t1 = argv && argc > 1 ? argv[1] : p->ws.ws_row;
 		if( wsetscrreg(win, tos + p0[1] - 1, tos + t1 - 1) == OK ) {
+			s->scroll.top = tos + p0[1] - 1;
+			s->scroll.bot = tos + t1 - 1;
 			s->xenl = false;
 			s->c.y = tos + (p->decom ? top : 0);
 			wmove(s->win, s->c.y, s->c.x = 0);
@@ -310,10 +313,9 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		assert( y == s->c.y - tos);
 		assert( tos == 0 || p->ws.ws_row - 1 - y == s->maxy - s->c.y );
 
-		wgetscrreg(win, &t1, &t2);
-		wsetscrreg(win, s->c.y, t2);
+		wsetscrreg(win, s->c.y, s->scroll.bot);
 		wscrl(win, w == L'L' ? -i : i);
-		wsetscrreg(win, t1, t2);
+		wsetscrreg(win, s->scroll.top, s->scroll.bot);
 		wmove(win, s->c.y, s->c.x = 0);
 		break;
 	case numkp: /* Application/Numeric Keypad Mode */
@@ -327,15 +329,15 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		}
 		break;
 	case ri: /* Reverse Index (scroll back) */
-		wgetscrreg(win, &t1, &t2);
-		wsetscrreg(win, t1 >= tos ? t1 : tos, t2);
+		t1 = s->scroll.top;
+		wsetscrreg(win, t1 >= tos ? t1 : tos, s->scroll.bot);
 		if( y == top ) {
 			 wscrl(win, -1);
 		} else {
 			s->c.y = MAX(tos, s->c.y - 1);
 			wmove(win, s->c.y, s->c.x);
 		}
-		wsetscrreg(win, t1, t2);
+		wsetscrreg(win, s->scroll.top, s->scroll.bot);
 		break;
 	case sc: /* Save Cursor */
 		save_cursor(s);
@@ -398,8 +400,10 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		p->pri.vis = p->alt.vis = 1;
 		p->s = &p->pri;
 
-		wsetscrreg(p->pri.win, 0, p->pri.rows - 1);
-		wsetscrreg(p->alt.win, 0, p->alt.rows - 1);
+		wsetscrreg(p->pri.win, p->pri.scroll.top = 0,
+			p->pri.scroll.bot = p->pri.rows - 1);
+		wsetscrreg(p->alt.win, p->alt.scroll.top = 0,
+			p->alt.scroll.bot = p->alt.rows - 1);
 		memset(p->tabs, 0, p->ntabs * sizeof *p->tabs);
 		for( i = 0; i < p->ntabs; i += p->tabstop ) {
 			p->tabs[i] = true;
