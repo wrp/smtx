@@ -727,6 +727,21 @@ test_mode(int fd)
 	rv |= validate_row(fd, 12, "%-132s", "abcdefg");
 	rv |= validate_row(fd, 13, "%-132s", "kl7>");
 
+	/* Go to and clear primary screen */
+	send_txt(fd, "pri>", "PS1=pri'> '; printf '\\033[1047l\\033[H\\033[2J'");
+	rv |= validate_row(fd, 1, "%-132s", "pri>");
+	/* Write text */
+	send_txt(fd, "pr2>", "PS1=pr2'> '; echo line 2 primary");
+	rv |= validate_row(fd, 2, "%-132s", "line 2 primary");
+	rv |= validate_row(fd, 3, "%-132s", "pr2>");
+	/* Goto and clear alternate screen, saving cursor position */
+	send_txt(fd, "alt>", "PS1=alt'> '; printf '\\033[1049h'");
+	rv |= validate_row(fd, 1, "%-132s", "alt>");
+	rv |= validate_row(fd, 2, "%-132s", "");
+	/* Return to primary screen and restore cursor */
+	send_txt(fd, "pr2>", "PS1=foo; printf '\\033[1049ladded'");
+	rv |= validate_row(fd, 4, "%-132s", "addedfoo");
+
 	return rv;
 }
 
