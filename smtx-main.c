@@ -211,35 +211,21 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 	if( show && f->p && f->p->s && f->extent.y ) {
 		struct screen *s = f->p->s;
 		int y, x;
-		int top = MAX(0, s->maxy - f->extent.y + 1);
 		getyx(s->win, y, x);
 		assert(s->c.y == y);
 		assert(s->c.x == x);
 		if( 0
 			|| x < f->offset.x
 			|| x > f->offset.x + f->extent.x - 1
-			/* || y < f->offset.y (1) */
+			|| y < f->offset.y
 			|| y > f->offset.y + f->extent.y - 1
-			|| f->offset.y < top /* (1) */
 		) {
-			show = false;
-		} else {
-			y = MIN( MAX(y, top), top + f->extent.y);
-			wmove(s->win, s->c.y = y, s->c.x = x);
+			show = 0;
 		}
 		draw_window(f);
 	}
 	curs_set(show);
 }
-/* (1) Checking f->offset.y < top really does not make any
- * sense.  This test *should* be y < f->offset.y, but
- * changing it breaks the current tests...which
- * are not reliable! TODO: figure this out (hint, the
- * problem probably stems from f->offset.y == 0 for a
- * new canvas which does not yet have any data written to it.
- * To clean this up, we just need to clean up all of the new_pty/new_canvas
- * cruft.
- */
 
 void
 reshape_window(struct pty *p)
