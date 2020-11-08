@@ -153,7 +153,6 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	int p1;          /* argv[1], defaulting to 1 */
 	int i, t1 = 0;
 	int y;           /* cursor position */
-	char buf[32];
 	cchar_t b;
 
 	int *argv = arg;
@@ -227,13 +226,14 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		break;
 	case dsr: /* DSR - Device Status Report */
 		if( p0[0] == 6 ) {
+			char buf[32];
 			i = snprintf(buf, sizeof buf, "\033[%d;%dR",
 				(p->decom ? y - top : y) + 1, s->c.x + 1);
+			assert( i < (int)sizeof buf ); /* INT_MAX < 1e14 */
+			rewrite(p->fd, buf, i);
 		} else {
-			i = snprintf(buf, sizeof buf, "\033[0n");
+			rewrite(p->fd, "\033[0n", 4);
 		}
-		assert( i < (int)sizeof buf ); /* Assumes INT_MAX < 1e14 */
-		rewrite(p->fd, buf, i);
 		break;
 	case ech: /* Erase Character */
 		setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
