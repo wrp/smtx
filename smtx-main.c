@@ -561,14 +561,13 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 	struct pty *p = *pp;
 	struct canvas *n = newcanvas(p, parent, S.history);
 	if( n == NULL
-		|| ! check(2 == sscanf(layout, "%lf:%lf%n", &y, &x, &e),
-			"Invalid layout format: %s", layout)
+		|| ! check(2 == sscanf(*lp, "%lf:%lf%n", &y, &x, &e),
+			"Invalid layout format: %s", *lp)
 		|| ! check(y >= oy && y <= ey && x >= ox && x <= ex,
-			"Out of bounds: %s", layout) ) {
+			"Out of bounds: %s", *lp) ) {
 		goto fail;
 	}
-	layout += e;
-	*lp = layout;
+	*lp += e;
 	*pp = p ? (( p->next ? p->next : S.p ) == S.f->p ) ? NULL : p->next : p;
 	n->split.y = (y - oy) / (ey - oy);
 	n->split.x = (x - ox) / (ex - ox);
@@ -583,24 +582,22 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 	} else {
 		double ny, nx;
 		assert( y < ey && x < ex );
-		if( ! check(2 == sscanf(layout, "%lf:%lf", &ny, &nx),
+		if( ! check(2 == sscanf(*lp, "%lf:%lf", &ny, &nx),
 				"Invalid format")
-			|| ! check(y <= ny || x <= nx, "Out of bounds:%s", layout)
+			|| ! check(y <= ny || x <= nx, "Out of bounds:%s", *lp)
 			|| (n->typ = y < ny,
-				(n->c[!n->typ] = add_canvas(&layout,
+				(n->c[!n->typ] = add_canvas(lp,
 				n->typ ? y : oy, n->typ ? ox : x,
 				n->typ ? ey : y, n->typ ? x : ex,
 				pp, n)) == NULL ) ) {
 			goto fail;
 		}
-		*lp = layout;
 	}
-	if( (n->c[n->typ] = add_canvas(&layout,
+	if( (n->c[n->typ] = add_canvas(lp,
 			n->typ ? oy : y, n->typ ? x : ox,
 			ey, ex, pp, n)) == NULL ) {
 		goto fail;
 	}
-	*lp = layout;
 
 	return n;
 fail:
