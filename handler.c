@@ -275,8 +275,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		}
 		break;
 	case hpa: /* Cursor Horizontal Absolute */
-		s->c.x = MIN(p0[1] - 1, p->ws.ws_col - 1);
-		break;
+		s->c.x = -1; /* Fallthru */
 	case hpr: /* Cursor Horizontal Relative */
 		s->c.x = MIN(s->c.x + p0[1], p->ws.ws_col - 1);
 		break;
