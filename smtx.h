@@ -109,15 +109,15 @@ extern struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 
 struct state {
 	unsigned char ctlkey;
-	int width;
-	int history; /* Size of newly created ptys */
-	int count;
-	const char *term;
-	struct handler *binding;
-	struct canvas *c;  /* root of all canvasses in use */
-	struct canvas *f;  /* currently focused canvas */;
-	struct pty *p;     /* list of all pty in use */
-	struct canvas *unused; /* unused canvasses */
+	int width;   /* Columns in newly created ptys */
+	int history; /* Rows in newly created windows */
+	int count;   /* User entered count in command mode */
+	const char *term; /* Name of the terminal type */
+	struct handler *binding; /* Current key binding */
+	struct canvas *c;  /* Root of all canvasses in use */
+	struct canvas *f;  /* Currently focused canvas */;
+	struct pty *p;     /* List of all pty in use */
+	struct canvas *unused; /* Unused canvasses */
 	fd_set fds;
 	int maxfd;
 	WINDOW *werr;
