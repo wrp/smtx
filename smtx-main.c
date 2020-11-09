@@ -436,7 +436,8 @@ build_bindings(void)
 		int v = wctomb(wc_lut + i + 1, k);
 		assert( v < 128 && v > -2 );
 		wc_lut[ i ] = v == -1 ? 0 : v;
-		code_keys[idx] = (struct handler){ { .a = passthru }, wc_lut + i };
+		code_keys[idx].act.a = passthru;
+		code_keys[idx].arg = wc_lut + i;
 	}
 }
 
@@ -557,7 +558,6 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 {
 	double y, x;
 	int e;
-	const char *layout = *lp;
 	struct pty *p = *pp;
 	struct canvas *n = newcanvas(p, parent, S.history);
 	if( n == NULL
