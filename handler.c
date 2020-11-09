@@ -197,13 +197,13 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		break;
 	case cub: /* Cursor Backward */
 		s->xenl = false;
-		s->c.x = MAX(s->c.x - p0[1], 0);
+		s->c.x -= p0[1];
 		break;
 	case cud: /* Cursor Down */
-		s->c.y = MIN(s->c.y + p0[1], tos + bot - 1);
+		s->c.y += p0[1];
 		break;
 	case cuf: /* Cursor Forward */
-		s->c.x = MIN(s->c.x + p0[1], p->ws.ws_col - 1);
+		s->c.x += p0[1];
 		break;
 	case cup: /* Cursor Position */
 		s->xenl = false;
@@ -211,7 +211,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		s->c.x = argc > 1 ? argv[1] - 1 : 0;
 		break;
 	case cuu: /* Cursor Up */
-		s->c.y = MAX(s->c.y - p0[1], tos + top);
+		s->c.y -= p0[1];
 		break;
 	case dch: /* Delete Character */
 		for( i = 0; i < p0[1]; i++ ) {
@@ -275,9 +275,8 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		}
 		break;
 	case hpa: /* Cursor Horizontal Absolute */
-		s->c.x = -1; /* Fallthru */
 	case hpr: /* Cursor Horizontal Relative */
-		s->c.x = MIN(s->c.x + p0[1], p->ws.ws_col - 1);
+		s->c.x = p0[1] + (handler == hpa ? -1 : s->c.x);;
 		break;
 	case hts: /* Horizontal Tab Set */
 		if( s->c.x < p->ntabs && s->c.x > 0 ) {
@@ -352,10 +351,10 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		s->vis = iw == L'6'? 0 : 1;
 		break;
 	case vpa: /* Cursor Vertical Absolute */
-		s->c.y = MIN(tos + bot - 1, MAX(tos + top, tos + p0[1] - 1));
+		s->c.y = MAX(tos + top, tos + p0[1] - 1);
 		break;
 	case vpr: /* Cursor Vertical Relative */
-		s->c.y = MIN(tos + bot - 1, MAX(tos + top, s->c.y + p0[1]));
+		s->c.y = MAX(tos + top, s->c.y + p0[1]);
 		break;
 	case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		if( p0[0] ) {
