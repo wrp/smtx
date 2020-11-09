@@ -351,10 +351,10 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		s->vis = iw == L'6'? 0 : 1;
 		break;
 	case vpa: /* Cursor Vertical Absolute */
-		s->c.y = MAX(tos + top, tos + p0[1] - 1);
+		s->c.y = MAX(tos + top, p0[1] + tos - 1);
 		break;
 	case vpr: /* Cursor Vertical Relative */
-		s->c.y = MAX(tos + top, s->c.y + p0[1]);
+		s->c.y = MAX(tos + top, p0[1] + s->c.y);
 		break;
 	case decreqtparm: /* DECREQTPARM - Request Device Parameters */
 		if( p0[0] ) {
