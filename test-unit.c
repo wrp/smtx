@@ -699,7 +699,7 @@ test_mode(int fd)
 	rv |= validate_row(fd, 7, "%-132s", "ef4>");
 
 	/* Write 125 spaces to get close to end of line */
-	char *cmd = "PS1=gh5'> '; ";
+	const char *cmd = "PS1=gh5'> '; ";
 	send_raw(fd, NULL, "%-125s", cmd);
 	send_txt(fd, "gh5>", "echo abcd");
 	/* Test that wraparound advances one line */
@@ -745,6 +745,16 @@ test_mode(int fd)
 	/* Return to primary screen and restore cursor */
 	send_txt(fd, "pr2>", "PS1=foo; printf '\\033[1049ladded'");
 	rv |= validate_row(fd, 4, "%-132s", "addedfoo");
+
+	/* Save cursor with 1048 */
+	send_txt(fd, "qs3>", "PS1=qs3'> '; printf '\\033[1048h'");
+	rv |= validate_row(fd, 5, "%-132s", "qs3>");
+
+	/* Restore cursor with 1048 */
+	cmd = "printf '\\033[1048lX\\n'; PS1=rt4'> '";
+	send_txt(fd, "rt4>", "%s", cmd);
+	rv |= validate_row(fd, 5, "Xs3> %s%*s", cmd,
+		127 - (int)strlen(cmd), "");
 
 	return rv;
 }

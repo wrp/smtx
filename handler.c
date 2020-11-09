@@ -401,7 +401,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 34: s->vis = set ? 1 : 2;      break;
 			case 1048: case 1049:
 				(set ? save_cursor : restore_cursor)(s);
-				if( handler == 1048 ) {
+				if( argv[i] == 1048 ) {
 					break;
 				} /* fall-thru */
 			case 47: case 1047:
