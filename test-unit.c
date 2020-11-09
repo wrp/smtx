@@ -78,7 +78,7 @@ test_attach(int fd)
 	send_txt(fd, "sync", "printf '\\ns'y'n'c'\\n'");
 	rv |= validate_row(fd, 3, "%-80s", "sync");
 
-	/* Write "other" in lower left canvas */
+	/* Write "other" in middle canvas */
 	send_cmd(fd, "other", "j\rprintf '\\no't'h'er'\\n'");
 
 	get_layout(fd, 5, desc, sizeof desc);
@@ -87,12 +87,16 @@ test_attach(int fd)
 		rv = 1;
 	}
 
-	/* Move to upper left and attach to the pane with "other" */
+	/* Move to upper canvas and attach to the pane with "other" */
 	send_cmd(fd, "uniq", "k%da\recho 'u'ni'q'", id);
 	rv |= check_layout(fd, 0x1, "*7x80; 7x80; 7x80");
 
 	/* 3rd row of the first window should now be "other" */
 	rv |= validate_row(fd, 3, "%-80s", "other");
+
+	/* Go to next pty */
+	send_cmd(fd, NULL, "N");
+	rv |= validate_row(fd, 3, "%-80s", "");
 
 	/* Go to next pty */
 	send_cmd(fd, NULL, "N");
@@ -584,13 +588,13 @@ test_layout(int fd)
 	rv |= check_layout(fd, 0x1, "*11x40; 11x40; 11x39; 11x39");
 
 	send_cmd(fd, "dt4>", "jl"); /* Move to lower right */
-	rv |= check_layout(fd, 0x5, "11x40(id=1); 11x40(id=2); "
-		"*11x39(id=4); 11x39(id=3)");
+	rv |= check_layout(fd, 0x5, "11x40(id=1); 11x40(id=3); "
+		"*11x39(id=4); 11x39(id=2)");
 
 	send_cmd(fd, "eu5>", "5v\rPS1=eu5'> '");
 	/* The pty that had the focus (id=4) should be in the first window */
-	rv |= check_layout(fd, 0x5, "*23x40(id=4); 5x39(id=3); 5x39(id=2); "
-		"5x39(id=1); 5x39(id=5)");
+	rv |= check_layout(fd, 0x5, "*23x40(id=4); 5x39(id=1); 5x39(id=2); "
+		"5x39(id=3); 5x39(id=5)");
 
 	send_cmd(fd, "fv6>", "6v\rPS1=fv6'> '");
 	rv |= check_layout(fd, 0x1, "*11x80; 5x40; 5x26; 5x26; 5x26; 5x39");

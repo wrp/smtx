@@ -117,8 +117,8 @@ new_pty(int cols)
 			&& resize_pad(&p->alt.win, S.history, cols)
 		) {
 			p->pri.rows = p->alt.rows = S.history;
-			p->next = S.p;
-			S.p = p;
+			*(S.tail ? &S.tail->next : &S.p) = p;
+			S.tail = p;
 		} else {
 			delwin(p->pri.win);
 			delwin(p->alt.win);

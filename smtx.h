@@ -117,6 +117,7 @@ struct state {
 	struct canvas *c;  /* Root of all canvasses in use */
 	struct canvas *f;  /* Currently focused canvas */;
 	struct pty *p;     /* List of all pty in use */
+	struct pty *tail;  /* Last in the list of p */
 	struct canvas *unused; /* Unused canvasses */
 	fd_set fds;
 	int maxfd;
