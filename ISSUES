@@ -5,7 +5,7 @@ TODO:
 
 	Add a command to start up a new shell in a canvas where the shell is dead.
 
-	(?) Make an action on <tab> that scrolls one tabstop.
+	(?) Make an action on <tab> that moves to the next canvas.
 
 	Implement g action to goto canvas.  (I'm still not sure if we should add
 	an id to a canvas to disambiguate when a pty is visible in 2 canvasses.)
@@ -13,9 +13,9 @@ TODO:
 	Determine if colors should be saved with save/restore cursor and
 	implement accordingly.
 
-	In full-screen mode, make hjkl scroll the pty.  Make n go to next pty.
+	(?) In full-screen mode, make hjkl scroll the pty.
 
-	Perhaps -1v should make the focused canvas the root and keep
+	(?) -1v should make the focused canvas the root and keep
 	the layout below it instead of making it single screen.  Perhaps
 	0v should attempt to layout all windows at one line each.
 
@@ -25,11 +25,13 @@ TODO:
 	Perhaps use (e) to edit the file (eg, spawn $EDITOR), then (p)
 	to paste it.
 
-	List all windows with titles, with ability to navigate.
-
 	(?) Make it possible for windows to overlap.
 
 	Dump select() and use libev or libevent, or at least kqueue/epoll
+
+	Instead of pri/alt screens, implement the screens as an array.  Not to
+	have more than 2, but to simplify the implementation by being able
+	to use an index.
 
 BUGS:
 	Syntax highlighting doesn't work in vim.
