@@ -231,23 +231,20 @@ send(const char *arg)
 static void
 grow_screens(struct pty *p, int siz)
 {
-	struct screen *w[] = { &p->pri, &p->alt, NULL };
-	for( struct screen **sp = w; *sp; sp++ ) {
-		struct screen *s = *sp;
-		if( s->rows < siz ) {
-			WINDOW *new = NULL;
-			if( resize_pad(&new, siz, p->ws.ws_col) ) {
-				copywin(s->win, new, 0, 0, siz - s->rows, 0,
-					siz - 1, p->ws.ws_col - 1, 1);
-				delwin(s->win);
-				s->win = new;
-				wmove(s->win, s->c.y += siz - s->rows, s->c.x);
-				s->maxy += siz - s->rows;
-				s->tos = MAX(0, s->maxy - p->ws.ws_row + 1);
-				s->scroll.top += siz - s->rows;
-				s->scroll.bot += siz - s->rows;
-				s->rows = siz;
-			}
+	struct screen *s, *w[] = { &p->pri, &p->alt, NULL };
+	for( struct screen **sp = w; *sp && (s = *sp)->rows < siz; sp++ ) {
+		WINDOW *new = NULL;
+		if( resize_pad(&new, siz, p->ws.ws_col) ) {
+			copywin(s->win, new, 0, 0, siz - s->rows, 0,
+				siz - 1, p->ws.ws_col - 1, 1);
+			delwin(s->win);
+			s->win = new;
+			wmove(s->win, s->c.y += siz - s->rows, s->c.x);
+			s->maxy += siz - s->rows;
+			s->tos = MAX(0, s->maxy - p->ws.ws_row + 1);
+			s->scroll.top += siz - s->rows;
+			s->scroll.bot += siz - s->rows;
+			s->rows = siz;
 		}
 	}
 }
