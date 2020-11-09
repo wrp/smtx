@@ -365,12 +365,9 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		break;
 	case ris: /* Reset to Initial State */
 		ioctl(p->fd, TIOCGWINSZ, &p->ws);
-		p->g0 = CSET_US;
-		p->g1 = CSET_GRAPH;
-		p->g2 = CSET_US;
-		p->g3 = CSET_GRAPH;
-		p->pri.c.gs = p->pri.c.gc = p->g0;
-		p->alt.c.gs = p->alt.c.gc = p->g0;
+		p->pri.c.gs = p->pri.c.gc = p->g0 = CSET_US;
+		p->alt.c.gs = p->alt.c.gc = p->g2 = CSET_US;
+		p->g1 = p->g3 = CSET_GRAPH;
 		p->decom = s->insert = s->oxenl = s->xenl = p->lnm = false;
 		reset_sgr(s);
 		p->decawm = p->pnm = true;
