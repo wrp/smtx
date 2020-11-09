@@ -586,17 +586,14 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 	} else {
 		double ny, nx;
 		assert( y < ey && x < ex );
-		if( 2 != sscanf(layout, "%lf:%lf", &ny, &nx)
-			|| (ny > y && nx > x )
-		) {
-			check(0, "Out of bounds: %s", layout);
-			goto fail;
-		}
-		n->typ = y < ny;
-		if( (n->c[!n->typ] = add_canvas(&layout,
+		if( ! check(2 == sscanf(layout, "%lf:%lf", &ny, &nx),
+				"Invalid format")
+			|| ! check(y <= ny || x <= nx, "Out of bounds:%s", layout)
+			|| (n->typ = y < ny,
+				(n->c[!n->typ] = add_canvas(&layout,
 				n->typ ? y : oy, n->typ ? ox : x,
 				n->typ ? ey : y, n->typ ? x : ex,
-				&p, n)) == NULL ) {
+				&p, n)) == NULL ) ) {
 			goto fail;
 		}
 		*lp = layout;
