@@ -242,36 +242,32 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		break;
 	case ech: /* Erase Character */
 		setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
-		for( i = 0; i < p0[1]; i++ )
+		for( i = 0; i < p0[1]; i++ ) {
 			mvwadd_wchnstr(win, s->c.y, s->c.x + i, &b, 1);
-		break;
-	case ed: /* Erase in Display */
-		switch( p0[0] ) {
-		case 2:
-			wmove(win, tos, 0); /* Fall Thru */
-		case 0:
-			wclrtobot(win);
-			break;
-		case 3:
-			werase(win);
-			break;
-		case 1:
-			for( i = tos; i < s->c.y; i++ ) {
-				wmove(win, i, 0);
-				wclrtoeol(win);
-			}
-			wmove(win, s->c.y, s->c.x);
-			goto delete_to_cursor;
 		}
 		break;
+	case ed: /* Erase in Display */
 	case el: /* Erase in Line */
 		switch( p0[0] ) {
 		case 2:
-			wmove(win, s->c.y, 0); /* Fall Thru */
+			wmove(win, handler == el ? s->c.y : tos, 0);
+			/* Fall Thru */
 		case 0:
-			wclrtoeol(win);
+			(handler == el ? wclrtoeol : wclrtobot)(win);
 			break;
-		delete_to_cursor: case 1:
+		case 3:
+			if( handler == ed ) {
+				werase(win);
+			}
+			break;
+		case 1:
+			if( handler == ed ) {
+				for( i = tos; i < s->c.y; i++ ) {
+					wmove(win, i, 0);
+					wclrtoeol(win);
+				}
+				wmove(win, s->c.y, s->c.x);
+			}
 			setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
 			for( i = 0; i <= s->c.x; i++ ) {
 				mvwadd_wchnstr(win, s->c.y, i, &b, 1);
