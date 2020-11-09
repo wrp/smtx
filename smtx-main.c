@@ -207,13 +207,11 @@ void
 fixcursor(void) /* Move the terminal cursor to the active window. */
 {
 	struct canvas *f = S.f;
-	int show = S.binding == k1 && f->p->s->vis;
-	if( show && f->p && f->p->s && f->extent.y ) {
-		int y = f->p->s->c.y, x = f->p->s->c.x;
-		show = x >= f->offset.x && x < f->offset.x + f->extent.x
-			&& y >= f->offset.y && y < f->offset.y + f->extent.y;
-		draw_window(f);
-	}
+	int y = f->p->s->c.y, x = f->p->s->c.x;
+	int show = S.binding == k1 && f->p->s->vis  && f->extent.y
+		&& x >= f->offset.x && x < f->offset.x + f->extent.x
+		&& y >= f->offset.y && y < f->offset.y + f->extent.y;
+	draw_window(f);
 	curs_set(show);
 }
 
