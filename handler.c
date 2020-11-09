@@ -145,6 +145,17 @@ print_char(wchar_t w, struct pty *p)
 	p->s->c.gc = p->s->c.gs;
 }
 
+static short colors[] = {
+	COLOR_BLACK,
+	COLOR_RED,
+	COLOR_GREEN,
+	COLOR_YELLOW,
+	COLOR_BLUE,
+	COLOR_MAGENTA,
+	COLOR_CYAN,
+	COLOR_WHITE,
+};
+
 void
 tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 {
@@ -444,14 +455,17 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 24:  wattroff(win, A_UNDERLINE);        break;
 			case 25:  wattroff(win, A_BLINK);            break;
 			case 27:  wattroff(win, A_REVERSE);          break;
-			case 30:  fg = COLOR_BLACK;     doc = do8;   break;
-			case 31:  fg = COLOR_RED;       doc = do8;   break;
-			case 32:  fg = COLOR_GREEN;     doc = do8;   break;
-			case 33:  fg = COLOR_YELLOW;    doc = do8;   break;
-			case 34:  fg = COLOR_BLUE;      doc = do8;   break;
-			case 35:  fg = COLOR_MAGENTA;   doc = do8;   break;
-			case 36:  fg = COLOR_CYAN;      doc = do8;   break;
-			case 37:  fg = COLOR_WHITE;     doc = do8;   break;
+			case 30:
+			case 31:
+			case 32:
+			case 33:
+			case 34:
+			case 35:
+			case 36:
+			case 37:
+				fg = colors[argv[i] - 30];
+				doc = do8;
+				break;
 			case 38:
 				if( at ) {
 					fg = val;
@@ -460,14 +474,17 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				doc = do256;
 				break;
 			case 39:  fg = -1;               doc = true;  break;
-			case 40:  bg = COLOR_BLACK;      doc = do8;   break;
-			case 41:  bg = COLOR_RED;        doc = do8;   break;
-			case 42:  bg = COLOR_GREEN;      doc = do8;   break;
-			case 43:  bg = COLOR_YELLOW;     doc = do8;   break;
-			case 44:  bg = COLOR_BLUE;       doc = do8;   break;
-			case 45:  bg = COLOR_MAGENTA;    doc = do8;   break;
-			case 46:  bg = COLOR_CYAN;       doc = do8;   break;
-			case 47:  bg = COLOR_WHITE;      doc = do8;   break;
+			case 40:
+			case 41:
+			case 42:
+			case 43:
+			case 44:
+			case 45:
+			case 46:
+			case 47:
+				bg = colors[argv[i] - 40];
+				doc = do8;
+				break;
 			case 48:
 				if( at ) {
 					bg = val;
@@ -476,22 +493,28 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				doc = do256;
 				break;
 			case 49:  bg = -1;             doc = true;  break;
-			case 90:  fg = COLOR_BLACK;    doc = do16;  break;
-			case 91:  fg = COLOR_RED;      doc = do16;  break;
-			case 92:  fg = COLOR_GREEN;    doc = do16;  break;
-			case 93:  fg = COLOR_YELLOW;   doc = do16;  break;
-			case 94:  fg = COLOR_BLUE;     doc = do16;  break;
-			case 95:  fg = COLOR_MAGENTA;  doc = do16;  break;
-			case 96:  fg = COLOR_CYAN;     doc = do16;  break;
-			case 97:  fg = COLOR_WHITE;    doc = do16;  break;
-			case 100: bg = COLOR_BLACK;    doc = do16;  break;
-			case 101: bg = COLOR_RED;      doc = do16;  break;
-			case 102: bg = COLOR_GREEN;    doc = do16;  break;
-			case 103: bg = COLOR_YELLOW;   doc = do16;  break;
-			case 104: bg = COLOR_BLUE;     doc = do16;  break;
-			case 105: bg = COLOR_MAGENTA;  doc = do16;  break;
-			case 106: bg = COLOR_CYAN;     doc = do16;  break;
-			case 107: bg = COLOR_WHITE;    doc = do16;  break;
+			case 90:
+			case 91:
+			case 92:
+			case 93:
+			case 94:
+			case 95:
+			case 96:
+			case 97:
+				fg = colors[argv[i] - 90];
+				doc = do16;
+				break;
+			case 100:
+			case 101:
+			case 102:
+			case 103:
+			case 104:
+			case 105:
+			case 106:
+			case 107:
+				bg = colors[argv[i] - 100];
+				doc = do16;
+				break;
 			#if HAVE_A_ITALIC
 			case  3:  wattron(win,  A_ITALIC); break;
 			case 23:  wattroff(win, A_ITALIC); break;
