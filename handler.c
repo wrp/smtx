@@ -170,7 +170,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	WINDOW *win = s->win;    /* the current window */
 
 	int tos = s->tos;
-	int y = s->c.y - tos;   /* cursor position */
+	int y = s->c.y - tos;   /* cursor position relative to top of screen */
 	int bot = s->scroll.bot - tos + 1;
 	int top = MAX(0, s->scroll.top - tos);
 
@@ -587,9 +587,11 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	if( handler != sgr && handler != print ) {
 		p->repc = 0;
 	}
-	wmove(win, s->c.y, s->c.x);
+	s->c.x = MAX(0, MIN(s->c.x, p->ws.ws_col - 1));
+	s->c.y = MAX(0, MIN(s->c.y, tos + bot - 1));
 	s->maxy = MAX(s->c.y, s->maxy);
 	s->tos = MAX(0, s->maxy - p->ws.ws_row + 1);
+	wmove(win, s->c.y, s->c.x);
 }
 
 int cons[MAXCALLBACK] = {
