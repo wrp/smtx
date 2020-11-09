@@ -1422,6 +1422,8 @@ test_tabstop(int fd)
 	send_txt(fd, "un6>", cmd, d += 2);
 	rv |= validate_row(fd, 12, "%-80s", "this is        a    test");
 
+	send_txt(fd, "vo7>", "PS1=vo7'> '; printf '\\033[3Ifoo\\n'");
+	rv |= validate_row(fd, 14, "%20sfoo%-57s", "", "");
 	return rv;
 }
 

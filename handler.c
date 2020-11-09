@@ -326,9 +326,10 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		wscrl(win, (w == L'T' || w == L'^') ? -p0[1] : p0[1]);
 		break;
 	case tab: /* Tab forwards or backwards */
-		while( p0[1] && s->c.x > 0 && s->c.x < p->ws.ws_col - 1 ) {
+		while( p0[1] ) {
 			s->c.x += w == L'Z' ? -1 : +1;
-			if( p->tabs[s->c.x] ) {
+			if( s->c.x < p->ntabs && s->c.x >= 0
+					&& p->tabs[s->c.x] ) {
 				p0[1] -= 1;
 			}
 		}
