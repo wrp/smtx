@@ -571,7 +571,10 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 	}
 	layout += e;
 	*lp = layout;
-	p = *pp = p ? p->next : NULL;
+	if( p && ( p = p->next ? p->next : S.p ) == S.f->p ) {
+		p = NULL;
+	}
+	*pp = p;
 	n->split.y = (y - oy) / (ey - oy);
 	n->split.x = (x - ox) / (ex - ox);
 	if( y == ey && x == ex ) {
@@ -599,6 +602,7 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 			goto fail;
 		}
 		*lp = layout;
+		*pp = p;
 	}
 	if( (n->c[n->typ] = add_canvas(&layout,
 			n->typ ? oy : y, n->typ ? x : ox,
@@ -606,6 +610,7 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 		goto fail;
 	}
 	*lp = layout;
+	*pp = p;
 
 	return n;
 fail:
