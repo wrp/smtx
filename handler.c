@@ -284,9 +284,8 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		s->c.x += p0[1];
 		break;
 	case hts: /* Horizontal Tab Set */
-		if( s->c.x < p->ntabs && s->c.x > 0 ) {
-			p->tabs[s->c.x] = true;
-		}
+		assert( s->c.x < p->ntabs && s->c.x >= 0 );
+		p->tabs[s->c.x] = true;
 		break;
 	case ich: /* Insert Character */
 		insert_space(p0[1], win);
