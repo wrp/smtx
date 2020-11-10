@@ -39,9 +39,9 @@ extend_tabs(struct pty *p, int tabstop)
 {
 	typeof(*p->tabs) *n;
 	if( (n = realloc(p->tabs, p->ws.ws_col * sizeof *n)) != NULL ) {
-		p->tabs = n;
-		for( int i = 0; i < p->ws.ws_col; i++ ) {
-			p->tabs[i] = tabstop && i % tabstop == 0;
+		memset(p->tabs = n, 0, p->ws.ws_col * sizeof *n);
+		for( int i = 0; i < p->ws.ws_col; i += tabstop ) {
+			p->tabs[i] = true;
 		}
 	}
 }

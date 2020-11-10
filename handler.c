@@ -375,10 +375,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		wsetscrreg(s->win, s->scroll.top=0, s->scroll.bot=s->rows - 1);
 		s = p->s = &p->pri;
 		wsetscrreg(s->win, s->scroll.top=0, s->scroll.bot=s->rows - 1);
-		memset(p->tabs, 0, p->ws.ws_col * sizeof *p->tabs);
-		for( i = 0; i < p->ws.ws_col; i += p->tabstop ) {
-			p->tabs[i] = true;
-		}
+		extend_tabs(p, p->tabstop);
 		break;
 	case mode: /* Set or Reset Mode */
 	{
