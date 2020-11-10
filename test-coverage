@@ -36,8 +36,8 @@ fi
 
 cat << EOF |
 handler 95
-smtx 93.1
-smtx-main 97.75
+smtx 100
+smtx-main 97
 vtparser 100
 action 100
 EOF

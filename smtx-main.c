@@ -51,13 +51,14 @@ resize_pad(WINDOW **p, int h, int w)
 {
 	int rv = 0;
 	if( *p ) {
-		rv = check(wresize(*p, h, w ) == OK, "Out of memory");
-	} else if( check((*p = newpad(h, w)) != NULL, "Out of memory") ) {
+		rv = wresize(*p, h, w ) == OK;
+	} else if( (*p = newpad(h, w)) != NULL ) {
 		wtimeout(*p, 0);
 		scrollok(*p, 1);
 		rv = (keypad(*p, 1) == OK);
 	}
-	return rv; /* 0 is failure */
+	errno = ENOMEM;
+	return check(rv, "wresize"); /* 0 is failure */
 }
 
 static struct pty *
