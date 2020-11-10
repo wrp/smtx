@@ -551,19 +551,20 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	}
 		break;
 	case so: /* Switch Out/In Character Set */
-		if( w == 0x0e ) {
-			p->s->c.gs = p->s->c.gc = p->g1; /* locking shift */
-		} else if( w == 0xf ) {
-			p->s->c.gs = p->s->c.gc = p->g0; /* locking shift */
-		} else if( w == L'}' ) {
-			p->s->c.gs = p->s->c.gc = p->g2; /* locking shift */
-		} else if( w == L'|' ) {
-			p->s->c.gs = p->s->c.gc = p->g3; /* locking shift */
-		} else if( w == L'N' ) {
-			p->s->c.gs = p->s->c.gc; /* non-locking shift */
-			p->s->c.gc = p->g2;
-		} else if( w == L'O' ) {
-			p->s->c.gs = p->s->c.gc; /* non-locking shift */
+		switch( w ) {
+		case 0x0e: /* locking shift */
+			p->s->c.gs = p->s->c.gc = p->g1; break;
+		case 0x0f: /* locking shift */
+			p->s->c.gs = p->s->c.gc = p->g0; break;
+		case L'}': /* locking shift */
+			p->s->c.gs = p->s->c.gc = p->g2; break;
+		case L'|': /* locking shift */
+			p->s->c.gs = p->s->c.gc = p->g3; break;
+		case L'N': /* non-locking shift */
+			p->s->c.gs = p->s->c.gc;
+			p->s->c.gc = p->g2;              break;
+		case L'O': /* non-locking shift */
+			p->s->c.gs = p->s->c.gc;
 			p->s->c.gc = p->g3;
 		}
 		break;
