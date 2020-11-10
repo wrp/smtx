@@ -46,8 +46,8 @@ $(BUILDDIR):
 
 loc:
 	@@cd $(BUILDDIR) && \
-	for file in action handler smtx-main vtparser; do \
-		gcov $${file}.c -o .libs; \
+	for file in action handler smtx-main vtparser smtx; do \
+		gcov $${file}.c $$(test -f .libs/$${file}.gcda && printf -- '-o .libs'); \
 	done | tr "':" ' '| awk ' \
 		/^File/ {file=$$2; gsub(".*/", "", file)} \
 		/Lines executed/{printf "%32s:\t%s\t(%s)\n", file, $$5, $$3; t+= $$5} \
