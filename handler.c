@@ -450,7 +450,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 35:
 			case 36:
 			case 37:
-				k = true; /* Fallthru */
+				k = 1; /* Fallthru */
 			case 40:
 			case 41:
 			case 42:
@@ -465,14 +465,14 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 38:
 			case 48:
 				if( at ) {
-					*(argv[i] == 48 ? &bg : &fg) = val;
+					*(a == 48 ? &bg : &fg) = val;
 				}
 				i += 2;
 				doc = do256;
 				break;
 			case 39:
 			case 49:
-				*(argv[i] == 49 ? &bg : &fg) = -1;
+				*(a == 49 ? &bg : &fg) = -1;
 				doc = true;
 				break;
 			case 90:
@@ -482,10 +482,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 94:
 			case 95:
 			case 96:
-			case 97:
-				fg = colors[argv[i] - 90];
-				doc = do16;
-				break;
+			case 97: k = 1; /* Fallthru */
 			case 100:
 			case 101:
 			case 102:
@@ -494,7 +491,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 105:
 			case 106:
 			case 107:
-				bg = colors[argv[i] - 100];
+				*(k ? &fg : &bg) = colors[a - (k ? 90 : 100)];
 				doc = do16;
 				break;
 			#if HAVE_A_ITALIC
