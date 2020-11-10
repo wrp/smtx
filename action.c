@@ -126,7 +126,6 @@ pty_size(struct pty *p)
 void
 new_tabstop(void)
 {
-	S.f->p->ntabs = 0;
 	pty_size(S.f->p); /* Update S.f->p->ws */
 	extend_tabs(S.f->p, S.f->p->tabstop = S.count > -1 ? S.count : 8);
 }

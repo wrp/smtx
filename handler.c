@@ -284,7 +284,6 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		s->c.x += p0[1];
 		break;
 	case hts: /* Horizontal Tab Set */
-		assert( s->c.x < p->ntabs && s->c.x >= 0 );
 		p->tabs[s->c.x] = true;
 		break;
 	case ich: /* Insert Character */
@@ -332,18 +331,16 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	case tab: /* Tab forwards or backwards */
 		while( p0[1] ) {
 			s->c.x += w == L'Z' ? -1 : +1;
-			if( s->c.x < p->ntabs && s->c.x >= 0
-					&& p->tabs[s->c.x] ) {
+			if( p->tabs[s->c.x] ) {
 				p0[1] -= 1;
 			}
 		}
 		break;
 	case tbc: /* Tabulation Clear */
-		assert( s->c.x < p->ntabs && s->c.x >= 0 );
 		if( p0[0] == 0 ) {
 			p->tabs[s->c.x] = false;
 		} else if( p0[0] == 3 ) {
-			memset(p->tabs, 0, p->ntabs * sizeof *p->tabs);
+			memset(p->tabs, 0, p->ws.ws_col * sizeof *p->tabs);
 		}
 		break;
 	case osc: /* Operating System Command */
@@ -380,8 +377,8 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			p->pri.scroll.bot = p->pri.rows - 1);
 		wsetscrreg(p->alt.win, p->alt.scroll.top = 0,
 			p->alt.scroll.bot = p->alt.rows - 1);
-		memset(p->tabs, 0, p->ntabs * sizeof *p->tabs);
-		for( i = 0; i < p->ntabs; i += p->tabstop ) {
+		memset(p->tabs, 0, p->ws.ws_col * sizeof *p->tabs);
+		for( i = 0; i < p->ws.ws_col; i += p->tabstop ) {
 			p->tabs[i] = true;
 		}
 		break;

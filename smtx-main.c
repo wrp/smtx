@@ -37,11 +37,11 @@ getshell(void)
 void
 extend_tabs(struct pty *p, int tabstop)
 {
-	int w = p->ws.ws_col;
 	typeof(*p->tabs) *n;
-	if( p->ntabs < w && (n = realloc(p->tabs, w * sizeof *n)) != NULL ) {
-		for( p->tabs = n; p->ntabs < w; p->ntabs++ ) {
-			p->tabs[p->ntabs] = tabstop && p->ntabs % tabstop == 0;
+	if( (n = realloc(p->tabs, p->ws.ws_col * sizeof *n)) != NULL ) {
+		p->tabs = n;
+		for( int i = 0; i < p->ws.ws_col; i++ ) {
+			p->tabs[i] = tabstop && i % tabstop == 0;
 		}
 	}
 }
