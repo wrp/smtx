@@ -17,7 +17,7 @@
  */
 #include "smtx.h"
 
-int
+void
 attach(void)
 {
 	struct canvas *n = S.f;
@@ -26,10 +26,11 @@ attach(void)
 		if( t->fd - 2 == S.count ) {
 			(n->p    )->count -= 1;
 			(n->p = t)->count += 1;
-			return S.reshape = 1;
+			S.reshape = 1;
+			return;
 		}
 	}
-	return check(0, "No pty exists with id %d", S.count);
+	check(0, "No pty exists with id %d", S.count);
 }
 
 static const char *default_balance_arg[] = { "-|", "-", "|", "-|" };
@@ -78,12 +79,11 @@ digit(const char *arg)
 
 static struct canvas * find_canvas(struct canvas *c, int id);
 
-int
+void
 focus(void)
 {
 	struct canvas *t = find_canvas(S.c, S.count);
 	S.f = t ? t : S.f;
-	return 0;
 }
 
 void
@@ -123,20 +123,18 @@ pty_size(struct pty *p)
 		"ioctl error getting size of pty %d", p->fd - 2);
 }
 
-int
+void
 new_tabstop(void)
 {
 	S.f->p->ntabs = 0;
 	pty_size(S.f->p); /* Update S.f->p->ws */
 	extend_tabs(S.f->p, S.f->p->tabstop = S.count > -1 ? S.count : 8);
-	return 1;
 }
 
-int
+void
 next(void)
 {
 	S.f->p = S.f->p->next ? S.f->p->next : S.p;
-	return 1;
 }
 
 void
@@ -148,7 +146,7 @@ passthru(const char *arg)
 	}
 }
 
-int
+void
 prune(void)
 {
 	struct canvas *t = find_canvas(S.c, S.count);
@@ -161,12 +159,12 @@ prune(void)
 		p->c[c] = NULL;
 		change_count(t, -1, 1);
 	}
-	return S.reshape = 1;
+	S.reshape = 1;
 }
 
 static void grow_screens(struct pty *p, int siz);
 
-int
+void
 reshape_root(void)
 {
 	if( LINES > S.history ) {
@@ -178,7 +176,6 @@ reshape_root(void)
 	resize_pad(&S.werr, 1, COLS);
 	resize_pad(&S.wbkg, LINES, COLS);
 	reshape(S.c, 0, 0, LINES, COLS);
-	return 1;
 }
 
 void
@@ -220,7 +217,7 @@ scrolln(const char *arg)
 	}
 }
 
-int
+void
 send_cr(void)
 {
 	rewrite(S.f->p->fd, "\r\n", S.f->p->lnm ? 2 : 1);
@@ -248,20 +245,19 @@ grow_screens(struct pty *p, int siz)
 	}
 }
 
-int
+void
 set_history(void)
 {
 	struct canvas *n = S.f;
 	struct pty *p = n->p;
 	S.history = MAX(LINES, S.count);
 	grow_screens(p, S.history);
-	return S.reshape = 1;
+	S.reshape = 1;
 }
 
-int
+void
 set_layout(void)
 {
-	size_t count = S.count < 0 ? 1 : S.count;
 	const char *def[] = {
 		[0] = "1:1",
 		[1] = "1:1",
@@ -275,7 +271,10 @@ set_layout(void)
 		[9] = ".34:.33 .34:.67 .34:1 .68:.33 .68:.67 .68:1 "
 			"1:.33 1:.67 1:1",
 	};
-	return count < 10 ? build_layout(def[count]) : 0;
+	size_t count = S.count < 0 ? 1 : S.count;
+	if( count < sizeof def / sizeof *def ) {
+		build_layout(def[count]);
+	}
 }
 
 void
@@ -299,7 +298,7 @@ set_width(const char *arg)
 	}
 }
 
-int
+void
 swap(void)
 {
 	struct canvas *n = S.f;
@@ -319,7 +318,6 @@ swap(void)
 	} else {
 		check(0, "Cannot find target canvas");
 	}
-	return 1;
 }
 
 void
@@ -353,7 +351,7 @@ transpose_r(struct canvas *c)
 	}
 }
 
-int
+void
 transpose(void)
 {
 	if( S.f && !S.f->c[0] && !S.f->c[1] ) {
@@ -361,5 +359,11 @@ transpose(void)
 	} else {
 		transpose_r(S.f);
 	}
-	return S.reshape = 1;
+	S.reshape = 1;
+}
+
+void
+vbeep(void)
+{
+	(void)beep();
 }

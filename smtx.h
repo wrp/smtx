@@ -90,7 +90,7 @@ struct pty {
 };
 
 typedef void(action)(const char *arg);
-typedef int(action0)(void);
+typedef void(action0)(void);
 struct handler {
 	union {
 		action *a;
@@ -203,7 +203,8 @@ extern action0 set_layout;
 extern action set_width;
 extern action0 swap;
 extern action transition;
-extern action0 transpose;;
+extern action0 transpose;
+extern action0 vbeep;
 
 /* Debugging/test harness */
 #ifndef NDEBUG

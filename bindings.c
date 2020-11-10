@@ -3,7 +3,7 @@
 #pragma GCC diagnostic ignored "-Woverride-init"
 
 struct handler ctl[128] = {
-	[0x00 ... 0x7f] = { .act = { .v = beep }, NULL },
+	[0x00 ... 0x7f] = { .act = { .v = vbeep }, NULL },
 
 	[L'\r'] = { { .a = transition}, "enter" },
 	[L'\n'] = { { .a = transition}, "enter" },
