@@ -49,7 +49,7 @@ handle_osc(struct pty *p, const char *arg)
 static void
 clear_alt(struct pty *p, int top, int tos)
 {
-	p->alt.xenl = false;
+	p->alt.c.xenl = 0;
 	p->alt.c.y = tos + (p->decom ? top : 0);
 	wmove(p->alt.win, p->alt.c.y, p->alt.c.x = 0);
 	wclrtobot(p->alt.win);
@@ -62,7 +62,6 @@ restore_cursor(struct screen *s)
 		cchar_t b;
 		s->c = s->sc;
 		wattr_set(s->win, s->sattr, s->c.p, NULL);
-		s->xenl = s->oxenl;
 
 		/* restore colors */
 		wcolor_set(s->win, s->c.p, NULL);
@@ -76,7 +75,6 @@ save_cursor(struct screen *s)
 {
 	wattr_get(s->win, &s->sattr, &s->c.p, NULL);
 	s->sc = s->c;
-	s->oxenl = s->xenl;
 }
 
 static void
@@ -111,8 +109,7 @@ static void
 newline(struct pty *p, int cr)
 {
 	if( cr ) {
-		p->s->xenl = false;
-		p->s->c.x = 0;
+		p->s->c.xenl = p->s->c.x = 0;
 	}
 	if( p->s->c.y == p->s->scroll.bot ) {
 		scroll(p->s->win);
@@ -127,16 +124,16 @@ print_char(wchar_t w, struct pty *p)
 	if( p->s->insert ) {
 		insert_space(1, p->s->win);
 	}
-	if( p->s->xenl && p->decawm ) {
+	if( p->s->c.xenl && p->decawm ) {
 		newline(p, 1);
 	}
-	p->s->xenl = false;
+	p->s->c.xenl = 0;
 	if( w < 0x7f && p->s->c.gc[w] ) {
 		w = p->s->c.gc[w];
 	}
 	p->repc = w;
 	if( p->s->c.x == p->ws.ws_col - wcwidth(w) ) {
-		p->s->xenl = true;
+		p->s->c.xenl = 1;
 		wins_nwstr(p->s->win, &w, 1);
 	} else {
 		waddnwstr(p->s->win, &w, 1);
@@ -191,21 +188,19 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		beep();
 		break;
 	case cr: /* Carriage Return */
-		s->xenl = false;
-		s->c.x = 0;
+		s->c.xenl = s->c.x = 0;
 		break;
 	case csr: /* CSR - Change Scrolling Region */
 		t1 = argc > 1 ? argv[1] : p->ws.ws_row;
 		if( wsetscrreg(win, tos + p0[1] - 1, tos + t1 - 1) == OK ) {
 			s->scroll.top = tos + p0[1] - 1;
 			s->scroll.bot = tos + t1 - 1;
-			s->xenl = false;
 			s->c.y = tos + (p->decom ? top : 0);
-			s->c.x = 0;
+			s->c.xenl = s->c.x = 0;
 		}
 		break;
 	case cub: /* Cursor Backward */
-		s->xenl = false;
+		s->c.xenl = 0;
 		s->c.x -= p0[1];
 		break;
 	case cud: /* Cursor Down */
@@ -215,7 +210,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		s->c.x += p0[1];
 		break;
 	case cup: /* Cursor Position */
-		s->xenl = false;
+		s->c.xenl = 0;
 		s->c.y = tos + (p->decom ? top : 0) + p0[1] - 1;
 		s->c.x = argc > 1 ? argv[1] - 1 : 0;
 		break;
@@ -374,7 +369,8 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		p->pri.c.gs = p->pri.c.gc = p->g0 = CSET_US;
 		p->alt.c.gs = p->alt.c.gc = p->g2 = CSET_US;
 		p->g1 = p->g3 = CSET_GRAPH;
-		p->decom = s->insert = s->oxenl = s->xenl = p->lnm = false;
+		p->decom = s->insert = p->lnm = false;
+		s->c.xenl = 0;
 		reset_sgr(s);
 		p->decawm = p->pnm = true;
 		p->pri.vis = p->alt.vis = 1;
@@ -399,7 +395,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case  4: s->insert = set;           break;
 			case  6:
 				p->decom = set;
-				s->xenl = false;
+				s->c.xenl = 0;
 				s->c.y = tos + (p->decom ? top : 0);
 				wmove(win, s->c.y, s->c.x = 0);
 				break;
