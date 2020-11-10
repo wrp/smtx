@@ -220,22 +220,11 @@ scrolln(const char *arg)
 	}
 }
 
-void
-send(const char *arg)
+int
+send_cr(void)
 {
-	struct canvas *n = S.f;
-	if( n->p && n->p->fd > 0 && arg ) {
-		if( n->p->lnm ) {
-			const char *s;
-			while( (s = strchr(arg, '\r')) != NULL ) {
-				rewrite(n->p->fd, arg, s - arg);
-				rewrite(n->p->fd, "\r\n", 2);
-				arg = s + 1;
-			}
-		}
-		rewrite(n->p->fd, arg, strlen(arg));
-		scrollbottom(n);
-	}
+	rewrite(S.f->p->fd, "\r\n", S.f->p->lnm ? 2 : 1);
+	scrollbottom(S.f);
 }
 
 static void

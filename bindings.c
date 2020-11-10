@@ -67,7 +67,7 @@ struct handler code_keys[KEY_MAX - KEY_MIN + 1] = {
 	[KEY_DC - KEY_MIN]         = { { .a = passthru }, "\x04\033[3~" },
 	[KEY_IC - KEY_MIN]         = { { .a = passthru }, "\x04\033[2~" },
 	[KEY_BTAB - KEY_MIN]       = { { .a = passthru }, "\x04\033[Z" },
-	[KEY_ENTER - KEY_MIN]      = { { .a = send }, "\r" },
+	[KEY_ENTER - KEY_MIN]      = { { .v = send_cr }, NULL },
 	[KEY_UP - KEY_MIN]         = { { .a = sendarrow }, "A" },
 	[KEY_DOWN - KEY_MIN]       = { { .a = sendarrow }, "B" },
 	[KEY_RIGHT - KEY_MIN]      = { { .a = sendarrow }, "C" },
@@ -88,7 +88,7 @@ struct handler k1[128] = {
 	[0x0a] = { .act = { .a = passthru }, "\x01\x0a" },
 	[0x0b] = { .act = { .a = passthru }, "\x01\x0b" },
 	[0x0c] = { .act = { .a = passthru }, "\x01\x0c" },
-	[0x0d] = { .act = { .a = send }, "\r" },
+	[0x0d] = { .act = { .v = send_cr }, NULL },
 	[0x0e] = { .act = { .a = passthru }, "\x01\x0e" },
 	[0x0f] = { .act = { .a = passthru }, "\x01\x0f" },
 

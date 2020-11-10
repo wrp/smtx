@@ -196,7 +196,7 @@ extern action0 reshape_root;
 extern action resize;
 extern action scrollh;
 extern action scrolln;
-extern action send;
+extern action0 send_cr;
 extern action sendarrow;
 extern action0 set_history;
 extern action0 set_layout;
