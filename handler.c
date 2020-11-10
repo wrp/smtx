@@ -175,10 +175,10 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	struct screen *s = p->s; /* the current SCRN buffer */
 	WINDOW *win = s->win;    /* the current window */
 
-	int tos = s->tos;
-	int y = s->c.y - tos;   /* cursor position relative to top of screen */
-	int bot = s->scroll.bot - tos + 1;
-	int top = MAX(0, s->scroll.top - tos);
+	const int tos = s->tos;
+	const int y = s->c.y - tos;   /* cursor position relative to top of screen */
+	const int bot = s->scroll.bot - tos + 1;
+	const int top = MAX(0, s->scroll.top - tos);
 
 	switch( (enum cmd)handler ) {
 	case ack: /* Acknowledge Enquiry */
