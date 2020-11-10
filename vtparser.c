@@ -271,9 +271,10 @@ static struct state osc_string = {
 void
 vtwrite(struct vtp *vp, const char *s, size_t n)
 {
-	wchar_t w = 0;
-	while( n ) {
-		size_t r = mbrtowc(&w, s, n, &vp->ms);
+	size_t r;
+	for( const char *e = s + n; s < e; s += r ) {
+		wchar_t w;
+		r = mbrtowc(&w, s, e - s, &vp->ms);
 		switch( r ) {
 		case -1: /* invalid character, skip it */
 		case -2: /* incomplete character, skip it */
@@ -282,8 +283,6 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 		case 0: /* literal zero, write it and advance */
 			r = 1;
 		}
-		n -= r;
-		s += r;
 		if( w >= 0 && w < MAXCALLBACK ) {
 			struct action *a = (vp->s ? vp->s : &ground)->act + w;
 			assert( a->cb != NULL );
