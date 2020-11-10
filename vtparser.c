@@ -146,7 +146,6 @@ static struct state esc = {
 		[0x50]          = {ignore, &osc_string}, /* P */
 		[0x51 ... 0x57] = {doescape, &ground},
 		[0x58]          = {ignore, NULL},
-		/* Why is 0x58 ('X') skipped ? (1) */
 		[0x59 ... 0x5a] = {doescape, &ground},
 		[0x5b]          = {ignore, &csi_entry},  /* [ */
 		[0x5c]          = {doescape, &ground},   /* \ */
@@ -159,9 +158,6 @@ static struct state esc = {
 		[0x7f]          = {ignore, NULL},
 	}
 };
-/*
- * (1) I suspect this is a bug from mtm
- */
 
 static struct state esc_intermediate = {
 	.entry = NULL,
