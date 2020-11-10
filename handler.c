@@ -454,13 +454,6 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				fg = colors[argv[i] - 30];
 				doc = do8;
 				break;
-			case 38:
-				if( at ) {
-					fg = val;
-				}
-				i += 2;
-				doc = do256;
-				break;
 			case 39:  fg = -1;               doc = true;  break;
 			case 40:
 			case 41:
@@ -473,9 +466,10 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				bg = colors[argv[i] - 40];
 				doc = do8;
 				break;
+			case 38:
 			case 48:
 				if( at ) {
-					bg = val;
+					*(argv[i] == 48 ? &bg : &fg) = val;
 				}
 				i += 2;
 				doc = do256;
