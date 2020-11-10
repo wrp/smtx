@@ -279,7 +279,6 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 			assert( a->cb != NULL );
 			a->cb(vp, w);
 			if( a->next ) {
-				assert( a->cb );
 				vp->s = a->next;
 				if( vp->s->entry ) {
 					vp->s->entry(vp);
