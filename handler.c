@@ -346,11 +346,10 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		handle_osc(p, arg);
 		break;
 	case vis: /* Cursor visibility */
-		s->vis = iw == L'6'? 0 : 1;
+		s->vis = iw != L'6';
 		break;
 	case vpa: /* Cursor Vertical Absolute */
-		s->c.y = MAX(tos + top, p0[1] + tos - 1);
-		break;
+		s->c.y = tos - 1; /* Fallthru */
 	case vpr: /* Cursor Vertical Relative */
 		s->c.y = MAX(tos + top, p0[1] + s->c.y);
 		break;
