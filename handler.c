@@ -363,9 +363,9 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		break;
 	case ris: /* Reset to Initial State */
 		ioctl(p->fd, TIOCGWINSZ, &p->ws);
-		p->pri.c.gs = p->pri.c.gc = p->g0 = CSET_US;
-		p->alt.c.gs = p->alt.c.gc = p->g2 = CSET_US;
-		p->g1 = p->g3 = CSET_GRAPH;
+		p->pri.c.gs = p->pri.c.gc = p->g[0] = CSET_US;
+		p->alt.c.gs = p->alt.c.gc = p->g[2] = CSET_US;
+		p->g[1] = p->g[3] = CSET_GRAPH;
 		p->decom = s->insert = p->lnm = false;
 		s->c.xenl = 0;
 		reset_sgr(s);
@@ -535,10 +535,10 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	{
 		wchar_t **t;
 		switch( iw ) {
-		case L'(': t = &p->g0;  break;
-		case L')': t = &p->g1;  break;
-		case L'*': t = &p->g2;  break;
-		case L'+': t = &p->g3;  break;
+		case L'(': t = &p->g[0];  break;
+		case L')': t = &p->g[1];  break;
+		case L'*': t = &p->g[2];  break;
+		case L'+': t = &p->g[3];  break;
 		default: return;
 		}
 		switch( w ) {
@@ -553,19 +553,19 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	case so: /* Switch Out/In Character Set */
 		switch( w ) {
 		case 0x0e: /* locking shift */
-			p->s->c.gs = p->s->c.gc = p->g1; break;
+			p->s->c.gs = p->s->c.gc = p->g[1]; break;
 		case 0x0f: /* locking shift */
-			p->s->c.gs = p->s->c.gc = p->g0; break;
+			p->s->c.gs = p->s->c.gc = p->g[0]; break;
 		case L'}': /* locking shift */
-			p->s->c.gs = p->s->c.gc = p->g2; break;
+			p->s->c.gs = p->s->c.gc = p->g[2]; break;
 		case L'|': /* locking shift */
-			p->s->c.gs = p->s->c.gc = p->g3; break;
+			p->s->c.gs = p->s->c.gc = p->g[3]; break;
 		case L'N': /* non-locking shift */
 			p->s->c.gs = p->s->c.gc;
-			p->s->c.gc = p->g2;              break;
+			p->s->c.gc = p->g[2];              break;
 		case L'O': /* non-locking shift */
 			p->s->c.gs = p->s->c.gc;
-			p->s->c.gc = p->g3;
+			p->s->c.gc = p->g[3];
 		}
 		break;
 	}

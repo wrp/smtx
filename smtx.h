@@ -82,7 +82,7 @@ struct pty {
 	 * corner of the scrolling region. */
 	wchar_t repc;
 	struct screen pri, alt, *s;
-	wchar_t *g0, *g1, *g2, *g3;
+	wchar_t *g[4];
 	char status[32];
 	struct vtp vp;
 	char secondary[PATH_MAX];
