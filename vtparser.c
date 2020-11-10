@@ -32,9 +32,7 @@ struct state {
 static void
 reset(struct vtp *v)
 {
-	v->inter = v->narg = v->nosc = 0;
-	memset(v->args, 0, sizeof v->args);
-	memset(v->oscbuf, 0, sizeof v->oscbuf);
+	memset(&v->inter, 0, sizeof *v - offsetof(struct vtp, inter));
 }
 
 static callback ignore;

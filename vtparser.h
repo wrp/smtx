@@ -47,13 +47,13 @@ enum cmd {
 
 struct vtp {
 	struct state *s;
+	mbstate_t ms;
+	void *p;
+	int inter;
 	int narg;
 	int nosc;
 	int args[MAXPARAM];
-	int inter;
 	char oscbuf[MAXOSC + 1];
-	mbstate_t ms;
-	void *p;
 };
 extern int cons[MAXCALLBACK];
 extern int csis[MAXCALLBACK];
