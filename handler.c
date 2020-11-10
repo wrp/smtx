@@ -176,7 +176,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	WINDOW *win = s->win;    /* the current window */
 
 	const int tos = s->tos;
-	const int y = s->c.y - tos;   /* cursor position relative to top of screen */
+	const int y = s->c.y - tos; /* cursor position w.r.t. top of screen */
 	const int bot = s->scroll.bot - tos + 1;
 	const int top = MAX(0, s->scroll.top - tos);
 
