@@ -371,12 +371,10 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		reset_sgr(s);
 		p->decawm = p->pnm = true;
 		p->pri.vis = p->alt.vis = 1;
-		p->s = &p->pri;
-
-		wsetscrreg(p->pri.win, p->pri.scroll.top = 0,
-			p->pri.scroll.bot = p->pri.rows - 1);
-		wsetscrreg(p->alt.win, p->alt.scroll.top = 0,
-			p->alt.scroll.bot = p->alt.rows - 1);
+		s = &p->alt;
+		wsetscrreg(s->win, s->scroll.top=0, s->scroll.bot=s->rows - 1);
+		s = p->s = &p->pri;
+		wsetscrreg(s->win, s->scroll.top=0, s->scroll.bot=s->rows - 1);
 		memset(p->tabs, 0, p->ws.ws_col * sizeof *p->tabs);
 		for( i = 0; i < p->ws.ws_col; i += p->tabstop ) {
 			p->tabs[i] = true;
