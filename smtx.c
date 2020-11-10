@@ -62,16 +62,11 @@ check(int rv, const char *fmt, ...)
 		int e = errno;
 		va_list ap;
 		va_start(ap, fmt);
-		if( S.werr ) {
-			size_t len = sizeof S.errmsg;
-			int n = vsnprintf(S.errmsg, len, fmt, ap);
-			if( e && n + 3 < (int)len ) {
-				strncat(S.errmsg, ": ", len - n);
-				strncat(S.errmsg, strerror(e), len - n - 2);
-			}
-		} else {
-			errno = e;
-			verrx(!rv, fmt, ap);
+		size_t len = sizeof S.errmsg;
+		int n = vsnprintf(S.errmsg, len, fmt, ap);
+		if( e && n + 3 < (int)len ) {
+			strncat(S.errmsg, ": ", len - n);
+			strncat(S.errmsg, strerror(e), len - n - 2);
 		}
 		va_end(ap);
 		errno = e;
