@@ -156,6 +156,15 @@ static short colors[] = {
 	COLOR_WHITE,
 };
 
+static int attrs[] = {
+	[1] = A_BOLD,
+	[2] = A_DIM,
+	[4] = A_UNDERLINE,
+	[5] = A_BLINK,
+	[7] = A_REVERSE,
+	[8] = A_INVIS,
+};
+
 void
 tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 {
@@ -430,12 +439,14 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case  0:
 				reset_sgr(s);
 				break;
-			case  1: wattron(win,  A_BOLD);             break;
-			case  2: wattron(win,  A_DIM);              break;
-			case  4: wattron(win,  A_UNDERLINE);        break;
-			case  5: wattron(win,  A_BLINK);            break;
-			case  7: wattron(win,  A_REVERSE);          break;
-			case  8: wattron(win,  A_INVIS);            break;
+			case  1:
+			case  2:
+			case  4:
+			case  5:
+			case  7:
+			case  8:
+				wattron(win, attrs[argv[i]]);
+				break;
 			case 22:
 				wattroff(win, A_DIM);
 				wattroff(win, A_BOLD);
