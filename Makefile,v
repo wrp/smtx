@@ -32,14 +32,14 @@ all: $(BUILDDIR) $(BUILDDIR)/Makefile
 
 release: $(BUILDDIR)
 	-cd $(BUILDDIR) && make distclean
-	make all
+	CFLAGS='-O2 -DNDEBUG' make all
 	cd $(BUILDDIR) && make version && make distcheck
 
 configure:
 	autoreconf -ivf
 
 $(BUILDDIR)/Makefile: configure
-	cd $(BUILDDIR) && $(srcdir)/configure CFLAGS="${CFLAGS} --coverage -g -O0"
+	cd $(BUILDDIR) && $(srcdir)/configure CFLAGS="$${CFLAGS---coverage -g -O0}"
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
