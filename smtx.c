@@ -56,6 +56,41 @@ parse_args(int argc, char *const*argv)
 }
 
 int
+check(int rv, const char *fmt, ...)
+{
+	if( !rv ) {
+		int e = errno;
+		va_list ap;
+		va_start(ap, fmt);
+		if( S.werr ) {
+			size_t len = sizeof S.errmsg;
+			int n = vsnprintf(S.errmsg, len, fmt, ap);
+			if( e && n + 3 < (int)len ) {
+				strncat(S.errmsg, ": ", len - n);
+				strncat(S.errmsg, strerror(e), len - n - 2);
+			}
+		} else {
+			errno = e;
+			verrx(!rv, fmt, ap);
+		}
+		va_end(ap);
+		errno = e;
+	}
+	return !!rv;
+}
+
+void
+rewrite(int fd, const char *b, size_t n)
+{
+	const char *e = b + n;
+	ssize_t s;
+	if( n > 0 ) do {
+		s = write(fd, b, e - b);
+		b += s < 0 ? 0 : s;
+	} while( b < e && check(s >= 0 || errno == EINTR, "write fd %d", fd) );
+}
+
+int
 main(int argc, char **argv)
 {
 	char buf[16];
