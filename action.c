@@ -59,7 +59,7 @@ create(const char *arg)
 		n = n->c[dir];
 	}
 	for( int count = S.count < 1 ? 1 : S.count; count; count -= 1 ) {
-		struct canvas *v = n->c[dir] = newcanvas(0, n, 1);
+		struct canvas *v = n->c[dir] = newcanvas(0, n);
 		if( v != NULL ) {
 			v->typ = n->typ = n->c[!dir] ? n->typ : dir;
 			assert(v->parent == n);

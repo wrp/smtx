@@ -121,10 +121,10 @@ new_pty(int cols)
 }
 
 struct canvas *
-newcanvas(struct pty *p, struct canvas *parent, int rows)
+newcanvas(struct pty *p, struct canvas *parent)
 {
 	struct canvas *n = NULL;
-	if( !rows || (p = p ? p : new_pty(MAX(COLS, S.width))) != NULL ) {
+	if( (p = p ? p : new_pty(MAX(COLS, S.width))) != NULL ) {
 		if( (n = S.unused) != NULL ) {
 			S.unused = n->c[0];
 		} else {
@@ -479,7 +479,7 @@ init(void)
 	resize_pad(&S.wbkg, LINES, COLS);
 	wbkgd(S.wbkg, ACS_BULLET);
 	wattron(S.werr, A_REVERSE);
-	S.f = S.c = newcanvas(NULL, NULL, LINES);
+	S.f = S.c = newcanvas(NULL, NULL);
 	if( S.c == NULL || S.werr == NULL || S.wbkg == NULL ) {
 		endwin();
 		err(EXIT_FAILURE, "Unable to create root window");
@@ -525,7 +525,7 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 	double y, x;
 	int e;
 	struct pty *p = *pp;
-	struct canvas *n = newcanvas(p, parent, S.history);
+	struct canvas *n = newcanvas(p, parent);
 	if( n == NULL
 		|| ! check(2 == sscanf(*lp, "%lf:%lf%n", &y, &x, &e),
 			"Invalid layout format: %s", *lp)
