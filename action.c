@@ -138,13 +138,6 @@ next(void)
 }
 
 void
-passthru(const char *arg)
-{
-	scrollbottom(S.f);
-	rewrite(S.f->p->fd, arg + 1, arg[0]);
-}
-
-void
 prune(void)
 {
 	struct canvas *t = find_canvas(S.c, S.count);
@@ -213,6 +206,13 @@ scrolln(const char *arg)
 		n->offset.y += *arg == '-' ? -count : count;
 		n->offset.y = MIN(MAX(0, n->offset.y), top);
 	}
+}
+
+void
+send(const char *arg)
+{
+	rewrite(S.f->p->fd, arg + 1, arg[0]);
+	scrollbottom(S.f);
 }
 
 void

@@ -401,7 +401,7 @@ build_bindings(void)
 		int v = wctomb(wc_lut + i + 1, k);
 		assert( v < 128 && v > -2 );
 		wc_lut[ i ] = v == -1 ? 0 : v;
-		code_keys[idx].act.a = passthru;
+		code_keys[idx].act.a = send;
 		code_keys[idx].arg = wc_lut + i;
 	}
 }
