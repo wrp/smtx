@@ -127,7 +127,7 @@ void
 new_tabstop(void)
 {
 	pty_size(S.f->p); /* Update S.f->p->ws */
-	extend_tabs(S.f->p, S.f->p->tabstop = S.count > -1 ? S.count : 8);
+	set_tabs(S.f->p, S.f->p->tabstop = S.count > -1 ? S.count : 8);
 }
 
 void
@@ -290,7 +290,7 @@ set_width(const char *arg)
 		if( p->s->c.x > w - 1 ) {
 			wmove(p->s->win, p->s->c.y, p->s->c.x = w - 1);
 		}
-		extend_tabs(p, p->tabstop);
+		set_tabs(p, p->tabstop);
 		reshape_window(p);
 	}
 }

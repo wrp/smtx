@@ -35,7 +35,7 @@ getshell(void)
 }
 
 void
-extend_tabs(struct pty *p, int tabstop)
+set_tabs(struct pty *p, int tabstop)
 {
 	typeof(*p->tabs) *n;
 	if( (n = realloc(p->tabs, p->ws.ws_col * sizeof *n)) != NULL ) {
@@ -104,7 +104,7 @@ new_pty(int cols)
 			execl(sh, sh, NULL);
 			err(EXIT_FAILURE, "exec SHELL='%s'", sh);
 		}
-		extend_tabs(p, p->tabstop = 8);
+		set_tabs(p, p->tabstop = 8);
 		FD_SET(p->fd, &S.fds);
 		S.maxfd = p->fd > S.maxfd ? p->fd : S.maxfd;
 		fcntl(p->fd, F_SETFL, O_NONBLOCK);
