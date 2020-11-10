@@ -136,8 +136,7 @@ newcanvas(struct pty *p, struct canvas *parent)
 			n->p = p;
 			n->parent = parent;
 			p->count += 1;
-			n->split.y = 1.0;
-			n->split.x = 1.0;
+			n->split = (typeof(n->split)){1.0, 1.0};
 		}
 	}
 	return n;
