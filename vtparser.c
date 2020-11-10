@@ -179,10 +179,10 @@ static struct state csi_entry = {
 		[0x1c ... 0x1f] = {docontrol, NULL},
 		[0x20 ... 0x2f] = {collect, &csi_intermediate},
 		[0x30 ... 0x39] = {param, &csi_param}, /* 0 - 9 */
-		[0x3a]          = {ignore, &csi_ignore},
-		[0x3b]          = {param, &csi_param}, /* ; */
-		[0x3c ... 0x3f] = {collect, &csi_param},
-		[0x40 ... 0x7e] = {docsi, &ground},
+		[0x3a]          = {ignore, &csi_ignore}, /* : */
+		[0x3b]          = {param, &csi_param},   /* ; */
+		[0x3c ... 0x3f] = {collect, &csi_param}, /* <=>? */
+		[0x40 ... 0x7e] = {docsi, &ground}, /* @A-Za-z[\]^_`{|}~ */
 		[0x7f]          = {ignore, NULL},
 	}
 };
