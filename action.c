@@ -140,10 +140,8 @@ next(void)
 void
 passthru(const char *arg)
 {
-	if( S.f->p && S.f->p->fd > 0 && arg[0] > 0 ) {
-		scrollbottom(S.f);
-		rewrite(S.f->p->fd, arg + 1, arg[0]);
-	}
+	scrollbottom(S.f);
+	rewrite(S.f->p->fd, arg + 1, arg[0]);
 }
 
 void
