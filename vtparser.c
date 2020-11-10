@@ -274,8 +274,7 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 	size_t r;
 	for( const char *e = s + n; s < e; s += r ) {
 		wchar_t w;
-		r = mbrtowc(&w, s, e - s, &vp->ms);
-		switch( r ) {
+		switch( r = mbrtowc(&w, s, e - s, &vp->ms) ) {
 		case -1: /* invalid character, skip it */
 		case -2: /* incomplete character, skip it */
 			w = VTPARSER_BAD_CHAR;
