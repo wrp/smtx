@@ -131,9 +131,9 @@ static struct state esc = {
 		[0x1a]          = {docontrol, &ground},
 		[0x1b]          = {ignore, &esc},
 		[0x1c ... 0x1f] = {docontrol, NULL},
-		[0x20]          = {collect, &esc_intermediate},
-		[0x21]          = {ignore, &osc_string}, /* ! */
-		[0x22 ... 0x2f] = {collect, &esc_intermediate},
+		[0x20]          = {collect, &esc_intermediate}, /* sp */
+		[0x21]          = {ignore, &osc_string},        /* ! */
+		[0x22 ... 0x2f] = {collect, &esc_intermediate}, /* "#$%&'()*+,-./ */
 		[0x30 ... 0x4f] = {doescape, &ground},
 		[0x50]          = {ignore, &osc_string}, /* P */
 		[0x51 ... 0x57] = {doescape, &ground},
@@ -161,7 +161,7 @@ static struct state esc_intermediate = {
 		[0x1a]          = {docontrol, &ground},
 		[0x1b]          = {ignore, &esc},
 		[0x1c ... 0x1f] = {docontrol, NULL},
-		[0x20 ... 0x2f] = {collect, NULL},
+		[0x20 ... 0x2f] = {collect, NULL},  /* sp!"#$%&'()*+,-./ */
 		[0x30 ... 0x7e] = {doescape, &ground},
 		[0x7f]          = {ignore, NULL},
 	}
@@ -197,7 +197,7 @@ static struct state csi_ignore = {
 		[0x1a]          = {docontrol, &ground},
 		[0x1b]          = {ignore, &esc},
 		[0x1c ... 0x1f] = {docontrol, NULL},
-		[0x20 ... 0x3f] = {ignore, NULL},
+		[0x20 ... 0x3f] = {ignore, NULL},   /* sp!"#$%&'()*+,-./ */
 		[0x40 ... 0x7e] = {ignore, &ground},
 		[0x7f]          = {ignore, NULL},
 	}
@@ -256,7 +256,7 @@ static struct state osc_string = {
 		[0x1a]          = {docontrol, &ground},
 		[0x1b]          = {ignore, &esc},
 		[0x1c ... 0x1f] = {docontrol, NULL},
-		[0x20 ... 0x7f] = {collect, NULL},
+		[0x20 ... 0x7f] = {collect, NULL},   /* sp!"#$%&'()*+,-./ */
 	}
 };
 
