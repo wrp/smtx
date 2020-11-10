@@ -1308,6 +1308,9 @@ test_sgr(int fd)
 	send_txt(fd, "aw1>", "PS1='a'w1'>'; clear");
 	rv |= sgr_background(fd);
 
+	/* Do not verify, just get coverage (not sure how to test 256 color */
+	send_txt(fd, NULL, "printf '\\033[38;5;0mfoo\\n'");
+
 	return rv;
 }
 
