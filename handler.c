@@ -434,8 +434,8 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		pair_content(s->c.p, &fg, &bg);
 		for( i = 0; i < argc; i++ ) {
 			bool at = argc > i + 2 && argv[i + 1] == 5;
-			int val = argc > i + 2 ? argv[i + 2] : 0;
-			switch( argv[i] ) {
+			int val = argc > i + 2 ? argv[i + 2] : 0, k = 0, a;
+			switch( a = argv[i] ) {
 			case  0:
 				reset_sgr(s);
 				break;
@@ -464,9 +464,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 35:
 			case 36:
 			case 37:
-				fg = colors[argv[i] - 30];
-				doc = do8;
-				break;
+				k = true; /* Fallthru */
 			case 40:
 			case 41:
 			case 42:
@@ -475,7 +473,7 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 45:
 			case 46:
 			case 47:
-				bg = colors[argv[i] - 40];
+				*(k ? &fg : &bg) = colors[a - (k ? 30 : 40)];
 				doc = do8;
 				break;
 			case 38:
