@@ -35,7 +35,6 @@ reset(struct vtp *v)
 	memset(&v->inter, 0, sizeof *v - offsetof(struct vtp, inter));
 }
 
-static callback ignore;
 static void
 ignore(struct vtp *v, wchar_t w)
 {
@@ -75,34 +74,27 @@ param(struct vtp *v, wchar_t w)
 static void
 docontrol(struct vtp *v, wchar_t w)
 {
-	assert( w < MAXCALLBACK );
 	tput(v, w, v->inter, 0, NULL, cons[w]);
 }
 
-static callback doescape;
 static void
 doescape(struct vtp *v, wchar_t w)
 {
-	assert( w < MAXCALLBACK );
 	tput(v, w, v->inter, v->inter > 0, &v->inter, escs[w]);
 }
 
-static callback docsi;
 static void
 docsi(struct vtp *v, wchar_t w)
 {
-	assert( w < MAXCALLBACK );
 	tput(v, w, v->inter, v->narg, v->args, csis[w]);
 }
 
-static callback doprint;
 static void
 doprint(struct vtp *v, wchar_t w)
 {
 	tput(v, w, v->inter, 0, NULL, print);
 }
 
-static callback doosc;
 static void
 doosc(struct vtp *v, wchar_t w)
 {
