@@ -335,14 +335,11 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		}
 		break;
 	case tbc: /* Tabulation Clear */
-		if( p->tabs != NULL ) {
-			if( p0[0] == 0 ) {
-				if( s->c.x < p->ntabs ) {
-					p->tabs[s->c.x] = false;
-				}
-			} else if( p0[0] == 3 ) {
-				memset(p->tabs, 0, p->ntabs * sizeof *p->tabs);
-			}
+		assert( s->c.x < p->ntabs && s->c.x >= 0 );
+		if( p0[0] == 0 ) {
+			p->tabs[s->c.x] = false;
+		} else if( p0[0] == 3 ) {
+			memset(p->tabs, 0, p->ntabs * sizeof *p->tabs);
 		}
 		break;
 	case osc: /* Operating System Command */
