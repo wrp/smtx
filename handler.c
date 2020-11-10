@@ -551,22 +551,21 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	}
 		break;
 	case so: /* Switch Out/In Character Set */
-		switch( w ) {
-		case 0x0e: /* locking shift */
-			p->s->c.gs = p->s->c.gc = p->g[1]; break;
-		case 0x0f: /* locking shift */
-			p->s->c.gs = p->s->c.gc = p->g[0]; break;
-		case L'}': /* locking shift */
-			p->s->c.gs = p->s->c.gc = p->g[2]; break;
-		case L'|': /* locking shift */
-			p->s->c.gs = p->s->c.gc = p->g[3]; break;
-		case L'N': /* non-locking shift */
+	{
+		const char *s = "\x0f\x0e}|NO", *c;
+		if( ( c = strchr(s, w)) != NULL ) switch( c - s ) {
+		case 0:
+		case 1:
+		case 2:
+		case 3: /* locking shift */
+			p->s->c.gs = p->s->c.gc = p->g[c - s];
+			break;
+		case 4:
+		case 5: /* non-locking shift */
 			p->s->c.gs = p->s->c.gc;
-			p->s->c.gc = p->g[2];              break;
-		case L'O': /* non-locking shift */
-			p->s->c.gs = p->s->c.gc;
-			p->s->c.gc = p->g[3];
+			p->s->c.gc = p->g[c - s - 2];
 		}
+	}
 		break;
 	}
 	if( handler != sgr && handler != print ) {
