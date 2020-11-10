@@ -279,8 +279,9 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		}
 		break;
 	case hpa: /* Cursor Horizontal Absolute */
+		s->c.x = -1; /* Fallthru */
 	case hpr: /* Cursor Horizontal Relative */
-		s->c.x = p0[1] + (handler == hpa ? -1 : s->c.x);;
+		s->c.x += p0[1];
 		break;
 	case hts: /* Horizontal Tab Set */
 		if( s->c.x < p->ntabs && s->c.x > 0 ) {
