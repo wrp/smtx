@@ -451,9 +451,11 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				wattroff(win, A_DIM);
 				wattroff(win, A_BOLD);
 				break;
-			case 24:  wattroff(win, A_UNDERLINE);        break;
-			case 25:  wattroff(win, A_BLINK);            break;
-			case 27:  wattroff(win, A_REVERSE);          break;
+			case 24:
+			case 25:
+			case 27:
+				wattroff(win, attrs[argv[i] - 20]);
+				break;
 			case 30:
 			case 31:
 			case 32:
