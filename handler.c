@@ -378,9 +378,8 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		set_tabs(p, p->tabstop);
 		break;
 	case mode: /* Set or Reset Mode */
-	{
-		bool set = (w == L'h');
 		for( i = 0; i < argc; i++ ) {
+			bool set = (w == L'h');
 			switch( argv[i] ) {
 			case  1: p->pnm = set;              break;
 			case  3: set_width(set ? "132" : "80"); break;
@@ -407,7 +406,6 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				p->s = set ? &p->alt : &p->pri;
 			}
 		}
-	}
 		break;
 	case sgr: /* SGR - Select Graphic Rendition */
 	{
