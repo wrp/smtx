@@ -42,8 +42,8 @@ ignore(struct vtp *v, wchar_t w)
 	(void)w;
 }
 
-static struct state esc, esc_intermediate, csi_entry,
-	csi_ignore, csi_param, csi_intermediate, osc_string;
+static struct state esc, esc_collect, csi_entry,
+	csi_ignore, csi_param, csi_collect, osc_string;
 
 static void
 collect(struct vtp *v, wchar_t w)
@@ -131,9 +131,9 @@ static struct state esc = {
 		[0x1a]          = {docontrol, &ground},
 		[0x1b]          = {ignore, &esc},
 		[0x1c ... 0x1f] = {docontrol, NULL},
-		[0x20]          = {collect, &esc_intermediate}, /* sp */
+		[0x20]          = {collect, &esc_collect}, /* sp */
 		[0x21]          = {ignore, &osc_string},        /* ! */
-		[0x22 ... 0x2f] = {collect, &esc_intermediate}, /* "#$%&'()*+,-./ */
+		[0x22 ... 0x2f] = {collect, &esc_collect}, /* "#$%&'()*+,-./ */
 		[0x30 ... 0x4f] = {doescape, &ground},
 		[0x50]          = {ignore, &osc_string}, /* P */
 		[0x51 ... 0x57] = {doescape, &ground},
@@ -151,7 +151,7 @@ static struct state esc = {
 	}
 };
 
-static struct state esc_intermediate = {
+static struct state esc_collect = {
 	.entry = NULL,
 	.act = {
 		[0]             = {ignore, NULL},
@@ -177,7 +177,7 @@ static struct state csi_entry = {
 		[0x1a]          = {docontrol, &ground},
 		[0x1b]          = {ignore, &esc},
 		[0x1c ... 0x1f] = {docontrol, NULL},
-		[0x20 ... 0x2f] = {collect, &csi_intermediate},
+		[0x20 ... 0x2f] = {collect, &csi_collect},
 		[0x30 ... 0x39] = {param, &csi_param}, /* 0 - 9 */
 		[0x3a]          = {ignore, &csi_ignore}, /* : */
 		[0x3b]          = {param, &csi_param},   /* ; */
@@ -213,7 +213,7 @@ static struct state csi_param = {
 		[0x1a]          = {docontrol, &ground},
 		[0x1b]          = {ignore, &esc},
 		[0x1c ... 0x1f] = {docontrol, NULL},
-		[0x20 ... 0x2f] = {collect, &csi_intermediate},
+		[0x20 ... 0x2f] = {collect, &csi_collect},
 		[0x30 ... 0x39] = {param, NULL}, /* 0 - 9 */
 		[0x3a]          = {ignore, &csi_ignore},
 		[0x3b]          = {param, NULL}, /* ; */
@@ -223,7 +223,7 @@ static struct state csi_param = {
 	}
 };
 
-static struct state csi_intermediate = {
+static struct state csi_collect = {
 	.entry = NULL,
 	.act = {
 		[0]             = {ignore, NULL},
