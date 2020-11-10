@@ -15,7 +15,7 @@ When first started, `smtx` creates a single window with a pty running
 the program specified in SHELL.  The window that is created will fill
 the physical screen, and the underlying pty that it is viewing will have
 a width of at least 80.  The `CMD` keysequence (default is `CTRL+g`)
-will put smtx in `command` mode, in which key sequences are interpreted
+will put smtx in `command` mode in which key sequences are interpreted
 to manipulate the windows.  Press `RETURN` to exit command mode.
 Press `CMD` to exit command mode and send `CMD` to the underlying pty.
 In command mode, create new windows using `c` or `C`.  Use `hjkl` to
@@ -24,10 +24,11 @@ underlying pty.  Most commands accept a count, so you could create 5 new
 windows with `5c` and move down N times with `Nj`. (In the follwoing, `N`
 will represent an arbitrary integer).  Choose one of the preset layouts
 with `Nv`.  To attach the current window to a different pty, use `Na`.
-To change the pty in the current window with the pty in a different
-window, use `Ns`.  To transpose the orientation of the current window,
-use `T`.  To close the currently focused window (the underlying pty is
-not affected), use `x`.  To destroy all of the ptys and exit, use `9x`.
+To swap the pty in the current window with the pty in a different
+window, use `NS`.  To move the focus to the window with pty N, use `Ng`.
+To transpose the orientation of the current window, use `T`.  To
+close the currently focused window (the underlying pty is not
+affected), use `x`.  To destroy all of the ptys and exit, use `0x`.
 
 Features
 ========
