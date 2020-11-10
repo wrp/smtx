@@ -783,6 +783,11 @@ test_navigate(int fd)
 		"0x26@1,27; 0x26@2,27; 0x26@3,27; 0x26@4,27; 0x26@5,27",
 		"0x26@6,27; 0x26@7,27; 1x26@8,27; 1x26@10,27; 11x26@0,54"
 	);
+	send_cmd(fd, "cd3>", "3v\rPS1=cd'3>'");
+	rv |= check_layout(fd, 0x5, "*23x40(id=1); 11x39(id=2); 11x39(id=3)");
+	send_cmd(fd, "ef4>", "2g\rPS1=ef'4>'");
+	rv |= check_layout(fd, 0x1, "23x40; *11x39; 11x39");
+
 	return rv;
 }
 

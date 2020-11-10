@@ -185,6 +185,7 @@ extern action0 attach;
 extern action balance;
 extern action create;
 extern action digit;
+extern action0 focus;
 extern action mov;
 extern action0 new_tabstop;
 extern action0 next;

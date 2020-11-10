@@ -76,6 +76,16 @@ digit(const char *arg)
 	S.count = 10 * (S.count == -1 ? 0 : S.count) + *arg - '0';
 }
 
+static struct canvas * find_canvas(struct canvas *c, int id);
+
+int
+focus(void)
+{
+	struct canvas *t = find_canvas(S.c, S.count);
+	S.f = t ? t : S.f;
+	return 0;
+}
+
 void
 mov(const char *arg)
 {

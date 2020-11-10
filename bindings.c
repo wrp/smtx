@@ -10,6 +10,7 @@ struct handler ctl[128] = {
 	[L'a' ] = { { .v = attach}, NULL },
 	[L'b' ] = { { .a = scrolln}, "-" },
 	[L'f' ] = { { .a = scrolln}, "+" },
+	[L'g' ] = { { .v = focus}, NULL },
 	[L'>' ] = { { .a = scrollh}, ">" },
 	[L'<' ] = { { .a = scrollh}, "<" },
 	[L'=' ] = { { .a = balance}, "=" },
