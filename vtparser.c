@@ -170,8 +170,8 @@ static struct state csi_ignore = {
 	.reset = 0,
 	.act = {
 		LOWBITS,
-		[0x20 ... 0x3f] = {ignore, NULL},   /* sp!"#$%&'()*+,-./ */
-		[0x40 ... 0x7e] = {ignore, &ground},
+		[0x20 ... 0x3f] = {ignore, NULL},    /* !"#$%&'()*+,-./0-9... */
+		[0x40 ... 0x7e] = {ignore, &ground}, /* @A-Za-z[\]^_`{|}~ */
 		[0x7f]          = {ignore, NULL},
 	}
 };
