@@ -75,47 +75,46 @@ static struct pty *
 new_pty(int cols)
 {
 	struct pty *p = get_freepty();
-	if( ! check((p = p ? p : calloc(1, sizeof *p)) != NULL, "calloc") ) {
-		return NULL;
-	}
-	if( p->s == NULL ) {
-		if( resize_pad(&p->pri.win, S.history, cols)
-			&& resize_pad(&p->alt.win, S.history, cols)
-		) {
-			p->pri.rows = p->alt.rows = S.history;
-			*(S.tail ? &S.tail->next : &S.p) = p;
-			S.tail = p;
-		} else {
-			delwin(p->pri.win);
-			delwin(p->alt.win);
-			free(p);
-			return NULL;
+	if( check((p = p ? p : calloc(1, sizeof *p)) != NULL, "calloc") ) {
+		if( p->s == NULL ) {
+			if( resize_pad(&p->pri.win, S.history, cols)
+				&& resize_pad(&p->alt.win, S.history, cols)
+			) {
+				p->pri.rows = p->alt.rows = S.history;
+				*(S.tail ? &S.tail->next : &S.p) = p;
+				S.tail = p;
+			} else {
+				delwin(p->pri.win);
+				delwin(p->alt.win);
+				free(p);
+				return NULL;
+			}
 		}
-	}
-	if( p->fd < 1 ) {
-		const char *sh = getshell();
-		p->pri.tos = p->alt.tos = S.history - LINES + 1;
-		p->ws.ws_row = LINES - 1;
-		p->ws.ws_col = cols;
-		p->pid = forkpty(&p->fd, p->secondary, NULL, &p->ws);
-		if( check(p->pid != -1, "forkpty") && p->pid == 0 ) {
-			setsid();
-			signal(SIGCHLD, SIG_DFL);
-			execl(sh, sh, NULL);
-			err(EXIT_FAILURE, "exec SHELL='%s'", sh);
+		if( p->fd < 1 ) {
+			const char *sh = getshell();
+			p->pri.tos = p->alt.tos = S.history - LINES + 1;
+			p->ws.ws_row = LINES - 1;
+			p->ws.ws_col = cols;
+			p->pid = forkpty(&p->fd, p->secondary, NULL, &p->ws);
+			if( check(p->pid != -1, "forkpty") && p->pid == 0 ) {
+				setsid();
+				signal(SIGCHLD, SIG_DFL);
+				execl(sh, sh, NULL);
+				err(EXIT_FAILURE, "exec SHELL='%s'", sh);
+			}
+			set_tabs(p, p->tabstop = 8);
+			FD_SET(p->fd, &S.fds);
+			S.maxfd = p->fd > S.maxfd ? p->fd : S.maxfd;
+			fcntl(p->fd, F_SETFL, O_NONBLOCK);
+			const char *bname = strrchr(sh, '/');
+			bname = bname ? bname + 1 : sh;
+			strncpy(p->status, bname, sizeof p->status - 1);
 		}
-		set_tabs(p, p->tabstop = 8);
-		FD_SET(p->fd, &S.fds);
-		S.maxfd = p->fd > S.maxfd ? p->fd : S.maxfd;
-		fcntl(p->fd, F_SETFL, O_NONBLOCK);
-		const char *bname = strrchr(sh, '/');
-		bname = bname ? bname + 1 : sh;
-		strncpy(p->status, bname, sizeof p->status - 1);
-	}
-	if( p->s == NULL ) {
-		p->s = &p->pri;
-		p->vp.p = p;
-		tput(p, 0, 0, 0, NULL, ris);
+		if( p->s == NULL ) {
+			p->s = &p->pri;
+			p->vp.p = p;
+			tput(p, 0, 0, 0, NULL, ris);
+		}
 	}
 	return p;
 }
