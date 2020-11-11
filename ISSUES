@@ -7,9 +7,6 @@ TODO:
 
 	(?) Make an action on <tab> that moves to the next canvas.
 
-	Implement g action to goto canvas.  (I'm still not sure if we should add
-	an id to a canvas to disambiguate when a pty is visible in 2 canvasses.)
-
 	Determine if colors should be saved with save/restore cursor and
 	implement accordingly.
 
@@ -32,6 +29,10 @@ TODO:
 	Instead of pri/alt screens, implement the screens as an array.  Not to
 	have more than 2, but to simplify the implementation by being able
 	to use an index.
+
+	Allocate a chunk of struct pty on startup, or just use a static array
+	of size 512 or 1024 and stop callocing individual elements.  That should
+	cleanup the implementation of new_pty() a bit.
 
 BUGS:
 	Syntax highlighting doesn't work in vim.
