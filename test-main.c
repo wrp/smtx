@@ -122,7 +122,7 @@ get_state(int fd, char *state, size_t siz)
 	char buf[64];
 	ssize_t s;
 	int fd2 = get_secondary_fd(fd);
-	int len = snprintf(buf, siz, "\033]62\007");
+	int len = snprintf(buf, siz, "\033]62;\007");
 	write(fd2, buf, len);
 	close(fd2);
 	grep(fd, "state: ");

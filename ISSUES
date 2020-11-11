@@ -34,6 +34,9 @@ TODO:
 	of size 512 or 1024 and stop callocing individual elements.  That should
 	cleanup the implementation of new_pty() a bit.
 
+	Cleanup the osc string handling.  We should parse the parameter in the
+	vt state machine rather than passing a string to tput.
+
 BUGS:
 	Syntax highlighting doesn't work in vim.
 

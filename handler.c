@@ -18,29 +18,18 @@
 #include "smtx.h"
 
 static void
-handle_osc(struct pty *p, const char *arg)
+handle_osc(struct pty *p, int cmd, const char *arg)
 {
-	const char *parm;
-	int cmd = strtol(arg, (char **)&parm, 10);
-
-	parm = *parm == ';' ? parm + 1 : "";
-	/* TODO: pick better codes.  Right now, I'm using 60+ simply because
-	 * those value appear to be unused by xterm.
-	 *
-	 * Also: fix the state machine.  Right now, we are just passing
-	 * a string like "2;text" instead of parsing the semi-colon in the
-	 * state machine.  Yechh.
-	 */
 	switch( cmd ) {
 	case 2:
-		snprintf(p->status, sizeof p->status, "%s", parm);
+		snprintf(p->status, sizeof p->status, "%s", arg);
 		break;
 	case 60:
-		build_layout(parm);
+		build_layout(arg);
 		break;
 #ifndef NDEBUG
 	case 62:
-		show_status(parm);
+		show_status(arg);
 		break;
 #endif
 	}
@@ -343,7 +332,12 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		}
 		break;
 	case osc: /* Operating System Command */
-		handle_osc(p, arg);
+		{
+		/* TODO: parse properly in the vt state machine */
+		const char *parm;
+		int cmd = strtol(arg, (char **)&parm, 10);
+		handle_osc(p, cmd, parm ? parm + 1 : "");
+		}
 		break;
 	case vis: /* Cursor visibility */
 		s->vis = iw != L'6';
