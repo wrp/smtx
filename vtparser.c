@@ -126,10 +126,10 @@ static struct state esc = {
 		[0x1b]          = {ignore, &esc},
 		[0x1c ... 0x1f] = {docontrol, NULL},
 		[0x20]          = {collect, &esc_collect}, /* sp */
-		[0x21]          = {ignore, &osc_string},        /* ! */
+		[0x21]          = {ignore, &osc_string},   /* ! */
 		[0x22 ... 0x2f] = {collect, &esc_collect}, /* "#$%&'()*+,-./ */
 		[0x30 ... 0x4f] = {doescape, &ground},
-		[0x50]          = {ignore, &osc_string}, /* P */
+		[0x50]          = {ignore, &osc_string},   /* P */
 		[0x51 ... 0x57] = {doescape, &ground},
 		[0x58]          = {ignore, NULL},
 		[0x59 ... 0x5a] = {doescape, &ground},
@@ -138,9 +138,9 @@ static struct state esc = {
 		[0x5d]          = {ignore, &osc_string}, /* ] */
 		[0x5e]          = {ignore, &osc_string}, /* ^ */
 		[0x5f]          = {ignore, &osc_string}, /* _ */
-		[0x60 ... 0x6a] = {doescape, &ground},
+		[0x60 ... 0x6a] = {doescape, &ground},   /* `a-j */
 		[0x6b]          = {ignore, &osc_string}, /* k */
-		[0x6c ... 0x7e] = {doescape, &ground},
+		[0x6c ... 0x7e] = {doescape, &ground},   /* l-z{|}~ */
 		[0x7f]          = {ignore, NULL},
 	}
 };
@@ -156,7 +156,7 @@ static struct state esc_collect = {
 		[0x1b]          = {ignore, &esc},
 		[0x1c ... 0x1f] = {docontrol, NULL},
 		[0x20 ... 0x2f] = {collect, NULL},  /* sp!"#$%&'()*+,-./ */
-		[0x30 ... 0x7e] = {doescape, &ground},
+		[0x30 ... 0x7e] = {doescape, &ground}, /* 0-9a-zA-z ... */
 		[0x7f]          = {ignore, NULL},
 	}
 };
