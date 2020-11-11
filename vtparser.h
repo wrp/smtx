@@ -45,10 +45,11 @@ enum cmd {
 #define MAXCALLBACK 128
 #define MAXOSC      511
 
+struct pty;
 struct vtp {
 	struct state *s;
 	mbstate_t ms;
-	void *p;
+	struct pty *p;
 	struct {
 		int inter;
 		int narg;
@@ -61,8 +62,7 @@ extern int cons[MAXCALLBACK];
 extern int csis[MAXCALLBACK];
 extern int escs[MAXCALLBACK];
 
-typedef void (VTCALLBACK)(struct vtp *, wchar_t, wchar_t, int, void *, int);
-extern VTCALLBACK tput;
+void tput(struct pty *, wchar_t, wchar_t, int, void *, int);
 
 void vtwrite(struct vtp *vp, const char *s, size_t n);
 #endif

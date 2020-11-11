@@ -163,7 +163,7 @@ static int attrs[] = {
 };
 
 void
-tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
+tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 {
 	int i, t1;
 	cchar_t b;
@@ -171,7 +171,6 @@ tput(struct vtp *v, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	/* First arg, defaulting to 0 or 1 */
 	int p0[] = { argc ? *(int*)arg : 0, argc ? *(int*)arg : 1 };
 	int *argv = arg;
-	struct pty *p = v->p;    /* the current pty */
 	struct screen *s = p->s; /* the current SCRN buffer */
 	WINDOW *win = s->win;    /* the current window */
 

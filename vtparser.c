@@ -68,31 +68,31 @@ param(struct vtp *v, wchar_t w)
 static void
 docontrol(struct vtp *v, wchar_t w)
 {
-	tput(v, w, v->z.inter, 0, NULL, cons[w]);
+	tput(v->p, w, v->z.inter, 0, NULL, cons[w]);
 }
 
 static void
 doescape(struct vtp *v, wchar_t w)
 {
-	tput(v, w, v->z.inter, v->z.inter > 0, &v->z.inter, escs[w]);
+	tput(v->p, w, v->z.inter, v->z.inter > 0, &v->z.inter, escs[w]);
 }
 
 static void
 docsi(struct vtp *v, wchar_t w)
 {
-	tput(v, w, v->z.inter, v->z.narg, v->z.args, csis[w]);
+	tput(v->p, w, v->z.inter, v->z.narg, v->z.args, csis[w]);
 }
 
 static void
 doprint(struct vtp *v, wchar_t w)
 {
-	tput(v, w, v->z.inter, 0, NULL, print);
+	tput(v->p, w, v->z.inter, 0, NULL, print);
 }
 
 static void
 doosc(struct vtp *v, wchar_t w)
 {
-	tput(v, w, v->z.inter, v->z.nosc, v->z.oscbuf, osc);
+	tput(v->p, w, v->z.inter, v->z.nosc, v->z.oscbuf, osc);
 }
 
 
