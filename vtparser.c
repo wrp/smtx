@@ -43,24 +43,24 @@ static void
 collect(struct vtp *v, wchar_t w)
 {
 	if( v->s == &osc_string ) {
-		if( v->nosc < MAXOSC ) {
-			v->oscbuf[v->nosc++] = wctob(w);
-			assert( v->nosc < (int)sizeof v->oscbuf );
-			assert( v->oscbuf[v->nosc] == '\0' );
+		if( v->z.nosc < MAXOSC ) {
+			v->z.oscbuf[v->z.nosc++] = wctob(w);
+			assert( v->z.nosc < (int)sizeof v->z.oscbuf );
+			assert( v->z.oscbuf[v->z.nosc] == '\0' );
 		}
-	} else if( !v->inter ) {
-		v->inter = (int)w;
+	} else if( !v->z.inter ) {
+		v->z.inter = (int)w;
 	}
 }
 
 static void
 param(struct vtp *v, wchar_t w)
 {
-	v->narg = v->narg ? v->narg : 1;
-	int *a = v->args + v->narg - 1;
+	v->z.narg = v->z.narg ? v->z.narg : 1;
+	int *a = v->z.args + v->z.narg - 1;
 	if( w == L';' ) {
-		v->narg += 1;
-	} else if( v->narg < MAXPARAM && *a < 9999 ) {
+		v->z.narg += 1;
+	} else if( v->z.narg < MAXPARAM && *a < 9999 ) {
 		*a = *a * 10 + w - '0';
 	}
 }
@@ -68,31 +68,31 @@ param(struct vtp *v, wchar_t w)
 static void
 docontrol(struct vtp *v, wchar_t w)
 {
-	tput(v, w, v->inter, 0, NULL, cons[w]);
+	tput(v, w, v->z.inter, 0, NULL, cons[w]);
 }
 
 static void
 doescape(struct vtp *v, wchar_t w)
 {
-	tput(v, w, v->inter, v->inter > 0, &v->inter, escs[w]);
+	tput(v, w, v->z.inter, v->z.inter > 0, &v->z.inter, escs[w]);
 }
 
 static void
 docsi(struct vtp *v, wchar_t w)
 {
-	tput(v, w, v->inter, v->narg, v->args, csis[w]);
+	tput(v, w, v->z.inter, v->z.narg, v->z.args, csis[w]);
 }
 
 static void
 doprint(struct vtp *v, wchar_t w)
 {
-	tput(v, w, v->inter, 0, NULL, print);
+	tput(v, w, v->z.inter, 0, NULL, print);
 }
 
 static void
 doosc(struct vtp *v, wchar_t w)
 {
-	tput(v, w, v->inter, v->nosc, v->oscbuf, osc);
+	tput(v, w, v->z.inter, v->z.nosc, v->z.oscbuf, osc);
 }
 
 
@@ -275,7 +275,7 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 			if( a->next ) {
 				vp->s = a->next;
 				if( vp->s->reset ) {
-					memset(&vp->inter, 0, sizeof *vp - offsetof(struct vtp, inter));
+					memset(&vp->z, 0, sizeof vp->z);
 				}
 			}
 		} else {

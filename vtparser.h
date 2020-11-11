@@ -49,11 +49,13 @@ struct vtp {
 	struct state *s;
 	mbstate_t ms;
 	void *p;
-	int inter;
-	int narg;
-	int nosc;
-	int args[MAXPARAM];
-	char oscbuf[MAXOSC + 1];
+	struct {
+		int inter;
+		int narg;
+		int nosc;
+		int args[MAXPARAM];
+		char oscbuf[MAXOSC + 1];
+	} z;
 };
 extern int cons[MAXCALLBACK];
 extern int csis[MAXCALLBACK];
