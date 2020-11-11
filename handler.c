@@ -550,9 +550,8 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	}
 		break;
 	case so: /* Switch Out/In Character Set */
-	{
-		const char *s = "\x0f\x0e}|NO", *c;
-		if( ( c = strchr(s, w)) != NULL ) switch( c - s ) {
+		for( char *s = "\x0f\x0e}|NO", *c = strchr(s, w); c; c = NULL )
+		switch( c - s ) {
 		case 0:
 		case 1:
 		case 2:
@@ -564,7 +563,6 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			p->s->c.gs = p->s->c.gc;
 			p->s->c.gc = p->g[c - s - 2];
 		}
-	}
 		break;
 	}
 	if( handler != sgr && handler != print ) {
