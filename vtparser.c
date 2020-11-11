@@ -69,25 +69,15 @@ param(struct vtp *v, wchar_t w)
 static void
 doall(struct vtp *v, wchar_t w)
 {
+	typeof(v->s->typ) typ = v->s ? v->s->typ : gnd;
 	tput(v->p, w, v->z.inter, v->z.argc, &v->z.argv,
+		( typ == osc_s && ( w == 7 || w == 10 || w == 13 )) ? osc :
 		( w < 0x20 && w >= 0 ) ? cons[w] :
-		( v->s && v->s->typ == esc_s ) ? escs[w] :
+		typ == esc_s ? escs[w] :
+		typ == csi   ? csis[w] :
 		print
 	);
 }
-
-static void
-docsi(struct vtp *v, wchar_t w)
-{
-	tput(v->p, w, v->z.inter, v->z.argc, &v->z.argv, csis[w]);
-}
-
-static void
-doosc(struct vtp *v, wchar_t w)
-{
-	tput(v->p, w, v->z.inter, v->z.argc, &v->z.argv, osc);
-}
-
 
 /*
  * State definitions built by consulting the excellent state chart created by
@@ -158,7 +148,7 @@ static struct state csi_entry = {
 		[0x3a]          = {ignore, &csi_ignore},   /* : */
 		[0x3b]          = {param, &csi_param},     /* ; */
 		[0x3c ... 0x3f] = {collect, &csi_param},   /* <=>? */
-		[0x40 ... 0x7e] = {docsi, &ground}, /* @A-Za-z[\]^_`{|}~ */
+		[0x40 ... 0x7e] = {doall, &ground}, /* @A-Za-z[\]^_`{|}~ */
 		[0x7f]          = {ignore, NULL},
 	}
 };
@@ -184,7 +174,7 @@ static struct state csi_param = {
 		[0x3a]          = {ignore, &csi_ignore},
 		[0x3b]          = {param, NULL}, /* ; */
 		[0x3c ... 0x3f] = {ignore, &csi_ignore},
-		[0x40 ... 0x7e] = {docsi, &ground},
+		[0x40 ... 0x7e] = {doall, &ground},
 		[0x7f]          = {ignore, NULL},
 	}
 };
@@ -196,7 +186,7 @@ static struct state csi_collect = {
 		LOWBITS,
 		[0x20 ... 0x2f] = {collect, NULL},       /* !"#$%&'()*+,-./ */
 		[0x30 ... 0x3f] = {ignore, &csi_ignore}, /* 0-9 :;<=>? */
-		[0x40 ... 0x7e] = {docsi, &ground},
+		[0x40 ... 0x7e] = {doall, &ground},
 		[0x7f]          = {ignore, NULL},
 	}
 };
@@ -207,9 +197,9 @@ static struct state osc_string = {
 	.typ = osc_s,
 	.act = {
 		LOWBITS,
-		[0x07]          = {doosc, &ground},
-		[0x0a]          = {doosc, &ground},  /* \n */
-		[0x0d]          = {doosc, &ground},  /* \r */
+		[0x07]          = {doall, &ground},
+		[0x0a]          = {doall, &ground},  /* \n */
+		[0x0d]          = {doall, &ground},  /* \r */
 		[0x20 ... 0x7f] = {collect, NULL},   /* sp!"#$%&'()*+,-./ */
 	}
 };
