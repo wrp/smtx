@@ -68,14 +68,14 @@ get_freepty(void)
 	while( t && t->count && t->fd != -1 ) {
 		t = t->next;
 	}
-	return t;
+	return t ? t : calloc(1, sizeof *t);
 }
 
 static struct pty *
 new_pty(int cols)
 {
 	struct pty *p = get_freepty();
-	if( check((p = p ? p : calloc(1, sizeof *p)) != NULL, "calloc") ) {
+	if( check(p != NULL, "calloc") ) {
 		if( p->s == NULL ) {
 			if( resize_pad(&p->pri.win, S.history, cols)
 				&& resize_pad(&p->alt.win, S.history, cols)
