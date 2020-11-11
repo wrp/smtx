@@ -101,16 +101,19 @@ doosc(struct vtp *v, wchar_t w)
  * Paul Flo Williams: http://vt100.net/emu/dec_ansi_parser
  * Please note that Williams does not (AFAIK) endorse this work.
  */
+ #define FIRST5BIT                                       \
+		[0]             = {ignore, NULL},        \
+		[0x01 ... 0x17] = {docontrol, NULL},     \
+		[0x18]          = {docontrol, &ground},  \
+		[0x19]          = {docontrol, NULL},     \
+		[0x1a]          = {docontrol, &ground},  \
+		[0x1b]          = {ignore, &esc},        \
+		[0x1c ... 0x1f] = {docontrol, NULL}
+
 static struct state ground = {
 	.reset = 0,
 	.act = {
-		[0]             = {ignore, NULL},
-		[0x01 ... 0x17] = {docontrol, NULL},
-		[0x18]          = {docontrol, &ground},
-		[0x19]          = {docontrol, NULL},
-		[0x1a]          = {docontrol, &ground},
-		[0x1b]          = {ignore, &esc},
-		[0x1c ... 0x1f] = {docontrol, NULL},
+		FIRST5BIT,
 		[0x20 ... 0x7f] = {doprint, NULL},
 	}
 };
@@ -118,13 +121,7 @@ static struct state ground = {
 static struct state esc = {
 	.reset = 1,
 	.act = {
-		[0]             = {ignore, NULL},
-		[0x01 ... 0x17] = {docontrol, NULL},
-		[0x18]          = {docontrol, &ground},
-		[0x19]          = {docontrol, NULL},
-		[0x1a]          = {docontrol, &ground},
-		[0x1b]          = {ignore, &esc},
-		[0x1c ... 0x1f] = {docontrol, NULL},
+		FIRST5BIT,
 		[0x20]          = {collect, &esc_collect}, /* sp */
 		[0x21]          = {ignore, &osc_string},   /* ! */
 		[0x22 ... 0x2f] = {collect, &esc_collect}, /* "#$%&'()*+,-./ */
@@ -148,13 +145,7 @@ static struct state esc = {
 static struct state esc_collect = {
 	.reset = 0,
 	.act = {
-		[0]             = {ignore, NULL},
-		[0x01 ... 0x17] = {docontrol, NULL},
-		[0x18]          = {docontrol, &ground},
-		[0x19]          = {docontrol, NULL},
-		[0x1a]          = {docontrol, &ground},
-		[0x1b]          = {ignore, &esc},
-		[0x1c ... 0x1f] = {docontrol, NULL},
+		FIRST5BIT,
 		[0x20 ... 0x2f] = {collect, NULL},  /* sp!"#$%&'()*+,-./ */
 		[0x30 ... 0x7e] = {doescape, &ground}, /* 0-9a-zA-z ... */
 		[0x7f]          = {ignore, NULL},
@@ -164,13 +155,7 @@ static struct state esc_collect = {
 static struct state csi_entry = {
 	.reset = 1,
 	.act = {
-		[0]             = {ignore, NULL},
-		[0x01 ... 0x17] = {docontrol, NULL},
-		[0x18]          = {docontrol, &ground},
-		[0x19]          = {docontrol, NULL},
-		[0x1a]          = {docontrol, &ground},
-		[0x1b]          = {ignore, &esc},
-		[0x1c ... 0x1f] = {docontrol, NULL},
+		FIRST5BIT,
 		[0x20 ... 0x2f] = {collect, &csi_collect}, /* !"#$%&'()*+,-./ */
 		[0x30 ... 0x39] = {param, &csi_param},     /* 0 - 9 */
 		[0x3a]          = {ignore, &csi_ignore},   /* : */
@@ -184,13 +169,7 @@ static struct state csi_entry = {
 static struct state csi_ignore = {
 	.reset = 0,
 	.act = {
-		[0]             = {ignore, NULL},
-		[0x01 ... 0x17] = {docontrol, NULL},
-		[0x18]          = {docontrol, &ground},
-		[0x19]          = {docontrol, NULL},
-		[0x1a]          = {docontrol, &ground},
-		[0x1b]          = {ignore, &esc},
-		[0x1c ... 0x1f] = {docontrol, NULL},
+		FIRST5BIT,
 		[0x20 ... 0x3f] = {ignore, NULL},   /* sp!"#$%&'()*+,-./ */
 		[0x40 ... 0x7e] = {ignore, &ground},
 		[0x7f]          = {ignore, NULL},
@@ -200,13 +179,7 @@ static struct state csi_ignore = {
 static struct state csi_param = {
 	.reset = 0,
 	.act = {
-		[0]             = {ignore, NULL},
-		[0x01 ... 0x17] = {docontrol, NULL},
-		[0x18]          = {docontrol, &ground},
-		[0x19]          = {docontrol, NULL},
-		[0x1a]          = {docontrol, &ground},
-		[0x1b]          = {ignore, &esc},
-		[0x1c ... 0x1f] = {docontrol, NULL},
+		FIRST5BIT,
 		[0x20 ... 0x2f] = {collect, &csi_collect},
 		[0x30 ... 0x39] = {param, NULL}, /* 0 - 9 */
 		[0x3a]          = {ignore, &csi_ignore},
@@ -220,13 +193,7 @@ static struct state csi_param = {
 static struct state csi_collect = {
 	.reset = 0,
 	.act = {
-		[0]             = {ignore, NULL},
-		[0x01 ... 0x17] = {docontrol, NULL},
-		[0x18]          = {docontrol, &ground},
-		[0x19]          = {docontrol, NULL},
-		[0x1a]          = {docontrol, &ground},
-		[0x1b]          = {ignore, &esc},
-		[0x1c ... 0x1f] = {docontrol, NULL},
+		FIRST5BIT,
 		[0x20 ... 0x2f] = {collect, NULL},       /* !"#$%&'()*+,-./ */
 		[0x30 ... 0x3f] = {ignore, &csi_ignore}, /* 0-9 :;<=>? */
 		[0x40 ... 0x7e] = {docsi, &ground},
@@ -234,22 +201,14 @@ static struct state csi_collect = {
 	}
 };
 
+#pragma GCC diagnostic ignored "-Woverride-init"
 static struct state osc_string = {
 	.reset = 1,
 	.act = {
-		[0]             = {ignore, NULL},
-		[0x01 ... 0x06] = {docontrol, NULL},
+		FIRST5BIT,
 		[0x07]          = {doosc, &ground},
-		[0x08 ... 0x09] = {docontrol, NULL},
 		[0x0a]          = {doosc, &ground},  /* \n */
-		[0x0b ... 0x0c] = {docontrol, NULL},
 		[0x0d]          = {doosc, &ground},  /* \r */
-		[0x0e ... 0x17] = {docontrol, NULL},
-		[0x18]          = {docontrol, &ground},
-		[0x19]          = {docontrol, NULL},
-		[0x1a]          = {docontrol, &ground},
-		[0x1b]          = {ignore, &esc},
-		[0x1c ... 0x1f] = {docontrol, NULL},
 		[0x20 ... 0x7f] = {collect, NULL},   /* sp!"#$%&'()*+,-./ */
 	}
 };
