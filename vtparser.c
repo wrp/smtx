@@ -69,7 +69,7 @@ param(struct vtp *v, wchar_t w)
 static void
 doall(struct vtp *v, wchar_t w)
 {
-	tput(v->p, w, v->z.inter, 0, NULL,
+	tput(v->p, w, v->z.inter, v->z.argc, NULL,
 		( w < 0x20 && w >= 0 ) ? cons[w] :
 		( v->s && v->s->typ == esc_s ) ? escs[w] :
 		print
@@ -104,7 +104,7 @@ doosc(struct vtp *v, wchar_t w)
 		[0x1c ... 0x1f] = {doall, NULL}
 
 static struct state ground = {
-	.reset = 0,
+	.reset = 1,
 	.typ = gnd,
 	.act = {
 		LOWBITS,
