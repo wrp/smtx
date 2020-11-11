@@ -20,9 +20,8 @@
 #include <string.h>
 #include "vtparser.h"
 
-typedef void (callback)(struct vtp *p, wchar_t w);
 struct action {
-	callback *cb;
+	void (*cb)(struct vtp *p, wchar_t w);;
 	struct state *next;
 };
 struct state {
