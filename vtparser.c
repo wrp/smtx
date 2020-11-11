@@ -67,7 +67,7 @@ param(struct vtp *v, wchar_t w)
 }
 
 static void
-doall(struct vtp *v, wchar_t w)
+send(struct vtp *v, wchar_t w)
 {
 	typeof(v->s->typ) typ = v->s ? v->s->typ : gnd;
 	tput(v->p, w, v->z.inter, v->z.argc, &v->z.argv,
@@ -86,19 +86,19 @@ doall(struct vtp *v, wchar_t w)
  */
  #define LOWBITS                                         \
 		[0]             = {ignore, NULL},        \
-		[0x01 ... 0x17] = {doall, NULL},     \
-		[0x18]          = {doall, &ground},  \
-		[0x19]          = {doall, NULL},     \
-		[0x1a]          = {doall, &ground},  \
+		[0x01 ... 0x17] = {send, NULL},     \
+		[0x18]          = {send, &ground},  \
+		[0x19]          = {send, NULL},     \
+		[0x1a]          = {send, &ground},  \
 		[0x1b]          = {ignore, &esc_entry},        \
-		[0x1c ... 0x1f] = {doall, NULL}
+		[0x1c ... 0x1f] = {send, NULL}
 
 static struct state ground = {
 	.reset = 1,
 	.typ = gnd,
 	.act = {
 		LOWBITS,
-		[0x20 ... 0x7f] = {doall, NULL},
+		[0x20 ... 0x7f] = {send, NULL},
 	}
 };
 
@@ -110,19 +110,19 @@ static struct state esc_entry = {
 		[0x20]          = {collect, &esc_collect}, /* sp */
 		[0x21]          = {ignore, &osc_string},   /* ! */
 		[0x22 ... 0x2f] = {collect, &esc_collect}, /* "#$%&'()*+,-./ */
-		[0x30 ... 0x4f] = {doall, &ground},
+		[0x30 ... 0x4f] = {send, &ground},
 		[0x50]          = {ignore, &osc_string},   /* P */
-		[0x51 ... 0x57] = {doall, &ground},
+		[0x51 ... 0x57] = {send, &ground},
 		[0x58]          = {ignore, NULL},
-		[0x59 ... 0x5a] = {doall, &ground},
+		[0x59 ... 0x5a] = {send, &ground},
 		[0x5b]          = {ignore, &csi_entry},  /* [ */
-		[0x5c]          = {doall, &ground},      /* \ */
+		[0x5c]          = {send, &ground},      /* \ */
 		[0x5d]          = {ignore, &osc_string}, /* ] */
 		[0x5e]          = {ignore, &osc_string}, /* ^ */
 		[0x5f]          = {ignore, &osc_string}, /* _ */
-		[0x60 ... 0x6a] = {doall, &ground},      /* `a-j */
+		[0x60 ... 0x6a] = {send, &ground},      /* `a-j */
 		[0x6b]          = {ignore, &osc_string}, /* k */
-		[0x6c ... 0x7e] = {doall, &ground},      /* l-z{|}~ */
+		[0x6c ... 0x7e] = {send, &ground},      /* l-z{|}~ */
 		[0x7f]          = {ignore, NULL},
 	}
 };
@@ -133,7 +133,7 @@ static struct state esc_collect = {
 	.act = {
 		LOWBITS,
 		[0x20 ... 0x2f] = {collect, NULL},  /* sp!"#$%&'()*+,-./ */
-		[0x30 ... 0x7e] = {doall, &ground}, /* 0-9a-zA-z ... */
+		[0x30 ... 0x7e] = {send, &ground}, /* 0-9a-zA-z ... */
 		[0x7f]          = {ignore, NULL},
 	}
 };
@@ -148,7 +148,7 @@ static struct state csi_entry = {
 		[0x3a]          = {ignore, &csi_ignore},   /* : */
 		[0x3b]          = {param, &csi_param},     /* ; */
 		[0x3c ... 0x3f] = {collect, &csi_param},   /* <=>? */
-		[0x40 ... 0x7e] = {doall, &ground}, /* @A-Za-z[\]^_`{|}~ */
+		[0x40 ... 0x7e] = {send, &ground}, /* @A-Za-z[\]^_`{|}~ */
 		[0x7f]          = {ignore, NULL},
 	}
 };
@@ -174,7 +174,7 @@ static struct state csi_param = {
 		[0x3a]          = {ignore, &csi_ignore},
 		[0x3b]          = {param, NULL}, /* ; */
 		[0x3c ... 0x3f] = {ignore, &csi_ignore},
-		[0x40 ... 0x7e] = {doall, &ground},
+		[0x40 ... 0x7e] = {send, &ground},
 		[0x7f]          = {ignore, NULL},
 	}
 };
@@ -186,7 +186,7 @@ static struct state csi_collect = {
 		LOWBITS,
 		[0x20 ... 0x2f] = {collect, NULL},       /* !"#$%&'()*+,-./ */
 		[0x30 ... 0x3f] = {ignore, &csi_ignore}, /* 0-9 :;<=>? */
-		[0x40 ... 0x7e] = {doall, &ground},
+		[0x40 ... 0x7e] = {send, &ground},
 		[0x7f]          = {ignore, NULL},
 	}
 };
@@ -197,9 +197,9 @@ static struct state osc_string = {
 	.typ = osc_s,
 	.act = {
 		LOWBITS,
-		[0x07]          = {doall, &ground},
-		[0x0a]          = {doall, &ground},  /* \n */
-		[0x0d]          = {doall, &ground},  /* \r */
+		[0x07]          = {send, &ground},
+		[0x0a]          = {send, &ground},  /* \n */
+		[0x0d]          = {send, &ground},  /* \r */
 		[0x20 ... 0x7f] = {collect, NULL},   /* sp!"#$%&'()*+,-./ */
 	}
 };
@@ -229,7 +229,7 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 				}
 			}
 		} else {
-			doall(vp, w);
+			send(vp, w);
 		}
 	}
 }
