@@ -45,9 +45,9 @@ collect(struct vtp *v, wchar_t w)
 {
 	if( v->s == &osc_string ) {
 		if( v->z.argc < MAXOSC ) {
-			v->z.oscbuf[v->z.argc++] = wctob(w);
-			assert( v->z.argc < (int)sizeof v->z.oscbuf );
-			assert( v->z.oscbuf[v->z.argc] == '\0' );
+			v->z.argv.oscbuf[v->z.argc++] = wctob(w);
+			assert( v->z.argc < (int)sizeof v->z.argv.oscbuf );
+			assert( v->z.argv.oscbuf[v->z.argc] == '\0' );
 		}
 	} else if( !v->z.inter ) {
 		v->z.inter = (int)w;
@@ -58,7 +58,7 @@ static void
 param(struct vtp *v, wchar_t w)
 {
 	v->z.argc = v->z.argc ? v->z.argc : 1;
-	int *a = v->z.args + v->z.argc - 1;
+	int *a = v->z.argv.args + v->z.argc - 1;
 	if( w == L';' ) {
 		v->z.argc += 1;
 	} else if( v->z.argc < MAXPARAM && *a < 9999 ) {
@@ -79,13 +79,13 @@ doall(struct vtp *v, wchar_t w)
 static void
 docsi(struct vtp *v, wchar_t w)
 {
-	tput(v->p, w, v->z.inter, v->z.argc, v->z.args, csis[w]);
+	tput(v->p, w, v->z.inter, v->z.argc, v->z.argv.args, csis[w]);
 }
 
 static void
 doosc(struct vtp *v, wchar_t w)
 {
-	tput(v->p, w, v->z.inter, v->z.argc, v->z.oscbuf, osc);
+	tput(v->p, w, v->z.inter, v->z.argc, v->z.argv.oscbuf, osc);
 }
 
 

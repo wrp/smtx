@@ -53,8 +53,10 @@ struct vtp {
 	struct {
 		int inter;
 		int argc;
-		int args[MAXPARAM];
-		char oscbuf[MAXOSC + 1];
+		union {
+			int args[MAXPARAM];
+			char oscbuf[MAXOSC + 1];
+		} argv;
 	} z;
 };
 extern int cons[MAXCALLBACK];
