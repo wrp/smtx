@@ -52,8 +52,7 @@ struct vtp {
 	struct pty *p;
 	struct {
 		int inter;
-		int narg;
-		int nosc;
+		int argc;
 		int args[MAXPARAM];
 		char oscbuf[MAXOSC + 1];
 	} z;

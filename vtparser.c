@@ -44,10 +44,10 @@ static void
 collect(struct vtp *v, wchar_t w)
 {
 	if( v->s == &osc_string ) {
-		if( v->z.nosc < MAXOSC ) {
-			v->z.oscbuf[v->z.nosc++] = wctob(w);
-			assert( v->z.nosc < (int)sizeof v->z.oscbuf );
-			assert( v->z.oscbuf[v->z.nosc] == '\0' );
+		if( v->z.argc < MAXOSC ) {
+			v->z.oscbuf[v->z.argc++] = wctob(w);
+			assert( v->z.argc < (int)sizeof v->z.oscbuf );
+			assert( v->z.oscbuf[v->z.argc] == '\0' );
 		}
 	} else if( !v->z.inter ) {
 		v->z.inter = (int)w;
@@ -57,11 +57,11 @@ collect(struct vtp *v, wchar_t w)
 static void
 param(struct vtp *v, wchar_t w)
 {
-	v->z.narg = v->z.narg ? v->z.narg : 1;
-	int *a = v->z.args + v->z.narg - 1;
+	v->z.argc = v->z.argc ? v->z.argc : 1;
+	int *a = v->z.args + v->z.argc - 1;
 	if( w == L';' ) {
-		v->z.narg += 1;
-	} else if( v->z.narg < MAXPARAM && *a < 9999 ) {
+		v->z.argc += 1;
+	} else if( v->z.argc < MAXPARAM && *a < 9999 ) {
 		*a = *a * 10 + w - '0';
 	}
 }
@@ -79,13 +79,13 @@ doall(struct vtp *v, wchar_t w)
 static void
 docsi(struct vtp *v, wchar_t w)
 {
-	tput(v->p, w, v->z.inter, v->z.narg, v->z.args, csis[w]);
+	tput(v->p, w, v->z.inter, v->z.argc, v->z.args, csis[w]);
 }
 
 static void
 doosc(struct vtp *v, wchar_t w)
 {
-	tput(v->p, w, v->z.inter, v->z.nosc, v->z.oscbuf, osc);
+	tput(v->p, w, v->z.inter, v->z.argc, v->z.oscbuf, osc);
 }
 
 
