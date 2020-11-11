@@ -25,14 +25,9 @@ struct action {
 	struct state *next;
 };
 struct state {
-	void (*entry)(struct vtp *v);
+	int reset;
 	struct action act[0x80];
 };
-static void
-reset(struct vtp *v)
-{
-	memset(&v->inter, 0, sizeof *v - offsetof(struct vtp, inter));
-}
 
 static void
 ignore(struct vtp *v, wchar_t w)
@@ -107,7 +102,7 @@ doosc(struct vtp *v, wchar_t w)
  * Please note that Williams does not (AFAIK) endorse this work.
  */
 static struct state ground = {
-	.entry = NULL,
+	.reset = 0,
 	.act = {
 		[0]             = {ignore, NULL},
 		[0x01 ... 0x17] = {docontrol, NULL},
@@ -121,7 +116,7 @@ static struct state ground = {
 };
 
 static struct state esc = {
-	.entry = reset,
+	.reset = 1,
 	.act = {
 		[0]             = {ignore, NULL},
 		[0x01 ... 0x17] = {docontrol, NULL},
@@ -151,7 +146,7 @@ static struct state esc = {
 };
 
 static struct state esc_collect = {
-	.entry = NULL,
+	.reset = 0,
 	.act = {
 		[0]             = {ignore, NULL},
 		[0x01 ... 0x17] = {docontrol, NULL},
@@ -167,7 +162,7 @@ static struct state esc_collect = {
 };
 
 static struct state csi_entry = {
-	.entry = reset,
+	.reset = 1,
 	.act = {
 		[0]             = {ignore, NULL},
 		[0x01 ... 0x17] = {docontrol, NULL},
@@ -187,7 +182,7 @@ static struct state csi_entry = {
 };
 
 static struct state csi_ignore = {
-	.entry = NULL,
+	.reset = 0,
 	.act = {
 		[0]             = {ignore, NULL},
 		[0x01 ... 0x17] = {docontrol, NULL},
@@ -203,7 +198,7 @@ static struct state csi_ignore = {
 };
 
 static struct state csi_param = {
-	.entry = NULL,
+	.reset = 0,
 	.act = {
 		[0]             = {ignore, NULL},
 		[0x01 ... 0x17] = {docontrol, NULL},
@@ -223,7 +218,7 @@ static struct state csi_param = {
 };
 
 static struct state csi_collect = {
-	.entry = NULL,
+	.reset = 0,
 	.act = {
 		[0]             = {ignore, NULL},
 		[0x01 ... 0x17] = {docontrol, NULL},
@@ -240,7 +235,7 @@ static struct state csi_collect = {
 };
 
 static struct state osc_string = {
-	.entry = reset,
+	.reset = 1,
 	.act = {
 		[0]             = {ignore, NULL},
 		[0x01 ... 0x06] = {docontrol, NULL},
@@ -279,8 +274,8 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 			a->cb(vp, w);
 			if( a->next ) {
 				vp->s = a->next;
-				if( vp->s->entry ) {
-					vp->s->entry(vp);
+				if( vp->s->reset ) {
+					memset(&vp->inter, 0, sizeof *vp - offsetof(struct vtp, inter));
 				}
 			}
 		} else {
