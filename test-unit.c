@@ -1359,7 +1359,7 @@ test_swap(int fd)
 
 	get_layout(fd, 5, desc, sizeof desc);
 	if( sscanf(desc, "11x40(id=%*d); *11x40(id=%d); "
-			"11x39(id=%*d); 11x39(id=%d)", id, id + 1) != 2 ) {
+			"11x39(id=%d); 11x39(id=%*d)", id, id + 1) != 2 ) {
 		fprintf(stderr, "received unexpected: '%s'\n", desc);
 		rv = 1;
 	}
@@ -1367,6 +1367,7 @@ test_swap(int fd)
 	send_cmd(fd, NULL, "k"); /* Move to upper left */
 	send_txt(fd, "ul0>", "PS1='u'l'0>'; echo; echo upperleft");
 	rv |= validate_row(fd, 3, "%-40s", "upperleft");
+	rv |= validate_row(fd, 4, "%-40s", "ul0>");
 
 	send_cmd(fd, NULL, "1024S");   /* Invalid swap */
 	send_cmd(fd, NULL, "%dS", id[0]); /* Swap upper left and lower left */
@@ -1379,16 +1380,15 @@ test_swap(int fd)
 	rv |= validate_row(fd, 3, "%-40s", "upperleft");
 
 	send_cmd(fd, NULL, "hl"); /* Move to lower right */
+	rv |= check_layout(fd, 0x1, "11x40; 11x40; *11x39; 11x39");
+
 	send_txt(fd, "lr1>", "PS1='l'r'1>'; echo; echo lowerright");
 	send_cmd(fd, NULL, "kk"); /* Move to upper left */
 	send_txt(fd, "ul2>", "PS1='u'l'2>'");
 	rv |= validate_row(fd, 3, "%-40s", "upperleft");
 	send_cmd(fd, NULL, "%dS", id[1]); /* Swap upper left and lower rt */
 	send_txt(fd, "ul3>", "PS1='u'l'3>'");
-	/*
-	TODO: why does this not work?  The attach seems to clear screen
 	rv |= validate_row(fd, 3, "%-40s", "lowerright");
-	*/
 
 	get_layout(fd, 5, desc, sizeof desc);
 	if( sscanf(desc, "*11x40(id=%d); 11x40(id=%*d); "
