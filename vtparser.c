@@ -36,7 +36,7 @@ ignore(struct vtp *v, wchar_t w)
 	(void)w;
 }
 
-static struct state esc, esc_collect, csi_entry,
+static struct state ground, esc, esc_collect, csi_entry,
 	csi_ignore, csi_param, csi_collect, osc_string;
 
 static void
@@ -66,27 +66,19 @@ param(struct vtp *v, wchar_t w)
 }
 
 static void
-docontrol(struct vtp *v, wchar_t w)
+doall(struct vtp *v, wchar_t w)
 {
-	tput(v->p, w, v->z.inter, 0, NULL, cons[w]);
-}
-
-static void
-doescape(struct vtp *v, wchar_t w)
-{
-	tput(v->p, w, v->z.inter, 0, NULL, escs[w]);
+	tput(v->p, w, v->z.inter, 0, NULL,
+		( w < 0x20 && w >= 0 ) ? cons[w] :
+		( v->s == &esc || v->s == &esc_collect ) ? escs[w] :
+		print
+	);
 }
 
 static void
 docsi(struct vtp *v, wchar_t w)
 {
 	tput(v->p, w, v->z.inter, v->z.narg, v->z.args, csis[w]);
-}
-
-static void
-doprint(struct vtp *v, wchar_t w)
-{
-	tput(v->p, w, v->z.inter, 0, NULL, print);
 }
 
 static void
@@ -103,18 +95,18 @@ doosc(struct vtp *v, wchar_t w)
  */
  #define LOWBITS                                         \
 		[0]             = {ignore, NULL},        \
-		[0x01 ... 0x17] = {docontrol, NULL},     \
-		[0x18]          = {docontrol, &ground},  \
-		[0x19]          = {docontrol, NULL},     \
-		[0x1a]          = {docontrol, &ground},  \
+		[0x01 ... 0x17] = {doall, NULL},     \
+		[0x18]          = {doall, &ground},  \
+		[0x19]          = {doall, NULL},     \
+		[0x1a]          = {doall, &ground},  \
 		[0x1b]          = {ignore, &esc},        \
-		[0x1c ... 0x1f] = {docontrol, NULL}
+		[0x1c ... 0x1f] = {doall, NULL}
 
 static struct state ground = {
 	.reset = 0,
 	.act = {
 		LOWBITS,
-		[0x20 ... 0x7f] = {doprint, NULL},
+		[0x20 ... 0x7f] = {doall, NULL},
 	}
 };
 
@@ -125,19 +117,19 @@ static struct state esc = {
 		[0x20]          = {collect, &esc_collect}, /* sp */
 		[0x21]          = {ignore, &osc_string},   /* ! */
 		[0x22 ... 0x2f] = {collect, &esc_collect}, /* "#$%&'()*+,-./ */
-		[0x30 ... 0x4f] = {doescape, &ground},
+		[0x30 ... 0x4f] = {doall, &ground},
 		[0x50]          = {ignore, &osc_string},   /* P */
-		[0x51 ... 0x57] = {doescape, &ground},
+		[0x51 ... 0x57] = {doall, &ground},
 		[0x58]          = {ignore, NULL},
-		[0x59 ... 0x5a] = {doescape, &ground},
+		[0x59 ... 0x5a] = {doall, &ground},
 		[0x5b]          = {ignore, &csi_entry},  /* [ */
-		[0x5c]          = {doescape, &ground},   /* \ */
+		[0x5c]          = {doall, &ground},      /* \ */
 		[0x5d]          = {ignore, &osc_string}, /* ] */
 		[0x5e]          = {ignore, &osc_string}, /* ^ */
 		[0x5f]          = {ignore, &osc_string}, /* _ */
-		[0x60 ... 0x6a] = {doescape, &ground},   /* `a-j */
+		[0x60 ... 0x6a] = {doall, &ground},      /* `a-j */
 		[0x6b]          = {ignore, &osc_string}, /* k */
-		[0x6c ... 0x7e] = {doescape, &ground},   /* l-z{|}~ */
+		[0x6c ... 0x7e] = {doall, &ground},      /* l-z{|}~ */
 		[0x7f]          = {ignore, NULL},
 	}
 };
@@ -147,7 +139,7 @@ static struct state esc_collect = {
 	.act = {
 		LOWBITS,
 		[0x20 ... 0x2f] = {collect, NULL},  /* sp!"#$%&'()*+,-./ */
-		[0x30 ... 0x7e] = {doescape, &ground}, /* 0-9a-zA-z ... */
+		[0x30 ... 0x7e] = {doall, &ground}, /* 0-9a-zA-z ... */
 		[0x7f]          = {ignore, NULL},
 	}
 };
@@ -238,7 +230,7 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 				}
 			}
 		} else {
-			doprint(vp, w);
+			doall(vp, w);
 		}
 	}
 }
