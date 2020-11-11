@@ -69,7 +69,7 @@ param(struct vtp *v, wchar_t w)
 static void
 doall(struct vtp *v, wchar_t w)
 {
-	tput(v->p, w, v->z.inter, v->z.argc, NULL,
+	tput(v->p, w, v->z.inter, v->z.argc, &v->z.argv,
 		( w < 0x20 && w >= 0 ) ? cons[w] :
 		( v->s && v->s->typ == esc_s ) ? escs[w] :
 		print
@@ -79,13 +79,13 @@ doall(struct vtp *v, wchar_t w)
 static void
 docsi(struct vtp *v, wchar_t w)
 {
-	tput(v->p, w, v->z.inter, v->z.argc, v->z.argv.args, csis[w]);
+	tput(v->p, w, v->z.inter, v->z.argc, &v->z.argv, csis[w]);
 }
 
 static void
 doosc(struct vtp *v, wchar_t w)
 {
-	tput(v->p, w, v->z.inter, v->z.argc, v->z.argv.oscbuf, osc);
+	tput(v->p, w, v->z.inter, v->z.argc, &v->z.argv, osc);
 }
 
 
