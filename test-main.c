@@ -539,6 +539,7 @@ execute_test(struct st *v, const char *name)
 	struct winsize ws;
 	int rv = 1;
 
+	(void)name;
 	assert( strcmp(name, v->name) == 0 );
 	unsetenv("ENV");  /* Suppress all shell initializtion */
 	setenv("SHELL", "/bin/sh", 1);
