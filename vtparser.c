@@ -74,7 +74,7 @@ docontrol(struct vtp *v, wchar_t w)
 static void
 doescape(struct vtp *v, wchar_t w)
 {
-	tput(v->p, w, v->z.inter, v->z.inter > 0, &v->z.inter, escs[w]);
+	tput(v->p, w, v->z.inter, 0, NULL, escs[w]);
 }
 
 static void
