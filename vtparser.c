@@ -229,7 +229,7 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 				}
 			}
 		} else {
-			send(vp, w);
+			tput(vp->p, w, 0, 0, NULL, print);
 		}
 	}
 }
