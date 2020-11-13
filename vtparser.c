@@ -218,7 +218,7 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 		case 0: /* literal zero, write it and advance */
 			r = 1;
 		}
-		if( w >= 0 && w < MAXCALLBACK ) {
+		if( w >= 0 && w < 0x80 ) {
 			struct action *a = (vp->s ? vp->s : &ground)->act + w;
 			assert( a->cb != NULL );
 			a->cb(vp, w);

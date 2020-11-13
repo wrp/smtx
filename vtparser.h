@@ -42,7 +42,6 @@ enum cmd {
 #endif
 
 #define MAXPARAM    16
-#define MAXCALLBACK 128
 #define MAXOSC      511
 
 struct pty;
@@ -59,9 +58,10 @@ struct vtp {
 		} argv;
 	} z;
 };
-extern int cons[MAXCALLBACK];
-extern int csis[MAXCALLBACK];
-extern int escs[MAXCALLBACK];
+extern int cons[0x80];
+extern int csis[0x80];
+extern int escs[0x80];
+extern int oscs[0x80];
 
 void tput(struct pty *, wchar_t, wchar_t, int, void *, int);
 

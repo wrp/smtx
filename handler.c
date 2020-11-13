@@ -581,11 +581,11 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	[0x0e] = so, \
 	[0x0f] = so
 
-int cons[MAXCALLBACK] = {
+int cons[0x80] = {
 	CONTROL,
 };
 
-int csis[MAXCALLBACK] = {
+int csis[0x80] = {
 	CONTROL,
 	[L'A'] = cuu,
 	[L'B'] = cud,
@@ -625,7 +625,7 @@ int csis[MAXCALLBACK] = {
 	[L'x'] = decreqtparm,
 };
 
-int escs[MAXCALLBACK] = {
+int escs[0x80] = {
 	CONTROL,
 	[L'0'] = scs,
 	[L'1'] = scs,
