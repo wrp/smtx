@@ -116,3 +116,13 @@ MAYBE TODO:
 	Make it possible for windows to overlap.
 
 	Implement method to save the current layout into a register.
+
+	Currently (for the last several days), the test suite when run through
+	the makefile consistently fails with:
+	test_decid: timedout waiting for ^[[>1;10;0c
+	However, when I run test-main directly from the shell, test_decid
+	passes but test_utf fails claiming that the expected value in
+	the line is only 78 characters wide.  Note that these tests are
+	being run in a debian docker container (the test suite still
+	fails on macos with all tests timing out).  I suspect this is due to
+	a recent docker upgrade.
