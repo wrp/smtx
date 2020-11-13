@@ -569,19 +569,24 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	wmove(win, s->c.y, s->c.x);
 }
 
+#define CONTROL \
+	[0x05] = ack, \
+	[0x07] = bell, \
+	[0x08] = cub, \
+	[0x09] = tab, \
+	[0x0a] = pnl, \
+	[0x0b] = pnl, \
+	[0x0c] = pnl, \
+	[0x0d] = cr, \
+	[0x0e] = so, \
+	[0x0f] = so
+
 int cons[MAXCALLBACK] = {
-	[0x05] = ack,
-	[0x07] = bell,
-	[0x08] = cub,
-	[0x09] = tab,
-	[0x0a] = pnl,
-	[0x0b] = pnl,
-	[0x0c] = pnl,
-	[0x0d] = cr,
-	[0x0e] = so,
-	[0x0f] = so,
+	CONTROL,
 };
+
 int csis[MAXCALLBACK] = {
+	CONTROL,
 	[L'A'] = cuu,
 	[L'B'] = cud,
 	[L'C'] = cuf,
@@ -619,7 +624,9 @@ int csis[MAXCALLBACK] = {
 	[L'u'] = rc,
 	[L'x'] = decreqtparm,
 };
+
 int escs[MAXCALLBACK] = {
+	CONTROL,
 	[L'0'] = scs,
 	[L'1'] = scs,
 	[L'2'] = scs,
@@ -640,4 +647,13 @@ int escs[MAXCALLBACK] = {
 	[L'p'] = vis,
 	[L'='] = numkp,
 	[L'>'] = numkp,
+};
+
+#pragma GCC diagnostic ignored "-Woverride-init"
+int oscs[0x80] = {
+	[0 ... 0x7f] = osc,
+	CONTROL,
+	[0x07] = osc,
+	[0x0a] = osc,
+	[0x0d] = osc,
 };

@@ -71,7 +71,7 @@ send(struct vtp *v, wchar_t w)
 {
 	typeof(v->s->typ) typ = v->s ? v->s->typ : gnd;
 	tput(v->p, w, v->z.inter, v->z.argc, &v->z.argv,
-		( typ == osc_s && ( w == 7 || w == 10 || w == 13 )) ? osc :
+		typ == osc_s ? oscs[w] :
 		( w < 0x20 && w >= 0 ) ? cons[w] :
 		typ == esc_s ? escs[w] :
 		typ == csi   ? csis[w] :
