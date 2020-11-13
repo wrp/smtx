@@ -34,7 +34,7 @@ parse_args(int argc, char *const*argv)
 			);
 			exit(EXIT_SUCCESS);
 		case 'c':
-			S.ctlkey = CTL(optarg[0]);
+			S.ctlkey = CTRL(optarg[0]);
 			break;
 		case 's':
 			S.history = strtol(optarg, NULL, 10);

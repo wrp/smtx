@@ -53,7 +53,6 @@
 #include "vtparser.h"
 
 extern int smtx_main(void);
-#define CTL(x) ((x) & 0x1f)
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))

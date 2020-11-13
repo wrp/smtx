@@ -18,7 +18,7 @@
 #include "smtx.h"
 
 struct state S = {
-	.ctlkey = CTL('g'),
+	.ctlkey = CTRL('g'),
 	.term = "smtx",
 	.width = 80,
 	.binding = k1,
