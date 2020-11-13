@@ -657,3 +657,8 @@ int oscs[0x80] = {
 	[0x0a] = osc,
 	[0x0d] = osc,
 };
+
+int gnds[0x80] = {
+	[0 ... 0x7f] = print,
+	CONTROL,
+};

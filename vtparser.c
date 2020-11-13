@@ -75,7 +75,7 @@ send(struct vtp *v, wchar_t w)
 		( w < 0x20 && w >= 0 ) ? cons[w] :
 		typ == esc_s ? escs[w] :
 		typ == csi   ? csis[w] :
-		print
+		gnds[w]
 	);
 }
 

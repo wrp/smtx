@@ -62,6 +62,7 @@ extern int cons[0x80];
 extern int csis[0x80];
 extern int escs[0x80];
 extern int oscs[0x80];
+extern int gnds[0x80];
 
 void tput(struct pty *, wchar_t, wchar_t, int, void *, int);
 
