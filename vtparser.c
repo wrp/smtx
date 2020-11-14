@@ -188,9 +188,18 @@ static struct state osc_string = {
 		[0x07]          = {send, &ground},
 		[0x0a]          = {send, &ground},  /* \n */
 		[0x0d]          = {send, &ground},  /* \r */
-		[0x20 ... 0x7f] = {collect, NULL},   /* sp!"#$%&'()*+,-./ */
+		[0x20 ... 0x7f] = {collect, NULL},  /* sp!"#$%&'()*+,-./ */
 	}
 };
+
+void
+vtreset(struct vtp *v)
+{
+	memset(&v->z, 0, sizeof v->z);
+	if( v->s == NULL ) {
+		v->s = &ground;
+	}
+}
 
 void
 vtwrite(struct vtp *vp, const char *s, size_t n)
@@ -206,9 +215,6 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 		case 0: /* literal zero, write it and advance */
 			r = 1;
 		}
-		if( vp->s == NULL ) {
-			vp->s = &ground;
-		}
 		if( w >= 0 && w < 0x80 ) {
 			struct action *a = vp->s->act + w;
 			if( a->cb ) {
@@ -217,7 +223,7 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 			if( a->next ) {
 				vp->s = a->next;
 				if( vp->s->reset ) {
-					memset(&vp->z, 0, sizeof vp->z);
+					vtreset(vp);
 				}
 			}
 		} else {

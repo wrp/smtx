@@ -65,6 +65,6 @@ extern int oscs[0x80];
 extern int gnds[0x80];
 
 void tput(struct pty *, wchar_t, wchar_t, int, void *, int);
-
+void vtreset(struct vtp *v);
 void vtwrite(struct vtp *vp, const char *s, size_t n);
 #endif
