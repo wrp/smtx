@@ -16,21 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "smtx.h"
+#define Kase break; case
 
 static void
 handle_osc(struct pty *p, int cmd, const char *arg)
 {
 	switch( cmd ) {
-	case 2:
-		snprintf(p->status, sizeof p->status, "%s", arg);
-		break;
-	case 60:
-		build_layout(arg);
-		break;
+	case 2: snprintf(p->status, sizeof p->status, "%s", arg);
+	Kase 60: build_layout(arg);
 #ifndef NDEBUG
-	case 62:
+	Kase 62:
 		show_status(arg);
-		break;
 #endif
 	}
 }
@@ -169,16 +165,10 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	const int top = MAX(0, s->scroll.top - tos);
 
 	switch( (enum cmd)handler ) {
-	case ack:
-		rewrite(p->fd, "\006", 1);
-		break;
-	case bell:
-		beep();
-		break;
-	case cr:
-		s->c.xenl = s->c.x = 0;
-		break;
-	case csr:
+	case ack: rewrite(p->fd, "\006", 1);
+	Kase bell: beep();
+	Kase cr: s->c.xenl = s->c.x = 0;
+	Kase csr:
 		t1 = argc > 1 ? argv[1] : p->ws.ws_row;
 		if( wsetscrreg(win, tos + p0[1] - 1, tos + t1 - 1) == OK ) {
 			s->scroll.top = tos + p0[1] - 1;
@@ -186,31 +176,21 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			s->c.y = tos + (p->decom ? top : 0);
 			s->c.xenl = s->c.x = 0;
 		}
-		break;
-	case cub:
+	Kase cub:
 		s->c.xenl = 0;
 		s->c.x -= p0[1];
-		break;
-	case cud:
-		s->c.y += p0[1];
-		break;
-	case cuf:
-		s->c.x += p0[1];
-		break;
-	case cup:
+	Kase cud: s->c.y += p0[1];
+	Kase cuf: s->c.x += p0[1];
+	Kase cup:
 		s->c.xenl = 0;
 		s->c.y = tos + (p->decom ? top : 0) + p0[1] - 1;
 		s->c.x = argc > 1 ? argv[1] - 1 : 0;
-		break;
-	case cuu:
-		s->c.y -= p0[1];
-		break;
-	case dch:
+	Kase cuu: s->c.y -= p0[1];
+	Kase dch:
 		for( i = 0; i < p0[1]; i++ ) {
 			wdelch(win);
 		}
-		break;
-	case decid:
+	Kase decid:
 		if( w == L'c' ) {
 			if( iw == L'>' ) {
 				rewrite(p->fd, "\033[>1;10;0c", 10);
@@ -220,8 +200,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		} else if( w == L'Z' ) {
 			rewrite(p->fd, "\033[?6c", 5);
 		}
-		break;
-	case dsr:
+	Kase dsr:
 		if( p0[0] == 6 ) {
 			char buf[32];
 			i = snprintf(buf, sizeof buf, "\033[%d;%dR",
@@ -231,28 +210,22 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		} else {
 			rewrite(p->fd, "\033[0n", 4);
 		}
-		break;
-	case ech:
+	Kase ech:
 		setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
 		for( i = 0; i < p0[1]; i++ ) {
 			mvwadd_wchnstr(win, s->c.y, s->c.x + i, &b, 1);
 		}
-		break;
-	case ed:
+	Kase ed: /* Fallthru */
 	case el:
 		switch( p0[0] ) {
-		case 2:
-			wmove(win, handler == el ? s->c.y : tos, 0);
+		case 2: wmove(win, handler == el ? s->c.y : tos, 0);
 			/* Fall Thru */
-		case 0:
-			(handler == el ? wclrtoeol : wclrtobot)(win);
-			break;
-		case 3:
+		case 0: (handler == el ? wclrtoeol : wclrtobot)(win);
+		Kase 3:
 			if( handler == ed ) {
 				werase(win);
 			}
-			break;
-		case 1:
+		Kase 1:
 			if( handler == ed ) {
 				for( i = tos; i < s->c.y; i++ ) {
 					wmove(win, i, 0);
@@ -265,19 +238,11 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				mvwadd_wchnstr(win, s->c.y, i, &b, 1);
 			}
 		}
-		break;
-	case hpa:
-		s->c.x = -1; /* Fallthru */
-	case hpr:
-		s->c.x += p0[1];
-		break;
-	case hts:
-		p->tabs[s->c.x] = true;
-		break;
-	case ich:
-		insert_space(p0[1], win);
-		break;
-	case idl:
+	Kase hpa: s->c.x = -1; /* Fallthru */
+	case hpr: s->c.x += p0[1];
+	Kase hts: p->tabs[s->c.x] = true;
+	Kase ich: insert_space(p0[1], win);
+	Kase idl:
 		/* We don't use insdelln here because it inserts above and
 		   not below, and has a few other edge cases. */
 		i = MIN(p0[1], p->ws.ws_row - 1 - y);
@@ -289,17 +254,14 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		wscrl(win, w == L'L' ? -i : i);
 		wsetscrreg(win, s->scroll.top, s->scroll.bot);
 		s->c.x = 0;
-		break;
-	case numkp:
+	Kase numkp:
 		p->pnm = (w == L'=');
-		break;
-	case rc:
+	Kase rc:
 		if( iw == L'#' ) {
 			decaln(p, tos);
 		}
 		restore_cursor(s);
-		break;
-	case ri:
+	Kase ri:
 		t1 = s->scroll.top;
 		wsetscrreg(win, t1 >= tos ? t1 : tos, s->scroll.bot);
 		if( y == top ) {
@@ -309,52 +271,43 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			wmove(win, s->c.y, s->c.x);
 		}
 		wsetscrreg(win, s->scroll.top, s->scroll.bot);
-		break;
-	case sc:
+	Kase sc:
 		save_cursor(s);
-		break;
-	case su:
+	Kase su:
 		wscrl(win, (w == L'T' || w == L'^') ? -p0[1] : p0[1]);
-		break;
-	case tab:
+	Kase tab:
 		while( p0[1] ) {
 			s->c.x += w == L'Z' ? -1 : +1;
 			if( p->tabs[s->c.x] ) {
 				p0[1] -= 1;
 			}
 		}
-		break;
-	case tbc:
+	Kase tbc:
 		if( p0[0] == 0 ) {
 			p->tabs[s->c.x] = false;
 		} else if( p0[0] == 3 ) {
 			memset(p->tabs, 0, p->ws.ws_col * sizeof *p->tabs);
 		}
-		break;
-	case osc:
+	Kase osc:
 		{
 		/* TODO: parse properly in the vt state machine */
 		const char *parm;
 		int cmd = strtol(arg, (char **)&parm, 10);
 		handle_osc(p, cmd, parm ? parm + 1 : "");
 		}
-		break;
-	case vis:
+	Kase vis:
 		s->vis = iw != L'6';
-		break;
-	case vpa:
+	Kase vpa:
 		s->c.y = tos - 1; /* Fallthru */
 	case vpr:
 		s->c.y = MAX(tos + top, p0[1] + s->c.y);
-		break;
-	case decreqtparm:
+	Kase decreqtparm:
 		if( p0[0] ) {
 			rewrite(p->fd, "\033[3;1;2;120;1;0x", 16);
 		} else {
 			rewrite(p->fd, "\033[2;1;2;120;128;1;0x", 20);
 		}
-		break;
-	case ris:
+	Kase ris:
 		ioctl(p->fd, TIOCGWINSZ, &p->ws);
 		p->pri.c.gs = p->pri.c.gc = p->g[0] = CSET_US;
 		p->alt.c.gs = p->alt.c.gc = p->g[2] = CSET_US;
@@ -370,29 +323,27 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		wsetscrreg(s->win, s->scroll.top=0, s->scroll.bot=s->rows - 1);
 		set_tabs(p, p->tabstop);
 		vtreset(&p->vp);
-		break;
-	case mode:
+	Kase mode:
 		for( i = 0; i < argc; i++ ) {
 			bool set = (w == L'h');
 			switch( argv[i] ) {
-			case  1: p->pnm = set;              break;
-			case  3: set_width(set ? "132" : "80"); break;
-			case  4: s->insert = set;           break;
-			case  6:
+			case  1: p->pnm = set;
+			Kase  3: set_width(set ? "132" : "80");
+			Kase  4: s->insert = set;
+			Kase  6:
 				p->decom = set;
 				s->c.xenl = 0;
 				s->c.y = tos + (p->decom ? top : 0);
 				wmove(win, s->c.y, s->c.x = 0);
-				break;
-			case  7: p->decawm = set;           break;
-			case 20: p->lnm = set;              break;
-			case 25: s->vis = set ? 1 : 0;      break;
-			case 34: s->vis = set ? 1 : 2;      break;
-			case 1048: case 1049:
+			Kase  7: p->decawm = set;
+			Kase 20: p->lnm = set;
+			Kase 25: s->vis = set ? 1 : 0;
+			Kase 34: s->vis = set ? 1 : 2;
+			Kase 1048: case 1049:
 				(set ? save_cursor : restore_cursor)(s);
 				if( argv[i] == 1048 ) {
 					break;
-				} /* fall-thru */
+				} /* Fallthru */
 			case 47: case 1047:
 				if( set && p->s != &p->alt ) {
 					clear_alt(p, top, tos);
@@ -400,8 +351,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				p->s = set ? &p->alt : &p->pri;
 			}
 		}
-		break;
-	case sgr:
+	Kase sgr:
 	{
 		bool doc = false;
 		bool do8 = COLORS >= 8;
@@ -416,27 +366,22 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			bool at = argc > i + 2 && argv[i + 1] == 5;
 			int val = argc > i + 2 ? argv[i + 2] : 0, k = 0, a;
 			switch( a = argv[i] ) {
-			case  0:
-				reset_sgr(s);
-				break;
-			case  1:
+			case  0: reset_sgr(s);
+			Kase  1:
 			case  2:
 			case  4:
 			case  5:
 			case  7:
 			case  8:
 				wattron(win, attrs[argv[i]]);
-				break;
-			case 22:
+			Kase 22:
 				wattroff(win, A_DIM);
 				wattroff(win, A_BOLD);
-				break;
-			case 24:
+			Kase 24:
 			case 25:
 			case 27:
 				wattroff(win, attrs[argv[i] - 20]);
-				break;
-			case 30:
+			Kase 30:
 			case 31:
 			case 32:
 			case 33:
@@ -455,28 +400,26 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 47:
 				*(k ? &fg : &bg) = colors[a - (k ? 30 : 40)];
 				doc = do8;
-				break;
-			case 38:
+			Kase 38:
 			case 48:
 				if( at ) {
 					*(a == 48 ? &bg : &fg) = val;
 				}
 				i += 2;
 				doc = do256;
-				break;
-			case 39:
+			Kase 39:
 			case 49:
 				*(a == 49 ? &bg : &fg) = -1;
 				doc = true;
-				break;
-			case 90:
+			Kase 90:
 			case 91:
 			case 92:
 			case 93:
 			case 94:
 			case 95:
 			case 96:
-			case 97: k = 1; /* Fallthru */
+			case 97:
+				k = 1; /* Fallthru */
 			case 100:
 			case 101:
 			case 102:
@@ -487,10 +430,9 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 107:
 				*(k ? &fg : &bg) = colors[a - (k ? 90 : 100)];
 				doc = do16;
-				break;
 			#if HAVE_A_ITALIC
-			case  3:  wattron(win,  A_ITALIC); break;
-			case 23:  wattroff(win, A_ITALIC); break;
+			Kase  3:  wattron(win,  A_ITALIC);
+			Kase 23:  wattroff(win, A_ITALIC);
 			#endif
 			}
 		}
@@ -501,31 +443,25 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			wbkgrndset(win, &b);
 		}
 	}
-		break;
-	case pnl:
+	Kase pnl:
 	case nel:
 	case ind:
 		newline(p, handler == pnl ? p->lnm : handler == nel);
-		break;
-	case cpl:
+	Kase cpl:
 		s->c.y = MAX(tos + top, s->c.y - p0[1]);
 		s->c.x = 0;
-		break;
-	case cnl: /* CNL - Cursor Next Line */
+	Kase cnl:
 		s->c.y = MIN(tos + bot - 1, s->c.y + p0[1]);
 		s->c.x = 0;
-		break;
-	case print:
+	Kase print:
 		if( wcwidth(w) > 0 ) {
 			print_char(w, p);
 		}
-		break;
-	case rep:
+	Kase rep:
 		for( i=0; i < p0[1] && p->repc; i++ ) {
 			print_char(p->repc, p);
 		}
-		break;
-	case scs:
+	Kase scs:
 	{
 		wchar_t **t;
 		switch( iw ) {
@@ -543,8 +479,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		case L'2': *t = CSET_GRAPH; break;
 		}
 	}
-		break;
-	case so:
+	Kase so:
 		for( char *s = "\x0f\x0e}|NO", *c = strchr(s, w); c; c = NULL )
 		switch( c - s ) {
 		case 0:
@@ -558,7 +493,6 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			p->s->c.gs = p->s->c.gc;
 			p->s->c.gc = p->g[c - s - 2];
 		}
-		break;
 	}
 	if( handler != sgr && handler != print ) {
 		p->repc = 0;
