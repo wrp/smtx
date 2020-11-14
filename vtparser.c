@@ -70,6 +70,8 @@ static void
 send(struct vtp *v, wchar_t w)
 {
 	int *lut = v->s ? v->s->lut : gnds;
+	assert( &v->z.argv == (void *)&v->z.argv.args );
+	assert( &v->z.argv == (void *)&v->z.argv.oscbuf );
 	tput(v->p, w, v->z.inter, v->z.argc, &v->z.argv, lut[w]);
 }
 
