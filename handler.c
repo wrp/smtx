@@ -369,6 +369,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		s = p->s = &p->pri;
 		wsetscrreg(s->win, s->scroll.top=0, s->scroll.bot=s->rows - 1);
 		set_tabs(p, p->tabstop);
+		vtreset(&p->vp);
 		break;
 	case mode: /* Set or Reset Mode */
 		for( i = 0; i < argc; i++ ) {

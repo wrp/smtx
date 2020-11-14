@@ -113,7 +113,6 @@ new_pty(int cols)
 		if( p->s == NULL ) {
 			p->s = &p->pri;
 			tput(p, 0, 0, 0, NULL, ris);
-			vtreset(&p->vp);
 			p->vp.p = p;
 		}
 	}
