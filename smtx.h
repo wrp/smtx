@@ -56,6 +56,7 @@ extern int smtx_main(void);
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
+#define Kase break; case
 
 struct canvas;
 struct screen {

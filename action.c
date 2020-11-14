@@ -93,10 +93,10 @@ mov(const char *arg)
 	struct canvas *n = S.f;
 	for( struct canvas *t = S.f; t && count--; n = t ? t : n ) {
 		switch( *arg ) {
-		case 'k': t = t->parent; break;
-		case 'j': t = t->c[t->typ]; break;
-		case 'h': t = t->c[0]; break;
-		case 'l': t = t->c[1];
+		case 'k': t = t->parent;
+		Kase 'j': t = t->c[t->typ];
+		Kase 'h': t = t->c[0];
+		Kase 'l': t = t->c[1];
 		}
 	}
 	S.f = n ? n : S.c;

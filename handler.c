@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "smtx.h"
-#define Kase break; case
 
 static void
 handle_osc(struct pty *p, int cmd, const char *arg)
