@@ -78,7 +78,7 @@ struct pty {
 	bool *tabs, pnm, decom, lnm;
 	int decawm; /* Wrap-around mode */
 	/* DECOM: When set, cursor addressing is relative to the upper left
-	 * corner of the scrolling region. */
+	 * corner of the scrolling region instead of top of screen. */
 	wchar_t repc;
 	struct screen pri, alt, *s;
 	wchar_t *g[4];

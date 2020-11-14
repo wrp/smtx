@@ -212,7 +212,7 @@ test_cols(int fd)
 int
 test_csr(int fd)
 {
-	int rv = validate_row(fd, 1, "%-80s", "ps1>");
+	int rv = validate_row(fd, 1, "%-80s", PROMPT);
 	/* Change scroll region */
 	send_txt(fd, PROMPT, "%s;%s", "tput csr 6 12; yes | nl -s: | sed 25q",
 		"printf 'uni%s\\n' q1");
@@ -222,6 +222,10 @@ test_csr(int fd)
 	for(int i = 7; i <= 11; i++ ) {
 		rv |= validate_row(fd, i, "    %2d:%-73s", i + 14, "y");
 	}
+
+	/* Set decom */
+	send_txt(fd, NULL, "printf '\\033[6h'; tput cup 1 2; printf foo");
+	rv |= validate_row(fd, 8, "%-80s", "  foo" PROMPT);
 	return rv;
 }
 
