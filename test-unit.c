@@ -402,14 +402,13 @@ test_decaln(int fd)
 int
 test_decid(int fd)
 {
-	/* Abort test if file named 1 exists */
-	send_txt(fd, NULL, "test -f 1 && exit 1");
+	int rv = validate_row(fd, 1, "%-80s", PROMPT);
 	send_txt(fd, "^[[>1;10;0c", "%s", "printf '\\033[>c'");
 	send_txt(fd, "^[[?1;2c", "%s", "\rprintf '\\033[c'");
 	send_txt(fd, "^[[?6c", "%s", "\rprintf '\\033Z'");
 	/* WTF? The first test creates a file named 1.  This is craptastic */
 	send_txt(fd, NULL, "\rtest -f 1 && ! test -s 1 && rm 1");
-	return 0;
+	return rv;
 }
 
 int
