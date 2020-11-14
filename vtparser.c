@@ -26,7 +26,7 @@ struct action {
 };
 struct state {
 	int reset;
-	enum { gnd, csi, esc_s, osc_s } typ;
+	int *lut;
 	struct action act[0x80];
 };
 
@@ -69,13 +69,8 @@ param(struct vtp *v, wchar_t w)
 static void
 send(struct vtp *v, wchar_t w)
 {
-	typeof(v->s->typ) typ = v->s ? v->s->typ : gnd;
-	tput(v->p, w, v->z.inter, v->z.argc, &v->z.argv,
-		typ == osc_s ? oscs[w] :
-		typ == esc_s ? escs[w] :
-		typ == csi   ? csis[w] :
-		gnds[w]
-	);
+	int *lut = v->s ? v->s->lut : gnds;
+	tput(v->p, w, v->z.inter, v->z.argc, &v->z.argv, lut[w]);
 }
 
 /*
@@ -94,7 +89,7 @@ send(struct vtp *v, wchar_t w)
 
 static struct state ground = {
 	.reset = 1,
-	.typ = gnd,
+	.lut = gnds,
 	.act = {
 		LOWBITS,
 		[0x20 ... 0x7f] = {send, NULL},
@@ -103,7 +98,7 @@ static struct state ground = {
 
 static struct state esc_entry = {
 	.reset = 1,
-	.typ = esc_s,
+	.lut = escs,
 	.act = {
 		LOWBITS,
 		[0x20]          = {collect, &esc_collect}, /* sp */
@@ -128,7 +123,7 @@ static struct state esc_entry = {
 
 static struct state esc_collect = {
 	.reset = 0,
-	.typ = esc_s,
+	.lut = escs,
 	.act = {
 		LOWBITS,
 		[0x20 ... 0x2f] = {collect, NULL},  /* sp!"#$%&'()*+,-./ */
@@ -139,7 +134,7 @@ static struct state esc_collect = {
 
 static struct state csi_entry = {
 	.reset = 1,
-	.typ = csi,
+	.lut = csis,
 	.act = {
 		LOWBITS,
 		[0x20 ... 0x2f] = {collect, &csi_collect}, /* !"#$%&'()*+,-./ */
@@ -154,7 +149,7 @@ static struct state csi_entry = {
 
 static struct state csi_ignore = {
 	.reset = 0,
-	.typ = csi,
+	.lut = csis,
 	.act = {
 		LOWBITS,
 		[0x20 ... 0x3f] = {ignore, NULL},    /* !"#$%&'()*+,-./0-9... */
@@ -165,7 +160,7 @@ static struct state csi_ignore = {
 
 static struct state csi_param = {
 	.reset = 0,
-	.typ = csi,
+	.lut = csis,
 	.act = {
 		LOWBITS,
 		[0x20 ... 0x2f] = {collect, &csi_collect},
@@ -180,7 +175,7 @@ static struct state csi_param = {
 
 static struct state csi_collect = {
 	.reset = 0,
-	.typ = csi,
+	.lut = csis,
 	.act = {
 		LOWBITS,
 		[0x20 ... 0x2f] = {collect, NULL},       /* !"#$%&'()*+,-./ */
@@ -193,7 +188,7 @@ static struct state csi_collect = {
 #pragma GCC diagnostic ignored "-Woverride-init"
 static struct state osc_string = {
 	.reset = 1,
-	.typ = osc_s,
+	.lut = oscs,
 	.act = {
 		LOWBITS,
 		[0x07]          = {send, &ground},
