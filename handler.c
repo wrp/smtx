@@ -32,12 +32,14 @@ handle_osc(struct pty *p, int cmd, const char *arg)
 }
 
 static void
-clear_alt(struct pty *p, int top, int tos)
+clear_alt(int set, struct pty *p, int top, int tos)
 {
-	p->alt.c.xenl = 0;
-	p->alt.c.y = tos + (p->decom ? top : 0);
-	wmove(p->alt.win, p->alt.c.y, p->alt.c.x = 0);
-	wclrtobot(p->alt.win);
+	if( set && p->s != &p->alt ) {
+		p->alt.c.xenl = 0;
+		p->alt.c.y = tos + (p->decom ? top : 0);
+		wmove(p->alt.win, p->alt.c.y, p->alt.c.x = 0);
+		wclrtobot(p->alt.win);
+	}
 }
 
 static void
@@ -339,16 +341,15 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			Kase 20: p->lnm = set;
 			Kase 25: s->vis = set ? 1 : 0;
 			Kase 34: s->vis = set ? 1 : 2;
-			Kase 1048: case 1049:
+			Kase 1048:
+			case 1049:
 				(set ? save_cursor : restore_cursor)(s);
-				if( argv[i] == 1048 ) {
-					break;
-				} /* Fallthru */
-			case 47: case 1047:
-				if( set && p->s != &p->alt ) {
-					clear_alt(p, top, tos);
-				}
+				if( argv[i] == 1049 ) {
+			case 47:
+			case 1047:
+				clear_alt(set, p, top, tos);
 				p->s = set ? &p->alt : &p->pri;
+				}
 			}
 		}
 	Kase sgr:
