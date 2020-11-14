@@ -69,10 +69,9 @@ param(struct vtp *v, wchar_t w)
 static void
 send(struct vtp *v, wchar_t w)
 {
-	int *lut = v->s ? v->s->lut : gnds;
 	assert( &v->z.argv == (void *)&v->z.argv.args );
 	assert( &v->z.argv == (void *)&v->z.argv.oscbuf );
-	tput(v->p, w, v->z.inter, v->z.argc, &v->z.argv, lut[w]);
+	tput(v->p, w, v->z.inter, v->z.argc, &v->z.argv, v->s->lut[w]);
 }
 
 /*
@@ -214,8 +213,11 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 		case 0: /* literal zero, write it and advance */
 			r = 1;
 		}
+		if( vp->s == NULL ) {
+			vp->s = &ground;
+		}
 		if( w >= 0 && w < 0x80 ) {
-			struct action *a = (vp->s ? vp->s : &ground)->act + w;
+			struct action *a = vp->s->act + w;
 			assert( a->cb != NULL );
 			a->cb(vp, w);
 			if( a->next ) {
