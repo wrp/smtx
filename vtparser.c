@@ -30,13 +30,6 @@ struct state {
 	struct action act[0x80];
 };
 
-static void
-ignore(struct vtp *v, wchar_t w)
-{
-	(void)v;
-	(void)w;
-}
-
 static struct state ground, esc_entry, esc_collect, csi_entry,
 	csi_ignore, csi_param, csi_collect, osc_string;
 
@@ -80,12 +73,12 @@ send(struct vtp *v, wchar_t w)
  * Please note that Williams does not (AFAIK) endorse this work.
  */
  #define LOWBITS                                         \
-		[0]             = {ignore, NULL},        \
+		[0]             = {NULL, NULL},        \
 		[0x01 ... 0x17] = {send, NULL},     \
 		[0x18]          = {send, &ground},  \
 		[0x19]          = {send, NULL},     \
 		[0x1a]          = {send, &ground},  \
-		[0x1b]          = {ignore, &esc_entry},        \
+		[0x1b]          = {NULL, &esc_entry},        \
 		[0x1c ... 0x1f] = {send, NULL}
 
 static struct state ground = {
@@ -103,22 +96,22 @@ static struct state esc_entry = {
 	.act = {
 		LOWBITS,
 		[0x20]          = {collect, &esc_collect}, /* sp */
-		[0x21]          = {ignore, &osc_string},   /* ! */
+		[0x21]          = {NULL, &osc_string},     /* ! */
 		[0x22 ... 0x2f] = {collect, &esc_collect}, /* "#$%&'()*+,-./ */
 		[0x30 ... 0x4f] = {send, &ground},
-		[0x50]          = {ignore, &osc_string},   /* P */
+		[0x50]          = {NULL, &osc_string},  /* P */
 		[0x51 ... 0x57] = {send, &ground},
-		[0x58]          = {ignore, NULL},
+		[0x58]          = {NULL, NULL},
 		[0x59 ... 0x5a] = {send, &ground},
-		[0x5b]          = {ignore, &csi_entry},  /* [ */
+		[0x5b]          = {NULL, &csi_entry},   /* [ */
 		[0x5c]          = {send, &ground},      /* \ */
-		[0x5d]          = {ignore, &osc_string}, /* ] */
-		[0x5e]          = {ignore, &osc_string}, /* ^ */
-		[0x5f]          = {ignore, &osc_string}, /* _ */
+		[0x5d]          = {NULL, &osc_string},  /* ] */
+		[0x5e]          = {NULL, &osc_string},  /* ^ */
+		[0x5f]          = {NULL, &osc_string},  /* _ */
 		[0x60 ... 0x6a] = {send, &ground},      /* `a-j */
-		[0x6b]          = {ignore, &osc_string}, /* k */
+		[0x6b]          = {NULL, &osc_string},  /* k */
 		[0x6c ... 0x7e] = {send, &ground},      /* l-z{|}~ */
-		[0x7f]          = {ignore, NULL},
+		[0x7f]          = {NULL, NULL},
 	}
 };
 
@@ -129,7 +122,7 @@ static struct state esc_collect = {
 		LOWBITS,
 		[0x20 ... 0x2f] = {collect, NULL},  /* sp!"#$%&'()*+,-./ */
 		[0x30 ... 0x7e] = {send, &ground}, /* 0-9a-zA-z ... */
-		[0x7f]          = {ignore, NULL},
+		[0x7f]          = {NULL, NULL},
 	}
 };
 
@@ -140,11 +133,11 @@ static struct state csi_entry = {
 		LOWBITS,
 		[0x20 ... 0x2f] = {collect, &csi_collect}, /* !"#$%&'()*+,-./ */
 		[0x30 ... 0x39] = {param, &csi_param},     /* 0 - 9 */
-		[0x3a]          = {ignore, &csi_ignore},   /* : */
+		[0x3a]          = {NULL, &csi_ignore},     /* : */
 		[0x3b]          = {param, &csi_param},     /* ; */
 		[0x3c ... 0x3f] = {collect, &csi_param},   /* <=>? */
 		[0x40 ... 0x7e] = {send, &ground}, /* @A-Za-z[\]^_`{|}~ */
-		[0x7f]          = {ignore, NULL},
+		[0x7f]          = {NULL, NULL},
 	}
 };
 
@@ -153,9 +146,9 @@ static struct state csi_ignore = {
 	.lut = csis,
 	.act = {
 		LOWBITS,
-		[0x20 ... 0x3f] = {ignore, NULL},    /* !"#$%&'()*+,-./0-9... */
-		[0x40 ... 0x7e] = {ignore, &ground}, /* @A-Za-z[\]^_`{|}~ */
-		[0x7f]          = {ignore, NULL},
+		[0x20 ... 0x3f] = {NULL, NULL},    /* !"#$%&'()*+,-./0-9... */
+		[0x40 ... 0x7e] = {NULL, &ground}, /* @A-Za-z[\]^_`{|}~ */
+		[0x7f]          = {NULL, NULL},
 	}
 };
 
@@ -166,11 +159,11 @@ static struct state csi_param = {
 		LOWBITS,
 		[0x20 ... 0x2f] = {collect, &csi_collect},
 		[0x30 ... 0x39] = {param, NULL}, /* 0 - 9 */
-		[0x3a]          = {ignore, &csi_ignore},
+		[0x3a]          = {NULL, &csi_ignore},
 		[0x3b]          = {param, NULL}, /* ; */
-		[0x3c ... 0x3f] = {ignore, &csi_ignore},
+		[0x3c ... 0x3f] = {NULL, &csi_ignore},
 		[0x40 ... 0x7e] = {send, &ground},
-		[0x7f]          = {ignore, NULL},
+		[0x7f]          = {NULL, NULL},
 	}
 };
 
@@ -179,10 +172,10 @@ static struct state csi_collect = {
 	.lut = csis,
 	.act = {
 		LOWBITS,
-		[0x20 ... 0x2f] = {collect, NULL},       /* !"#$%&'()*+,-./ */
-		[0x30 ... 0x3f] = {ignore, &csi_ignore}, /* 0-9 :;<=>? */
+		[0x20 ... 0x2f] = {collect, NULL},     /* !"#$%&'()*+,-./ */
+		[0x30 ... 0x3f] = {NULL, &csi_ignore}, /* 0-9 :;<=>? */
 		[0x40 ... 0x7e] = {send, &ground},
-		[0x7f]          = {ignore, NULL},
+		[0x7f]          = {NULL, NULL},
 	}
 };
 
@@ -218,8 +211,9 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 		}
 		if( w >= 0 && w < 0x80 ) {
 			struct action *a = vp->s->act + w;
-			assert( a->cb != NULL );
-			a->cb(vp, w);
+			if( a->cb ) {
+				a->cb(vp, w);
+			}
 			if( a->next ) {
 				vp->s = a->next;
 				if( vp->s->reset ) {
