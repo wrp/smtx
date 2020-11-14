@@ -81,7 +81,7 @@ struct pty {
 	/* DECOM: When set, cursor addressing is relative to the upper left
 	 * corner of the scrolling region instead of top of screen. */
 	wchar_t repc;
-	struct screen pri, alt, *s;
+	struct screen scr[2], *s;
 	wchar_t *g[4];
 	char status[32];
 	struct vtp vp;

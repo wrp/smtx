@@ -77,22 +77,22 @@ new_pty(int cols)
 	struct pty *p = get_freepty();
 	if( check(p != NULL, "calloc") ) {
 		if( p->s == NULL ) {
-			if( resize_pad(&p->pri.win, S.history, cols)
-				&& resize_pad(&p->alt.win, S.history, cols)
+			if( resize_pad(&p->scr[0].win, S.history, cols)
+				&& resize_pad(&p->scr[1].win, S.history, cols)
 			) {
-				p->pri.rows = p->alt.rows = S.history;
+				p->scr[0].rows = p->scr[1].rows = S.history;
 				*(S.tail ? &S.tail->next : &S.p) = p;
 				S.tail = p;
 			} else {
-				delwin(p->pri.win);
-				delwin(p->alt.win);
+				delwin(p->scr[0].win);
+				delwin(p->scr[1].win);
 				free(p);
 				return NULL;
 			}
 		}
 		if( p->fd < 1 ) {
 			const char *sh = getshell();
-			p->pri.tos = p->alt.tos = S.history - LINES + 1;
+			p->scr[0].tos = p->scr[1].tos = S.history - LINES + 1;
 			p->ws.ws_row = LINES - 1;
 			p->ws.ws_col = cols;
 			p->pid = forkpty(&p->fd, p->secondary, NULL, &p->ws);
@@ -111,7 +111,7 @@ new_pty(int cols)
 			strncpy(p->status, bname, sizeof p->status - 1);
 		}
 		if( p->s == NULL ) {
-			p->s = &p->pri;
+			p->s = &p->scr[0];
 			tput(p, 0, 0, 0, NULL, ris);
 			p->vp.p = p;
 		}
@@ -188,10 +188,10 @@ set_height(struct canvas *n)
 {
 	struct pty *p = n->p;
 	p->ws.ws_row = n->extent.y;
-	p->pri.tos = p->alt.tos = p->pri.rows - n->extent.y;
-	p->pri.scroll.top = p->alt.scroll.top = 0;
-	wsetscrreg(p->pri.win, 0, p->pri.scroll.bot = p->pri.rows - 1);
-	wsetscrreg(p->alt.win, 0, p->alt.scroll.bot = n->extent.y - 1);
+	p->scr[0].tos = p->scr[1].tos = p->scr[0].rows - n->extent.y;
+	p->scr[0].scroll.top = p->scr[1].scroll.top = 0;
+	wsetscrreg(p->scr[0].win, 0, p->scr[0].scroll.bot = p->scr[0].rows - 1);
+	wsetscrreg(p->scr[1].win, 0, p->scr[1].scroll.bot = n->extent.y - 1);
 	reshape_window(p);
 }
 

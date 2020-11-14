@@ -33,11 +33,11 @@ handle_osc(struct pty *p, int cmd, const char *arg)
 static void
 clear_alt(int set, struct pty *p, int top, int tos)
 {
-	if( set && p->s != &p->alt ) {
-		p->alt.c.xenl = 0;
-		p->alt.c.y = tos + (p->decom ? top : 0);
-		wmove(p->alt.win, p->alt.c.y, p->alt.c.x = 0);
-		wclrtobot(p->alt.win);
+	if( set && p->s != &p->scr[1] ) {
+		p->scr[1].c.xenl = 0;
+		p->scr[1].c.y = tos + (p->decom ? top : 0);
+		wmove(p->scr[1].win, p->scr[1].c.y, p->scr[1].c.x = 0);
+		wclrtobot(p->scr[1].win);
 	}
 }
 
@@ -310,17 +310,17 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		}
 	Kase ris:
 		ioctl(p->fd, TIOCGWINSZ, &p->ws);
-		p->pri.c.gs = p->pri.c.gc = p->g[0] = CSET_US;
-		p->alt.c.gs = p->alt.c.gc = p->g[2] = CSET_US;
+		p->scr[0].c.gs = p->scr[0].c.gc = p->g[0] = CSET_US;
+		p->scr[1].c.gs = p->scr[1].c.gc = p->g[2] = CSET_US;
 		p->g[1] = p->g[3] = CSET_GRAPH;
 		p->decom = s->insert = p->lnm = false;
 		s->c.xenl = 0;
 		reset_sgr(s);
 		p->decawm = p->pnm = true;
-		p->pri.vis = p->alt.vis = 1;
-		s = &p->alt;
+		p->scr[0].vis = p->scr[1].vis = 1;
+		s = &p->scr[1];
 		wsetscrreg(s->win, s->scroll.top=0, s->scroll.bot=s->rows - 1);
-		s = p->s = &p->pri;
+		s = p->s = &p->scr[0];
 		wsetscrreg(s->win, s->scroll.top=0, s->scroll.bot=s->rows - 1);
 		set_tabs(p, p->tabstop);
 		vtreset(&p->vp);
@@ -347,7 +347,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 47:
 			case 1047:
 				clear_alt(set, p, top, tos);
-				p->s = set ? &p->alt : &p->pri;
+				p->s = set ? &p->scr[1] : &p->scr[0];
 				}
 			}
 		}

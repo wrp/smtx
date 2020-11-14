@@ -26,10 +26,6 @@ TODO:
 
 	Dump select() and use libev or libevent, or at least kqueue/epoll
 
-	Instead of pri/alt screens, implement the screens as an array.  Not to
-	have more than 2, but to simplify the implementation by being able
-	to use an index.
-
 	Allocate a chunk of struct pty on startup, or just use a static array
 	of size 512 or 1024 and stop callocing individual elements.  That should
 	cleanup the implementation of new_pty() a bit.

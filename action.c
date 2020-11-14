@@ -224,7 +224,7 @@ send_cr(void)
 static void
 grow_screens(struct pty *p, int siz)
 {
-	struct screen *s, *w[] = { &p->pri, &p->alt, NULL };
+	struct screen *s, *w[] = { &p->scr[0], &p->scr[1], NULL };
 	for( struct screen **sp = w; *sp && (s = *sp)->rows < siz; sp++ ) {
 		WINDOW *new = NULL;
 		if( resize_pad(&new, siz, p->ws.ws_col) ) {
@@ -285,8 +285,8 @@ set_width(const char *arg)
 	}
 	if( p->fd > 0 && (pty_size(p), w != p->ws.ws_col) ) {
 		p->ws.ws_col = w;
-		resize_pad(&p->pri.win, p->pri.rows, w);
-		resize_pad(&p->alt.win, p->alt.rows, w);
+		resize_pad(&p->scr[0].win, p->scr[0].rows, w);
+		resize_pad(&p->scr[1].win, p->scr[1].rows, w);
 		if( p->s->c.x > w - 1 ) {
 			wmove(p->s->win, p->s->c.y, p->s->c.x = w - 1);
 		}
