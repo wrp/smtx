@@ -465,30 +465,29 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	{
 		wchar_t **t;
 		switch( iw ) {
-		case L'(': t = &p->g[0];  break;
-		case L')': t = &p->g[1];  break;
-		case L'*': t = &p->g[2];  break;
-		case L'+': t = &p->g[3];  break;
 		default: return;
+		Kase L'(': t = &p->g[0];
+		Kase L')': t = &p->g[1];
+		Kase L'*': t = &p->g[2];
+		Kase L'+': t = &p->g[3];
 		}
 		switch( w ) {
-		case L'A': *t = CSET_UK;    break;
-		case L'B': *t = CSET_US;    break;
-		case L'0': *t = CSET_GRAPH; break;
-		case L'1': *t = CSET_US;    break;
-		case L'2': *t = CSET_GRAPH; break;
+		case L'A': *t = CSET_UK;
+		Kase L'B': *t = CSET_US;
+		Kase L'0': *t = CSET_GRAPH;
+		Kase L'1': *t = CSET_US;
+		Kase L'2': *t = CSET_GRAPH;
 		}
 	}
 	Kase so:
 		for( char *s = "\x0f\x0e}|NO", *c = strchr(s, w); c; c = NULL )
 		switch( c - s ) {
-		case 0:
+		case 0: /* locking shift */
 		case 1:
 		case 2:
-		case 3: /* locking shift */
+		case 3:
 			p->s->c.gs = p->s->c.gc = p->g[c - s];
-			break;
-		case 4:
+		Kase 4:
 		case 5: /* non-locking shift */
 			p->s->c.gs = p->s->c.gc;
 			p->s->c.gc = p->g[c - s - 2];
