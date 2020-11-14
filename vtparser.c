@@ -72,13 +72,13 @@ send(struct vtp *v, wchar_t w)
  * Paul Flo Williams: http://vt100.net/emu/dec_ansi_parser
  * Please note that Williams does not (AFAIK) endorse this work.
  */
- #define LOWBITS                                         \
-		[0]             = {NULL, NULL},        \
-		[0x01 ... 0x17] = {send, NULL},     \
-		[0x18]          = {send, &ground},  \
-		[0x19]          = {send, NULL},     \
-		[0x1a]          = {send, &ground},  \
-		[0x1b]          = {NULL, &esc_entry},        \
+ #define LOWBITS                                      \
+		[0]             = {NULL, NULL},       \
+		[0x01 ... 0x17] = {send, NULL},       \
+		[0x18]          = {send, &ground},    \
+		[0x19]          = {send, NULL},       \
+		[0x1a]          = {send, &ground},    \
+		[0x1b]          = {NULL, &esc_entry}, \
 		[0x1c ... 0x1f] = {send, NULL}
 
 static struct state ground = {
@@ -120,7 +120,7 @@ static struct state esc_collect = {
 	.lut = escs,
 	.act = {
 		LOWBITS,
-		[0x20 ... 0x2f] = {collect, NULL},  /* sp!"#$%&'()*+,-./ */
+		[0x20 ... 0x2f] = {collect, NULL}, /* sp!"#$%&'()*+,-./ */
 		[0x30 ... 0x7e] = {send, &ground}, /* 0-9a-zA-z ... */
 		[0x7f]          = {NULL, NULL},
 	}
@@ -158,9 +158,9 @@ static struct state csi_param = {
 	.act = {
 		LOWBITS,
 		[0x20 ... 0x2f] = {collect, &csi_collect},
-		[0x30 ... 0x39] = {param, NULL}, /* 0 - 9 */
+		[0x30 ... 0x39] = {param, NULL},           /* 0 - 9 */
 		[0x3a]          = {NULL, &csi_ignore},
-		[0x3b]          = {param, NULL}, /* ; */
+		[0x3b]          = {param, NULL},           /* ; */
 		[0x3c ... 0x3f] = {NULL, &csi_ignore},
 		[0x40 ... 0x7e] = {send, &ground},
 		[0x7f]          = {NULL, NULL},
