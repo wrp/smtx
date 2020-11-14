@@ -23,10 +23,50 @@
 
 /* The names for handlers come from their ANSI/ECMA/DEC mnemonics.  */
 enum cmd {
-	ack=1, bell, cnl, cpl, cr, csr, cub, cud, cuf, cup,
-	cuu, dch, decid, decreqtparm, dsr, ech, ed, el, hpa, hpr,
-	hts, ich, idl, ind, mode, nel, numkp, osc, pnl, print, rc, rep,
-	ri, ris, sc, scs, sgr, so, su, tab, tbc, vis, vpa, vpr
+	ack=1,        /* Acknowledge Enquiry */
+	bell,         /* Terminal bell. */
+	cnl,          /* Cursor Next Line */
+	cpl,          /* Cursor Previous Line */
+	cr,           /* Carriage Return */
+	csr,          /* Change Scrolling Region */
+	cub,          /* Cursor Backward */
+	cud,          /* Cursor Down */
+	cuf,          /* Cursor Forward */
+	cup,          /* Cursor Position */
+	cuu,          /* Cursor Up */
+	dch,          /* Delete Character */
+	decid,        /* Send Terminal Identification */
+	decreqtparm,  /* Request Device Parameters */
+	dsr,          /* Device Status Report */
+	ech,          /* Erase Character */
+	ed,           /* Erase in Display */
+	el,           /* Erase in Line */
+	hpa,          /* Cursor Horizontal Absolute */
+	hpr,          /* Cursor Horizontal Relative */
+	hts,          /* Horizontal Tab Set */
+	ich,          /* Insert Character */
+	idl,          /* Insert/Delete Line */
+	ind,          /* Index */
+	mode,         /* Set or Reset Mode */
+	nel,          /* Next Line */
+	numkp,        /* Application/Numeric Keypad Mode */
+	osc,          /* Operating System Command */
+	pnl,          /* Newline */
+	print,        /* Print a character to the terminal */
+	rc,           /* Restore Cursor */
+	rep,          /* Repeat Character */
+	ri,           /* Reverse Index (scroll back) */
+	ris,          /* Reset to Initial State */
+	sc,           /* Save Cursor */
+	scs,          /* Select Character Set */
+	sgr,          /* SGR - Select Graphic Rendition */
+	so,           /* Switch Out/In Character Set */
+	su,           /* Scroll Up/Down */
+	tab,          /* Tab forwards or backwards */
+	tbc,          /* Tabulation Clear */
+	vis,          /* Cursor visibility */
+	vpa,          /* Cursor Vertical Absolute */
+	vpr,          /* Cursor Vertical Relative */
 };
 
 /*

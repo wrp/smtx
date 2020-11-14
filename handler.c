@@ -169,16 +169,16 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	const int top = MAX(0, s->scroll.top - tos);
 
 	switch( (enum cmd)handler ) {
-	case ack: /* Acknowledge Enquiry */
+	case ack:
 		rewrite(p->fd, "\006", 1);
 		break;
-	case bell: /* Terminal bell. */
+	case bell:
 		beep();
 		break;
-	case cr: /* Carriage Return */
+	case cr:
 		s->c.xenl = s->c.x = 0;
 		break;
-	case csr: /* CSR - Change Scrolling Region */
+	case csr:
 		t1 = argc > 1 ? argv[1] : p->ws.ws_row;
 		if( wsetscrreg(win, tos + p0[1] - 1, tos + t1 - 1) == OK ) {
 			s->scroll.top = tos + p0[1] - 1;
@@ -187,30 +187,30 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			s->c.xenl = s->c.x = 0;
 		}
 		break;
-	case cub: /* Cursor Backward */
+	case cub:
 		s->c.xenl = 0;
 		s->c.x -= p0[1];
 		break;
-	case cud: /* Cursor Down */
+	case cud:
 		s->c.y += p0[1];
 		break;
-	case cuf: /* Cursor Forward */
+	case cuf:
 		s->c.x += p0[1];
 		break;
-	case cup: /* Cursor Position */
+	case cup:
 		s->c.xenl = 0;
 		s->c.y = tos + (p->decom ? top : 0) + p0[1] - 1;
 		s->c.x = argc > 1 ? argv[1] - 1 : 0;
 		break;
-	case cuu: /* Cursor Up */
+	case cuu:
 		s->c.y -= p0[1];
 		break;
-	case dch: /* Delete Character */
+	case dch:
 		for( i = 0; i < p0[1]; i++ ) {
 			wdelch(win);
 		}
 		break;
-	case decid: /* Send Terminal Identification */
+	case decid:
 		if( w == L'c' ) {
 			if( iw == L'>' ) {
 				rewrite(p->fd, "\033[>1;10;0c", 10);
@@ -221,7 +221,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			rewrite(p->fd, "\033[?6c", 5);
 		}
 		break;
-	case dsr: /* DSR - Device Status Report */
+	case dsr:
 		if( p0[0] == 6 ) {
 			char buf[32];
 			i = snprintf(buf, sizeof buf, "\033[%d;%dR",
@@ -232,14 +232,14 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			rewrite(p->fd, "\033[0n", 4);
 		}
 		break;
-	case ech: /* Erase Character */
+	case ech:
 		setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
 		for( i = 0; i < p0[1]; i++ ) {
 			mvwadd_wchnstr(win, s->c.y, s->c.x + i, &b, 1);
 		}
 		break;
-	case ed: /* Erase in Display */
-	case el: /* Erase in Line */
+	case ed:
+	case el:
 		switch( p0[0] ) {
 		case 2:
 			wmove(win, handler == el ? s->c.y : tos, 0);
@@ -266,18 +266,18 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			}
 		}
 		break;
-	case hpa: /* Cursor Horizontal Absolute */
+	case hpa:
 		s->c.x = -1; /* Fallthru */
-	case hpr: /* Cursor Horizontal Relative */
+	case hpr:
 		s->c.x += p0[1];
 		break;
-	case hts: /* Horizontal Tab Set */
+	case hts:
 		p->tabs[s->c.x] = true;
 		break;
-	case ich: /* Insert Character */
+	case ich:
 		insert_space(p0[1], win);
 		break;
-	case idl: /* Insert/Delete Line */
+	case idl:
 		/* We don't use insdelln here because it inserts above and
 		   not below, and has a few other edge cases. */
 		i = MIN(p0[1], p->ws.ws_row - 1 - y);
@@ -290,16 +290,16 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		wsetscrreg(win, s->scroll.top, s->scroll.bot);
 		s->c.x = 0;
 		break;
-	case numkp: /* Application/Numeric Keypad Mode */
+	case numkp:
 		p->pnm = (w == L'=');
 		break;
-	case rc: /* Restore Cursor */
+	case rc:
 		if( iw == L'#' ) {
 			decaln(p, tos);
 		}
 		restore_cursor(s);
 		break;
-	case ri: /* Reverse Index (scroll back) */
+	case ri:
 		t1 = s->scroll.top;
 		wsetscrreg(win, t1 >= tos ? t1 : tos, s->scroll.bot);
 		if( y == top ) {
@@ -310,13 +310,13 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		}
 		wsetscrreg(win, s->scroll.top, s->scroll.bot);
 		break;
-	case sc: /* Save Cursor */
+	case sc:
 		save_cursor(s);
 		break;
-	case su: /* Scroll Up/Down */
+	case su:
 		wscrl(win, (w == L'T' || w == L'^') ? -p0[1] : p0[1]);
 		break;
-	case tab: /* Tab forwards or backwards */
+	case tab:
 		while( p0[1] ) {
 			s->c.x += w == L'Z' ? -1 : +1;
 			if( p->tabs[s->c.x] ) {
@@ -324,14 +324,14 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			}
 		}
 		break;
-	case tbc: /* Tabulation Clear */
+	case tbc:
 		if( p0[0] == 0 ) {
 			p->tabs[s->c.x] = false;
 		} else if( p0[0] == 3 ) {
 			memset(p->tabs, 0, p->ws.ws_col * sizeof *p->tabs);
 		}
 		break;
-	case osc: /* Operating System Command */
+	case osc:
 		{
 		/* TODO: parse properly in the vt state machine */
 		const char *parm;
@@ -339,22 +339,22 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		handle_osc(p, cmd, parm ? parm + 1 : "");
 		}
 		break;
-	case vis: /* Cursor visibility */
+	case vis:
 		s->vis = iw != L'6';
 		break;
-	case vpa: /* Cursor Vertical Absolute */
+	case vpa:
 		s->c.y = tos - 1; /* Fallthru */
-	case vpr: /* Cursor Vertical Relative */
+	case vpr:
 		s->c.y = MAX(tos + top, p0[1] + s->c.y);
 		break;
-	case decreqtparm: /* DECREQTPARM - Request Device Parameters */
+	case decreqtparm:
 		if( p0[0] ) {
 			rewrite(p->fd, "\033[3;1;2;120;1;0x", 16);
 		} else {
 			rewrite(p->fd, "\033[2;1;2;120;128;1;0x", 20);
 		}
 		break;
-	case ris: /* Reset to Initial State */
+	case ris:
 		ioctl(p->fd, TIOCGWINSZ, &p->ws);
 		p->pri.c.gs = p->pri.c.gc = p->g[0] = CSET_US;
 		p->alt.c.gs = p->alt.c.gc = p->g[2] = CSET_US;
@@ -371,7 +371,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		set_tabs(p, p->tabstop);
 		vtreset(&p->vp);
 		break;
-	case mode: /* Set or Reset Mode */
+	case mode:
 		for( i = 0; i < argc; i++ ) {
 			bool set = (w == L'h');
 			switch( argv[i] ) {
@@ -401,7 +401,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			}
 		}
 		break;
-	case sgr: /* SGR - Select Graphic Rendition */
+	case sgr:
 	{
 		bool doc = false;
 		bool do8 = COLORS >= 8;
@@ -502,12 +502,12 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		}
 	}
 		break;
-	case pnl: /* Newline */
-	case nel: /* Next Line */
-	case ind: /* Index */
+	case pnl:
+	case nel:
+	case ind:
 		newline(p, handler == pnl ? p->lnm : handler == nel);
 		break;
-	case cpl: /* CPL - Cursor Previous Line */
+	case cpl:
 		s->c.y = MAX(tos + top, s->c.y - p0[1]);
 		s->c.x = 0;
 		break;
@@ -515,17 +515,17 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		s->c.y = MIN(tos + bot - 1, s->c.y + p0[1]);
 		s->c.x = 0;
 		break;
-	case print: /* Print a character to the terminal */
+	case print:
 		if( wcwidth(w) > 0 ) {
 			print_char(w, p);
 		}
 		break;
-	case rep: /* REP - Repeat Character */
+	case rep:
 		for( i=0; i < p0[1] && p->repc; i++ ) {
 			print_char(p->repc, p);
 		}
 		break;
-	case scs: /* Select Character Set */
+	case scs:
 	{
 		wchar_t **t;
 		switch( iw ) {
@@ -544,7 +544,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		}
 	}
 		break;
-	case so: /* Switch Out/In Character Set */
+	case so:
 		for( char *s = "\x0f\x0e}|NO", *c = strchr(s, w); c; c = NULL )
 		switch( c - s ) {
 		case 0:
