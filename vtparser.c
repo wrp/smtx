@@ -21,7 +21,7 @@
 #include "vtparser.h"
 
 struct action {
-	void (*cb)(struct vtp *p, wchar_t w);;
+	void (*cb)(struct vtp *p, wchar_t w);
 	struct state *next;
 };
 struct state {
