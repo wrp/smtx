@@ -497,10 +497,14 @@ smtx_main()
 	return EXIT_SUCCESS;
 }
 
-/* Parse a string to build a layout. The layout is expected
- * to consist of coordinates of the lower right corner of each
- * window as a percentage of the full screen.  eg a layout of 12x40:
+/*
+Parse a string to build a layout. The layout is expected
+to consist of coordinates of the lower right corner of each
+window as a percentage of the full screen.  eg:
 
+.5:.5 .25:.66 .5:.66 .5:.83 .5:1 1:.25 1:1
+
+would describe a layout that looks like:
 +--------------------------------------+
 |                  |      |      |     |
 |                  |      |      |     |
@@ -513,7 +517,6 @@ smtx_main()
 |         |                            |
 |         |                            |
 +---------f----------------------------g
-would be described by: ".5:.5 .25:.66 .5:.66 .5:.83 .5:1 1:.25 1:1"
 Note that order matters.
  */
 static struct canvas *
