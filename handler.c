@@ -24,8 +24,7 @@ handle_osc(struct pty *p, int cmd, const char *arg)
 	case 2: snprintf(p->status, sizeof p->status, "%s", arg);
 	Kase 60: build_layout(arg);
 #ifndef NDEBUG
-	Kase 62:
-		show_status(arg);
+	Kase 62: show_status(arg);
 #endif
 	}
 }
@@ -249,10 +248,8 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		} else {
 			s->c.y = MAX(tos, s->c.y - 1);
 		}
-	Kase sc:
-		save_cursor(s);
-	Kase su:
-		wscrl(win, (w == L'T' || w == L'^') ? -p0[1] : p0[1]);
+	Kase sc: save_cursor(s);
+	Kase su: wscrl(win, (w == L'T' || w == L'^') ? -p0[1] : p0[1]);
 	Kase tab:
 		while( p0[1] ) {
 			s->c.x += w == L'Z' ? -1 : +1;
@@ -273,12 +270,9 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		int cmd = strtol(arg, (char **)&parm, 10);
 		handle_osc(p, cmd, parm ? parm + 1 : "");
 		}
-	Kase vis:
-		s->vis = iw != L'6';
-	Kase vpa:
-		s->c.y = tos - 1; /* Fallthru */
-	case vpr:
-		s->c.y = MAX(tos + top, p0[1] + s->c.y);
+	Kase vis: s->vis = iw != L'6';
+	Kase vpa: s->c.y = tos - 1; /* Fallthru */
+	case vpr: s->c.y = MAX(tos + top, p0[1] + s->c.y);
 	Kase decreqtparm:
 		if( p0[0] ) {
 			rewrite(p->fd, "\033[3;1;2;120;1;0x", 16);
