@@ -31,14 +31,12 @@ handle_osc(struct pty *p, int cmd, const char *arg)
 }
 
 static void
-clear_alt(int set, struct pty *p, int top, int tos)
+clear_alt(struct pty *p, int top, int tos)
 {
-	if( set && p->s != &p->scr[1] ) {
-		p->scr[1].c.xenl = 0;
-		p->scr[1].c.y = tos + (p->decom ? top : 0);
-		wmove(p->scr[1].win, p->scr[1].c.y, p->scr[1].c.x = 0);
-		wclrtobot(p->scr[1].win);
-	}
+	p->scr[1].c.xenl = 0;
+	p->scr[1].c.y = tos + (p->decom ? top : 0);
+	wmove(p->scr[1].win, p->scr[1].c.y, p->scr[1].c.x = 0);
+	wclrtobot(p->scr[1].win);
 }
 
 static void
@@ -346,8 +344,10 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				if( argv[i] == 1049 ) {
 			case 47:
 			case 1047:
-				clear_alt(set, p, top, tos);
-				p->s = set ? &p->scr[1] : &p->scr[0];
+					if( set && p->s == p->scr ) {
+						clear_alt(p, top, tos);
+					}
+					p->s = p->scr + (set ? 1 : 0);
 				}
 			}
 		}
