@@ -33,10 +33,9 @@ handle_osc(struct pty *p, int cmd, const char *arg)
 static void
 clear_scr(struct screen *s, int top)
 {
-	s->c.xenl = 0;
+	s->c.x = s->c.xenl = 0;
 	s->c.y = top;
-	wmove(s->win, s->c.y, s->c.x = 0);
-	wclrtobot(s->win);
+	wclear(s->win);
 }
 
 static void
