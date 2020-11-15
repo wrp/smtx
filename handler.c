@@ -58,9 +58,9 @@ save_cursor(struct screen *s)
 static void
 reset_sgr(struct screen *s)
 {
-	wattrset(s->win, A_NORMAL);
-	wcolor_set(s->win, s->c.p = 0, NULL);
-	wbkgdset(s->win, COLOR_PAIR(0) | ' ');
+	wcolor_set(s->win, s->c.p = COLOR_PAIR(0), NULL);
+	wattr_set(s->win, A_NORMAL, s->c.p, NULL);
+	wbkgdset(s->win, s->c.p | ' ');
 }
 
 static void
