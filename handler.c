@@ -273,12 +273,6 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	Kase vis: s->vis = iw != L'6';
 	Kase vpa: s->c.y = tos - 1; /* Fallthru */
 	case vpr: s->c.y = MAX(tos + top, p0[1] + s->c.y);
-	Kase decreqtparm:
-		if( p0[0] ) {
-			rewrite(p->fd, "\033[3;1;2;120;1;0x", 16);
-		} else {
-			rewrite(p->fd, "\033[2;1;2;120;128;1;0x", 20);
-		}
 	Kase ris:
 		ioctl(p->fd, TIOCGWINSZ, &p->ws);
 		p->scr[0].c.gs = p->scr[0].c.gc = p->g[0] = CSET_US;
@@ -527,7 +521,6 @@ int csis[0x80] = {
 	[L'r'] = csr,
 	[L's'] = sc,
 	[L'u'] = rc,
-	[L'x'] = decreqtparm,
 };
 
 int escs[0x80] = {

@@ -58,12 +58,6 @@ test_ack(int fd)
 	send_txt(fd, "^F", "printf '\\005'");
 	send_txt(fd, NULL, ":");
 
-	/* Get coverage of decreqtparm */
-	send_txt(fd, "[2;1;2;120;128;1;0x", "printf '\\033[x'");
-	send_txt(fd, NULL, ":");
-	send_txt(fd, "[3;1;2;120;1;0x", "printf '\\033[1x'");
-	send_txt(fd, NULL, ":");
-
 	return 0; /* Test will timeout if it fails */
 }
 
