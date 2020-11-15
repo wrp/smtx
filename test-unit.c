@@ -224,7 +224,7 @@ test_csr(int fd)
 	}
 
 	/* Set decom */
-	send_txt(fd, NULL, "printf '\\033[6h'; tput cup 1 2; printf foo");
+	send_txt(fd, "foo", "printf '\\033[6h'; tput cup 1 2; printf f'o'o");
 	rv |= validate_row(fd, 8, "%-80s", "  foo" PROMPT);
 	return rv;
 }
