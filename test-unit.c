@@ -949,14 +949,21 @@ test_resizepty(int fd)
 int
 test_ri(int fd)
 {
-	send_txt(fd, "sync", "printf '%s%s%s%s'",
-		"012345678\\n", /* Print a string */
-		"\\033M",        /* ri to move up one line */
-		"abc\\n",       /* overwrite */
-		"s'y'nc"
-	);
-	int rc = validate_row(fd, 2, "%-80s", "abc345678");
-	return rc;
+	int rv = validate_row(fd, 1, "%-80s", PROMPT);
+	const char *a = "012345678\\n"; /* Print a string */
+	const char *b = "\\033M";       /* ri to move up one line */
+	const char *c = "abc\\n";       /* overwrite */
+	send_txt(fd, "sync", "printf '%s%s%ss'y'nc'", a, b, c);
+	rv |= validate_row(fd, 2, "%-80s", "abc345678");
+	rv |= validate_row(fd, 3, "%-80s", "sync" PROMPT);
+	send_txt(fd, "ab>", "PS1=ab'>'; yes | nl | sed 25q");
+	rv |= validate_row(fd, 1, "%-80s", "     4  y");
+	rv |= validate_row(fd, 2, "%-80s", "     5  y");
+	/* Move to origin, scrollback one. */
+	send_txt(fd, "cd>", "PS1=cd'>'; tput cup 0 0; printf '%s'", b);
+	rv |= validate_row(fd, 1, "%-80s", "cd>");
+	rv |= validate_row(fd, 2, "%-80s", "     5  y");
+	return rv;
 }
 
 int
