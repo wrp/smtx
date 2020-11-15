@@ -101,7 +101,7 @@ print_char(wchar_t w, struct pty *p)
 	if( w < 0x7f && p->s->c.gc[w] ) {
 		w = p->s->c.gc[w];
 	}
-	p->repc = w;
+	p->s->repc = w;
 	if( p->s->c.x == p->ws.ws_col - wcwidth(w) ) {
 		p->s->c.xenl = 1;
 		wins_nwstr(p->s->win, &w, 1);
@@ -424,8 +424,8 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			print_char(w, p);
 		}
 	Kase rep:
-		for( i=0; i < p0[1] && p->repc; i++ ) {
-			print_char(p->repc, p);
+		for( i=0; i < p0[1] && s->repc; i++ ) {
+			print_char(s->repc, p);
 		}
 	Kase scs:
 	{
@@ -460,7 +460,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		}
 	}
 	if( handler != sgr && handler != print ) {
-		p->repc = 0;
+		s->repc = 0;
 	}
 	s->c.x = MAX(0, MIN(s->c.x, p->ws.ws_col - 1));
 	s->c.y = MAX(0, MIN(s->c.y, tos + bot - 1));
