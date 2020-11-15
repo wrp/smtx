@@ -70,6 +70,7 @@ struct screen {
 	struct { int y, x, xenl; short p; wchar_t *gc, *gs; } sc, c;
 	bool insert;
 	wchar_t repc; /* character to be repeated */
+	int decawm; /* Wrap-around mode */
 	attr_t sattr;
 	WINDOW *win;
 };
@@ -78,7 +79,6 @@ struct pty {
 	struct winsize ws;
 	pid_t pid;
 	bool *tabs, pnm, decom, lnm;
-	int decawm; /* Wrap-around mode */
 	/* DECOM: When set, cursor addressing is relative to the upper left
 	 * corner of the scrolling region instead of top of screen. */
 	struct screen scr[2], *s;

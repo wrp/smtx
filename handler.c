@@ -94,7 +94,7 @@ print_char(wchar_t w, struct pty *p)
 	if( p->s->insert ) {
 		insert_space(1, p->s->win);
 	}
-	if( p->s->c.xenl && p->decawm ) {
+	if( p->s->c.xenl && p->s->decawm ) {
 		newline(p, 1);
 	}
 	p->s->c.xenl = 0;
@@ -281,7 +281,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		p->decom = s->insert = p->lnm = false;
 		s->c.xenl = 0;
 		reset_sgr(s);
-		p->decawm = p->pnm = true;
+		s->decawm = p->pnm = true;
 		p->scr[0].vis = p->scr[1].vis = 1;
 		s = &p->scr[1];
 		wsetscrreg(s->win, s->scroll.top=0, s->scroll.bot=s->rows - 1);
@@ -300,7 +300,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				p->decom = set;
 				s->c.x = s->c.xenl = 0;
 				s->c.y = dtop;
-			Kase  7: p->decawm = set;
+			Kase  7: s->decawm = set;
 			Kase 20: p->lnm = set;
 			Kase 25: s->vis = set ? 1 : 0;
 			Kase 34: s->vis = set ? 1 : 2;
