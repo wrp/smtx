@@ -36,8 +36,6 @@ enum cmd {
 	cuu,          /* Cursor Up */
 	dch,          /* Delete Character */
 	decid,        /* Send Terminal Identification */
-	decreqtparm,  /* Request Device Parameters */
-	dsr,          /* Device Status Report */
 	ech,          /* Erase Character */
 	ed,           /* Erase in Display */
 	el,           /* Erase in Line */
@@ -67,6 +65,11 @@ enum cmd {
 	vis,          /* Cursor visibility */
 	vpa,          /* Cursor Vertical Absolute */
 	vpr,          /* Cursor Vertical Relative */
+#if 0
+unimplemented
+decreqtparm,  /* Request Device Parameters */
+dsr,          /* Device Status Report */
+#endif
 };
 
 /*
