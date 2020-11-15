@@ -41,14 +41,10 @@ static void
 restore_cursor(struct screen *s)
 {
 	if( s->sc.gc ) {
-		cchar_t b;
 		s->c = s->sc;
 		wattr_set(s->win, s->sattr, s->c.p, NULL);
-
-		/* restore colors */
 		wcolor_set(s->win, s->c.p, NULL);
-		setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
-		wbkgrndset(s->win, &b);
+		wbkgdset(s->win, s->c.p | ' ');
 	}
 }
 
