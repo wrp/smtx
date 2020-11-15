@@ -31,12 +31,12 @@ handle_osc(struct pty *p, int cmd, const char *arg)
 }
 
 static void
-clear_alt(struct pty *p, int top, int tos)
+clear_scr(struct screen *s, int top)
 {
-	p->scr[1].c.xenl = 0;
-	p->scr[1].c.y = tos + (p->decom ? top : 0);
-	wmove(p->scr[1].win, p->scr[1].c.y, p->scr[1].c.x = 0);
-	wclrtobot(p->scr[1].win);
+	s->c.xenl = 0;
+	s->c.y = top;
+	wmove(s->win, s->c.y, s->c.x = 0);
+	wclrtobot(s->win);
 }
 
 static void
@@ -333,7 +333,8 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 47:
 			case 1047:
 					if( set && p->s == p->scr ) {
-						clear_alt(p, top, tos);
+						clear_scr(p->scr + 1,
+							tos + (p->decom ? top : 0));
 					}
 					p->s = p->scr + (set ? 1 : 0);
 				}
