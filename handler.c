@@ -78,18 +78,6 @@ insert_space(int count, WINDOW *win)
 }
 
 static void
-decaln(struct pty *p, int tos)
-{
-	for( int r = 0; r < p->ws.ws_row; r++ ) {
-		const chtype e[] = { COLOR_PAIR(0) | 'E', 0 };
-		for( int c = 0; c <= p->ws.ws_col; c++ ) {
-			mvwaddchnstr(p->s->win, tos + r, c, e, 1);
-		}
-	}
-}
-
-
-static void
 newline(struct pty *p, int cr)
 {
 	if( cr ) {
@@ -256,8 +244,11 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	Kase numkp:
 		p->pnm = (w == L'=');
 	Kase rc:
-		if( iw == L'#' ) {
-			decaln(p, tos);
+		if( iw == L'#' ) for( int r = 0; r < p->ws.ws_row; r++ ) {
+			const chtype e[] = { COLOR_PAIR(0) | 'E', 0 };
+			for( int c = 0; c <= p->ws.ws_col; c++ ) {
+				mvwaddchnstr(p->s->win, tos + r, c, e, 1);
+			}
 		}
 		restore_cursor(s);
 	Kase ri:
