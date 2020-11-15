@@ -187,16 +187,6 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		} else if( w == L'Z' ) {
 			rewrite(p->fd, "\033[?6c", 5);
 		}
-	Kase dsr:
-		if( p0[0] == 6 ) {
-			char buf[32];
-			i = snprintf(buf, sizeof buf, "\033[%d;%dR",
-				(p->decom ? y - top : y) + 1, s->c.x + 1);
-			assert( i < (int)sizeof buf ); /* INT_MAX < 1e14 */
-			rewrite(p->fd, buf, i);
-		} else {
-			rewrite(p->fd, "\033[0n", 4);
-		}
 	Kase ech:
 		setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
 		for( i = 0; i < p0[1]; i++ ) {
@@ -540,7 +530,6 @@ int csis[0x80] = {
 	[L'h'] = mode,
 	[L'l'] = mode,
 	[L'm'] = sgr,
-	[L'n'] = dsr,
 	[L'r'] = csr,
 	[L's'] = sc,
 	[L'u'] = rc,

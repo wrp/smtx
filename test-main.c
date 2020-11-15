@@ -406,7 +406,6 @@ main(int argc, char *const argv[])
 	F(test_dch);
 	F(test_decaln);
 	F(test_decid);
-	F(test_dsr);
 	F(test_ech);
 	F(test_ed);
 	F(test_el);

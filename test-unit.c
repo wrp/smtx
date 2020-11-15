@@ -412,15 +412,6 @@ test_decid(int fd)
 }
 
 int
-test_dsr(int fd)
-{
-	send_txt(fd, "^[[2;1R", "%s", "printf '\\033[6n'");
-	send_txt(fd, "^[[0n", "%s", "\rprintf '\\033[n'");
-	send_txt(fd, NULL, "\rkill $SMTX");
-	return 0;
-}
-
-int
 test_ech(int fd)
 {
 	int rv = 0;
