@@ -245,10 +245,10 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		if( y == top ) {
 			wsetscrreg(win, MAX(s->scroll.top, tos), s->scroll.bot);
 			wscrl(win, -1);
+			wsetscrreg(win, s->scroll.top, s->scroll.bot);
 		} else {
 			s->c.y = MAX(tos, s->c.y - 1);
 		}
-		wsetscrreg(win, s->scroll.top, s->scroll.bot);
 	Kase sc:
 		save_cursor(s);
 	Kase su:
