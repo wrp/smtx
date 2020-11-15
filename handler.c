@@ -76,15 +76,15 @@ insert_space(int count, WINDOW *win)
 }
 
 static void
-newline(struct pty *p, int cr)
+newline(struct screen *s, int cr)
 {
 	if( cr ) {
-		p->s->c.xenl = p->s->c.x = 0;
+		s->c.xenl = s->c.x = 0;
 	}
-	if( p->s->c.y == p->s->scroll.bot ) {
-		scroll(p->s->win);
+	if( s->c.y == s->scroll.bot ) {
+		scroll(s->win);
 	} else {
-		wmove(p->s->win, ++p->s->c.y, p->s->c.x);
+		wmove(s->win, ++s->c.y, s->c.x);
 	}
 }
 
@@ -95,7 +95,7 @@ print_char(wchar_t w, struct pty *p)
 		insert_space(1, p->s->win);
 	}
 	if( p->s->c.xenl && p->s->decawm ) {
-		newline(p, 1);
+		newline(p->s, 1);
 	}
 	p->s->c.xenl = 0;
 	if( w < 0x7f && p->s->c.gc[w] ) {
@@ -412,7 +412,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	Kase pnl:
 	case nel:
 	case ind:
-		newline(p, handler == pnl ? p->lnm : handler == nel);
+		newline(s, handler == pnl ? p->lnm : handler == nel);
 	Kase cpl:
 		s->c.y = MAX(tos + top, s->c.y - p0[1]);
 		s->c.x = 0;
