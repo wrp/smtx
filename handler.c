@@ -267,7 +267,6 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			wscrl(win, -1);
 		} else {
 			s->c.y = MAX(tos, s->c.y - 1);
-			wmove(win, s->c.y, s->c.x);
 		}
 		wsetscrreg(win, s->scroll.top, s->scroll.bot);
 	Kase sc:
@@ -331,9 +330,8 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			Kase  4: s->insert = set;
 			Kase  6:
 				p->decom = set;
-				s->c.xenl = 0;
+				s->c.x = s->c.xenl = 0;
 				s->c.y = tos + (p->decom ? top : 0);
-				wmove(win, s->c.y, s->c.x = 0);
 			Kase  7: p->decawm = set;
 			Kase 20: p->lnm = set;
 			Kase 25: s->vis = set ? 1 : 0;
