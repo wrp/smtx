@@ -252,9 +252,8 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		}
 		restore_cursor(s);
 	Kase ri:
-		t1 = s->scroll.top;
-		wsetscrreg(win, t1 >= tos ? t1 : tos, s->scroll.bot);
 		if( y == top ) {
+			wsetscrreg(win, MAX(s->scroll.top, tos), s->scroll.bot);
 			wscrl(win, -1);
 		} else {
 			s->c.y = MAX(tos, s->c.y - 1);
