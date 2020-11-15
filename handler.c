@@ -149,6 +149,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	const int y = s->c.y - tos; /* cursor position w.r.t. top of screen */
 	const int bot = s->scroll.bot - tos + 1;
 	const int top = MAX(0, s->scroll.top - tos);
+	const int dtop = tos + (p->decom ? top : 0);
 
 	switch( (enum cmd)handler ) {
 	case ack: rewrite(p->fd, "\006", 1);
@@ -159,7 +160,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		if( wsetscrreg(win, tos + p0[1] - 1, tos + t1 - 1) == OK ) {
 			s->scroll.top = tos + p0[1] - 1;
 			s->scroll.bot = tos + t1 - 1;
-			s->c.y = tos + (p->decom ? top : 0);
+			s->c.y = dtop;
 			s->c.xenl = s->c.x = 0;
 		}
 	Kase cub:
@@ -169,7 +170,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	Kase cuf: s->c.x += p0[1];
 	Kase cup:
 		s->c.xenl = 0;
-		s->c.y = tos + (p->decom ? top : 0) + p0[1] - 1;
+		s->c.y = dtop + p0[1] - 1;
 		s->c.x = argc > 1 ? argv[1] - 1 : 0;
 	Kase cuu: s->c.y -= p0[1];
 	Kase dch:
@@ -320,7 +321,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			Kase  6:
 				p->decom = set;
 				s->c.x = s->c.xenl = 0;
-				s->c.y = tos + (p->decom ? top : 0);
+				s->c.y = dtop;
 			Kase  7: p->decawm = set;
 			Kase 20: p->lnm = set;
 			Kase 25: s->vis = set ? 1 : 0;
@@ -332,8 +333,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 47:
 			case 1047:
 					if( set && p->s == p->scr ) {
-						clear_scr(p->scr + 1,
-							tos + (p->decom ? top : 0));
+						clear_scr(p->scr + 1, dtop);
 					}
 					p->s = p->scr + (set ? 1 : 0);
 				}
