@@ -93,7 +93,6 @@ print_char(wchar_t w, struct pty *p)
 	if( w < 0x7f && p->s->c.gc[w] ) {
 		w = p->s->c.gc[w];
 	}
-	p->s->repc = w;
 	if( p->s->c.x == p->ws.ws_col - wcwidth(w) ) {
 		p->s->c.xenl = 1;
 		wins_nwstr(p->s->win, &w, 1);
@@ -407,13 +406,12 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	Kase cnl:
 		s->c.y = MIN(tos + bot - 1, s->c.y + p0[1]);
 		s->c.x = 0;
-	Kase print:
-		if( wcwidth(w) > 0 ) {
-			print_char(w, p);
-		}
-	Kase rep:
-		for( i=0; i < p0[1] && s->repc; i++ ) {
-			print_char(s->repc, p);
+	Kase print: s->repc = w; /* Fallthru */
+	case rep:
+		if( wcwidth(w = s->repc) > 0 ) {
+			for( i=0; i < p0[1]; i++ ) {
+				print_char(w, p);
+			}
 		}
 	Kase scs:
 	{
