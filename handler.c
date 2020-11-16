@@ -30,14 +30,6 @@ handle_osc(struct pty *p, int cmd, const char *arg)
 }
 
 static void
-clear_scr(struct screen *s, int top)
-{
-	s->c.x = s->c.xenl = 0;
-	s->c.y = top;
-	wclear(s->win);
-}
-
-static void
 restore_cursor(struct screen *s)
 {
 	if( s->sc.gc ) {
@@ -305,12 +297,16 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 1049:
 				(set ? save_cursor : restore_cursor)(s);
 				if( argv[i] == 1049 ) {
+					struct screen *sc;
 			case 47:
 			case 1047:
+					sc = p->scr + !!set;
 					if( set && p->s == p->scr ) {
-						clear_scr(p->scr + 1, dtop);
+						sc->c.x = sc->c.xenl = 0;
+						sc->c.y = dtop;
+						wclear(sc->win);
 					}
-					p->s = p->scr + (set ? 1 : 0);
+					p->s = sc;
 				}
 			}
 		}
