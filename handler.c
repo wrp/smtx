@@ -41,12 +41,10 @@ static void
 restore_cursor(struct screen *s)
 {
 	if( s->sc.gc ) {
-		cchar_t b;
 		s->c = s->sc;
 		int pair = alloc_pair(s->c.fgbg[0], s->c.fgbg[1]);
 		wattr_set(s->win, s->sattr, pair, NULL);
-		setcchar(&b, L" ", A_NORMAL, pair, NULL);
-		wbkgrndset(s->win, &b);
+		wbkgrndset(s->win, &s->c.bkg);
 	}
 }
 
@@ -64,6 +62,7 @@ reset_sgr(struct screen *s)
 {
 	pair_content(COLOR_PAIR(0), s->c.fgbg, s->c.fgbg + 1);
 	wcolor_set(s->win, COLOR_PAIR(0), NULL);
+	setcchar(&s->c.bkg, L" ", A_NORMAL, COLOR_PAIR(0), NULL);
 	wattr_set(s->win, A_NORMAL, COLOR_PAIR(0), NULL);
 	wbkgdset(s->win, COLOR_PAIR(0) | ' ');
 }
@@ -137,7 +136,6 @@ void
 tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 {
 	int i, t1;
-	cchar_t b;
 
 	/* First arg, defaulting to 0 or 1 */
 	int p0[] = { argc ? *(int*)arg : 0, argc ? *(int*)arg : 1 };
@@ -188,10 +186,8 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			rewrite(p->fd, "\033[?6c", 5);
 		}
 	Kase ech:
-		setcchar(&b, L" ", A_NORMAL,
-			alloc_pair(s->c.fgbg[0], s->c.fgbg[1]), NULL);
 		for( i = 0; i < p0[1]; i++ ) {
-			mvwadd_wchnstr(win, s->c.y, s->c.x + i, &b, 1);
+			mvwadd_wchnstr(win, s->c.y, s->c.x + i, &s->c.bkg, 1);
 		}
 	Kase ed: /* Fallthru */
 	case el:
@@ -211,10 +207,8 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				}
 				wmove(win, s->c.y, s->c.x);
 			}
-			setcchar(&b, L" ", A_NORMAL,
-				alloc_pair(s->c.fgbg[0], s->c.fgbg[1]), NULL);
 			for( i = 0; i <= s->c.x; i++ ) {
-				mvwadd_wchnstr(win, s->c.y, i, &b, 1);
+				mvwadd_wchnstr(win, s->c.y, i, &s->c.bkg, 1);
 			}
 		}
 	Kase hpa: s->c.x = -1; /* Fallthru */
@@ -403,8 +397,8 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		if( doc ) {
 			int pair = alloc_pair(s->c.fgbg[0], s->c.fgbg[1]);
 			wcolor_set(win, pair, NULL);
-			setcchar(&b, L" ", A_NORMAL, pair, NULL);
-			wbkgrndset(win, &b);
+			setcchar(&s->c.bkg, L" ", A_NORMAL, pair, NULL);
+			wbkgrndset(win, &s->c.bkg);
 		}
 	}
 	Kase pnl:

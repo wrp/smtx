@@ -66,8 +66,12 @@ struct screen {
 	int rows; /* Number of rows in the window */
 	int delta; /* Number of lines written by a vtwrite */
 	struct { int top; int bot; } scroll;
-	/* cursor/save cursor */
-	struct { int y, x, xenl; short fgbg[2]; wchar_t *gc, *gs; } sc, c;
+	struct {
+		int y, x, xenl;
+		cchar_t bkg;
+		short fgbg[2];
+		wchar_t *gc, *gs;
+	} c, sc; /* cursor/save cursor */
 	bool insert;
 	wchar_t repc; /* character to be repeated */
 	int decawm; /* Wrap-around mode */
