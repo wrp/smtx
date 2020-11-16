@@ -1188,10 +1188,9 @@ sgr_background(int fd)
 	send_txt(fd, "cd4>", fmt, "31;42", "foo", "32;43", "bar");
 	rv |= validate_row(fd, 8, "%-127s",
 		"<red><green*>foo<green><yellow*>bar</green></yellow*>");
-	send_txt(fd, "de5>", "PS1=de'5>'; printf '\\033[ubaz\\n'");
+	send_txt(fd, "de5>", "PS1=de'5>'; printf '\\033[u baz\\n'");
 	rv |= validate_row(fd, 8, "%-108s",
-		"<red><green*>foobaz</red></green*>");
-
+		"<red><green*>foo baz</red></green*>");
 
 	return rv;
 }
