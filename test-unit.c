@@ -1161,7 +1161,7 @@ test_scs(int fd) /* select character set */
 static int
 sgr_background(int fd)
 {
-	int rv = 0;
+	int rv = validate_row(fd, 1, "%-80s", PROMPT);
 	char *fmt = "printf '%s\\033[%sm%s\\033[m%s\\n'; ";
 	send_raw(fd, NULL, fmt, "c", "31;42", "d", "e");
 	send_txt(fd, "xy1>", "PS1='xy''1>'");
@@ -1182,6 +1182,17 @@ sgr_background(int fd)
 	/* Ensure color is still in place for the prompt */
 	rv |= validate_row(fd, 7, "%-116s",
 		"<magenta><white*>ab3></magenta></white*>");
+
+	/* Validate color after cursor save/restore */
+	fmt = "PS1=cd'4>'; printf '\\033[%sm%s\\033[s\\033[%sm%s\\n'";
+	send_txt(fd, "cd4>", fmt, "31;42", "foo", "32;43", "bar");
+	rv |= validate_row(fd, 8, "%-127s",
+		"<red><green*>foo<green><yellow*>bar</green></yellow*>");
+	send_txt(fd, "de5>", "PS1=de'5>'; printf '\\033[ubaz\\n'");
+	rv |= validate_row(fd, 8, "%-108s",
+		"<red><green*>foobaz</red></green*>");
+
+
 	return rv;
 }
 
@@ -1300,7 +1311,7 @@ test_sgr(int fd)
 	rv |= validate_row(fd, 1, "%-95s", "foo<blue*>bar</blue*>baz");
 
 	/* Clear screen for the sgr_background() call */
-	send_txt(fd, "aw1>", "PS1='a'w1'>'; clear");
+	send_txt(fd, "ps1>", "PS1='p's1'>'; clear");
 	rv |= sgr_background(fd);
 
 	/* Do not verify, just get coverage (not sure how to test 256 color */

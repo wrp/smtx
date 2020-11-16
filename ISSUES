@@ -7,9 +7,6 @@ TODO:
 
 	(?) Make an action on <tab> that moves to the next canvas.
 
-	Determine if colors should be saved with save/restore cursor and
-	implement accordingly.
-
 	(?) In full-screen mode, make hjkl scroll the pty.
 
 	(?) -1v should make the focused canvas the root and keep

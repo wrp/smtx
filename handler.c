@@ -41,26 +41,32 @@ static void
 restore_cursor(struct screen *s)
 {
 	if( s->sc.gc ) {
+		cchar_t b;
 		s->c = s->sc;
-		wattr_set(s->win, s->sattr, s->c.p, NULL);
-		wcolor_set(s->win, s->c.p, NULL);
-		wbkgdset(s->win, s->c.p | ' ');
+		int pair = alloc_pair(s->c.fg, s->c.bg);
+		wattr_set(s->win, s->sattr, pair, NULL);
+		wcolor_set(s->win, pair, NULL);
+		setcchar(&b, L" ", A_NORMAL, pair, NULL);
+		wbkgrndset(s->win, &b);
 	}
 }
 
 static void
 save_cursor(struct screen *s)
 {
-	wattr_get(s->win, &s->sattr, &s->c.p, NULL);
+	short pair;
+	wattr_get(s->win, &s->sattr, &pair, NULL);
+	pair_content(pair, &s->sc.fg, &s->sc.bg);
 	s->sc = s->c;
 }
 
 static void
 reset_sgr(struct screen *s)
 {
-	wcolor_set(s->win, s->c.p = COLOR_PAIR(0), NULL);
-	wattr_set(s->win, A_NORMAL, s->c.p, NULL);
-	wbkgdset(s->win, s->c.p | ' ');
+	pair_content(COLOR_PAIR(0), &s->c.fg, &s->c.bg);
+	wcolor_set(s->win, COLOR_PAIR(0), NULL);
+	wattr_set(s->win, A_NORMAL, COLOR_PAIR(0), NULL);
+	wbkgdset(s->win, COLOR_PAIR(0) | ' ');
 }
 
 static void
@@ -183,7 +189,8 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			rewrite(p->fd, "\033[?6c", 5);
 		}
 	Kase ech:
-		setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
+		setcchar(&b, L" ", A_NORMAL, alloc_pair(s->c.fg, s->c.bg),
+			NULL);
 		for( i = 0; i < p0[1]; i++ ) {
 			mvwadd_wchnstr(win, s->c.y, s->c.x + i, &b, 1);
 		}
@@ -205,7 +212,8 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				}
 				wmove(win, s->c.y, s->c.x);
 			}
-			setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
+			setcchar(&b, L" ", A_NORMAL,
+				alloc_pair(s->c.fg, s->c.bg), NULL);
 			for( i = 0; i <= s->c.x; i++ ) {
 				mvwadd_wchnstr(win, s->c.y, i, &b, 1);
 			}
@@ -322,8 +330,6 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		if( !argc ) {
 			reset_sgr(s);
 		}
-		short fg, bg;
-		pair_content(s->c.p, &fg, &bg);
 		for( i = 0; i < argc; i++ ) {
 			bool at = argc > i + 2 && argv[i + 1] == 5;
 			int val = argc > i + 2 ? argv[i + 2] : 0, k = 0, a;
@@ -360,18 +366,18 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 45:
 			case 46:
 			case 47:
-				*(k ? &fg : &bg) = colors[a - (k ? 30 : 40)];
+				*(k ? &s->c.fg : &s->c.bg) = colors[a - (k?30:40)];
 				doc = do8;
 			Kase 38:
 			case 48:
 				if( at ) {
-					*(a == 48 ? &bg : &fg) = val;
+					*(a == 48 ? &s->c.bg : &s->c.fg) = val;
 				}
 				i += 2;
 				doc = do256;
 			Kase 39:
 			case 49:
-				*(a == 49 ? &bg : &fg) = -1;
+				*(a == 49 ? &s->c.bg : &s->c.fg) = -1;
 				doc = true;
 			Kase 90:
 			case 91:
@@ -390,7 +396,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 105:
 			case 106:
 			case 107:
-				*(k ? &fg : &bg) = colors[a - (k ? 90 : 100)];
+				*(k ? &s->c.fg : &s->c.bg) = colors[a - (k?90:100)];
 				doc = do16;
 			#if HAVE_A_ITALIC
 			Kase  3:  wattron(win,  A_ITALIC);
@@ -399,9 +405,9 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			}
 		}
 		if( doc ) {
-			s->c.p = alloc_pair(fg, bg);
-			wcolor_set(win, s->c.p, NULL);
-			setcchar(&b, L" ", A_NORMAL, s->c.p, NULL);
+			int pair = alloc_pair(s->c.fg, s->c.bg);
+			wcolor_set(win, pair, NULL);
+			setcchar(&b, L" ", A_NORMAL, pair, NULL);
 			wbkgrndset(win, &b);
 		}
 	}

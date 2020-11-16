@@ -67,7 +67,7 @@ struct screen {
 	int delta; /* Number of lines written by a vtwrite */
 	struct { int top; int bot; } scroll;
 	/* cursor/save cursor */
-	struct { int y, x, xenl; short p; wchar_t *gc, *gs; } sc, c;
+	struct { int y, x, xenl; short fg, bg; wchar_t *gc, *gs; } sc, c;
 	bool insert;
 	wchar_t repc; /* character to be repeated */
 	int decawm; /* Wrap-around mode */
