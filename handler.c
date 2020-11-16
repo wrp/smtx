@@ -249,18 +249,19 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	case vpr: s->c.y = MAX(tos + top, p0[1] + s->c.y);
 	Kase ris:
 		ioctl(p->fd, TIOCGWINSZ, &p->ws);
-		p->scr[0].c.gs = p->scr[0].c.gc = p->g[0] = CSET_US;
-		p->scr[1].c.gs = p->scr[1].c.gc = p->g[2] = CSET_US;
+		p->g[0] = p->g[2] = CSET_US;
 		p->g[1] = p->g[3] = CSET_GRAPH;
 		p->decom = s->insert = p->lnm = false;
 		s->c.xenl = 0;
 		reset_sgr(s);
 		s->decawm = p->pnm = true;
 		p->scr[0].vis = p->scr[1].vis = 1;
-		s = &p->scr[1];
-		wsetscrreg(s->win, s->scroll.top=0, s->scroll.bot=s->rows - 1);
-		s = p->s = &p->scr[0];
-		wsetscrreg(s->win, s->scroll.top=0, s->scroll.bot=s->rows - 1);
+		for( i = 0, s = p->scr; i < 2; i++, s++ ) {
+			s->c.gs = s->c.gc = CSET_US;
+			wsetscrreg(s->win, s->scroll.top = 0,
+				s->scroll.bot = s->rows - 1);
+		}
+		s = p->s = p->scr;
 		set_tabs(p, p->tabstop);
 		vtreset(&p->vp);
 	Kase mode:
