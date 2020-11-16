@@ -233,10 +233,9 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			s->c.x += (w == L'Z' ? -1 : +1);
 		}
 	Kase tbc:
-		if( p0[0] == 0 ) {
-			p->tabs[s->c.x] = false;
-		} else if( p0[0] == 3 ) {
-			memset(p->tabs, 0, p->ws.ws_col * sizeof *p->tabs);
+		switch(p0[0]) {
+		case 0: p->tabs[s->c.x] = false;
+		Kase 3: memset(p->tabs, 0, p->ws.ws_col * sizeof *p->tabs);
 		}
 	Kase osc:
 		{
