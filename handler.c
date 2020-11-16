@@ -166,16 +166,6 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		for( i = 0; i < p0[1]; i++ ) {
 			wdelch(win);
 		}
-	Kase decid:
-		if( w == L'c' ) {
-			if( iw == L'>' ) {
-				rewrite(p->fd, "\033[>1;10;0c", 10);
-			} else {
-				rewrite(p->fd, "\033[?1;2c", 7);
-			}
-		} else if( w == L'Z' ) {
-			rewrite(p->fd, "\033[?6c", 5);
-		}
 	Kase ech:
 		for( i = 0; i < p0[1]; i++ ) {
 			mvwadd_wchnstr(win, s->c.y, s->c.x + i, &s->c.bkg, 1);
@@ -496,7 +486,6 @@ int csis[0x80] = {
 	[L'@'] = ich,
 	[L'a'] = hpr,
 	[L'b'] = rep,
-	[L'c'] = decid,
 	[L'd'] = vpa,
 	[L'e'] = vpr,
 	[L'f'] = cup,
@@ -526,7 +515,6 @@ int escs[0x80] = {
 	[L'O'] = so,
 	[L'}'] = so,
 	[L'|'] = so,
-	[L'Z'] = decid,
 	[L'c'] = ris,
 	[L'p'] = vis,
 	[L'='] = numkp,

@@ -35,7 +35,6 @@ enum cmd {
 	cup,          /* Cursor Position */
 	cuu,          /* Cursor Up */
 	dch,          /* Delete Character */
-	decid,        /* Send Terminal Identification */
 	ech,          /* Erase Character */
 	ed,           /* Erase in Display */
 	el,           /* Erase in Line */
@@ -67,6 +66,8 @@ enum cmd {
 	vpr,          /* Cursor Vertical Relative */
 #if 0
 unimplemented
+
+decid,        /* Send Terminal Identification */
 decreqtparm,  /* Request Device Parameters */
 dsr,          /* Device Status Report */
 #endif
