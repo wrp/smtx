@@ -45,7 +45,6 @@ restore_cursor(struct screen *s)
 		s->c = s->sc;
 		int pair = alloc_pair(s->c.fg, s->c.bg);
 		wattr_set(s->win, s->sattr, pair, NULL);
-		wcolor_set(s->win, pair, NULL);
 		setcchar(&b, L" ", A_NORMAL, pair, NULL);
 		wbkgrndset(s->win, &b);
 	}
