@@ -60,11 +60,11 @@ save_cursor(struct screen *s)
 static void
 reset_sgr(struct screen *s)
 {
-	pair_content(COLOR_PAIR(0), s->c.fgbg, s->c.fgbg + 1);
-	wcolor_set(s->win, COLOR_PAIR(0), NULL);
-	setcchar(&s->c.bkg, L" ", A_NORMAL, COLOR_PAIR(0), NULL);
-	wattr_set(s->win, A_NORMAL, COLOR_PAIR(0), NULL);
-	wbkgdset(s->win, COLOR_PAIR(0) | ' ');
+	int p;
+	pair_content(p = COLOR_PAIR(0), s->c.fgbg, s->c.fgbg + 1);
+	setcchar(&s->c.bkg, L" ", A_NORMAL, p, NULL);
+	wattr_set(s->win, A_NORMAL, p, NULL);
+	wbkgrndset(s->win, &s->c.bkg);
 }
 
 static void
