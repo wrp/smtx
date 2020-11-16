@@ -323,9 +323,6 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	Kase sgr:
 	{
 		bool doc = false;
-		bool do8 = COLORS >= 8;
-		bool do16 = COLORS >= 16;
-		bool do256 = COLORS >= 256;
 		if( !argc ) {
 			reset_sgr(s);
 		}
@@ -366,14 +363,14 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 46:
 			case 47:
 				*(k ? &s->c.fg : &s->c.bg) = colors[a - (k?30:40)];
-				doc = do8;
+				doc = COLORS >= 8;
 			Kase 38:
 			case 48:
 				if( at ) {
 					*(a == 48 ? &s->c.bg : &s->c.fg) = val;
 				}
 				i += 2;
-				doc = do256;
+				doc = COLORS >= 256;
 			Kase 39:
 			case 49:
 				*(a == 49 ? &s->c.bg : &s->c.fg) = -1;
@@ -396,7 +393,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 106:
 			case 107:
 				*(k ? &s->c.fg : &s->c.bg) = colors[a - (k?90:100)];
-				doc = do16;
+				doc = COLORS >= 16;
 			#if HAVE_A_ITALIC
 			Kase  3:  wattron(win,  A_ITALIC);
 			Kase 23:  wattroff(win, A_ITALIC);
