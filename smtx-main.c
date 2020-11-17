@@ -480,6 +480,8 @@ init(void)
 	resize_pad(&S.werr, 1, COLS);
 	resize_pad(&S.wbkg, LINES, COLS);
 	wbkgd(S.wbkg, ACS_BULLET);
+	wborder(S.wbkg, ACS_VLINE, ACS_BULLET, ACS_BULLET, ACS_BULLET,
+		ACS_VLINE, ACS_BULLET, ACS_BULLET, ACS_BULLET);
 	wattron(S.werr, A_REVERSE);
 	S.f = S.c = newcanvas(NULL, NULL);
 	if( S.c == NULL || S.werr == NULL || S.wbkg == NULL ) {
