@@ -30,7 +30,7 @@ attach(void)
 			return;
 		}
 	}
-	check(0, "No pty exists with id %d", S.count);
+	check(0, errno = 0, "No pty exists with id %d", S.count);
 }
 
 static const char *default_balance_arg[] = { "-|", "-", "|", "-|" };
@@ -119,8 +119,8 @@ find_canvas(struct canvas *c, int id)
 static void
 pty_size(struct pty *p)
 {
-	check(p->fd == -1 || ! ioctl(p->fd, TIOCGWINSZ, &p->ws),
-		"ioctl error getting size of pty %d", p->fd - 2);
+	check(p->fd == -1 || ! ioctl(p->fd, TIOCGWINSZ, &p->ws), errno = 0,
+		"ioctr error getting size of pty %d", p->fd - 2);
 }
 
 void
@@ -313,7 +313,7 @@ swap(void)
 		t->p = tmp;
 		S.reshape = 1;
 	} else {
-		check(0, "Cannot find target canvas");
+		check(0, errno = 0, "Cannot find target canvas");
 	}
 }
 

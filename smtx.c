@@ -48,10 +48,10 @@ parse_args(int argc, char *const*argv)
 }
 
 int
-check(int rv, const char *fmt, ...)
+check(int rv, int err, const char *fmt, ...)
 {
 	if( !rv ) {
-		int e = errno;
+		int e = err ? err : errno;
 		va_list ap;
 		va_start(ap, fmt);
 		size_t len = sizeof S.errmsg;
@@ -61,7 +61,6 @@ check(int rv, const char *fmt, ...)
 			strncat(S.errmsg, strerror(e), len - n - 2);
 		}
 		va_end(ap);
-		errno = e;
 	}
 	return !!rv;
 }
@@ -74,7 +73,7 @@ rewrite(int fd, const char *b, size_t n)
 	if( n > 0 ) do {
 		s = write(fd, b, e - b);
 		b += s < 0 ? 0 : s;
-	} while( b < e && check(s >= 0 || errno == EINTR, "write fd %d", fd) );
+	} while( b < e && check(s >= 0 || errno == EINTR, 0, "write %d", fd) );
 }
 
 int

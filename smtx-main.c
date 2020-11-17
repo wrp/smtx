@@ -57,8 +57,7 @@ resize_pad(WINDOW **p, int h, int w)
 		scrollok(*p, 1);
 		rv = (keypad(*p, 1) == OK);
 	}
-	errno = ENOMEM;
-	return check(rv, "wresize"); /* 0 is failure */
+	return check(rv, ENOMEM, "wresize"); /* 0 is failure */
 }
 
 static struct pty *
@@ -75,7 +74,7 @@ static struct pty *
 new_pty(int cols)
 {
 	struct pty *p = get_freepty();
-	if( check(p != NULL, "calloc") ) {
+	if( check(p != NULL, errno = 0, "calloc") ) {
 		if( p->s == NULL ) {
 			if( resize_pad(&p->scr[0].win, S.history, cols)
 				&& resize_pad(&p->scr[1].win, S.history, cols)
@@ -96,7 +95,7 @@ new_pty(int cols)
 			p->ws.ws_row = LINES - 1;
 			p->ws.ws_col = cols;
 			p->pid = forkpty(&p->fd, p->secondary, NULL, &p->ws);
-			if( check(p->pid != -1, "forkpty") && p->pid == 0 ) {
+			if( check(p->pid != -1, 0, "forkpty") && p->pid == 0 ) {
 				setsid();
 				signal(SIGCHLD, SIG_DFL);
 				execl(sh, sh, NULL);
@@ -127,7 +126,7 @@ newcanvas(struct pty *p, struct canvas *parent)
 		if( (n = S.unused) != NULL ) {
 			S.unused = n->c[0];
 		} else {
-			check((n = calloc(1 , sizeof *n)) != NULL, "calloc");
+			check((n = calloc(1 , sizeof *n)) != NULL, 0, "calloc");
 		}
 		if( n ) {
 			n->c[0] = n->c[1] = NULL;
@@ -178,8 +177,8 @@ fixcursor(void) /* Move the terminal cursor to the active window. */
 void
 reshape_window(struct pty *p)
 {
-	check(ioctl(p->fd, TIOCSWINSZ, &p->ws) == 0, "ioctl on %d", p->fd);
-	check(kill(p->pid, SIGWINCH) == 0, "send WINCH to %d", (int)p->pid);
+	check(ioctl(p->fd, TIOCSWINSZ, &p->ws) == 0, 0, "ioctl on %d", p->fd);
+	check(kill(p->pid, SIGWINCH) == 0, 0, "send WINCH to %d", (int)p->pid);
 }
 
 void
@@ -311,7 +310,7 @@ wait_child(struct pty *p)
 {
 	int status, k = 0;
 	const char *fmt = "exited %d";
-	if( check(waitpid(p->pid, &status, WNOHANG) != -1, "waitpid") ) {
+	if( check(waitpid(p->pid, &status, WNOHANG) != -1, 0, "waitpid") ) {
 		if( WIFEXITED(status) ) {
 			k = WEXITSTATUS(status);
 		} else if( WIFSIGNALED(status) ) {
@@ -319,7 +318,7 @@ wait_child(struct pty *p)
 			k = WTERMSIG(status);
 		}
 		FD_CLR(p->fd, &S.fds);
-		check(close(p->fd) == 0, "close fd %d", p->fd);
+		check(close(p->fd) == 0, 0, "close fd %d", p->fd);
 		snprintf(p->status, sizeof p->status, fmt, k);
 		p->pid = p->fd = -1; /* (1) */
 		S.reshape = 1;
@@ -334,7 +333,7 @@ getinput(void) /* check stdin and all pty's for input. */
 {
 	fd_set sfds = S.fds;
 	if( select(S.maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
-		check(errno == EINTR, "select");
+		check(errno == EINTR, 0, "select");
 		return;
 	}
 	if( FD_ISSET(STDIN_FILENO, &sfds) ) {
@@ -535,9 +534,9 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 	struct canvas *n = newcanvas(p, parent);
 	if( n == NULL
 		|| ! check(2 == sscanf(*lp, "%lf:%lf%n", &y, &x, &e),
-			"Invalid layout format: %s", *lp)
+			errno = 0, "Invalid layout format: %s", *lp)
 		|| ! check(y >= oy && y <= ey && x >= ox && x <= ex,
-			"Out of bounds: %s", *lp) ) {
+			errno = 0, "Out of bounds: %s", *lp) ) {
 		goto fail;
 	}
 	*lp += e;
@@ -554,10 +553,10 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 		n->typ = 0;
 	} else {
 		double ny, nx;
-		assert( y < ey && x < ex );
 		if( ! check(2 == sscanf(*lp, "%lf:%lf", &ny, &nx),
-				"Invalid format")
-			|| ! check(y <= ny || x <= nx, "Out of bounds:%s", *lp)
+				errno = 0, "Invalid format")
+			|| ! check(y <= ny || x <= nx, 0,
+				"Out of bounds: %s", *lp)
 			|| (n->typ = y < ny,
 				(n->c[!n->typ] = add_canvas(lp,
 				n->typ ? y : oy, n->typ ? ox : x,
