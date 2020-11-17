@@ -159,7 +159,7 @@ draw_window(struct canvas *n)
 	}
 }
 
-void
+static void
 fixcursor(void) /* Move the terminal cursor to the active window. */
 {
 	int y = S.f->p->s->c.y, x = S.f->p->s->c.x;
@@ -382,7 +382,7 @@ sendarrow(const char *k)
  */
 static char wc_lut[(KEY_MAX - KEY_MIN + 1) * ( 1 + MB_LEN_MAX )];
 
-void
+static void
 build_bindings(void)
 {
 

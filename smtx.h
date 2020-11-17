@@ -171,13 +171,11 @@ extern wchar_t CSET_UK[0x7f]; /* "United Kingdom" */
 extern wchar_t CSET_GRAPH[0x7f]; /* Graphics Set One */
 extern int tabstop;
 extern int id;
-extern void fixcursor(void);
 
 extern struct canvas * newcanvas(struct pty *, struct canvas *);
 extern void draw(struct canvas *);
 extern void setupevents(struct pty *);
 extern void rewrite(int fd, const char *b, size_t n);
-extern void build_bindings(void);
 extern void draw(struct canvas *n);
 extern void scrollbottom(struct canvas *n);
 extern int check(int, int, const char *, ...);
