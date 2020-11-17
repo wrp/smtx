@@ -372,7 +372,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 105:
 			case 106:
 			case 107:
-				s->c.color[k] = colors[a - ( k ? 90 : 100 )];
+				s->c.color[k] = colors[a - ( k ? 100 : 90 )];
 				doc = COLORS >= 16;
 			}
 		}
