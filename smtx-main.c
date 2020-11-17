@@ -182,16 +182,20 @@ reshape_window(struct pty *p)
 	check(kill(p->pid, SIGWINCH) == 0, "send WINCH to %d", (int)p->pid);
 }
 
+void
+set_scroll(struct screen *s, int top, int bottom)
+{
+	wsetscrreg(s->win, s->scroll.top = top, s->scroll.bot = bottom);
+}
+
 static void
 set_height(struct canvas *n)
 {
 	struct pty *p = n->p;
 	p->ws.ws_row = n->extent.y;
 	p->scr[0].tos = p->scr[1].tos = p->scr[0].rows - n->extent.y;
-	p->scr[0].scroll.top = p->scr[1].scroll.top = 0;
-	wsetscrreg(p->scr[0].win, 0, p->scr[0].scroll.bot = p->scr[0].rows - 1);
-	wsetscrreg(p->scr[1].win, 0, p->scr[1].scroll.bot = n->extent.y - 1);
-	reshape_window(p);
+	set_scroll(&p->scr[0], 0, p->scr[0].rows - 1);
+	set_scroll(&p->scr[1], 0, n->extent.y - 1);
 }
 
 void
@@ -228,6 +232,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 			set ws.ws_row to the one with biggest extent.y */
 			if( n->p->fd >= 0 && n->extent.y > n->p->ws.ws_row ) {
 				set_height(n);
+				reshape_window(n->p);
 				wrefresh(n->p->s->win);
 			}
 			scrollbottom(n);
