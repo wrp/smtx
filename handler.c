@@ -260,13 +260,12 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		s->c.xenl = 0;
 		reset_sgr(s);
 		s->decawm = p->pnm = true;
-		for( i = 0, s = p->scr; i < 2; i++, s++ ) {
+		for( i = 0, s = p->s = p->scr; i < 2; i++, s++ ) {
 			s->c.gs = s->c.gc = CSET_US;
 			s->vis = 1;
 			wsetscrreg(s->win, s->scroll.top = 0,
 				s->scroll.bot = s->rows - 1);
 		}
-		s = p->s = p->scr;
 		set_tabs(p, p->tabstop);
 		vtreset(&p->vp);
 	Kase mode:
@@ -424,13 +423,13 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		}
 	}
 	if( handler != sgr && handler != print ) {
-		s->repc = 0;
+		p->s->repc = 0;
 	}
-	s->c.x = MAX(0, MIN(s->c.x, p->ws.ws_col - 1));
-	s->c.y = MAX(0, MIN(s->c.y, tos + bot - 1));
-	s->maxy = MAX(s->c.y, s->maxy);
-	s->tos = MAX(0, s->maxy - p->ws.ws_row + 1);
-	wmove(win, s->c.y, s->c.x);
+	p->s->c.x = MAX(0, MIN(p->s->c.x, p->ws.ws_col - 1));
+	p->s->c.y = MAX(0, MIN(p->s->c.y, tos + bot - 1));
+	p->s->maxy = MAX(p->s->c.y, p->s->maxy);
+	p->s->tos = MAX(0, p->s->maxy - p->ws.ws_row + 1);
+	wmove(p->s->win, p->s->c.y, p->s->c.x);
 }
 
 #define CONTROL \
