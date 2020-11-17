@@ -196,9 +196,7 @@ void
 vtreset(struct vtp *v)
 {
 	memset(&v->z, 0, sizeof v->z);
-	if( v->s == NULL ) {
-		v->s = &ground;
-	}
+	v->s = &ground;
 }
 
 void
@@ -221,10 +219,10 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 				a->cb(vp, w);
 			}
 			if( a->next ) {
-				vp->s = a->next;
-				if( vp->s->reset ) {
+				if( a->next->reset ) {
 					vtreset(vp);
 				}
+				vp->s = a->next;
 			}
 		} else {
 			tput(vp->p, w, 0, 0, NULL, print);
