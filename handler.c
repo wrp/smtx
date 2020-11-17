@@ -318,10 +318,9 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case  7:
 			case  8:
 				wattron(win, attrs[a]);
-			Kase 22:
-				wattroff(win, A_DIM);
-				wattroff(win, A_BOLD);
-			Kase 23:
+			Kase 21:
+			case 22:
+			case 23:
 			case 24:
 			case 25:
 			case 27:

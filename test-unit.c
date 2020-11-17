@@ -1269,8 +1269,8 @@ test_sgr(int fd)
 		rv |= validate_row(fd, 1, lenfmt, expect);
 	}
 
-	/* test that 22 disables bold */
-	send_txt(fd, "ab7>", fmt, "ab", d=7, 1, "22");
+	/* test that 21 disables bold */
+	send_txt(fd, "ab7>", fmt, "ab", d=7, 1, "21");
 	rv |= validate_row(fd, 1, "%-93s", "foo<bold>bar</bold>baz");
 
 	/* test that 24 disables underline */
