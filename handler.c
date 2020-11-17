@@ -401,23 +401,14 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			}
 		}
 	Kase scs:
-	{
-		wchar_t **t;
-		switch( iw ) {
-		default: return;
-		Kase L'(': t = &p->g[0];
-		Kase L')': t = &p->g[1];
-		Kase L'*': t = &p->g[2];
-		Kase L'+': t = &p->g[3];
-		}
+		for( const char *s = "()*+", *c = strchr(s, iw); c; c = NULL )
 		switch( w ) {
-		case L'A': *t = CSET_UK;
-		Kase L'B': *t = CSET_US;
-		Kase L'0': *t = CSET_GRAPH;
-		Kase L'1': *t = CSET_US;
-		Kase L'2': *t = CSET_GRAPH;
+		case L'A': p->g[c-s] = CSET_UK;
+		Kase L'B': p->g[c-s] = CSET_US;
+		Kase L'0': p->g[c-s] = CSET_GRAPH;
+		Kase L'1': p->g[c-s] = CSET_US;
+		Kase L'2': p->g[c-s] = CSET_GRAPH;
 		}
-	}
 	Kase so:
 		for( char *s = "\x0f\x0e}|NO", *c = strchr(s, w); c; c = NULL )
 		switch( c - s ) {
