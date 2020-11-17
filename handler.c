@@ -260,9 +260,9 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		s->c.xenl = 0;
 		reset_sgr(s);
 		s->decawm = p->pnm = true;
-		p->scr[0].vis = p->scr[1].vis = 1;
 		for( i = 0, s = p->scr; i < 2; i++, s++ ) {
 			s->c.gs = s->c.gc = CSET_US;
+			s->vis = 1;
 			wsetscrreg(s->win, s->scroll.top = 0,
 				s->scroll.bot = s->rows - 1);
 		}
