@@ -151,12 +151,9 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	Kase cr: s->c.xenl = s->c.x = 0;
 	Kase csr:
 		t1 = argc > 1 ? argv[1] : p->ws.ws_row;
-		if( wsetscrreg(win, tos + p0[1] - 1, tos + t1 - 1) == OK ) {
-			s->scroll.top = tos + p0[1] - 1;
-			s->scroll.bot = tos + t1 - 1;
-			s->c.y = dtop;
-			s->c.xenl = s->c.x = 0;
-		}
+		set_scroll(s, tos + p0[1] - 1, tos + t1 - 1);
+		s->c.y = dtop;
+		s->c.xenl = s->c.x = 0;
 	Kase cub:
 		s->c.xenl = 0;
 		s->c.x -= p0[1];
@@ -263,8 +260,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		for( i = 0, s = p->s = p->scr; i < 2; i++, s++ ) {
 			s->c.gs = s->c.gc = CSET_US;
 			s->vis = 1;
-			wsetscrreg(s->win, s->scroll.top = 0,
-				s->scroll.bot = s->rows - 1);
+			set_scroll(s, 0, s->rows - 1);
 		}
 		set_tabs(p, p->tabstop);
 		vtreset(&p->vp);
