@@ -396,7 +396,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	Kase print: s->repc = w; /* Fallthru */
 	case rep:
 		if( wcwidth(w = s->repc) > 0 ) {
-			for( i=0; i < p0[1]; i++ ) {
+			for( i = 0; i < p0[1]; i++ ) {
 				print_char(w, p);
 			}
 		}
