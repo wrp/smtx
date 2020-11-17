@@ -69,7 +69,7 @@ struct screen {
 	struct {
 		int y, x, xenl;
 		cchar_t bkg;
-		short fgbg[2];
+		short color[2]; /* [0] == foreground, [1] == background */
 		wchar_t *gc, *gs;
 	} c, sc; /* cursor/save cursor */
 	bool insert;

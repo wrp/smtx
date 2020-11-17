@@ -34,7 +34,7 @@ restore_cursor(struct screen *s)
 {
 	if( s->sc.gc ) {
 		s->c = s->sc;
-		int pair = alloc_pair(s->c.fgbg[0], s->c.fgbg[1]);
+		int pair = alloc_pair(s->c.color[0], s->c.color[1]);
 		wattr_set(s->win, s->sattr, pair, NULL);
 		wbkgrndset(s->win, &s->c.bkg);
 	}
@@ -45,7 +45,7 @@ save_cursor(struct screen *s)
 {
 	short pair;
 	wattr_get(s->win, &s->sattr, &pair, NULL);
-	pair_content(pair, s->sc.fgbg, s->sc.fgbg + 1);
+	pair_content(pair, s->sc.color, s->sc.color + 1);
 	s->sc = s->c;
 }
 
@@ -53,7 +53,7 @@ static void
 reset_sgr(struct screen *s)
 {
 	int p;
-	pair_content(p = COLOR_PAIR(0), s->c.fgbg, s->c.fgbg + 1);
+	pair_content(p = COLOR_PAIR(0), s->c.color, s->c.color + 1);
 	setcchar(&s->c.bkg, L" ", A_NORMAL, p, NULL);
 	wattr_set(s->win, A_NORMAL, p, NULL);
 	wbkgrndset(s->win, &s->c.bkg);
@@ -338,18 +338,18 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 45:
 			case 46:
 			case 47:
-				s->c.fgbg[k] = colors[a - ( k ? 40 : 30 )];
+				s->c.color[k] = colors[a - ( k ? 40 : 30 )];
 				doc = COLORS >= 8;
 			Kase 38:
 			case 48:
 				if( at ) {
-					s->c.fgbg[a == 48] = val;
+					s->c.color[a == 48] = val;
 				}
 				i += 2;
 				doc = COLORS >= 256;
 			Kase 39:
 			case 49:
-				s->c.fgbg[a == 49] = -1;
+				s->c.color[a == 49] = -1;
 				doc = true;
 			Kase 90:
 			case 91:
@@ -368,7 +368,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 105:
 			case 106:
 			case 107:
-				s->c.fgbg[k] = colors[a - ( k ? 90 : 100 )];
+				s->c.color[k] = colors[a - ( k ? 90 : 100 )];
 				doc = COLORS >= 16;
 			#if HAVE_A_ITALIC
 			Kase  3:  wattron(win,  A_ITALIC);
@@ -377,7 +377,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			}
 		}
 		if( doc ) {
-			int pair = alloc_pair(s->c.fgbg[0], s->c.fgbg[1]);
+			int pair = alloc_pair(s->c.color[0], s->c.color[1]);
 			wcolor_set(win, pair, NULL);
 			setcchar(&s->c.bkg, L" ", A_NORMAL, pair, NULL);
 			wbkgrndset(win, &s->c.bkg);
