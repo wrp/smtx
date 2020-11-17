@@ -117,6 +117,11 @@ static short colors[] = {
 static int attrs[] = {
 	[1] = A_BOLD,
 	[2] = A_DIM,
+#if HAVE_A_ITALIC
+	[3] = A_ITALIC,
+#else
+	[3] = 0,
+#endif
 	[4] = A_UNDERLINE,
 	[5] = A_BLINK,
 	[7] = A_REVERSE,
@@ -307,18 +312,20 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case  0: reset_sgr(s);
 			Kase  1:
 			case  2:
+			case  3:
 			case  4:
 			case  5:
 			case  7:
 			case  8:
-				wattron(win, attrs[argv[i]]);
+				wattron(win, attrs[a]);
 			Kase 22:
 				wattroff(win, A_DIM);
 				wattroff(win, A_BOLD);
-			Kase 24:
+			Kase 23:
+			case 24:
 			case 25:
 			case 27:
-				wattroff(win, attrs[argv[i] - 20]);
+				wattroff(win, attrs[a - 20]);
 			Kase 30:
 			case 31:
 			case 32:
@@ -368,10 +375,6 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			case 107:
 				s->c.color[k] = colors[a - ( k ? 90 : 100 )];
 				doc = COLORS >= 16;
-			#if HAVE_A_ITALIC
-			Kase  3:  wattron(win,  A_ITALIC);
-			Kase 23:  wattroff(win, A_ITALIC);
-			#endif
 			}
 		}
 		if( doc ) {
