@@ -89,14 +89,14 @@ print_char(wchar_t w, struct pty *p)
 	if( p->s->c.xenl && p->s->decawm ) {
 		newline(p->s, 1);
 	}
-	p->s->c.xenl = 0;
 	if( w < 0x7f && p->s->c.gc[w] ) {
 		w = p->s->c.gc[w];
 	}
-	if( p->s->c.x == p->ws.ws_col - wcwidth(w) ) {
+	if( p->s->c.x >= p->ws.ws_col - wcwidth(w) ) {
 		p->s->c.xenl = 1;
 		wins_nwstr(p->s->win, &w, 1);
 	} else {
+		p->s->c.xenl = 0;
 		waddnwstr(p->s->win, &w, 1);
 		p->s->c.x += wcwidth(w);
 	}
