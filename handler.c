@@ -35,7 +35,7 @@ restore_cursor(struct screen *s)
 	if( s->sc.gc ) {
 		s->c = s->sc;
 		int pair = alloc_pair(s->c.color[0], s->c.color[1]);
-		wattr_set(s->win, s->sattr, pair, NULL);
+		wattr_set(s->win, s->c.attr, pair, NULL);
 		wbkgrndset(s->win, &s->c.bkg);
 	}
 }
@@ -44,7 +44,7 @@ static void
 save_cursor(struct screen *s)
 {
 	short pair;
-	wattr_get(s->win, &s->sattr, &pair, NULL);
+	wattr_get(s->win, &s->c.attr, &pair, NULL);
 	pair_content(pair, s->sc.color, s->sc.color + 1);
 	s->sc = s->c;
 }

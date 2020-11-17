@@ -69,13 +69,13 @@ struct screen {
 	struct {
 		int y, x, xenl;
 		cchar_t bkg;
+		attr_t attr;
 		short color[2]; /* [0] == foreground, [1] == background */
 		wchar_t *gc, *gs;
 	} c, sc; /* cursor/save cursor */
 	bool insert;
 	wchar_t repc; /* character to be repeated */
 	int decawm; /* Wrap-around mode */
-	attr_t sattr;
 	WINDOW *win;
 };
 struct pty {
