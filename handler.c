@@ -301,10 +301,8 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		bool doc = false;
 		if( !argc ) {
 			reset_sgr(s);
-		}
-		for( i = 0; i < argc; i++ ) {
-			bool at = argc > i + 2 && argv[i + 1] == 5;
-			int val = argc > i + 2 ? argv[i + 2] : 0, k = 1, a;
+		} else for( i = 0; i < argc; i++ ) {
+			int k = 1, a;
 			switch( a = argv[i] ) {
 			case  0: reset_sgr(s);
 			Kase  1:
@@ -342,8 +340,8 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				doc = COLORS >= 8;
 			Kase 38:
 			case 48:
-				if( at ) {
-					s->c.color[a == 48] = val;
+				if( argc > i + 2 && argv[i + 1] == 5) {
+					s->c.color[a == 48] = argv[i + 2];
 				}
 				i += 2;
 				doc = COLORS >= 256;
