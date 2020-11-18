@@ -75,6 +75,11 @@ BUGS:
 
 	Title bars are wonky with zero height canvas.
 
+	csr cannot reliably work with multple canvasses.  Right now, if a pty
+	is visible in multiple canvasses, we just obliterate the scroll region
+	in set_height().  Probably the correct thing to do is to remove
+	csr functionality.
+
 MAYBE TODO:
 
 	Make it easy to swap bindings.  eg, so that hjkl could be used for
