@@ -146,10 +146,10 @@ draw_window(struct canvas *n)
 	struct point o = n->origin;
 	struct point e = { o.y + n->extent.y - 1, o.x + n->extent.x - 1 };
 	if( n->p && e.y > 0 && e.x > 0 ) {
-		struct point off = n->offset;
 		if( ! n->manualscroll ) {
-			off.x = MAX(0, n->p->s->c.x - n->extent.x + 1);
+			n->offset.x = MAX(0, n->p->s->c.x - n->extent.x + 1);
 		}
+		struct point off = n->offset;
 		if( n->p->ws.ws_col < n->extent.x ) {
 			assert( n->offset.x == 0 );
 			pnoutrefresh(S.wbkg, 0, 0, o.y, o.x + n->p->ws.ws_col,
