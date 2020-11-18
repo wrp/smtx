@@ -38,7 +38,9 @@
 # include <util.h>
 #endif
 
-#define CTL(x) ((x) & 0x1f)
+#ifndef CTRL
+#define CTRL(x) ((x) & 0x1f)
+#endif
 #define PROMPT "ps1>"
 
 extern int ctlkey;

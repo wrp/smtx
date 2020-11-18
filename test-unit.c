@@ -346,7 +346,7 @@ int
 test_dashc(int fd)
 {
 	int rv;
-	ctlkey = CTL('l');
+	ctlkey = CTRL('l');
 	send_cmd(fd, "un>", "c\rPS1='un>'");
 	rv = check_layout(fd, 0x1, "*11x80; 11x80");
 	return rv;
