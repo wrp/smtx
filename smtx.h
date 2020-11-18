@@ -112,6 +112,7 @@ struct mode {
 	struct handler keys[128];
 };
 extern struct handler k1[128];
+extern struct handler k2[128];
 extern struct handler ctl[128];
 extern struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 

@@ -164,7 +164,7 @@ static void
 fixcursor(void) /* Move the terminal cursor to the active window. */
 {
 	int y = S.f->p->s->c.y, x = S.f->p->s->c.x;
-	int show = S.binding == k1 && S.f->extent.y
+	int show = S.binding != ctl && S.f->extent.y
 		&& x >= S.f->offset.x && x < S.f->offset.x + S.f->extent.x
 		&& y >= S.f->offset.y && y < S.f->offset.y + S.f->extent.y;
 	draw_window(S.f);

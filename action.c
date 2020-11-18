@@ -314,9 +314,6 @@ swap(void)
 	}
 }
 
-static struct handler ins_mode_cr = { .act = { .a = transition }, "\ncontrol" };
-static struct handler ent_mode_cr = { .act = { .v = send_cr }, NULL };
-
 void
 transition(const char *arg)
 {
@@ -327,11 +324,9 @@ transition(const char *arg)
 	S.errmsg[0] = 0; /* Clear any existing error message */
 	if( ! strcmp(arg, "enter") ) {
 		S.binding = k1;
-		k1[0x0d] = ent_mode_cr;
 		wrefresh(curscr);
 	} else if( ! strcmp(arg, "insert") ) {
-		S.binding = k1;
-		k1[0x0d] = ins_mode_cr;
+		S.binding = k2;
 	} else if( ! strcmp(arg, "control") ) {
 		S.binding = ctl;
 	}
