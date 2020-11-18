@@ -563,10 +563,10 @@ test_layout(int fd)
 	send_cmd(fd, "cs3>", "3v\rPS1=cs3'> '");
 	rv |= check_layout(fd, 0x1, "*23x40; 11x39; 11x39");
 
-	send_cmd(fd, "dt4>", "4v\rPS1=dt4'> '");
+	send_cmd(fd, "dt4", "4v\rPS1=dt'4> '");
 	rv |= check_layout(fd, 0x1, "*11x40; 11x40; 11x39; 11x39");
 
-	send_cmd(fd, "dt4>", "jl"); /* Move to lower right */
+	send_cmd(fd, "qji", "jl\rPS1='q'j'i'"); /* Move to lower right */
 	rv |= check_layout(fd, 0x5, "11x40(id=1); 11x40(id=3); "
 		"*11x39(id=4); 11x39(id=2)");
 

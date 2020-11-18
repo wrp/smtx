@@ -322,13 +322,10 @@ transition(const char *arg)
 	Kase '\n': send_cr();
 	}
 	S.errmsg[0] = 0; /* Clear any existing error message */
-	if( ! strcmp(arg, "enter") ) {
-		S.binding = k1;
-		wrefresh(curscr);
-	} else if( ! strcmp(arg, "insert") ) {
-		S.binding = k2;
-	} else if( ! strcmp(arg, "control") ) {
-		S.binding = ctl;
+	switch( *arg ) {
+	case 'e': S.binding = k1; /* enter */
+	Kase 'i': S.binding = k2;  /* insert */
+	Kase 'c': S.binding = ctl; /* control */
 	}
 	scrollbottom(S.f);
 }
