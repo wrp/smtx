@@ -12,6 +12,7 @@ AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_HEADERS([config.h])
 
 AC_PROG_CC
+AC_PROG_CC_STDC
 AC_CHECK_HEADERS([unistd.h util.h libutil.h termios.h pty.h wchar.h wctype.h])
 AC_CHECK_HEADERS([curses.h ncursesw/curses.h])
 AC_CHECK_DECL([A_ITALIC],AC_DEFINE([HAVE_A_ITALIC],[1],[ ]),[],[[#include <curses.h>]])
