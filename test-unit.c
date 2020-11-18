@@ -349,7 +349,6 @@ test_dashc(int fd)
 	ctlkey = CTL('l');
 	send_cmd(fd, "un>", "c\rPS1='un>'");
 	rv = check_layout(fd, 0x1, "*11x80; 11x80");
-	send_txt(fd, NULL, "kill $SMTX");
 	return rv;
 }
 
@@ -373,7 +372,6 @@ test_dch(int fd)
 		"\\033[1C"  /* Forward 1 */
 	);
 	rv |= validate_row(fd, 2, "%-80s", "12347uniq");
-	send_txt(fd, NULL, "kill $SMTX");
 	return rv;
 }
 
@@ -949,7 +947,6 @@ test_row(int fd)
 	status |= validate_row(fd, 20, "%6d%-74s", 399, "  y");
 	status |= validate_row(fd, 21, "%6d%-74s", 400, "  y");
 	status |= validate_row(fd, 22, "%-80s", "uniq1");
-	send_txt(fd, NULL, "kill $SMTX");
 	return status;
 }
 
@@ -1297,12 +1294,13 @@ test_sgr(int fd)
 	send_txt(fd, "kl12>", fmt, "kl", ++d, 44, "49");
 	rv |= validate_row(fd, 1, "%-95s", "foo<blue*>bar</blue*>baz");
 
+	/* Do not verify, just get coverage (not sure how to test 256 color */
+	send_txt(fd, NULL, "printf '\\033[38;5;0mfoo\\n'");
+	send_txt(fd, NULL, "printf '\\033[48;5;0mfoo\\n'");
+
 	/* Clear screen for the sgr_background() call */
 	send_txt(fd, "ps1>", "PS1='p's1'>'; clear");
 	rv |= sgr_background(fd);
-
-	/* Do not verify, just get coverage (not sure how to test 256 color */
-	send_txt(fd, NULL, "printf '\\033[38;5;0mfoo\\n'");
 
 	return rv;
 }
