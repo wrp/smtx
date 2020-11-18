@@ -73,6 +73,7 @@ struct screen {
 		int y, x, xenl;
 		cchar_t bkg;
 		attr_t attr;
+		short p; /* The color pair */
 		short color[2]; /* [0] == foreground, [1] == background */
 		wchar_t *gc, *gs;
 	} c, sc; /* cursor/save cursor */

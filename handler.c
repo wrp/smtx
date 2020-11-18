@@ -43,19 +43,17 @@ restore_cursor(struct screen *s)
 static void
 save_cursor(struct screen *s)
 {
-	short pair;
-	wattr_get(s->win, &s->c.attr, &pair, NULL);
-	pair_content(pair, s->sc.color, s->sc.color + 1);
+	wattr_get(s->win, &s->c.attr, &s->c.p, NULL);
+	pair_content(s->c.p, s->sc.color, s->sc.color + 1);
 	s->sc = s->c;
 }
 
 static void
 reset_sgr(struct screen *s)
 {
-	int p;
-	pair_content(p = COLOR_PAIR(0), s->c.color, s->c.color + 1);
-	setcchar(&s->c.bkg, L" ", A_NORMAL, p, NULL);
-	wattr_set(s->win, A_NORMAL, p, NULL);
+	pair_content(s->c.p = COLOR_PAIR(0), s->c.color, s->c.color + 1);
+	setcchar(&s->c.bkg, L" ", A_NORMAL, s->c.p, NULL);
+	wattr_set(s->win, A_NORMAL, s->c.p, NULL);
 	wbkgrndset(s->win, &s->c.bkg);
 }
 
