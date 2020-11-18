@@ -405,13 +405,6 @@ build_bindings(void)
 	}
 }
 
-static volatile sig_atomic_t interrupted;
-static void
-handle_term(int s)
-{
-	interrupted = s;
-}
-
 static void
 update_offset_r(struct canvas *n)
 {
@@ -431,7 +424,7 @@ update_offset_r(struct canvas *n)
 static void
 main_loop(void)
 {
-	while( S.c != NULL && ! interrupted ) {
+	while( S.c != NULL ) {
 		if( S.reshape ) {
 			reshape(S.c, 0, 0, LINES, COLS);
 		}
@@ -451,20 +444,22 @@ main_loop(void)
 	}
 }
 
+void
+endwin_wrap(void)
+{
+	(void)endwin();
+}
+
 static void
 init(void)
 {
-	struct sigaction sa;
-	memset(&sa, 0, sizeof sa);
-	sa.sa_flags = 0;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_handler = handle_term;
-	sigaction(SIGTERM, &sa, NULL);
+	signal(SIGTERM, exit);
 	FD_ZERO(&S.fds);
 	FD_SET(STDIN_FILENO, &S.fds);
 	setlocale(LC_ALL, "");
 	build_bindings();
 	initscr(); /* exits on failure */
+	atexit(endwin_wrap);
 	S.history = MAX(LINES, S.history);
 	raw();
 	noecho();
@@ -492,10 +487,6 @@ smtx_main()
 {
 	init();
 	main_loop();
-	endwin();
-	if( interrupted ) {
-		fputs("terminated", stderr);
-	}
 	return EXIT_SUCCESS;
 }
 
