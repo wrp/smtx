@@ -133,7 +133,9 @@ describe_row(char *desc, size_t siz, int row)
 	} *atrp, atrs[] = {
 		{ A_BOLD,       0x1, "bold" },
 		{ A_DIM,        0x2, "dim" },
+#if HAVE_A_ITALIC
 		{ A_ITALIC,     0x4, "italic" },
+#endif
 		{ A_UNDERLINE,  0x8, "ul" },
 		{ A_BLINK,     0x10, "blink" },
 		{ A_REVERSE,   0x20, "rev" },
