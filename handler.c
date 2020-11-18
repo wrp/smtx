@@ -34,8 +34,10 @@ restore_cursor(struct screen *s)
 {
 	if( s->sc.gc ) {
 		s->c = s->sc;
-		int pair = alloc_pair(s->c.color[0], s->c.color[1]);
-		wattr_set(s->win, s->c.attr, pair, NULL);
+		#if HAVE_ALLOC_PAIR
+		s->c.p = alloc_pair(s->c.color[0], s->c.color[1]);
+		#endif
+		wattr_set(s->win, s->c.attr, s->c.p, NULL);
 		wbkgrndset(s->win, &s->c.bkg);
 	}
 }
@@ -370,9 +372,11 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			}
 		}
 		if( doc ) {
-			int pair = alloc_pair(s->c.color[0], s->c.color[1]);
-			wcolor_set(win, pair, NULL);
-			setcchar(&s->c.bkg, L" ", A_NORMAL, pair, NULL);
+			#if HAVE_ALLOC_PAIR
+			s->c.p = alloc_pair(s->c.color[0], s->c.color[1]);
+			#endif
+			wcolor_set(win, s->c.p, NULL);
+			setcchar(&s->c.bkg, L" ", A_NORMAL, s->c.p, NULL);
 			wbkgrndset(win, &s->c.bkg);
 		}
 	}
