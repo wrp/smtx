@@ -402,7 +402,7 @@ main(int argc, char *const argv[])
 	F(test_cup);
 	F(test_cursor);
 	F(test_dashc, "args", "-c", "l");
-	F(test_dasht, "XFAIL", "1", "args", "-t", "uninstalled_terminal_type");
+	F(test_dasht, "args", "-t", "uninstalled_terminal_type");
 	F(test_dch);
 	F(test_decaln);
 	F(test_ech);

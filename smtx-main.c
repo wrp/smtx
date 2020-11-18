@@ -98,6 +98,7 @@ new_pty(int cols)
 			if( check(p->pid != -1, 0, "forkpty") && p->pid == 0 ) {
 				setsid();
 				signal(SIGCHLD, SIG_DFL);
+				setenv("TERM", S.term, 1);
 				execl(sh, sh, NULL);
 				err(EXIT_FAILURE, "exec SHELL='%s'", sh);
 			}

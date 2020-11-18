@@ -73,12 +73,6 @@ BUGS:
 	tput is not passing the parameter, so test ich on macos only deletes
 	one line.
 
-	cursor visibility is still a problem.  The whole fix_cursor() crap
-	needs to be redone.  At the moment, curs_set is getting called
-	with show == 0 when in command mode, but the cursor is still visible.
-	curs_set is not returning ERR.  This is probably me abusing ncurses, or
-	not understanding it, or ... something.
-
 	Title bars are wonky with zero height canvas.
 
 MAYBE TODO:

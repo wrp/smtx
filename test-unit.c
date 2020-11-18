@@ -357,8 +357,8 @@ int
 test_dasht(int fd)
 {
 	/* This test exercises -t with a terminal type that should not exist. */
-	grep(fd, "Error opening terminal:");
-	return 0;
+	int rv = validate_row(fd, 1, "%-80s", PROMPT);
+	return rv;
 }
 
 int

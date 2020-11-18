@@ -86,6 +86,5 @@ main(int argc, char **argv)
 	setenv("SMTX_VERSION", VERSION, 1);
 	unsetenv("LINES");
 	unsetenv("COLUMNS");
-	setenv("TERM", S.term, 1);
 	return smtx_main();
 }
