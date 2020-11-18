@@ -86,5 +86,6 @@ main(int argc, char **argv)
 	setenv("SMTX_VERSION", VERSION, 1);
 	unsetenv("LINES");
 	unsetenv("COLUMNS");
+	setlocale(LC_ALL, "");
 	return smtx_main();
 }

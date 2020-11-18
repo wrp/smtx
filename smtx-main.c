@@ -456,7 +456,6 @@ init(void)
 	signal(SIGTERM, exit);
 	FD_ZERO(&S.fds);
 	FD_SET(STDIN_FILENO, &S.fds);
-	setlocale(LC_ALL, "");
 	build_bindings();
 	atexit(endwin_wrap);
 	initscr(); /* exits on failure */
