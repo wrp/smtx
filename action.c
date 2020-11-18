@@ -185,12 +185,8 @@ scrollh(const char *arg)
 	if( n && n->p && n->p->s && n->p->s->win ) {
 		int c = S.count;
 		int count = c < 0 ? n->extent.x : !c ? n->p->ws.ws_col : c;
-		n->offset.x += *arg == '<' ? -count : count;
-		if( n->offset.x < 0 ) {
-			n->offset.x = 0;
-		} else if( n->offset.x > n->p->ws.ws_col - n->extent.x ) {
-			n->offset.x = n->p->ws.ws_col - n->extent.x;
-		}
+		int x = n->offset.x + (*arg == '<' ? -count : count);
+		n->offset.x = MAX(0, MIN(x, n->p->ws.ws_col - n->extent.x));
 		n->manualscroll = !!c;
 	}
 }
@@ -202,6 +198,7 @@ scrolln(const char *arg)
 	if( n && n->p && n->p->s && n->p->s->win ) {
 		int count = S.count == -1 ? n->extent.y - 1 : S.count;
 		int top = n->p->s->maxy - n->extent.y + 1;
+		/* TODO Move tos from struct screen to canvas ? */
 		n->offset.y += *arg == '-' ? -count : count;
 		n->offset.y = MIN(MAX(0, n->offset.y), top);
 	}
