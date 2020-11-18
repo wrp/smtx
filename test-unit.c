@@ -30,19 +30,19 @@ test_alt(int fd)
 
 	/* Go to alternate screen */
 	const char *cmd = "PS1=az'2>'; printf '\\033[47h'; echo alt 1";
-	send_txt(fd, "az2>", "%s", cmd);
+	send_txt(fd, "az2", "%s", cmd);
 	rv |= validate_row(fd, 1, "%-80s", "alt 1");
 	rv |= validate_row(fd, 2, "%-80s", "az2>");
 	rv |= validate_row(fd, 4, "%-80s", "");
 
 	/* Return to primary screen */
-	send_txt(fd, "qw3>", "PS1=qw'3>'; printf '\\033[47l'");
+	send_txt(fd, "qw3", "PS1=qw'3>'; printf '\\033[47l'");
 	rv |= validate_row(fd, 4, "%-80s", "prim line 4");
 	rv |= validate_row(fd, 5, "un1> %-75s", cmd);
 	rv |= validate_row(fd, 6, "%-80s", "qw3>");
 
 	/* Go back to alternate screen using 1047 */
-	send_txt(fd, "lj4>", "PS1=lj'4> '; printf '\\033[1047h'; echo alt 2");
+	send_txt(fd, "lj4", "PS1=lj'4> '; printf '\\033[1047h'; echo alt 2");
 	rv |= validate_row(fd, 1, "%-80s", "alt 2");
 	rv |= validate_row(fd, 2, "%-80s", "lj4>");
 	for( int i = 3; i < 24; i++ ) {
@@ -124,7 +124,7 @@ test_changehist(int fd)
 
 	/* Test begins with -s 128 */
 	send_cmd(fd, NULL, "120Z"); /* Invalid (too small) */
-	send_txt(fd, "un1>", "PS1=un'1>'; yes | nl -s '' | sed 127q");
+	send_txt(fd, "un1", "PS1=un'1>'; yes | nl -s '' | sed 127q");
 	for( int i = -104; i < 23; i++ ) {
 		rv |= validate_row(fd, i, "%6dy%73s", i + 105, "");
 	}
@@ -132,7 +132,7 @@ test_changehist(int fd)
 
 	send_cmd(fd, NULL, "200Z"); /* Increase history to 200 */
 	const char *cmd = "PS1=un'2>'; yes | nl -s '' | sed 127q";
-	send_txt(fd, "un2>", "%s", cmd);
+	send_txt(fd, "un2", "%s", cmd);
 	rv |= validate_row(fd, -176, "    57%-74s", "y");
 	rv |= validate_row(fd, -106, "   127%-74s", "y");
 	rv |= validate_row(fd, -105, "un1>%-76s", cmd);
@@ -149,11 +149,11 @@ test_changehist(int fd)
 
 	/* Kill one window to get a free pty */
 	send_txt(fd, NULL, "exit");
-	send_cmd(fd, "ab1>", "xj\rPS1=ab'1> '");
+	send_cmd(fd, "ab1", "xj\rPS1=ab'1> '");
 	rv = check_layout(fd, 0x1, "7x80; *15x80");
 
 	/* Create one new window */
-	send_cmd(fd, "cd2>", "c\rPS1=cd'2> '");
+	send_cmd(fd, "cd2", "c\rPS1=cd'2> '");
 	rv = check_layout(fd, 0x1, "7x80; *7x80; 7x80");
 
 	/* Validate history is as expected */
@@ -168,7 +168,7 @@ test_changehist(int fd)
 	}
 
 	/* Fail to create a new window (out of memory) */
-	send_cmd(fd, "ef3>", "c\rPS1=ef3'> '");
+	send_cmd(fd, "ef3", "c\rPS1=ef'3> '");
 	rv = check_layout(fd, 0x1, "7x80; *7x80; 7x80");
 
 	/* Set history smaller than screen size */
