@@ -317,14 +317,20 @@ swap(void)
 void
 transition(const char *arg)
 {
-	if( *arg == '*' ) {
-		rewrite(S.f->p->fd, (char *)&S.ctlkey, 1);
-		arg += 1;
+	switch( *arg++ ) {
+	case '*': rewrite(S.f->p->fd, (char *)&S.ctlkey, 1);
+	Kase '\n': send_cr();
 	}
 	S.errmsg[0] = 0; /* Clear any existing error message */
 	if( ! strcmp(arg, "enter") ) {
 		S.binding = k1;
+		k1[0x0d].act.v = send_cr;
+		k1[0x0d].arg = NULL;
 		wrefresh(curscr);
+	} else if( ! strcmp(arg, "insert") ) {
+		S.binding = k1;
+		k1[0x0d].act.a = transition;
+		k1[0x0d].arg = "\ncontrol";
 	} else if( ! strcmp(arg, "control") ) {
 		S.binding = ctl;
 	}

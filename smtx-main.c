@@ -387,7 +387,7 @@ static void
 build_bindings(void)
 {
 
-	k1[S.ctlkey] = (struct handler){ { .a = transition }, "control" };
+	k1[S.ctlkey] = (struct handler){ { .a = transition }, " control" };
 	ctl[S.ctlkey] = (struct handler){ { .a = transition }, "*enter" };
 
 	for( wchar_t k = KEY_MIN; k < KEY_MAX; k++ ) {

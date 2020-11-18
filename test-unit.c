@@ -518,13 +518,18 @@ test_ich(int fd)
 int
 test_insert(int fd)
 {
-	int rc = 0;
+	int rv = validate_row(fd, 1, "%-80s", PROMPT);
 	/* smir -- begin insert mode;  rmir -- end insert mode */
 	send_txt(fd, "sync01", "%s", "printf 0123456; tput cub 3; tput smir; "
 		"echo foo; tput rmir; printf 'sync%s\\n' 01");
-	rc |= validate_row(fd, 3, "%-80s", "0123foo456");
-	rc |= validate_row(fd, 4, "%-80s", "sync01");
-	return rc;
+	rv |= validate_row(fd, 3, "%-80s", "0123foo456");
+	rv |= validate_row(fd, 4, "%-80s", "sync01");
+
+	/* Go to control mode and use i to enter one line of command */
+	send_cmd(fd, "ab>", "iPS1=ab'>'");
+	send_txt(fd, "cd>", "c\rPS1=cd'>'");
+	rv |= check_layout(fd, 0x11, "*11x80@0,0; 11x80@12,0");
+	return rv;
 }
 
 int
