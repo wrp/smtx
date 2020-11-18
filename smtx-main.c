@@ -458,8 +458,8 @@ init(void)
 	FD_SET(STDIN_FILENO, &S.fds);
 	setlocale(LC_ALL, "");
 	build_bindings();
-	initscr(); /* exits on failure */
 	atexit(endwin_wrap);
+	initscr(); /* exits on failure */
 	S.history = MAX(LINES, S.history);
 	raw();
 	noecho();
