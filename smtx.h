@@ -188,6 +188,7 @@ extern void reshape(struct canvas *n, int y, int x, int h, int w);
 void set_scroll(struct screen *s, int top, int bottom);
 extern void change_count(struct canvas * n, int, int);
 extern int build_layout(const char *);
+extern struct pty * new_pty(bool);
 
 extern action0 attach;
 extern action balance;
@@ -196,6 +197,7 @@ extern action digit;
 extern action0 focus;
 extern action mov;
 extern action0 new_tabstop;
+extern action0 new_shell;
 extern action0 next;
 extern action0 prune;
 extern action reorient;

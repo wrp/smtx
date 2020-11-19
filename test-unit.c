@@ -83,18 +83,25 @@ test_attach(int fd)
 
 	/* Move to upper canvas and attach to the pane with "other" */
 	send_cmd(fd, "uniq", "k%da\recho 'u'ni'q'", id);
-	rv |= check_layout(fd, 0x1, "*7x80; 7x80; 7x80");
+	rv |= check_layout(fd, 0x5, "*7x80(id=2); 7x80(id=2); 7x80(id=3)");
 
 	/* 3rd row of the first window should now be "other" */
 	rv |= validate_row(fd, 3, "%-80s", "other");
+	rv |= check_layout(fd, 0x5, "*7x80(id=2); 7x80(id=2); 7x80(id=3)");
 
 	/* Go to next pty */
-	send_cmd(fd, NULL, "N");
+	send_cmd(fd, NULL, "n");
 	rv |= validate_row(fd, 3, "%-80s", "");
+	rv |= check_layout(fd, 0x5, "*7x80(id=3); 7x80(id=2); 7x80(id=3)");
 
 	/* Go to next pty */
-	send_cmd(fd, NULL, "N");
+	send_cmd(fd, NULL, "n");
 	rv |= validate_row(fd, 3, "%-80s", "sync");
+	rv |= check_layout(fd, 0x5, "*7x80(id=1); 7x80(id=2); 7x80(id=3)");
+
+	/* Create a new shell */
+	send_cmd(fd, NULL, "N");
+	rv |= check_layout(fd, 0x5, "*7x80(id=4); 7x80(id=2); 7x80(id=3)");
 
 	return rv;
 }

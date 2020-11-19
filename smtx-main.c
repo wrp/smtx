@@ -61,19 +61,21 @@ resize_pad(WINDOW **p, int h, int w)
 }
 
 static struct pty *
-get_freepty(void)
+get_freepty(bool allow_hidden)
 {
 	struct pty *t = S.p;
-	while( t && t->count && t->fd != -1 ) {
+	while( t && (!allow_hidden || t->count) && t->fd != -1 ) {
 		t = t->next;
 	}
 	return t ? t : calloc(1, sizeof *t);
 }
 
-static struct pty *
-new_pty(int rows, int cols)
+struct pty *
+new_pty(bool new)
 {
-	struct pty *p = get_freepty();
+	int rows = S.history;
+	int cols = MAX(COLS, S.width);
+	struct pty *p = get_freepty(!new);
 	if( check(p != NULL, errno = 0, "calloc") ) {
 		if( p->s == NULL ) {
 			if( resize_pad(&p->scr[0].win, rows, cols)
@@ -125,7 +127,7 @@ struct canvas *
 newcanvas(struct pty *p, struct canvas *parent)
 {
 	struct canvas *n = NULL;
-	if( (p = p ? p : new_pty(S.history, MAX(COLS, S.width))) != NULL ) {
+	if( (p = p ? p : new_pty(false)) != NULL ) {
 		if( (n = S.unused) != NULL ) {
 			S.unused = n->c[0];
 		} else {

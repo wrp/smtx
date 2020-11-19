@@ -20,7 +20,7 @@ struct handler ctl[128] = {
 	[L'=' ] = { { .a = balance}, "=" },
 	[L'>' ] = { { .a = scrollh}, ">" },
 	[L'C' ] = { { .a = create}, "|" },
-	[L'N' ] = { { .v = next}, NULL },
+	[L'N' ] = { { .v = new_shell}, NULL },
 #ifndef NDEBUG
 	[L'Q' ] = { { .a = show_status}, "x" },
 #endif
@@ -40,6 +40,7 @@ struct handler ctl[128] = {
 	[L'j' ] = { { .a = mov}, "j" },
 	[L'k' ] = { { .a = mov}, "k" },
 	[L'l' ] = { { .a = mov}, "l" },
+	[L'n' ] = { { .v = next}, NULL },
 	[L't' ] = { { .v = new_tabstop}, NULL },
 	[L'v' ] = { { .v = set_layout}, NULL },
 	[L'x' ] = { { .v = prune}, NULL },

@@ -131,6 +131,12 @@ new_tabstop(void)
 }
 
 void
+new_shell(void)
+{
+	S.f->p = new_pty(true);
+}
+
+void
 next(void)
 {
 	S.f->p = S.f->p->next ? S.f->p->next : S.p;
