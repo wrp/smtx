@@ -225,7 +225,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	Kase sc: save_cursor(s);
 	Kase su: wscrl(win, (w == L'T' || w == L'^') ? -p0[1] : p0[1]);
 	Kase tab:
-		for( int c = 0; c < p0[1]; c += p->tabs[s->c.x] ? 1 : 0 ) {
+		for( i = 0; i < p0[1]; i += p->tabs[s->c.x] ? 1 : 0 ) {
 			s->c.x += (w == L'Z' ? -1 : +1);
 		}
 	Kase tbc:
