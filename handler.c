@@ -37,15 +37,15 @@ restore_cursor(struct screen *s)
 		#if HAVE_ALLOC_PAIR
 		s->c.p = alloc_pair(s->c.color[0], s->c.color[1]);
 		#endif
-		wattr_set(s->win, s->c.attr, s->c.p, NULL);
-		wbkgrndset(s->win, &s->c.bkg);
+		wattr_set(s->w, s->c.attr, s->c.p, NULL);
+		wbkgrndset(s->w, &s->c.bkg);
 	}
 }
 
 static void
 save_cursor(struct screen *s)
 {
-	wattr_get(s->win, &s->c.attr, &s->c.p, NULL);
+	wattr_get(s->w, &s->c.attr, &s->c.p, NULL);
 	pair_content(s->c.p, s->sc.color, s->sc.color + 1);
 	s->sc = s->c;
 }
@@ -55,8 +55,8 @@ reset_sgr(struct screen *s)
 {
 	pair_content(s->c.p = COLOR_PAIR(0), s->c.color, s->c.color + 1);
 	setcchar(&s->c.bkg, L" ", A_NORMAL, s->c.p, NULL);
-	wattr_set(s->win, A_NORMAL, s->c.p, NULL);
-	wbkgrndset(s->win, &s->c.bkg);
+	wattr_set(s->w, A_NORMAL, s->c.p, NULL);
+	wbkgrndset(s->w, &s->c.bkg);
 }
 
 static void
@@ -66,9 +66,9 @@ newline(struct screen *s, int cr)
 		s->c.xenl = s->c.x = 0;
 	}
 	if( s->c.y == s->scroll.bot ) {
-		scroll(s->win);
+		scroll(s->w);
 	} else {
-		wmove(s->win, ++s->c.y, s->c.x);
+		wmove(s->w, ++s->c.y, s->c.x);
 	}
 }
 
@@ -76,7 +76,7 @@ static void
 print_char(wchar_t w, struct pty *p)
 {
 	if( p->s->insert ) {
-		wins_wch(p->s->win, &p->s->c.bkg);
+		wins_wch(p->s->w, &p->s->c.bkg);
 	}
 	if( p->s->c.xenl && p->s->decawm ) {
 		newline(p->s, 1);
@@ -86,10 +86,10 @@ print_char(wchar_t w, struct pty *p)
 	}
 	if( p->s->c.x >= p->ws.ws_col - wcwidth(w) ) {
 		p->s->c.xenl = 1;
-		wins_nwstr(p->s->win, &w, 1);
+		wins_nwstr(p->s->w, &w, 1);
 	} else {
 		p->s->c.xenl = 0;
-		waddnwstr(p->s->win, &w, 1);
+		waddnwstr(p->s->w, &w, 1);
 		p->s->c.x += wcwidth(w);
 	}
 	p->s->c.gc = p->s->c.gs;
@@ -129,7 +129,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	int p0[] = { argc ? *(int*)arg : 0, argc ? *(int*)arg : 1 };
 	int *argv = arg;
 	struct screen *s = p->s; /* the current SCRN buffer */
-	WINDOW *win = s->win;    /* the current window */
+	WINDOW *win = s->w;      /* the current window */
 
 	const int tos = p->tos;
 	const int y = s->c.y - tos; /* cursor position w.r.t. top of screen */
@@ -209,7 +209,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			cchar_t e;
 			setcchar(&e, L"E", A_NORMAL, COLOR_PAIR(0), NULL);
 			for( int c = 0; c < p->ws.ws_col; c++ ) {
-				mvwadd_wch(p->s->win, tos + r, c, &e);
+				mvwadd_wch(p->s->w, tos + r, c, &e);
 			}
 		}
 		restore_cursor(s);
@@ -282,7 +282,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 					if( set && p->s == p->scr ) {
 						sc->c.x = sc->c.xenl = 0;
 						sc->c.y = dtop;
-						wclear(sc->win);
+						wclear(sc->w);
 					}
 					p->s = sc;
 				}
@@ -429,7 +429,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	p->s->c.y = MAX(0, MIN(p->s->c.y, tos + bot - 1));
 	p->s->maxy = MAX(p->s->c.y, p->s->maxy);
 	p->tos = MAX(0, p->s->maxy - p->ws.ws_row + 1);
-	wmove(p->s->win, p->s->c.y, p->s->c.x);
+	wmove(p->s->w, p->s->c.y, p->s->c.x);
 }
 
 #define CONTROL \

@@ -188,7 +188,7 @@ void
 scrollh(const char *arg)
 {
 	struct canvas *n = S.f;
-	if( n && n->p && n->p->s && n->p->s->win ) {
+	if( n && n->p && n->p->s && n->p->s->w ) {
 		int c = S.count;
 		int count = c < 0 ? n->extent.x : !c ? n->p->ws.ws_col : c;
 		int x = n->offset.x + (*arg == '<' ? -count : count);
@@ -201,7 +201,7 @@ void
 scrolln(const char *arg)
 {
 	struct canvas *n = S.f;
-	if( n && n->p && n->p->s && n->p->s->win ) {
+	if( n && n->p && n->p->s && n->p->s->w ) {
 		int count = S.count == -1 ? n->extent.y - 1 : S.count;
 		int top = n->p->s->maxy - n->extent.y + 1;
 		n->offset.y += *arg == '-' ? -count : count;
@@ -230,11 +230,11 @@ grow_screens(struct pty *p, int siz)
 	for( struct screen **sp = w; *sp && (s = *sp)->rows < siz; sp++ ) {
 		WINDOW *new = NULL;
 		if( resize_pad(&new, siz, p->ws.ws_col) ) {
-			copywin(s->win, new, 0, 0, siz - s->rows, 0,
+			copywin(s->w, new, 0, 0, siz - s->rows, 0,
 				siz - 1, p->ws.ws_col - 1, 1);
-			delwin(s->win);
-			s->win = new;
-			wmove(s->win, s->c.y += siz - s->rows, s->c.x);
+			delwin(s->w);
+			s->w = new;
+			wmove(s->w, s->c.y += siz - s->rows, s->c.x);
 			/* TODO?: mov maxy to struct pty */
 			s->maxy += siz - s->rows;
 			p->tos = MAX(0, s->maxy - p->ws.ws_row + 1);
@@ -288,10 +288,10 @@ set_width(const char *arg)
 	}
 	if( p->fd > 0 && (pty_size(p), w != p->ws.ws_col) ) {
 		p->ws.ws_col = w;
-		resize_pad(&p->scr[0].win, p->scr[0].rows, w);
-		resize_pad(&p->scr[1].win, p->scr[1].rows, w);
+		resize_pad(&p->scr[0].w, p->scr[0].rows, w);
+		resize_pad(&p->scr[1].w, p->scr[1].rows, w);
 		if( p->s->c.x > w - 1 ) {
-			wmove(p->s->win, p->s->c.y, p->s->c.x = w - 1);
+			wmove(p->s->w, p->s->c.y, p->s->c.x = w - 1);
 		}
 		set_tabs(p, p->tabstop);
 		reshape_window(p);

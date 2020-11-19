@@ -125,7 +125,7 @@ describe_row(char *desc, size_t siz, int row)
 	const struct canvas *c = S.c;
 	unsigned width = c->p->ws.ws_col;
 	char *end = desc + siz;
-	WINDOW *w = c->p->s->win;
+	WINDOW *w = c->p->s->w;
 	struct {
 		unsigned attr;
 		unsigned flag;

@@ -63,10 +63,10 @@ extern int smtx_main(void);
 
 struct canvas;
 struct screen {
-	int vis;
-	int maxy; /* highest row in which the cursor has ever been */
-	int rows; /* Number of rows in the window */
-	int delta; /* Number of lines written by a vtwrite */
+	int vis;   /* cursor visibility */
+	int maxy;  /* highest row in which the cursor has ever been */
+	int rows;  /* number of rows in the window */
+	int delta; /* number of lines written by a vtwrite */
 	struct { int top; int bot; } scroll;
 	struct {
 		int y, x, xenl;
@@ -78,8 +78,8 @@ struct screen {
 	} c, sc; /* cursor/save cursor */
 	bool insert;
 	wchar_t repc; /* character to be repeated */
-	int decawm; /* Wrap-around mode */
-	WINDOW *win;
+	int decawm;   /* wrap-around mode */
+	WINDOW *w;
 };
 struct pty {
 	int fd, tabstop, count;
@@ -150,7 +150,7 @@ struct canvas {
 	left corner.  eg: if extent = {3, 13}, typ = 0, split = { 0.5, 0.333 }
 
 	             |<-wdiv
-	  p->s.win   |              c[1]
+	  p->s.w     |              c[1]
 	             |
 	----wtit-----x-------c[1]->wtit-----------
 

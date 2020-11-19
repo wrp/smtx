@@ -78,8 +78,8 @@ new_pty(bool new)
 	struct pty *p = get_freepty(!new);
 	if( check(p != NULL, errno = 0, "calloc") ) {
 		if( p->s == NULL ) {
-			if( resize_pad(&p->scr[0].win, rows, cols)
-				&& resize_pad(&p->scr[1].win, rows, cols)
+			if( resize_pad(&p->scr[0].w, rows, cols)
+				&& resize_pad(&p->scr[1].w, rows, cols)
 			) {
 				p->scr[0].rows = p->scr[1].rows = rows;
 				*(S.tail ? &S.tail->next : &S.p) = p;
@@ -87,8 +87,8 @@ new_pty(bool new)
 				set_scroll(p->scr, 0, rows - 1);
 				set_scroll(&p->scr[1], 0, rows - 1);
 			} else {
-				delwin(p->scr[0].win);
-				delwin(p->scr[1].win);
+				delwin(p->scr[0].w);
+				delwin(p->scr[1].w);
 				free(p);
 				return NULL;
 			}
@@ -160,7 +160,7 @@ draw_window(struct canvas *n)
 			pnoutrefresh(S.wbkg, 0, 0, o.y, o.x + n->p->ws.ws_col,
 				e.y, e.x);
 		}
-		pnoutrefresh(n->p->s->win, off.y, off.x, o.y, o.x, e.y, e.x);
+		pnoutrefresh(n->p->s->w, off.y, off.x, o.y, o.x, e.y, e.x);
 	}
 }
 
@@ -185,7 +185,7 @@ reshape_window(struct pty *p)
 void
 set_scroll(struct screen *s, int top, int bottom)
 {
-	wsetscrreg(s->win, s->scroll.top = top, s->scroll.bot = bottom);
+	wsetscrreg(s->w, s->scroll.top = top, s->scroll.bot = bottom);
 }
 
 
@@ -225,7 +225,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 				n->p->ws.ws_row = n->extent.y;
 				n->p->tos = n->p->scr->rows - n->extent.y;
 				reshape_window(n->p);
-				wrefresh(n->p->s->win);
+				wrefresh(n->p->s->w);
 			}
 			scrollbottom(n);
 		}
@@ -334,7 +334,7 @@ getinput(void) /* check stdin and all pty's for input. */
 	if( FD_ISSET(STDIN_FILENO, &sfds) ) {
 		int r;
 		wint_t w;
-		while( S.f && (r = wget_wch(S.f->p->s->win, &w)) != ERR ) {
+		while( S.f && (r = wget_wch(S.f->p->s->w, &w)) != ERR ) {
 			struct handler *b = NULL;
 			if( r == OK && w > 0 && w < 128 ) {
 				b = S.binding + w;
