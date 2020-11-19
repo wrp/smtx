@@ -264,7 +264,9 @@ draw_title(struct canvas *n, int r)
 	assert( n->wtit );
 	assert( n->p );
 	wattrset(n->wtit, r ? A_REVERSE : A_NORMAL);
-	mvwprintw(n->wtit, 0, 0, "%d %s ", n->p->fd - 2, n->p->status);
+	mvwprintw(n->wtit, 0, 0, "%d %s ",
+		n->p->fd > 2 ? n->p->fd - 2 : n->p->pid,
+		n->p->status);
 	int x = n->offset.x;
 	int w = n->p->ws.ws_col;
 	if( x > 0 || x + n->extent.x < w ) {
@@ -313,7 +315,7 @@ wait_child(struct pty *p)
 		FD_CLR(p->fd, &S.fds);
 		check(close(p->fd) == 0, 0, "close fd %d", p->fd);
 		snprintf(p->status, sizeof p->status, fmt, k);
-		p->pid = p->fd = -1; /* (1) */
+		p->fd = -1; /* (1) */
 		S.reshape = 1;
 	}
 }
