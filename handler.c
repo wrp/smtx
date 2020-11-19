@@ -21,7 +21,7 @@ static void
 handle_osc(struct pty *p, int cmd, const char *arg)
 {
 	switch( cmd ) {
-	case 2: snprintf(p->status, sizeof p->status, "%s", arg);
+	case  2: snprintf(p->status, sizeof p->status, "%s", arg);
 	Kase 60: build_layout(arg);
 #ifndef NDEBUG
 	Kase 62: show_status(arg);
