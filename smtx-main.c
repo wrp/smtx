@@ -93,7 +93,7 @@ new_pty(int cols)
 		}
 		if( p->fd < 1 ) {
 			const char *sh = getshell();
-			p->scr[0].tos = p->scr[1].tos = S.history - LINES + 1;
+			p->tos = S.history - LINES + 1;
 			p->ws.ws_row = LINES - 1;
 			p->ws.ws_col = cols;
 			p->pid = forkpty(&p->fd, p->secondary, NULL, &p->ws);
@@ -221,8 +221,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 			set ws.ws_row to the one with biggest extent.y */
 			if( n->p->fd >= 0 && n->extent.y > n->p->ws.ws_row ) {
 				n->p->ws.ws_row = n->extent.y;
-				n->p->scr->tos = n->p->scr[1].tos =
-					n->p->scr->rows - n->extent.y;
+				n->p->tos = n->p->scr->rows - n->extent.y;
 				reshape_window(n->p);
 				wrefresh(n->p->s->win);
 			}

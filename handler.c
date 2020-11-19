@@ -139,7 +139,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	struct screen *s = p->s; /* the current SCRN buffer */
 	WINDOW *win = s->win;    /* the current window */
 
-	const int tos = s->tos;
+	const int tos = p->tos;
 	const int y = s->c.y - tos; /* cursor position w.r.t. top of screen */
 	const int bot = s->scroll.bot - tos + 1;
 	const int top = MAX(0, s->scroll.top - tos);
@@ -426,7 +426,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	p->s->c.x = MAX(0, MIN(p->s->c.x, p->ws.ws_col - 1));
 	p->s->c.y = MAX(0, MIN(p->s->c.y, tos + bot - 1));
 	p->s->maxy = MAX(p->s->c.y, p->s->maxy);
-	p->s->tos = MAX(0, p->s->maxy - p->ws.ws_row + 1);
+	p->tos = MAX(0, p->s->maxy - p->ws.ws_row + 1);
 	wmove(p->s->win, p->s->c.y, p->s->c.x);
 }
 

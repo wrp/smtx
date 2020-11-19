@@ -64,7 +64,6 @@ extern int smtx_main(void);
 struct canvas;
 struct screen {
 	int vis;
-	int tos; /* top of screen */
 	int maxy; /* highest row in which the cursor has ever been */
 	int rows; /* Number of rows in the window */
 	int delta; /* Number of lines written by a vtwrite */
@@ -85,6 +84,7 @@ struct screen {
 struct pty {
 	int fd, tabstop, count;
 	struct winsize ws;
+	int tos; /* top of screen */
 	pid_t pid;
 	bool *tabs, pnm, decom, lnm;
 	/* DECOM: When set, cursor addressing is relative to the upper left
