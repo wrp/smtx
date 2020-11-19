@@ -64,6 +64,13 @@ MAYBE TODO:
 	hjkl would be better for scrolling than <> and fb
 
 	Configure bindings from a startup file or ?
+
+	Speed things up for hidden windows.  If a pty is not visible
+	on the display, we should (?) read a big chunk of data and store
+	it but not actually display anything until the pty is added to
+	a canvas.  This may be a bad idea since we would lose escape
+	sequences, but overall I like the idea.
+
 	Multi-key bindings (?)
 
 	Add character in title bar to indicate mode.  Need to make
