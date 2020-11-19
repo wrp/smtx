@@ -206,9 +206,10 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		p->pnm = (w == L'=');
 	Kase rc:
 		if( iw == L'#' ) for( int r = 0; r < p->ws.ws_row; r++ ) {
-			const chtype e[] = { COLOR_PAIR(0) | 'E', 0 };
+			cchar_t e;
+			setcchar(&e, L"E", A_NORMAL, COLOR_PAIR(0), NULL);
 			for( int c = 0; c < p->ws.ws_col; c++ ) {
-				mvwaddchnstr(p->s->win, tos + r, c, e, 1);
+				mvwadd_wch(p->s->win, tos + r, c, &e);
 			}
 		}
 		restore_cursor(s);
