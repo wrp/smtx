@@ -522,7 +522,7 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 	if( ( n = newcanvas(p = *pp, parent)) == NULL
 		|| ! check(2 == sscanf(*lp, "%lf:%lf%n", &y, &x, &e),
 			errno = 0, "Invalid layout format: %s", *lp)
-		|| ! check(y >= oy && y <= ey && x >= ox && x <= ex,
+		|| ! check(y > oy && y <= ey && x > ox && x <= ex,
 			errno = 0, "Out of bounds: %s", *lp) ) {
 		goto fail;
 	}
