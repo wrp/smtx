@@ -3,29 +3,13 @@ TODO:
 	Make the preset keybindings modifiable at startup.
 	(eg, implement bind_key as osc)
 
-	Add a command to start up a new shell in a canvas where the shell is dead.
-
-	(?) Make an action on <tab> that moves to the next canvas.
-
-	(?) In full-screen mode, make hjkl scroll the pty.
-
-	(?) -1v should make the focused canvas the root and keep
-	the layout below it instead of making it single screen.  Perhaps
-	0v should attempt to layout all windows at one line each.
-
 	Copy-mode, with stack of registers and ability to edit.
 	Or, maybe just have a binding (s) that dumps the current content
 	of the scrollback region to a file like ~/.smtx-pid-timestamp
 	Perhaps use (e) to edit the file (eg, spawn $EDITOR), then (p)
 	to paste it.
 
-	(?) Make it possible for windows to overlap.
-
 	Dump select() and use libev or libevent, or at least kqueue/epoll
-
-	Allocate a chunk of struct pty on startup, or just use a static array
-	of size 512 or 1024 and stop callocing individual elements.  That should
-	cleanup the implementation of new_pty() a bit.
 
 	Cleanup the osc string handling.  We should parse the parameter in the
 	vt state machine rather than passing a string to tput.
@@ -54,10 +38,7 @@ BUGS:
 	fix, but may be a terminfo issue.  It needs to be understood.
 
 	As of 61c41fe0f1dd73829315c959b69cf44df2af102f, the test suite hangs
-	on macos.  Note that all the tests in esctest.py also timeout.  Perhaps
-	this is tickling a macos bug similar to that mentioned in
-	https://daniel.haxx.se/blog/2016/10/11/poll-on-mac-10-12-is-broken/,
-	but probably not.
+	on macos.  Note that all the tests in esctest.py also timeout.
 
 	test_ich consistently fails on macos.  This seems to
 	be an issue with terminfo.  On macos:
@@ -75,10 +56,8 @@ BUGS:
 
 	Title bars are wonky with zero height canvas.
 
-	csr does not work with multple canvasses.  Right now, if a pty
-	is visible in multiple canvasses, we just obliterate the scroll region
-	in set_height().  Probably the correct thing to do is to remove
-	csr functionality.
+	csr does not work well with multple canvasses.	Probably the
+	correct thing to do is to remove csr functionality.
 
 MAYBE TODO:
 
@@ -88,33 +67,32 @@ MAYBE TODO:
 	to use numbers, so 1B or 2B could select bindings 1 or 2.  It seems
 	hjkl would be better for scrolling than <> and fb
 
-	Register signal handlers for TERM and HUP.  Need to ensure
-	that endwin is called.
-
 	Configure bindings from a startup file or ?
 	Multi-key bindings (?)
-	Pass master fd of a pty through a socket.
 
-	Possibly add character in title bar to indicate mode.  Need to make
-	title bar more functional in general, so this thought should probably
-	be consumed by that.  Probably want to be able to send arbitrary
-	format strings in through an escape sequence. Note that we currently
-	can set the "title" of the window via an osc sequence, but that title
-	is only a portion of the title bar.  Probably want the ability to control
-	the format of the title bar.  Also, the title bar/row should probably
-	be a subwindow rather than just consuming one line of the main window.
-	All the '-1' in the code get confusing.
+	Add character in title bar to indicate mode.  Need to make
+	title bar more functional in general, so this thought should
+	probably be consumed by that.  Probably want to be able to send
+	arbitrary format strings in through an escape sequence. Note
+	that we currently can set the "title" of the window via an osc
+	sequence, but that title is only a portion of the title bar.
+	Probably want the ability to control the format of the title bar.
+	Also, the title bar/row should probably be a subwindow rather
+	than just consuming one line of the main window.  All the '-1'
+	in the code gets confusing.
 
-	Make it possible for windows to overlap.
+	Make it possible for windows to overlap. (Almost certainly don't do this.)
 
 	Implement method to save the current layout into a register.
 
-	Currently (for the last several days), the test suite when run through
-	the makefile consistently fails with:
-	test_decid: timedout waiting for ^[[>1;10;0c
-	However, when I run test-main directly from the shell, test_decid
-	passes but test_utf fails claiming that the expected value in
-	the line is only 78 characters wide.  Note that these tests are
-	being run in a debian docker container (the test suite still
-	fails on macos with all tests timing out).  I suspect this is due to
-	a recent docker upgrade.
+	Make an action on <tab> that moves to the next canvas.
+
+	In full-screen mode, make hjkl scroll the pty.
+
+	-1v should make the focused canvas the root and keep
+	the layout below it instead of making it single screen.  Perhaps
+	0v should attempt to layout all windows at one line each.
+
+	Allocate a chunk of struct pty on startup, or just use a static array
+	of size 512 or 1024 and stop callocing individual elements.  That should
+	cleanup the implementation of new_pty() a bit.
