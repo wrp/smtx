@@ -26,17 +26,18 @@ parse_args(int argc, char *const*argv)
 		default:
 			fprintf(stderr, "Unknown option: %c", optopt);
 			exit(EXIT_FAILURE);
+		Kase 'c': S.ctlkey = CTRL(optarg[0]);
 		Kase 'h':
 			printf("usage: %s", name ? name + 1 : argv[0]);
 			puts(
 				" [-c ctrl-key]"
+				" [-h]"
 				" [-s history-size]"
 				" [-t terminal-type]"
 				" [-v]"
 				" [-w width]"
 			);
 			exit(EXIT_SUCCESS);
-		Kase 'c': S.ctlkey = CTRL(optarg[0]);
 		Kase 's': S.history = strtol(optarg, NULL, 10);
 		Kase 't': S.term = optarg;
 		Kase 'v':
