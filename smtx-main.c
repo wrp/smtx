@@ -71,19 +71,19 @@ get_freepty(void)
 }
 
 static struct pty *
-new_pty(int cols)
+new_pty(int rows, int cols)
 {
 	struct pty *p = get_freepty();
 	if( check(p != NULL, errno = 0, "calloc") ) {
 		if( p->s == NULL ) {
-			if( resize_pad(&p->scr[0].win, S.history, cols)
-				&& resize_pad(&p->scr[1].win, S.history, cols)
+			if( resize_pad(&p->scr[0].win, rows, cols)
+				&& resize_pad(&p->scr[1].win, rows, cols)
 			) {
-				p->scr[0].rows = p->scr[1].rows = S.history;
+				p->scr[0].rows = p->scr[1].rows = rows;
 				*(S.tail ? &S.tail->next : &S.p) = p;
 				S.tail = p;
-				set_scroll(p->scr, 0, S.history - 1);
-				set_scroll(&p->scr[1], 0, S.history - 1);
+				set_scroll(p->scr, 0, rows - 1);
+				set_scroll(&p->scr[1], 0, rows - 1);
 			} else {
 				delwin(p->scr[0].win);
 				delwin(p->scr[1].win);
@@ -93,9 +93,9 @@ new_pty(int cols)
 		}
 		if( p->fd < 1 ) {
 			const char *sh = getshell();
-			p->tos = S.history - LINES + 1;
 			p->ws.ws_row = LINES - 1;
 			p->ws.ws_col = cols;
+			p->tos = rows - p->ws.ws_row;
 			p->pid = forkpty(&p->fd, p->secondary, NULL, &p->ws);
 			if( check(p->pid != -1, 0, "forkpty") && p->pid == 0 ) {
 				setsid();
@@ -125,7 +125,7 @@ struct canvas *
 newcanvas(struct pty *p, struct canvas *parent)
 {
 	struct canvas *n = NULL;
-	if( (p = p ? p : new_pty(MAX(COLS, S.width))) != NULL ) {
+	if( (p = p ? p : new_pty(S.history, MAX(COLS, S.width))) != NULL ) {
 		if( (n = S.unused) != NULL ) {
 			S.unused = n->c[0];
 		} else {
