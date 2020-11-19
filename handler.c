@@ -60,14 +60,6 @@ reset_sgr(struct screen *s)
 }
 
 static void
-insert_space(int count, WINDOW *win)
-{
-	while( count-- ) {
-		wins_wstr(win, L" ");
-	}
-}
-
-static void
 newline(struct screen *s, int cr)
 {
 	if( cr ) {
@@ -84,7 +76,7 @@ static void
 print_char(wchar_t w, struct pty *p)
 {
 	if( p->s->insert ) {
-		insert_space(1, p->s->win);
+		wins_wch(p->s->win, &p->s->c.bkg);
 	}
 	if( p->s->c.xenl && p->s->decawm ) {
 		newline(p->s, 1);
@@ -197,7 +189,9 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	Kase hpa: s->c.x = -1; /* Fallthru */
 	case hpr: s->c.x += p0[1];
 	Kase hts: p->tabs[s->c.x] = true;
-	Kase ich: insert_space(p0[1], win);
+	Kase ich: for( i = 0; i < p0[1]; i++ ) {
+			wins_wch(win, &p->s->c.bkg);
+		}
 	Kase idl:
 		/* We don't use insdelln here because it inserts above and
 		   not below, and has a few other edge cases. */
