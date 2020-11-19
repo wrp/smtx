@@ -146,8 +146,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		set_scroll(s, tos + p0[1] - 1, tos + t1 - 1);
 		s->c.y = dtop;
 		s->c.x = 0;
-	Kase cub:
-		s->c.x -= p0[1];
+	Kase cub: s->c.x -= p0[1];
 	Kase cud: s->c.y += p0[1];
 	Kase cuf: s->c.x += p0[1];
 	Kase cup:
@@ -228,7 +227,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			s->c.x += (w == L'Z' ? -1 : +1);
 		}
 	Kase tbc:
-		switch(p0[0]) {
+		switch( p0[0] ) {
 		case 0: p->tabs[s->c.x] = false;
 		Kase 3: memset(p->tabs, 0, p->ws.ws_col * sizeof *p->tabs);
 		}
