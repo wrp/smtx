@@ -140,19 +140,17 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	switch( (enum cmd)handler ) {
 	case ack: rewrite(p->fd, "\006", 1);
 	Kase bell: beep();
-	Kase cr: s->c.xenl = s->c.x = 0;
+	Kase cr: s->c.x = 0;
 	Kase csr:
 		t1 = argc > 1 ? argv[1] : p->ws.ws_row;
 		set_scroll(s, tos + p0[1] - 1, tos + t1 - 1);
 		s->c.y = dtop;
-		s->c.xenl = s->c.x = 0;
+		s->c.x = 0;
 	Kase cub:
-		s->c.xenl = 0;
 		s->c.x -= p0[1];
 	Kase cud: s->c.y += p0[1];
 	Kase cuf: s->c.x += p0[1];
 	Kase cup:
-		s->c.xenl = 0;
 		s->c.y = dtop + p0[1] - 1;
 		s->c.x = argc > 1 ? argv[1] - 1 : 0;
 	Kase cuu: s->c.y -= p0[1];
@@ -248,7 +246,6 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		p->g[0] = p->g[2] = CSET_US;
 		p->g[1] = p->g[3] = CSET_GRAPH;
 		p->decom = s->insert = p->lnm = false;
-		s->c.xenl = 0;
 		reset_sgr(s);
 		s->decawm = p->pnm = true;
 		for( i = 0, s = p->s = p->scr; i < 2; i++, s++ ) {
@@ -414,8 +411,18 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			p->s->c.gc = p->g[c - s - 2];
 		}
 	}
-	if( handler != sgr && handler != print ) {
+	switch( handler ) {
+	case cr:
+	case csr:
+	case cub:
+	case cup:
+	case ris:
+		p->s->c.xenl = 0;  /*Fallthru */
+	default:
 		p->s->repc = 0;
+	Kase sgr:
+	case print:
+		;
 	}
 	p->s->c.x = MAX(0, MIN(p->s->c.x, p->ws.ws_col - 1));
 	p->s->c.y = MAX(0, MIN(p->s->c.y, tos + bot - 1));
