@@ -186,13 +186,6 @@ set_scroll(struct screen *s, int top, int bottom)
 	wsetscrreg(s->win, s->scroll.top = top, s->scroll.bot = bottom);
 }
 
-static void
-set_height(struct canvas *n)
-{
-	struct pty *p = n->p;
-	p->ws.ws_row = n->extent.y;
-	p->scr->tos = p->scr[1].tos = p->scr->rows - n->extent.y;
-}
 
 void
 scrollbottom(struct canvas *n)
@@ -227,7 +220,9 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 			/* If the pty is visible in multile canvasses,
 			set ws.ws_row to the one with biggest extent.y */
 			if( n->p->fd >= 0 && n->extent.y > n->p->ws.ws_row ) {
-				set_height(n);
+				n->p->ws.ws_row = n->extent.y;
+				n->p->scr->tos = n->p->scr[1].tos =
+					n->p->scr->rows - n->extent.y;
 				reshape_window(n->p);
 				wrefresh(n->p->s->win);
 			}
