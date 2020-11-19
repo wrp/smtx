@@ -82,6 +82,8 @@ new_pty(int cols)
 				p->scr[0].rows = p->scr[1].rows = S.history;
 				*(S.tail ? &S.tail->next : &S.p) = p;
 				S.tail = p;
+				set_scroll(p->scr, 0, S.history - 1);
+				set_scroll(&p->scr[1], 0, S.history - 1);
 			} else {
 				delwin(p->scr[0].win);
 				delwin(p->scr[1].win);
@@ -190,8 +192,6 @@ set_height(struct canvas *n)
 	struct pty *p = n->p;
 	p->ws.ws_row = n->extent.y;
 	p->scr->tos = p->scr[1].tos = p->scr->rows - n->extent.y;
-	set_scroll(p->scr, 0, p->scr->rows - 1);
-	set_scroll(&p->scr[1], 0, n->extent.y - 1);
 }
 
 void
