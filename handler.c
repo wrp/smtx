@@ -160,7 +160,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		}
 	Kase ech:
 		for( i = 0; i < p0[1]; i++ ) {
-			mvwadd_wchnstr(win, s->c.y, s->c.x + i, &s->c.bkg, 1);
+			mvwadd_wch(win, s->c.y, s->c.x + i, &s->c.bkg);
 		}
 	Kase ed: /* Fallthru */
 	case el:
@@ -181,7 +181,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				wmove(win, s->c.y, s->c.x);
 			}
 			for( i = 0; i <= s->c.x; i++ ) {
-				mvwadd_wchnstr(win, s->c.y, i, &s->c.bkg, 1);
+				mvwadd_wch(win, s->c.y, i, &s->c.bkg);
 			}
 		}
 	Kase hpa: s->c.x = -1; /* Fallthru */
