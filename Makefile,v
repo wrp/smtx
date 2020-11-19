@@ -45,7 +45,7 @@ $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
 
 loc:
-	cd $(BUILDDIR) && \
+	@@cd $(BUILDDIR) && \
 	for file in action handler smtx-main vtparser smtx; do \
 		printf assert:; grep 'assert(' $(srcdir)/$${file}.c | wc -l; \
 		gcov $${file}.c $$(test -f .libs/$${file}.gcda \
