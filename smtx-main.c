@@ -517,7 +517,7 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 	struct canvas *n;
 	if( ( n = newcanvas(p = *pp, parent)) == NULL
 		|| ! check(2 == sscanf(*lp, "%lf:%lf%n", &y, &x, &e),
-			errno = 0, "Invalid layout format: %s", *lp)
+			errno = 0, "Invalid format at %s", **lp ? *lp : "end")
 		|| ! check(y > oy && y <= ey && x > ox && x <= ex,
 			errno = 0, "Out of bounds: %s", *lp) ) {
 		goto fail;
@@ -535,7 +535,7 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 	} else {
 		double ny, nx;
 		if( ! check(2 == sscanf(*lp, "%lf:%lf", &ny, &nx),
-				errno = 0, "Invalid format")
+				errno = 0, "Invalid format @ '%s'", *lp)
 			|| ! check(y <= ny || x <= nx, 0,
 				"Out of bounds: %s", *lp)
 			|| (n->typ = y < ny,
