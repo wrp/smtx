@@ -179,6 +179,7 @@ extern void draw(struct canvas *);
 extern void setupevents(struct pty *);
 extern void rewrite(int fd, const char *b, size_t n);
 extern void draw(struct canvas *n);
+extern void freecanvas(struct canvas *n);
 extern void scrollbottom(struct canvas *n);
 extern int check(int, int, const char *, ...);
 extern void set_tabs(struct pty *p, int tabstop);

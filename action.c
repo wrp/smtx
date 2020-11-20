@@ -66,7 +66,7 @@ create(const char *arg)
 			assert(v->parent == n);
 			n = v;
 		} else if( v && !v->p ) {
-			change_count(v, -1, 1);
+			freecanvas(v);
 		}
 	}
 	balance(arg);

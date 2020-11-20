@@ -239,19 +239,25 @@ change_count(struct canvas * n, int count, int pop)
 		n->p->count += count;
 		change_count(n->c[0], count, pop);
 		change_count(n->c[1], count, pop);
-	}
-	if( pop && n && (!n->p || n->p->count == 0) ) {
-		if( n == S.f ) {
-			S.f = n->parent;
+		if( pop && n->p->count == 0 ) {
+			freecanvas(n);
 		}
-		if( n->parent ) {
-			n->parent->c[n == n->parent->c[1]] = NULL;
-		}
-		n->c[0] = S.unused;
-		n->c[1] = NULL;
-		n->parent = NULL;
-		S.unused = n;
 	}
+}
+
+void
+freecanvas(struct canvas *n)
+{
+	if( n == S.f ) {
+		S.f = n->parent;
+	}
+	if( n->parent ) {
+		n->parent->c[n == n->parent->c[1]] = NULL;
+	}
+	n->c[0] = S.unused;
+	n->c[1] = NULL;
+	n->parent = NULL;
+	S.unused = n;
 }
 
 static void
