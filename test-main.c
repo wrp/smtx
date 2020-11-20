@@ -418,6 +418,9 @@ main(int argc, char *const argv[])
 	F(test_ich);
 	F(test_insert);
 	F(test_layout);
+	F(test_layout2);
+	F(test_layout3);
+	F(test_layout4);
 	F(test_lnm);
 	F(test_mode, "COLUMNS", "140");
 	F(test_navigate);

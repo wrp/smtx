@@ -566,6 +566,13 @@ test_layout(int fd)
 
 	send_cmd(fd, "br2>", "2v\rPS1=br2'> '");
 	rv |= check_layout(fd, 0x1, "*11x80; 11x80");
+	return rv;
+}
+
+int
+test_layout2(int fd)
+{
+	int rv = check_layout(fd, 0x13, "*23x80@0,0");
 
 	send_cmd(fd, "cs3>", "3v\rPS1=cs3'> '");
 	rv |= check_layout(fd, 0x1, "*23x40; 11x39; 11x39");
@@ -584,9 +591,16 @@ test_layout(int fd)
 
 	send_cmd(fd, "fv6>", "6v\rPS1=fv6'> '");
 	rv |= check_layout(fd, 0x1, "*11x80; 5x40; 5x26; 5x26; 5x26; 5x39");
+	return rv;
+}
+
+int
+test_layout3(int fd)
+{
+	int rv = check_layout(fd, 0x13, "*23x80@0,0");
 
 	/* Test balance() */
-	send_cmd(fd, "xy6>", "=\rPS1=xy6'> '");
+	send_cmd(fd, "xy6>", "6v=\rPS1=xy6'> '");
 	rv |= check_layout(fd, 0x1, "*7x80; 7x40; 7x26; 7x26; 7x26; 7x39");
 
 	send_cmd(fd, NULL, "70|70-");
@@ -611,7 +625,13 @@ test_layout(int fd)
 	send_txt(fd, NULL, "printf '\\033]60;%s\\007'", "1:.5 .2:1 .8:1 1:1");
 	send_txt(fd, "iy9", "PS1=iy'9>'");
 	rv |= check_layout(fd, 0x1, "*23x40; 3x39; 14x39; 4x39");
+	return rv;
+}
 
+int
+test_layout4(int fd)
+{
+	int rv = check_layout(fd, 0x13, "*23x80@0,0");
 	send_cmd(fd, "hx8>", "8v\rPS1=hx8'> '");
 	rv |= check_layout(fd, 1, "*11x20; 11x20; 11x19; 11x19; "
 		"11x19; 11x19; 11x19; 11x19");
