@@ -125,20 +125,20 @@ struct canvas *
 newcanvas(struct pty *p, struct canvas *parent)
 {
 	struct canvas *n = NULL;
-	if( (p = p ? p : new_pty(S.history, MAX(COLS, S.width), false)) != NULL ) {
-		if( (n = S.unused) != NULL ) {
-			S.unused = n->c[0];
-		} else {
-			check((n = calloc(1 , sizeof *n)) != NULL, 0, "calloc");
+	if( (n = S.unused) != NULL ) {
+		S.unused = n->c[0];
+	} else {
+		check((n = calloc(1 , sizeof *n)) != NULL, 0, "calloc");
+	}
+	if( n ) {
+		n->c[0] = n->c[1] = NULL;
+		n->manualscroll = n->offset.y = n->offset.x = 0;
+		n->p = p ? p : new_pty(S.history, MAX(COLS, S.width), false);
+		n->parent = parent;
+		if( n->p ) {
+			n->p->count += 1;
 		}
-		if( n ) {
-			n->c[0] = n->c[1] = NULL;
-			n->manualscroll = n->offset.y = n->offset.x = 0;
-			n->p = p;
-			n->parent = parent;
-			p->count += 1;
-			n->split = (typeof(n->split)){1.0, 1.0};
-		}
+		n->split = (typeof(n->split)){1.0, 1.0};
 	}
 	return n;
 }
@@ -235,16 +235,22 @@ void
 change_count(struct canvas * n, int count, int pop)
 {
 	assert( count < 2 && count > -2 );
-	if( n ) {
+	if( n && n->p ) {
 		n->p->count += count;
 		change_count(n->c[0], count, pop);
 		change_count(n->c[1], count, pop);
-		if( pop && n->p->count == 0 ) {
-			S.f = n == S.f ? n->parent : S.f;
-			n->c[0] = S.unused;
-			n->c[1] = NULL;
-			S.unused = n;
+	}
+	if( pop && n && (!n->p || n->p->count == 0) ) {
+		if( n == S.f ) {
+			S.f = n->parent;
 		}
+		if( n->parent ) {
+			n->parent->c[n == n->parent->c[1]] = NULL;
+		}
+		n->c[0] = S.unused;
+		n->c[1] = NULL;
+		n->parent = NULL;
+		S.unused = n;
 	}
 }
 
@@ -470,7 +476,7 @@ init(void)
 		ACS_VLINE, ACS_BULLET, ACS_BULLET, ACS_BULLET);
 	wattron(S.werr, A_REVERSE);
 	S.f = S.c = newcanvas(NULL, NULL);
-	if( S.c == NULL || S.werr == NULL || S.wbkg == NULL ) {
+	if( S.c == NULL || S.werr == NULL || S.wbkg == NULL || !S.c->p ) {
 		endwin();
 		err(EXIT_FAILURE, "Unable to create root window");
 	}
@@ -516,6 +522,7 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 	struct pty *p;
 	struct canvas *n;
 	if( ( n = newcanvas(p = *pp, parent)) == NULL
+		|| n->p == NULL
 		|| ! check(2 == sscanf(*lp, "%lf:%lf%n", &y, &x, &e),
 			errno = 0, "Invalid format at %s", **lp ? *lp : "end")
 		|| ! check(y > oy && y <= ey && x > ox && x <= ex,

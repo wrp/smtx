@@ -61,10 +61,12 @@ create(const char *arg)
 	}
 	for( int count = S.count < 1 ? 1 : S.count; count; count -= 1 ) {
 		struct canvas *v = n->c[dir] = newcanvas(0, n);
-		if( v != NULL ) {
+		if( v && v->p ) {
 			v->typ = n->typ = n->c[!dir] ? n->typ : dir;
 			assert(v->parent == n);
 			n = v;
+		} else if( v && !v->p ) {
+			change_count(v, -1, 1);
 		}
 	}
 	balance(arg);
