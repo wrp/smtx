@@ -377,77 +377,18 @@ exit_status(int status)
 	return WIFEXITED(status) ? WEXITSTATUS(status) : EXIT_FAILURE;
 }
 
-#define F(x, ...) new_test(#x, x, &tab, ##__VA_ARGS__, NULL)
+static struct st * initialize_tests(char const **);
+
 int
 main(int argc, char *const argv[])
 {
-	char bigint[128];
 	int fail_count = 0;
 	int total_count = 0;
-	const char *argv0 = argv[0];
-	char *base;
-	struct st *tab = NULL, *v;
-	char buf[PATH_MAX];
+	char const *argv0 = argv[0];
+	struct st *tab, *v;
 
-	strcpy(buf, argv0);
-	if( (base = strrchr(buf, '/')) != NULL ) {
-		*base = '\0';
-		chdir(buf);
-		argv0 = base + 1;
-	}
+	tab = initialize_tests(&argv0);
 
-	snprintf(bigint, sizeof bigint, "%d", INT_MAX);
-	F(test_ack);
-	F(test_alt);
-	F(test_attach);
-	F(test_bighist, "XFAIL", "1", "STATUS", "1", "args", "-s", bigint);
-	F(test_changehist, "args", "-s", "128");
-	F(test_cols, "COLUMNS", "92", "args", "-w", "97");
-	F(test_csr);
-	F(test_cup);
-	F(test_cursor);
-	F(test_dashc, "args", "-c", "l");
-	F(test_dasht, "args", "-t", "uninstalled_terminal_type");
-	F(test_dch);
-	F(test_decaln);
-	F(test_ech);
-	F(test_ed);
-	F(test_el);
-	F(test_equalize);
-	F(test_hpr);
-	F(test_ich);
-	F(test_insert);
-	F(test_layout);
-	F(test_layout2);
-	F(test_layout3);
-	F(test_layout4);
-	F(test_lnm);
-	F(test_mode, "COLUMNS", "140");
-	F(test_navigate);
-	F(test_nel, "TERM", "smtx");
-	F(test_pager ,"MORE", "");
-	F(test_pnm);
-	F(test_prune);
-	F(test_repc);
-	F(test_resend);
-	F(test_resize);
-	F(test_resizepty, "args", "-s", "10");
-	F(test_ri);
-	F(test_row);
-	F(test_scrollback);
-	F(test_scrollh, "COLUMNS", "26", "args", "-w", "78");
-	F(test_scs);
-	F(test_sgr);
-	F(test_su);
-	F(test_swap);
-	F(test_tabstop);
-	F(test_title);
-	F(test_tput);
-	F(test_transpose);
-	F(test_utf);
-	F(test_vis);
-	F(test_wait);
-	F(test_width);
 	for( v = tab; v && ( argc < 2 || *++argv ); v = v ? v->next : NULL ) {
 		const char *name = *argv;
 		if( argc > 1 ) {
@@ -643,4 +584,76 @@ check_test_status(int rv, int status, int pty, const char *name)
 		fputs("FAILED\n", stderr);
 	}
 	return (!rv && expected) ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+char bigint[128];
+
+static struct st *
+initialize_tests(char const **argv0)
+{
+	struct st *tab;
+	char buf[PATH_MAX];
+	char *base;
+
+	strcpy(buf, *argv0);
+	if( (base = strrchr(buf, '/')) != NULL ) {
+		*base = '\0';
+		chdir(buf);
+		*argv0 = base + 1;
+	}
+	snprintf(bigint, sizeof bigint, "%d", INT_MAX);
+
+#define F(x, ...) new_test(#x, x, &tab, ##__VA_ARGS__, NULL)
+	F(test_ack);
+	F(test_alt);
+	F(test_attach);
+	F(test_bighist, "XFAIL", "1", "STATUS", "1", "args", "-s", bigint);
+	F(test_changehist, "args", "-s", "128");
+	F(test_cols, "COLUMNS", "92", "args", "-w", "97");
+	F(test_csr);
+	F(test_cup);
+	F(test_cursor);
+	F(test_dashc, "args", "-c", "l");
+	F(test_dasht, "args", "-t", "uninstalled_terminal_type");
+	F(test_dch);
+	F(test_decaln);
+	F(test_ech);
+	F(test_ed);
+	F(test_el);
+	F(test_equalize);
+	F(test_hpr);
+	F(test_ich);
+	F(test_insert);
+	F(test_layout);
+	F(test_layout2);
+	F(test_layout3);
+	F(test_layout4);
+	F(test_lnm);
+	F(test_mode, "COLUMNS", "140");
+	F(test_navigate);
+	F(test_nel, "TERM", "smtx");
+	F(test_pager ,"MORE", "");
+	F(test_pnm);
+	F(test_prune);
+	F(test_repc);
+	F(test_resend);
+	F(test_resize);
+	F(test_resizepty, "args", "-s", "10");
+	F(test_ri);
+	F(test_row);
+	F(test_scrollback);
+	F(test_scrollh, "COLUMNS", "26", "args", "-w", "78");
+	F(test_scs);
+	F(test_sgr);
+	F(test_su);
+	F(test_swap);
+	F(test_tabstop);
+	F(test_title);
+	F(test_tput);
+	F(test_transpose);
+	F(test_utf);
+	F(test_vis);
+	F(test_wait);
+	F(test_width);
+	return tab;
 }
