@@ -14,6 +14,8 @@ TODO:
 	Cleanup the osc string handling.  We should parse the parameter in the
 	vt state machine rather than passing a string to tput.
 
+	Run the tests in parallel, or speed up the grep()
+
 BUGS:
 	Syntax highlighting doesn't work in vim.
 

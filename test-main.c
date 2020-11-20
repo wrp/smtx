@@ -372,6 +372,11 @@ match_name(const char *a, const char *b)
 	return strcmp(a, b) && (!under || strcmp(under + 1, b));
 }
 
+/* TODO
+ * In grep(), we validate data by reading 1 char at a time.  This
+ * is too slow.  As a simple workaround, we should run all tests
+ * in parallel.
+ */
 #define F(x, ...) new_test(#x, x, &tab, ##__VA_ARGS__, NULL)
 int
 main(int argc, char *const argv[])
