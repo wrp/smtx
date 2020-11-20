@@ -390,9 +390,10 @@ test_decaln(int fd)
 	memset(e, 'E', 80);
 	send_txt(fd, "uniq", "printf '\\033[1048#u'; echo 'u'n'i'q;");
 	rv |= validate_row(fd, 1, "%s", e);
-	for( int i = 4; i < 24; i++ ) {
+	for( int i = 4; i < 24; i += 3 ) {
 		rv |= validate_row(fd, i, "%s", e);
 	}
+	rv |= validate_row(fd, 23, "%s", e);
 	memcpy(e, "uniq", 4);
 	rv |= validate_row(fd, 2, "%s", e);
 	return rv;
