@@ -543,7 +543,7 @@ spawn_test(struct st *v, const char *argv0)
 			}
 			wait(&status);
 			if( exit_status(status) ) {
-				fprintf(stderr, "FAIL: timed out\n");
+				fprintf(stderr, "FAIL(timeout): %s\n", v->name);
 			}
 		}
 		_exit(exit_status(status));
