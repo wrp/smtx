@@ -148,8 +148,7 @@ check_layout(int fd, int flag, const char *fmt, ...)
 
 	if( get_layout(fd, flag, buf, sizeof buf) == 0 ) {
 		if( strcmp( buf, expect ) ) {
-			fprintf(stderr, "unexpected layout:\n");
-			fputs("received: ", stderr);
+			fputs("unexpected layout:\nreceived: ", stderr);
 			for( const char *b = buf; *b; b++ ) {
 				fputc(isprint(*b) ? *b : '?', stderr);
 			}
@@ -485,15 +484,22 @@ spawn_test(struct st *v, const char *argv0)
 {
 	pid_t pid[3];
 	int status;
+	int fd[2];
 	char *const args[] = { v->name, v->name, NULL };
 	switch( pid[0] = fork() ) {
 	case -1:
 		err(EXIT_FAILURE, "fork");
 	case 0:
+		if( pipe(fd)) {
+			err(EXIT_FAILURE, "pipe");
+		}
 		switch( pid[1] = fork() ) {
 		case -1:
 			err(EXIT_FAILURE, "fork");
 		case 0:
+			dup2(fd[1], STDERR_FILENO);
+			close(fd[0]);
+			close(fd[1]);
 			execv(argv0, args);
 			err(EXIT_FAILURE, "execv");
 		}
@@ -501,9 +507,26 @@ spawn_test(struct st *v, const char *argv0)
 		case -1:
 			err(EXIT_FAILURE, "fork");
 		case 0:
-			sleep(main_timeout);
+			{
+			int c, nl = 0;
+			FILE *fp = fdopen(fd[0], "r");
+			close(fd[1]);
+			alarm(main_timeout);
+			while( ( c = fgetc(fp)) != EOF ) {
+				if( nl ) {
+					fputs(v->name, stderr);
+					fputs(": ", stderr);
+					nl = 0;
+				}
+				fputc(c, stderr);
+				nl = c == '\n';
+
+			}
 			_exit(0);
+			}
 		}
+		close(fd[0]);
+		close(fd[1]);
 
 		pid_t died = wait(&status);
 		if( died == pid[1] ) {
@@ -512,11 +535,13 @@ spawn_test(struct st *v, const char *argv0)
 			}
 			wait(NULL);
 		} else {
-			fprintf(stderr, "FAIL: %s timed out\n", v->name);
 			if( kill(pid[1], SIGKILL) )  {
 				perror("kill");
 			}
 			wait(&status);
+			if( exit_status(status) ) {
+				fprintf(stderr, "FAIL: timed out\n");
+			}
 		}
 		_exit(exit_status(status));
 	}
@@ -612,7 +637,7 @@ check_test_status(int rv, int status, int pty, const char *name)
 			name, WTERMSIG(status));
 	}
 	if( rv ) {
-		fprintf(stderr, "FAILED: %s\n", name);
+		fputs("FAILED\n", stderr);
 	}
 	return (!rv && expected) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
