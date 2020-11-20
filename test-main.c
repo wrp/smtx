@@ -453,9 +453,11 @@ main(int argc, char *const argv[])
 		}
 		total_count += 1;
 		if( v && v->f ) {
-			int (*f)(struct st *, const char *);
-			f = strcmp(v->name, argv0) ? spawn_test : execute_test;
-			fail_count += f(v, argv0);
+			if( strcmp(v->name, argv0) ) {
+				fail_count += spawn_test(v, argv0);
+			} else {
+				return execute_test(v, argv0);
+			}
 		} else {
 			fprintf(stderr, "unknown function: %s\n", name);
 			fail_count += 1;
@@ -587,7 +589,6 @@ execute_test(struct st *v, const char *name)
 	if( verbosity && strtol(verbosity, NULL, 10) > 0 ) {
 		printf("%s: %s\n", v->name, status ? "FAIL" : "pass" );
 	}
-	fclose(stderr); /* Prevent redundant output of failures */
 	return status;
 }
 
