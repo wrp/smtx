@@ -328,7 +328,7 @@ struct st {
 	struct st *next;
 };
 static int execute_test(struct st *, const char *);
-static int spawn_test(struct st *v, const char *argv0);
+static void spawn_test(struct st *v, const char *argv0);
 static void
 new_test(char *name, test *f, struct st **h, ...)
 {
@@ -372,11 +372,12 @@ match_name(const char *a, const char *b)
 	return strcmp(a, b) && (!under || strcmp(under + 1, b));
 }
 
-/* TODO
- * In grep(), we validate data by reading 1 char at a time.  This
- * is too slow.  As a simple workaround, we should run all tests
- * in parallel.
- */
+static int
+exit_status(int status)
+{
+	return WIFEXITED(status) ? WEXITSTATUS(status) : EXIT_FAILURE;
+}
+
 #define F(x, ...) new_test(#x, x, &tab, ##__VA_ARGS__, NULL)
 int
 main(int argc, char *const argv[])
@@ -451,10 +452,10 @@ main(int argc, char *const argv[])
 			for( v = tab; v && match_name(v->name, name); )
 				v = v->next;
 		}
-		total_count += 1;
 		if( v && v->f ) {
+			total_count += 1;
 			if( strcmp(v->name, argv0) ) {
-				fail_count += spawn_test(v, argv0);
+				spawn_test(v, argv0);
 			} else {
 				return execute_test(v, argv0);
 			}
@@ -462,6 +463,10 @@ main(int argc, char *const argv[])
 			fprintf(stderr, "unknown function: %s\n", name);
 			fail_count += 1;
 		}
+	}
+	for( int status = 0, i = 0; i < total_count; i++ ) {
+		waitpid(-1, &status, 0);
+		fail_count += exit_status(status);
 	}
 	if( fail_count ) {
 		fprintf(stderr, "%d test%s (of %d) failed\n", fail_count,
@@ -475,13 +480,7 @@ main(int argc, char *const argv[])
  * will have the test name, and to make it easier to pick them out
  * in the output of ps.
  */
-static int
-exit_status(int status)
-{
-	return WIFEXITED(status) ? WEXITSTATUS(status) : EXIT_FAILURE;
-}
-
-static int
+static void
 spawn_test(struct st *v, const char *argv0)
 {
 	pid_t pid[3];
@@ -521,8 +520,6 @@ spawn_test(struct st *v, const char *argv0)
 		}
 		_exit(exit_status(status));
 	}
-	waitpid(pid[0], &status, 0);
-	return exit_status(status);
 }
 
 static void
