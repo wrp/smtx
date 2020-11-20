@@ -71,10 +71,8 @@ get_freepty(bool allow_hidden)
 }
 
 struct pty *
-new_pty(bool new)
+new_pty(int rows, int cols, bool new)
 {
-	int rows = S.history;
-	int cols = MAX(COLS, S.width);
 	struct pty *p = get_freepty(!new);
 	if( check(p != NULL, errno = 0, "calloc") ) {
 		if( p->s == NULL ) {
@@ -127,7 +125,7 @@ struct canvas *
 newcanvas(struct pty *p, struct canvas *parent)
 {
 	struct canvas *n = NULL;
-	if( (p = p ? p : new_pty(false)) != NULL ) {
+	if( (p = p ? p : new_pty(S.history, MAX(COLS, S.width), false)) != NULL ) {
 		if( (n = S.unused) != NULL ) {
 			S.unused = n->c[0];
 		} else {

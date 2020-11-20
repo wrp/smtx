@@ -188,7 +188,7 @@ extern void reshape(struct canvas *n, int y, int x, int h, int w);
 void set_scroll(struct screen *s, int top, int bottom);
 extern void change_count(struct canvas * n, int, int);
 extern int build_layout(const char *);
-extern struct pty * new_pty(bool);
+extern struct pty * new_pty(int, int, bool);
 
 extern action0 attach;
 extern action balance;

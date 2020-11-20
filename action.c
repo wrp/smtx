@@ -133,7 +133,7 @@ new_tabstop(void)
 void
 new_shell(void)
 {
-	S.f->p = new_pty(true);
+	S.f->p = new_pty(S.history, MAX(S.width, S.f->extent.x), true);
 }
 
 void
