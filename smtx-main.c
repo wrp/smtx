@@ -229,6 +229,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		}
 	}
 	S.reshape = 0;
+	wrefresh(curscr);
 }
 
 void

@@ -20,7 +20,7 @@
 #include <fcntl.h>
 
 static int read_timeout = 1;  /* Set to 0 when interactively debugging */
-static int main_timeout = 2;
+static int main_timeout = 10;
 static int check_test_status(int rv, int status, int pty, const char *name);
 static int get_secondary_fd(int fd);
 int ctlkey = CTRL('g');

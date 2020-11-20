@@ -338,6 +338,7 @@ transition(const char *arg)
 	Kase 'c': S.binding = ctl; /* control */
 	}
 	scrollbottom(S.f);
+	wrefresh(curscr);
 }
 
 static void
