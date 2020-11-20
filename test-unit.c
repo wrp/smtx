@@ -132,7 +132,7 @@ test_changehist(int fd)
 	/* Test begins with -s 128 */
 	send_cmd(fd, NULL, "120Z"); /* Invalid (too small) */
 	send_txt(fd, "un1", "PS1=un'1>'; yes | nl -s '' | sed 127q");
-	for( int i = -104; i < 23; i++ ) {
+	for( int i = -104; i < 23; i+=10 ) {
 		rv |= validate_row(fd, i, "%6dy%73s", i + 105, "");
 	}
 	rv |= validate_row(fd, 23, "%-80s", "un1>");
