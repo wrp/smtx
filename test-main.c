@@ -612,7 +612,7 @@ execute_test(struct st *v, const char *name)
 
 	char *verbosity = getenv("V");
 	if( verbosity && strtol(verbosity, NULL, 10) > 0 ) {
-		printf("%s: %s\n", v->name, status ? "FAIL" : "pass" );
+		printf("%20s: %s\n", v->name, status ? "FAIL" : "pass" );
 	}
 	return status;
 }
