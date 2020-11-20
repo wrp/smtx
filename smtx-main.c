@@ -485,7 +485,7 @@ init(void)
 	S.f = S.c = newcanvas(NULL, NULL);
 	if( S.c == NULL || S.werr == NULL || S.wbkg == NULL || !S.c->p ) {
 		endwin();
-		err(EXIT_FAILURE, "Unable to create root window");
+		errx(EXIT_FAILURE, "Unable to create root window");
 	}
 	reshape_root();
 }
