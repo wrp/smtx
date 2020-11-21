@@ -904,16 +904,16 @@ test_resend(int fd)
 int
 test_resize(int fd)
 {
-	int status = 0;
-	send_cmd(fd, "uniq1", "%s\r%s", "ccC", "printf 'uniq%s\\n' 1");
-	status |= check_layout(fd, 0x1, "*7x40; 7x80; 7x80; 7x39");
-	send_cmd(fd, "uniq2", "%s\r%s", "75-", "printf 'uniq%s\\n' 2");
-	status |= check_layout(fd, 0x1, "*17x40; 2x80; 2x80; 17x39");
-	send_cmd(fd, "uniq3", "%s\r%s", "jC10|", "printf 'uniq%s\\n' 3");
-	status |= check_layout(fd, 0x1, "17x40; *2x8; 2x80; 2x71; 17x39");
+	int rv = validate_row(fd, 1, "%-80s", PROMPT);
+	send_cmd(fd, "uniq1", "%s\r%s", "ccC", "PS1=un'i'q1");
+	rv |= check_layout(fd, 0x1, "*7x40; 7x80; 7x80; 7x39");
+	send_cmd(fd, "abcd2", "%s\r%s", "75-", "PS1=ab'c'd2");
+	rv |= check_layout(fd, 0x1, "*17x40; 2x80; 2x80; 17x39");
+	send_cmd(fd, "efgh3", "%s\r%s", "jC10|", "PS1=ef'g'h3");
+	rv |= check_layout(fd, 0x1, "17x40; *2x8; 2x80; 2x71; 17x39");
 	send_cmd(fd, "un4>", "0-j\r%s", "PS1=un4'> '");
-	status |= check_layout(fd, 0x1, "17x40; 0x8; *5x80; 0x72; 17x39");
-	return status;
+	rv |= check_layout(fd, 0x1, "17x40; 0x8; *5x80; 0x72; 17x39");
+	return rv;
 }
 
 /* test_resizepty() is called with -s 10 to trigger minimal history.
