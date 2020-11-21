@@ -228,7 +228,6 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		scrollbottom(n);
 	}
 	S.reshape = 0;
-	wrefresh(curscr);
 }
 
 void
@@ -435,6 +434,7 @@ main_loop(void)
 	while( S.c != NULL ) {
 		if( S.reshape ) {
 			reshape(S.c, 0, 0, LINES, COLS);
+			wrefresh(curscr);
 		}
 		draw(S.c);
 		if( *S.errmsg ) {
