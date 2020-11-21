@@ -217,7 +217,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 		n->extent.y = h1 > 0 ?  h1 - 1 : 0;
 		n->extent.x = w1;
 		if( n->p ) {
-			/* If the pty is visible in multile canvasses,
+			/* If the pty is visible in multiple canvasses,
 			set ws.ws_row to the one with biggest extent.y */
 			if( n->p->fd >= 0 && n->extent.y > n->p->ws.ws_row ) {
 				n->p->ws.ws_row = n->extent.y;
