@@ -1,0 +1,84 @@
+
+= smtx (1)
+William Pursell
+:doctype: manpage
+:man manual: smtx manual
+:man source: smtx
+:man version: {version}
+
+== NAME
+
+smtx - A simple modal terminal multiplexor
+
+== SYNOPSIS
+
+*smtx* [-c ctrl-key] [-h] [-s history-size] [-t terminal-type] [-v] [-w width]
+
+== OPTIONS
+
+*-c*=ctrl-key::
+  Use alternate key to enter control mode.
+
+*-h*::
+  Print the usage statement and exit.
+
+*-s*=history-size::
+  Set the number of lines in the history buffer to be used in ptys.
+
+*-t*=term::
+  Assign TERM environment to this value is new shells (default is "smtx").
+
+*-v*::
+  Print the version and exit.
+
+*-w*=width::
+  Specify the minimun width in ptys (default is 80).
+
+== DESCRIPTION
+
+smtx is a terminal multiplexor which allows ptys to be larger than the physical
+screen.  Multiple windows can be opened into the same pty at different locations,
+and window layouts can be generated dynamically.  Each window exists as part of
+a "canvas", which is a rectangular portion of the physical screen.  The root canvas
+consists of the entire physical screen and contains a window in the upper left
+corner and 2 child canvases which fill the remainder of the canvas, either of which
+may be empty.  The left child occupies the space below the window, while the right
+child occupies the space to the right of the window.  Which child extends to the
+lower right portion of the canvas depends on the type of the canvas, and can be
+modified dynamically.  The window provides a view into a pty, and the pty associated
+with the window can be changed dynamically.
+
+When the shell running inside a pty exits, the pty is not immediately reaped
+and any error messages will remain available until that canvas is pruned.
+To immediately close all ptys and exit, use '0x' from control mode.
+
+== EXAMPLES
+
+To change the current window layout:
+
+$ printf '\033]60;.33:1 .66:.5 .66:1 1:1\007'
+
+== BINDINGS
+
+The following describes the default keybindings used in control mode.
+
+* <N>a    Attach the specified pty to the focused window
+* <N>C    Create N new canvasses to the right of the current window
+* <N>c    Create N new canvasses below the current window
+* <N>g    Goto a visible window attached to the pty with id N
+* i       Enter one line of text to the underlying pty
+* <N>j    Navigate to the primary child of the focused window
+* <N>h    Navigate to the left child of the focused window
+* <N>k    Navigate to the parent of the focused window
+* <N>l    Navigate to the right child of the focused window
+* N       Spawn a new shell (may create a pty, or reuse if one is available)
+* n       Attach the next pty to the focused window
+* T       Recursively transpose the current canvas
+* <N>W    Modify the width of the currently focused pty to be N
+* <N>v    Use pre-defined window layout N
+* <N>x    Recursively prune the specified canvas
+
+== COPYING
+
+Copyright \(C) 2020 {author}.
+Use of this software is granted under the terms of the GPLv3
