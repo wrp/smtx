@@ -17,6 +17,13 @@
  */
 #include "smtx.h"
 
+static void
+attach_pty(struct canvas *n, struct pty *p)
+{
+	n->p->count -= 1;
+	(n->p = p)->count += 1;
+}
+
 void
 attach(void)
 {
@@ -24,8 +31,7 @@ attach(void)
 	assert( n->p->count > 0 );
 	for( struct pty *t = S.p; t; t = t->next ) {
 		if( t->fd - 2 == S.count ) {
-			(n->p    )->count -= 1;
-			(n->p = t)->count += 1;
+			attach_pty(n, t);
 			S.reshape = 1;
 			return;
 		}
@@ -135,9 +141,7 @@ new_tabstop(void)
 void
 new_shell(void)
 {
-	S.f->p->count -= 1;
-	S.f->p = new_pty(S.history, MAX(S.width, S.f->extent.x), true);
-	S.f->p->count += 1;
+	attach_pty(S.f, new_pty(S.history, MAX(S.width, S.f->extent.x), true));
 }
 
 void
