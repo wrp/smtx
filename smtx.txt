@@ -54,9 +54,13 @@ To immediately close all ptys and exit, use '0x' from control mode.
 
 == EXAMPLES
 
-To change the current window layout:
+change the current window layout:
 
 $ printf '\033]60;.33:1 .66:.5 .66:1 1:1\007'
+
+change the title of the current window:
+
+$ printf '\033]2;new title\007'
 
 == BINDINGS
 
