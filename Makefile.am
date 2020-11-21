@@ -15,7 +15,8 @@ test_main_SOURCES = test-main.c test-unit.c
 test_main_DEPENDENCIES = smtx
 
 CLEANFILES = *.gcda *.gcno *.gcov version *.1
-EXTRA_DIST = build-aux/package-version version test-shell test-coverage smtx.ti
+EXTRA_DIST = build-aux/package-version version test-shell test-coverage smtx.ti \
+	smtx.1
 noinst_HEADERS = vtparser.h smtx.h test-unit.h
 
 version: $(DIST_SOURCES) $(DIST_COMMON)
@@ -28,3 +29,6 @@ install-data-hook:
 uninstall-hook:
 	rm -rf $(DESTDIR)$(sysconfdir)/terminfo/s/smtx
 	rm -rf $(DESTDIR)$(sysconfdir)/terminfo/s/smtx-256color
+
+smtx.1: smtx.txt
+	asciidoctor -a ver=${PACKAGE_VERSION} -b manpage $<
