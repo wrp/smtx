@@ -90,16 +90,14 @@ dsr,          /* Device Status Report */
 
 struct pty;
 struct vtp {
+	struct pty *p;
 	struct state *s;
 	mbstate_t ms;
-	struct pty *p;
-	struct {
-		int inter;
-		int argc;
-		void *argv;
-		int args[MAXPARAM];
-		char oscbuf[MAXOSC + 1];
-	} z;
+	int inter;
+	int argc;
+	void *argv;
+	int args[MAXPARAM];
+	char oscbuf[MAXOSC + 1];
 };
 extern int cons[0x80];
 extern int csis[0x80];

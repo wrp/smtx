@@ -36,26 +36,26 @@ static struct state ground, esc_entry, esc_collect, csi_entry,
 static void
 collect(struct vtp *v, wchar_t w)
 {
-	v->z.inter = (int)w;
+	v->inter = (int)w;
 }
 
 static void
 collect_osc(struct vtp *v, wchar_t w)
 {
-	v->z.argv = &v->z.oscbuf;
-	if( v->z.argc + 1 < (int)sizeof v->z.oscbuf ){
-		v->z.oscbuf[v->z.argc++] = wctob(w);
+	v->argv = &v->oscbuf;
+	if( v->argc + 1 < (int)sizeof v->oscbuf ){
+		v->oscbuf[v->argc++] = wctob(w);
 	}
 }
 
 static void
 param(struct vtp *v, wchar_t w)
 {
-	v->z.argc = v->z.argc ? v->z.argc : 1;
-	int *a = v->z.args + v->z.argc - 1;
+	v->argc = v->argc ? v->argc : 1;
+	int *a = v->args + v->argc - 1;
 	if( w == L';' ){
-		v->z.argc += 1;
-	} else if( v->z.argc < MAXPARAM && *a < 9999 ){
+		v->argc += 1;
+	} else if( v->argc < MAXPARAM && *a < 9999 ){
 		*a = *a * 10 + w - '0';
 	}
 }
@@ -63,7 +63,7 @@ param(struct vtp *v, wchar_t w)
 static void
 send(struct vtp *v, wchar_t w)
 {
-	tput(v->p, w, v->z.inter, v->z.argc, v->z.argv, v->s->lut[w]);
+	tput(v->p, w, v->inter, v->argc, v->argv, v->s->lut[w]);
 }
 
 /*
@@ -194,9 +194,11 @@ static struct state osc_string = {
 void
 vtreset(struct vtp *v)
 {
-	memset(&v->z, 0, sizeof v->z);
+	struct pty *p = v->p;
+	memset(v, 0, sizeof *v);
+	v->p = p;
 	v->s = &ground;
-	v->z.argv = &v->z.args;
+	v->argv = &v->args;
 }
 
 void
