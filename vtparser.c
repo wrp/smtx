@@ -36,14 +36,14 @@ static struct state ground, esc_entry, esc_collect, csi_entry,
 static void
 collect(struct vtp *v, wchar_t w)
 {
-	if( v->s == &osc_string ){
-		if( v->z.argc < MAXOSC ){
-			v->z.argv.oscbuf[v->z.argc++] = wctob(w);
-			assert( v->z.argc < (int)sizeof v->z.argv.oscbuf );
-			assert( v->z.argv.oscbuf[v->z.argc] == '\0' );
-		}
-	} else if( !v->z.inter ){
-		v->z.inter = (int)w;
+	v->z.inter = (int)w;
+}
+
+static void
+collect_osc(struct vtp *v, wchar_t w)
+{
+	if( v->z.argc + 1 < (int)sizeof v->z.argv.oscbuf ){
+		v->z.argv.oscbuf[v->z.argc++] = wctob(w);
 	}
 }
 
@@ -188,7 +188,7 @@ static struct state osc_string = {
 		[0x07]          = {send, &ground},
 		[0x0a]          = {send, &ground},  /* \n */
 		[0x0d]          = {send, &ground},  /* \r */
-		[0x20 ... 0x7f] = {collect, NULL},  /* sp!"#$%&'()*+,-./ */
+		[0x20 ... 0x7f] = {collect_osc, NULL},  /* sp!"#$%&'()*+,-./ */
 	}
 };
 
