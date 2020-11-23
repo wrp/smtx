@@ -20,7 +20,7 @@
 static void
 handle_osc(struct pty *p, int cmd, const char *arg)
 {
-	switch( cmd ) {
+	switch( cmd ){
 	case  2: snprintf(p->status, sizeof p->status, "%s", arg);
 	Kase 60: build_layout(arg);
 #ifndef NDEBUG
@@ -32,7 +32,7 @@ handle_osc(struct pty *p, int cmd, const char *arg)
 static void
 restore_cursor(struct screen *s)
 {
-	if( s->sc.gc ) {
+	if( s->sc.gc ){
 		s->c = s->sc;
 		#if HAVE_ALLOC_PAIR
 		s->c.p = alloc_pair(s->c.color[0], s->c.color[1]);
@@ -62,10 +62,10 @@ reset_sgr(struct screen *s)
 static void
 newline(struct screen *s, int cr)
 {
-	if( cr ) {
+	if( cr ){
 		s->c.xenl = s->c.x = 0;
 	}
-	if( s->c.y == s->scroll.bot ) {
+	if( s->c.y == s->scroll.bot ){
 		scroll(s->w);
 	} else {
 		wmove(s->w, ++s->c.y, s->c.x);
@@ -75,16 +75,16 @@ newline(struct screen *s, int cr)
 static void
 print_char(wchar_t w, struct pty *p)
 {
-	if( p->s->insert ) {
+	if( p->s->insert ){
 		wins_wch(p->s->w, &p->s->c.bkg);
 	}
-	if( p->s->c.xenl && p->s->decawm ) {
+	if( p->s->c.xenl && p->s->decawm ){
 		newline(p->s, 1);
 	}
-	if( w < 0x7f && p->s->c.gc[w] ) {
+	if( w < 0x7f && p->s->c.gc[w] ){
 		w = p->s->c.gc[w];
 	}
-	if( p->s->c.x >= p->ws.ws_col - wcwidth(w) ) {
+	if( p->s->c.x >= p->ws.ws_col - wcwidth(w) ){
 		p->s->c.xenl = 1;
 		wins_nwstr(p->s->w, &w, 1);
 	} else {
@@ -137,7 +137,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	const int top = MAX(0, s->scroll.top - tos);
 	const int dtop = tos + (p->decom ? top : 0);
 
-	switch( (enum cmd)handler ) {
+	switch( (enum cmd)handler ){
 	case ack: rewrite(p->fd, "\006", 1);
 	Kase bell: beep();
 	Kase cr: s->c.x = 0;
@@ -154,39 +154,39 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		s->c.x = argc > 1 ? argv[1] - 1 : 0;
 	Kase cuu: s->c.y -= p0[1];
 	Kase dch:
-		for( i = 0; i < p0[1]; i++ ) {
+		for( i = 0; i < p0[1]; i++ ){
 			wdelch(win);
 		}
 	Kase ech:
-		for( i = 0; i < p0[1]; i++ ) {
+		for( i = 0; i < p0[1]; i++ ){
 			mvwadd_wch(win, s->c.y, s->c.x + i, &s->c.bkg);
 		}
 	Kase ed: /* Fallthru */
 	case el:
-		switch( p0[0] ) {
+		switch( p0[0] ){
 		case 2: wmove(win, handler == el ? s->c.y : tos, 0);
 			/* Fall Thru */
 		case 0: (handler == el ? wclrtoeol : wclrtobot)(win);
 		Kase 3:
-			if( handler == ed ) {
+			if( handler == ed ){
 				werase(win);
 			}
 		Kase 1:
-			if( handler == ed ) {
-				for( i = tos; i < s->c.y; i++ ) {
+			if( handler == ed ){
+				for( i = tos; i < s->c.y; i++ ){
 					wmove(win, i, 0);
 					wclrtoeol(win);
 				}
 				wmove(win, s->c.y, s->c.x);
 			}
-			for( i = 0; i <= s->c.x; i++ ) {
+			for( i = 0; i <= s->c.x; i++ ){
 				mvwadd_wch(win, s->c.y, i, &s->c.bkg);
 			}
 		}
 	Kase hpa: s->c.x = -1; /* Fallthru */
 	case hpr: s->c.x += p0[1];
 	Kase hts: p->tabs[s->c.x] = true;
-	Kase ich: for( i = 0; i < p0[1]; i++ ) {
+	Kase ich: for( i = 0; i < p0[1]; i++ ){
 			wins_wch(win, &p->s->c.bkg);
 		}
 	Kase idl:
@@ -204,16 +204,16 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	Kase numkp:
 		p->pnm = (w == L'=');
 	Kase rc:
-		if( iw == L'#' ) for( int r = 0; r < p->ws.ws_row; r++ ) {
+		if( iw == L'#' ) for( int r = 0; r < p->ws.ws_row; r++ ){
 			cchar_t e;
 			setcchar(&e, L"E", A_NORMAL, COLOR_PAIR(0), NULL);
-			for( int c = 0; c < p->ws.ws_col; c++ ) {
+			for( int c = 0; c < p->ws.ws_col; c++ ){
 				mvwadd_wch(p->s->w, tos + r, c, &e);
 			}
 		}
 		restore_cursor(s);
 	Kase ri:
-		if( y == top ) {
+		if( y == top ){
 			wsetscrreg(win, MAX(s->scroll.top, tos), s->scroll.bot);
 			wscrl(win, -1);
 			wsetscrreg(win, s->scroll.top, s->scroll.bot);
@@ -223,11 +223,11 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	Kase sc: save_cursor(s);
 	Kase su: wscrl(win, (w == L'T' || w == L'^') ? -p0[1] : p0[1]);
 	Kase tab:
-		for( i = 0; i < p0[1]; i += p->tabs[s->c.x] ? 1 : 0 ) {
+		for( i = 0; i < p0[1]; i += p->tabs[s->c.x] ? 1 : 0 ){
 			s->c.x += (w == L'Z' ? -1 : +1);
 		}
 	Kase tbc:
-		switch( p0[0] ) {
+		switch( p0[0] ){
 		case 0: p->tabs[s->c.x] = false;
 		Kase 3: memset(p->tabs, 0, p->ws.ws_col * sizeof *p->tabs);
 		}
@@ -248,7 +248,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		p->decom = s->insert = p->lnm = false;
 		reset_sgr(s);
 		s->decawm = p->pnm = true;
-		for( i = 0, s = p->s = p->scr; i < 2; i++, s++ ) {
+		for( i = 0, s = p->s = p->scr; i < 2; i++, s++ ){
 			s->c.gs = s->c.gc = CSET_US;
 			s->vis = 1;
 			set_scroll(s, 0, s->rows - 1);
@@ -256,9 +256,9 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		set_tabs(p, p->tabstop);
 		vtreset(&p->vp);
 	Kase mode:
-		for( i = 0; i < argc; i++ ) {
+		for( i = 0; i < argc; i++ ){
 			bool set = (w == L'h');
-			switch( argv[i] ) {
+			switch( argv[i] ){
 			case  1: p->pnm = set;
 			Kase  3: set_width(set ? "132" : "80");
 			Kase  4: s->insert = set;
@@ -273,12 +273,12 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			Kase 1048:
 			case 1049:
 				(set ? save_cursor : restore_cursor)(s);
-				if( argv[i] == 1049 ) {
+				if( argv[i] == 1049 ){
 					struct screen *sc;
 			case 47:
 			case 1047:
 					sc = p->scr + !!set;
-					if( set && p->s == p->scr ) {
+					if( set && p->s == p->scr ){
 						sc->c.x = sc->c.xenl = 0;
 						sc->c.y = dtop;
 						wclear(sc->w);
@@ -290,11 +290,11 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 	Kase sgr:
 	{
 		bool doc = false;
-		if( !argc ) {
+		if( !argc ){
 			reset_sgr(s);
-		} else for( i = 0; i < argc; i++ ) {
+		} else for( i = 0; i < argc; i++ ){
 			int k = 1, a;
-			switch( a = argv[i] ) {
+			switch( a = argv[i] ){
 			case  0: reset_sgr(s);
 			Kase  1:
 			case  2:
@@ -332,7 +332,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				doc = COLORS >= 8;
 			Kase 38:
 			case 48:
-				if( argc > i + 2 && argv[i + 1] == 5) {
+				if( argc > i + 2 && argv[i + 1] == 5){
 					s->c.color[a == 48] = argv[i + 2];
 				}
 				i += 2;
@@ -362,7 +362,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 				doc = COLORS >= 16;
 			}
 		}
-		if( doc ) {
+		if( doc ){
 			#if HAVE_ALLOC_PAIR
 			s->c.p = alloc_pair(s->c.color[0], s->c.color[1]);
 			#endif
@@ -383,14 +383,14 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		s->c.x = 0;
 	Kase print: s->repc = w; /* Fallthru */
 	case rep:
-		if( wcwidth(w = s->repc) > 0 ) {
-			for( i = 0; i < p0[1]; i++ ) {
+		if( wcwidth(w = s->repc) > 0 ){
+			for( i = 0; i < p0[1]; i++ ){
 				print_char(w, p);
 			}
 		}
 	Kase scs:
 		for( const char *s = "()*+", *c = strchr(s, iw); c; c = NULL )
-		switch( w ) {
+		switch( w ){
 		case L'A': p->g[c-s] = CSET_UK;
 		Kase L'B': p->g[c-s] = CSET_US;
 		Kase L'0': p->g[c-s] = CSET_GRAPH;
@@ -399,7 +399,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		}
 	Kase so:
 		for( char *s = "\x0f\x0e}|NO", *c = strchr(s, w); c; c = NULL )
-		switch( c - s ) {
+		switch( c - s ){
 		case 0: /* locking shift */
 		case 1:
 		case 2:
@@ -411,7 +411,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 			p->s->c.gc = p->g[c - s - 2];
 		}
 	}
-	switch( handler ) {
+	switch( handler ){
 	case cr:
 	case csr:
 	case cub:

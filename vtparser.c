@@ -36,13 +36,13 @@ static struct state ground, esc_entry, esc_collect, csi_entry,
 static void
 collect(struct vtp *v, wchar_t w)
 {
-	if( v->s == &osc_string ) {
-		if( v->z.argc < MAXOSC ) {
+	if( v->s == &osc_string ){
+		if( v->z.argc < MAXOSC ){
 			v->z.argv.oscbuf[v->z.argc++] = wctob(w);
 			assert( v->z.argc < (int)sizeof v->z.argv.oscbuf );
 			assert( v->z.argv.oscbuf[v->z.argc] == '\0' );
 		}
-	} else if( !v->z.inter ) {
+	} else if( !v->z.inter ){
 		v->z.inter = (int)w;
 	}
 }
@@ -52,9 +52,9 @@ param(struct vtp *v, wchar_t w)
 {
 	v->z.argc = v->z.argc ? v->z.argc : 1;
 	int *a = v->z.argv.args + v->z.argc - 1;
-	if( w == L';' ) {
+	if( w == L';' ){
 		v->z.argc += 1;
-	} else if( v->z.argc < MAXPARAM && *a < 9999 ) {
+	} else if( v->z.argc < MAXPARAM && *a < 9999 ){
 		*a = *a * 10 + w - '0';
 	}
 }
@@ -203,9 +203,9 @@ void
 vtwrite(struct vtp *vp, const char *s, size_t n)
 {
 	size_t r;
-	for( const char *e = s + n; s < e; s += r ) {
+	for( const char *e = s + n; s < e; s += r ){
 		wchar_t w;
-		switch( r = mbrtowc(&w, s, e - s, &vp->ms) ) {
+		switch( r = mbrtowc(&w, s, e - s, &vp->ms) ){
 		case -1: /* invalid character, skip it */
 		case -2: /* incomplete character, skip it */
 			w = VTPARSER_BAD_CHAR;
@@ -213,13 +213,13 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 		case 0: /* literal zero, write it and advance */
 			r = 1;
 		}
-		if( w >= 0 && w < 0x80 ) {
+		if( w >= 0 && w < 0x80 ){
 			struct action *a = vp->s->act + w;
-			if( a->cb ) {
+			if( a->cb ){
 				a->cb(vp, w);
 			}
-			if( a->next ) {
-				if( a->next->reset ) {
+			if( a->next ){
+				if( a->next->reset ){
 					vtreset(vp);
 				}
 				vp->s = a->next;

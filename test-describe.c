@@ -35,30 +35,30 @@ describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags,
 	int human = flags & 0x80;
 
 	char *isfocus = recurse && c == S.f ? "*" : "";
-	if( human ) {
+	if( human ){
 		d += snprintf(d, e - d, "%c", c->typ ? '|' : '-');
 	}
 	d += snprintf(d, e - d, "%s%dx%d", isfocus, c->extent.y, c->extent.x);
-	if( show_pos) {
+	if( show_pos){
 		d += snprintf(d, e - d, "@%d,%d", c->origin.y, c->origin.x);
 	}
-	if( show_id && c->p ) {
+	if( show_id && c->p ){
 		d += snprintf(d, e - d, "(id=%d)", c->p->fd - 2);
 	}
-	if( c->p->s && ! c->p->s->vis ) {
+	if( c->p->s && ! c->p->s->vis ){
 		d += snprintf(d, e - d, "!"); /* Cursor hidden */
 	}
-	if( ! c->p->pnm ) {
+	if( ! c->p->pnm ){
 		d += snprintf(d, e - d, "#"); /* Numeric keypad  */
 	}
-	if( show_2nd && c->p && c->p->fd != -1 ) {
+	if( show_2nd && c->p && c->p->fd != -1 ){
 		d += snprintf(d, e - d, "(2nd=%s)", c->p->secondary );
 	}
-	for( int i = 0; recurse && i < 2; i ++ ) {
-		if( e - d > 3 + tab && c->c[i] ) {
+	for( int i = 0; recurse && i < 2; i ++ ){
+		if( e - d > 3 + tab && c->c[i] ){
 			*d++ = human ? '\r' : ';';
 			*d++ = human ? '\n' : ' ';
-			for( int i = 0; human && i < tab; i++ ) {
+			for( int i = 0; human && i < tab; i++ ){
 				*d++ = '\t';
 			}
 			d += describe_layout(d, e - d, c->c[i], flags, tab + 1);
@@ -74,19 +74,19 @@ check_attr(unsigned f, unsigned *flags, char **d, char *e, char *msg, int set,
 	char *dest = *d;
 	size_t len = strlen(msg);
 	if( ((set && !(*flags & f)) || (!set && (*flags & f)))
-			&& len > 0 && dest + len + 3 < e ) {
+			&& len > 0 && dest + len + 3 < e ){
 		*dest++ = '<';
-		if( !set ) {
+		if( !set ){
 			*dest++ = '/';
 		}
 		memcpy(dest, msg, len);
 		dest += len;
-		if( star ) {
+		if( star ){
 			*dest++ = '*';
 		}
 		*dest++ = '>';
 	}
-	if( set ) {
+	if( set ){
 		*flags |= f;
 	} else {
 		*flags &= ~f;
@@ -98,7 +98,7 @@ static char *
 color_name(short k)
 {
 	char *n;
-	switch( k ) {
+	switch( k ){
 	case COLOR_BLACK:    n =   "black"; break;
 	case COLOR_RED:      n =     "red"; break;
 	case COLOR_GREEN:    n =   "green"; break;
@@ -143,29 +143,29 @@ describe_row(char *desc, size_t siz, int row)
 		{ 0, 0, NULL }
 	};
 
-	if( row < c->extent.y ) {
+	if( row < c->extent.y ){
 		row += c->offset.y;
 		offset = c->offset.x;
-	} else if( row == c->extent.y ) {
+	} else if( row == c->extent.y ){
 		w = c->wtit;
 		row = 0;
 	}
 	getyx(w, y, x);
-	for( i = 0; i < (size_t)c->extent.x && i < width && desc < end; i++ ) {
+	for( i = 0; i < (size_t)c->extent.x && i < width && desc < end; i++ ){
 		int p;
 		chtype k = mvwinch(w, row, i + offset);
-		for( atrp = atrs; atrp->flag; atrp += 1 ) {
+		for( atrp = atrs; atrp->flag; atrp += 1 ){
 			check_attr(atrp->flag, &attrs, &desc, end, atrp->name,
 				( (k & A_ATTRIBUTES) & atrp->attr ) ? 1 : 0, 0
 			);
 		}
 		p = PAIR_NUMBER(k);
-		if( p != last_color_pair ) {
+		if( p != last_color_pair ){
 			int put = p ? p : last_color_pair;
 			short fg, bg;
 			if( pair_content((short)put, &fg, &bg) == OK
 					&& bg < (short)sizeof(1u) * CHAR_BIT
-					&& fg < (short)sizeof(1u) * CHAR_BIT ) {
+					&& fg < (short)sizeof(1u) * CHAR_BIT ){
 				check_attr(1u << fg, &fgflag, &desc, end,
 					color_name(fg), p, 0
 				);
@@ -187,14 +187,14 @@ describe_state(char *desc, size_t siz)
 	size_t len = 0;
 
 	len += snprintf(desc, siz, "history=%d, ", S.history);
-	if( len < siz - 1 ) {
+	if( len < siz - 1 ){
 		len += snprintf(desc + len, siz - len, "y=%d, x=%d, ", LINES,
 			COLS);
 	}
-	if( len < siz - 1 ) {
+	if( len < siz - 1 ){
 		len += snprintf(desc + len, siz - len, "w=%d", S.width);
 	}
-	if( len > siz - 3 ) {
+	if( len > siz - 3 ){
 		len = siz - 3;
 	}
 	desc[len++] = '\r';
@@ -209,12 +209,12 @@ show_layout(const char *arg)
 	char buf[1024] = "layout: ";
 	int flag = strtol(*arg == ';' ? arg + 1 : arg, NULL, 16);
 	struct canvas *c = flag & 0x20 ? S.f : S.c;
-	if( flag & 0x80 ) {
+	if( flag & 0x80 ){
 		strcat(buf, "\r\n");
 	}
 	int w = strlen(buf);
 	size_t s = describe_layout(buf + w, sizeof buf - w - 3, c, flag, 1);
-	for( size_t i = w; i < w + s; i++ ) {
+	for( size_t i = w; i < w + s; i++ ){
 		assert( buf[i] != ':' );
 	}
 	buf[w + s++] = ':';
@@ -239,7 +239,7 @@ show_procs(void)
 {
 	char buf[1024] = "procs:\tid\tpid\tcount\ttitle\r\n";
 	rewrite(1, buf, strlen(buf));
-	for( struct pty *p = S.p; p; p = p->next ) {
+	for( struct pty *p = S.p; p; p = p->next ){
 		int k = snprintf(buf, sizeof buf, "\t%d\t%d\t%d\t%s\r\n",
 			p->fd - 2, p->pid, p->count, p->status);
 		rewrite(1, buf, k);
@@ -258,18 +258,18 @@ show_state(void)
 void
 show_status(const char *arg)
 {
-	if( S.count == -1 && *arg == 'x') {
-		for( int i = 0; i < LINES * COLS; i++ ) {
+	if( S.count == -1 && *arg == 'x'){
+		for( int i = 0; i < LINES * COLS; i++ ){
 			putchar(' ');
 		}
 		putchar('\r');
 		putchar('\n');
 		fflush(stdout);
 	}
-	if( *arg == 'x' ) {
+	if( *arg == 'x' ){
 		arg += 1;
 	}
-	if( *arg == 'r' ) {
+	if( *arg == 'r' ){
 		show_row(arg + 1);
 	} else {
 		show_procs();

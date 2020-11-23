@@ -38,9 +38,9 @@ void
 set_tabs(struct pty *p, int tabstop)
 {
 	typeof(*p->tabs) *n;
-	if( (n = realloc(p->tabs, p->ws.ws_col * sizeof *n)) != NULL ) {
+	if( (n = realloc(p->tabs, p->ws.ws_col * sizeof *n)) != NULL ){
 		memset(p->tabs = n, 0, p->ws.ws_col * sizeof *n);
-		for( int i = 0; i < p->ws.ws_col; i += tabstop ) {
+		for( int i = 0; i < p->ws.ws_col; i += tabstop ){
 			p->tabs[i] = true;
 		}
 	}
@@ -50,9 +50,9 @@ int
 resize_pad(WINDOW **p, int h, int w)
 {
 	int rv = 0;
-	if( *p ) {
+	if( *p ){
 		rv = wresize(*p, h, w ) == OK;
-	} else if( (*p = newpad(h, w)) != NULL ) {
+	} else if( (*p = newpad(h, w)) != NULL ){
 		wtimeout(*p, 0);
 		scrollok(*p, 1);
 		rv = (keypad(*p, 1) == OK);
@@ -64,7 +64,7 @@ static struct pty *
 get_freepty(bool allow_hidden)
 {
 	struct pty *t = S.p;
-	while( t && (!allow_hidden || t->count) && t->fd != -1 ) {
+	while( t && (!allow_hidden || t->count) && t->fd != -1 ){
 		t = t->next;
 	}
 	return t ? t : calloc(1, sizeof *t);
@@ -74,11 +74,11 @@ struct pty *
 new_pty(int rows, int cols, bool new)
 {
 	struct pty *p = get_freepty(!new);
-	if( check(p != NULL, errno = 0, "calloc") ) {
-		if( p->s == NULL ) {
+	if( check(p != NULL, errno = 0, "calloc") ){
+		if( p->s == NULL ){
 			if( resize_pad(&p->scr[0].w, rows, cols)
 				&& resize_pad(&p->scr[1].w, rows, cols)
-			) {
+			){
 				p->scr[0].rows = p->scr[1].rows = rows;
 				*(S.tail ? &S.tail->next : &S.p) = p;
 				S.tail = p;
@@ -91,13 +91,13 @@ new_pty(int rows, int cols, bool new)
 				return NULL;
 			}
 		}
-		if( p->fd < 1 ) {
+		if( p->fd < 1 ){
 			const char *sh = getshell();
 			p->ws.ws_row = LINES - 1;
 			p->ws.ws_col = cols;
 			p->tos = rows - p->ws.ws_row;
 			p->pid = forkpty(&p->fd, p->secondary, NULL, &p->ws);
-			if( check(p->pid != -1, 0, "forkpty") && p->pid == 0 ) {
+			if( check(p->pid != -1, 0, "forkpty") && p->pid == 0 ){
 				setsid();
 				signal(SIGCHLD, SIG_DFL);
 				setenv("TERM", S.term, 1);
@@ -112,7 +112,7 @@ new_pty(int rows, int cols, bool new)
 			bname = bname ? bname + 1 : sh;
 			strncpy(p->status, bname, sizeof p->status - 1);
 		}
-		if( p->s == NULL ) {
+		if( p->s == NULL ){
 			p->s = &p->scr[0];
 			tput(p, 0, 0, 0, NULL, ris);
 			p->vp.p = p;
@@ -125,17 +125,17 @@ struct canvas *
 newcanvas(struct pty *p, struct canvas *parent)
 {
 	struct canvas *n = NULL;
-	if( (n = S.unused) != NULL ) {
+	if( (n = S.unused) != NULL ){
 		S.unused = n->c[0];
 	} else {
 		check((n = calloc(1 , sizeof *n)) != NULL, 0, "calloc");
 	}
-	if( n ) {
+	if( n ){
 		n->c[0] = n->c[1] = NULL;
 		n->manualscroll = n->offset.y = n->offset.x = 0;
 		n->p = p ? p : new_pty(S.history, MAX(COLS, S.width), false);
 		n->parent = parent;
-		if( n->p ) {
+		if( n->p ){
 			n->p->count += 1;
 		}
 		n->split = (typeof(n->split)){1.0, 1.0};
@@ -148,12 +148,12 @@ draw_window(struct canvas *n)
 {
 	struct point o = n->origin;
 	struct point e = { o.y + n->extent.y - 1, o.x + n->extent.x - 1 };
-	if( n->p && e.y > 0 && e.x > 0 ) {
-		if( ! n->manualscroll ) {
+	if( n->p && e.y > 0 && e.x > 0 ){
+		if( ! n->manualscroll ){
 			n->offset.x = MAX(0, n->p->s->c.x - n->extent.x + 1);
 		}
 		struct point off = n->offset;
-		if( n->p->ws.ws_col < n->extent.x ) {
+		if( n->p->ws.ws_col < n->extent.x ){
 			assert( n->offset.x == 0 );
 			pnoutrefresh(S.wbkg, 0, 0, o.y, o.x + n->p->ws.ws_col,
 				e.y, e.x);
@@ -190,7 +190,7 @@ set_scroll(struct screen *s, int top, int bottom)
 void
 scrollbottom(struct canvas *n)
 {
-	if( n && n->p && n->p->s && n->extent.y ) {
+	if( n && n->p && n->p->s && n->extent.y ){
 		n->offset.y = MAX(n->p->s->maxy - n->extent.y + 1, 0);
 	}
 }
@@ -198,7 +198,7 @@ scrollbottom(struct canvas *n)
 void
 reshape(struct canvas *n, int y, int x, int h, int w)
 {
-	if( n ) {
+	if( n ){
 		n->origin.y = y;
 		n->origin.x = x;
 		int h1 = h * n->split.y;
@@ -219,7 +219,7 @@ reshape(struct canvas *n, int y, int x, int h, int w)
 
 		/* If the pty is visible in multiple canvasses,
 		set ws.ws_row to the one with biggest extent.y */
-		if( n->p->fd >= 0 && n->extent.y > n->p->ws.ws_row ) {
+		if( n->p->fd >= 0 && n->extent.y > n->p->ws.ws_row ){
 			n->p->ws.ws_row = n->extent.y;
 			n->p->tos = n->p->scr->rows - n->extent.y;
 			reshape_window(n->p);
@@ -234,11 +234,11 @@ void
 change_count(struct canvas * n, int count, int pop)
 {
 	assert( count < 2 && count > -2 );
-	if( n && n->p ) {
+	if( n && n->p ){
 		n->p->count += count;
 		change_count(n->c[0], count, pop);
 		change_count(n->c[1], count, pop);
-		if( pop && n->p->count == 0 ) {
+		if( pop && n->p->count == 0 ){
 			freecanvas(n);
 		}
 	}
@@ -247,10 +247,10 @@ change_count(struct canvas * n, int count, int pop)
 void
 freecanvas(struct canvas *n)
 {
-	if( n == S.f ) {
+	if( n == S.f ){
 		S.f = n->parent;
 	}
-	if( n->parent ) {
+	if( n->parent ){
 		n->parent->c[n == n->parent->c[1]] = NULL;
 	}
 	n->c[0] = S.unused;
@@ -278,7 +278,7 @@ draw_title(struct canvas *n, int r)
 		n->p->status);
 	int x = n->offset.x;
 	int w = n->p->ws.ws_col;
-	if( x > 0 || x + n->extent.x < w ) {
+	if( x > 0 || x + n->extent.x < w ){
 		wprintw(n->wtit, "%d-%d/%d ", x + 1, x + n->extent.x, w);
 	}
 	whline(n->wtit, ACS_HLINE, n->extent.x);
@@ -297,10 +297,10 @@ draw_div(struct canvas *n, int rev)
 void
 draw(struct canvas *n) /* Draw a canvas. */
 {
-	if( n != NULL && n->extent.y > 0 ) {
+	if( n != NULL && n->extent.y > 0 ){
 		int rev = S.binding == ctl && n == S.f;
 		draw(n->c[0]);
-		if( n->c[1] ) {
+		if( n->c[1] ){
 			draw_div(n, rev && !n->extent.x);
 			draw(n->c[1]);
 		}
@@ -314,10 +314,10 @@ wait_child(struct pty *p)
 {
 	int status, k = 0;
 	const char *fmt = "exited %d";
-	if( check(waitpid(p->pid, &status, WNOHANG) != -1, 0, "waitpid") ) {
-		if( WIFEXITED(status) ) {
+	if( check(waitpid(p->pid, &status, WNOHANG) != -1, 0, "waitpid") ){
+		if( WIFEXITED(status) ){
 			k = WEXITSTATUS(status);
-		} else if( WIFSIGNALED(status) ) {
+		} else if( WIFSIGNALED(status) ){
 			fmt = "caught signal %d";
 			k = WTERMSIG(status);
 		}
@@ -336,39 +336,39 @@ static void
 getinput(void) /* check stdin and all pty's for input. */
 {
 	fd_set sfds = S.fds;
-	if( select(S.maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ) {
+	if( select(S.maxfd + 1, &sfds, NULL, NULL, NULL) < 0 ){
 		check(errno == EINTR, 0, "select");
 		return;
 	}
-	if( FD_ISSET(STDIN_FILENO, &sfds) ) {
+	if( FD_ISSET(STDIN_FILENO, &sfds) ){
 		int r;
 		wint_t w;
-		while( S.f && (r = wget_wch(S.f->p->s->w, &w)) != ERR ) {
+		while( S.f && (r = wget_wch(S.f->p->s->w, &w)) != ERR ){
 			struct handler *b = NULL;
-			if( r == OK && w > 0 && w < 128 ) {
+			if( r == OK && w > 0 && w < 128 ){
 				b = S.binding + w;
-			} else if( r == KEY_CODE_YES ) {
+			} else if( r == KEY_CODE_YES ){
 				assert( w >= KEY_MIN && w <= KEY_MAX );
 				b = &code_keys[w - KEY_MIN];
 			}
-			if( b ) {
+			if( b ){
 				b->arg ? b->act.a(b->arg) : b->act.v();
-				if( b->act.a != digit ) {
+				if( b->act.a != digit ){
 					S.count = -1;
 				}
 			}
 		}
 	}
-	for( struct pty *t = S.p; t; t = t->next ) {
-		if( t->fd > 0 && FD_ISSET(t->fd, &sfds) ) {
+	for( struct pty *t = S.p; t; t = t->next ){
+		if( t->fd > 0 && FD_ISSET(t->fd, &sfds) ){
 			FD_CLR(t->fd, &sfds);
 			char iobuf[BUFSIZ];
 			int oldmax = t->s->maxy;
 			ssize_t r = read(t->fd, iobuf, sizeof iobuf);
-			if( r > 0 ) {
+			if( r > 0 ){
 				vtwrite(&t->vp, iobuf, r);
 				t->s->delta = t->s->maxy - oldmax;
-			} else if( errno != EINTR && errno != EWOULDBLOCK ) {
+			} else if( errno != EINTR && errno != EWOULDBLOCK ){
 				wait_child(t);
 			}
 		}
@@ -397,9 +397,9 @@ build_bindings(void)
 	k1[S.ctlkey] = (struct handler){ { .a = transition }, " control" };
 	ctl[S.ctlkey] = (struct handler){ { .a = transition }, "*enter" };
 
-	for( wchar_t k = KEY_MIN; k < KEY_MAX; k++ ) {
+	for( wchar_t k = KEY_MIN; k < KEY_MAX; k++ ){
 		int idx = k - KEY_MIN;
-		if( code_keys[idx].arg || code_keys[idx].act.v ) {
+		if( code_keys[idx].arg || code_keys[idx].act.v ){
 			continue;
 		}
 		assert( MB_LEN_MAX < 128 );
@@ -415,11 +415,11 @@ build_bindings(void)
 static void
 update_offset_r(struct canvas *n)
 {
-	if( n ) {
-		if( n->p && n->p->s && n->p->s->delta ) {
+	if( n ){
+		if( n->p && n->p->s && n->p->s->delta ){
 			int d = n->p->s->delta;
 			int t = n->p->s->maxy - n->extent.y + 1;
-			if( t > 0 ) {
+			if( t > 0 ){
 				n->offset.y += MIN(d, t);
 			}
 		}
@@ -431,13 +431,13 @@ update_offset_r(struct canvas *n)
 static void
 main_loop(void)
 {
-	while( S.c != NULL ) {
-		if( S.reshape ) {
+	while( S.c != NULL ){
+		if( S.reshape ){
 			reshape(S.c, 0, 0, LINES, COLS);
 			wrefresh(curscr);
 		}
 		draw(S.c);
-		if( *S.errmsg ) {
+		if( *S.errmsg ){
 			mvwprintw(S.werr, 0, 0, "%s", S.errmsg);
 			wclrtoeol(S.werr);
 			draw_pane(S.werr, LINES - 1, 0);
@@ -446,7 +446,7 @@ main_loop(void)
 		doupdate();
 		getinput();
 		update_offset_r(S.c);
-		for( struct pty *p = S.p; p; p = p->next ) {
+		for( struct pty *p = S.p; p; p = p->next ){
 			p->s->delta = 0;
 		}
 	}
@@ -482,7 +482,7 @@ init(void)
 		ACS_VLINE, ACS_BULLET, ACS_BULLET, ACS_BULLET);
 	wattron(S.werr, A_REVERSE);
 	S.f = S.c = newcanvas(NULL, NULL);
-	if( S.c == NULL || S.werr == NULL || S.wbkg == NULL || !S.c->p ) {
+	if( S.c == NULL || S.werr == NULL || S.wbkg == NULL || !S.c->p ){
 		endwin();
 		errx(EXIT_FAILURE, "Unable to create root window");
 	}
@@ -532,18 +532,18 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 		|| ! check(2 == sscanf(*lp, "%lf:%lf%n", &y, &x, &e),
 			errno = 0, "Invalid format at %s", **lp ? *lp : "end")
 		|| ! check(y > oy && y <= ey && x > ox && x <= ex,
-			errno = 0, "Out of bounds: %s", *lp) ) {
+			errno = 0, "Out of bounds: %s", *lp) ){
 		goto fail;
 	}
 	*lp += e;
 	*pp = p ? (( p->next ? p->next : S.p ) == S.f->p ) ? NULL : p->next : p;
 	n->split.y = (y - oy) / (ey - oy);
 	n->split.x = (x - ox) / (ex - ox);
-	if( y == ey && x == ex ) {
+	if( y == ey && x == ex ){
 		return n;
-	} else if( y == ey ) {
+	} else if( y == ey ){
 		n->typ = 1;
-	} else if( x == ex ) {
+	} else if( x == ex ){
 		n->typ = 0;
 	} else {
 		double ny, nx;
@@ -555,13 +555,13 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 				(n->c[!n->typ] = add_canvas(lp,
 				n->typ ? y : oy, n->typ ? ox : x,
 				n->typ ? ey : y, n->typ ? x : ex,
-				pp, n)) == NULL ) ) {
+				pp, n)) == NULL ) ){
 			goto fail;
 		}
 	}
 	if( (n->c[n->typ] = add_canvas(lp,
 			n->typ ? oy : y, n->typ ? x : ox,
-			ey, ex, pp, n)) == NULL ) {
+			ey, ex, pp, n)) == NULL ){
 		goto fail;
 	}
 
@@ -578,7 +578,7 @@ build_layout(const char *layout)
 	change_count(S.c, -1, 0); /* (1) */
 	struct canvas *n = add_canvas(&layout, 0.0, 0.0, 1.0, 1.0, &p, NULL);
 	change_count(S.c, +1, 0);
-	if( n ) {
+	if( n ){
 		change_count(S.c, -1, 1);
 		S.f = S.c = n;
 		S.reshape = 1;

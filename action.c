@@ -30,8 +30,8 @@ attach(void)
 {
 	struct canvas *n = S.f;
 	assert( n->p->count > 0 );
-	for( struct pty *t = S.p; t; t = t->next ) {
-		if( t->fd - 2 == S.count ) {
+	for( struct pty *t = S.p; t; t = t->next ){
+		if( t->fd - 2 == S.count ){
 			attach_pty(n, t);
 			return;
 		}
@@ -44,12 +44,12 @@ void
 balance(const char *arg)
 {
 	int c = MIN(S.count + 1, 3);
-	for( arg = (*arg == '=') ? default_balance_arg[c]: arg; *arg; arg++ ) {
+	for( arg = (*arg == '=') ? default_balance_arg[c]: arg; *arg; arg++ ){
 		int d = *arg == '|', count = 0;
-		for( struct canvas *n = S.f; n; n = n->c[d] ) {
+		for( struct canvas *n = S.f; n; n = n->c[d] ){
 			count += 1;
 		}
-		for( struct canvas *n = S.f; n; n = n->c[d] ) {
+		for( struct canvas *n = S.f; n; n = n->c[d] ){
 			*(d ? &n->split.x : &n->split.y) = 1.0 / count--;
 			n->p->ws.ws_row = 0; /* rows is set during resize */
 		}
@@ -62,16 +62,16 @@ create(const char *arg)
 {
 	int dir = *arg == '|';
 	struct canvas *n = S.f;
-	while( n->c[dir] ) {
+	while( n->c[dir] ){
 		n = n->c[dir];
 	}
-	for( int count = S.count < 1 ? 1 : S.count; count; count -= 1 ) {
+	for( int count = S.count < 1 ? 1 : S.count; count; count -= 1 ){
 		struct canvas *v = n->c[dir] = newcanvas(0, n);
-		if( v && v->p ) {
+		if( v && v->p ){
 			v->typ = n->typ = n->c[!dir] ? n->typ : dir;
 			assert(v->parent == n);
 			n = v;
-		} else if( v && !v->p ) {
+		} else if( v && !v->p ){
 			freecanvas(v);
 		}
 	}
@@ -99,8 +99,8 @@ mov(const char *arg)
 {
 	int count = S.count < 1 ? 1 : S.count;
 	struct canvas *n = S.f;
-	for( struct canvas *t = S.f; t && count--; n = t ? t : n ) {
-		switch( *arg ) {
+	for( struct canvas *t = S.f; t && count--; n = t ? t : n ){
+		switch( *arg ){
 		case 'k': t = t->parent;
 		Kase 'j': t = t->c[t->typ];
 		Kase 'h': t = t->c[0];
@@ -114,10 +114,10 @@ static struct canvas *
 find_canvas(struct canvas *c, int id)
 {
 	struct canvas *r = NULL;
-	if( c && id > 0 ) {
-		if( c->p->fd == id + 2 ) {
+	if( c && id > 0 ){
+		if( c->p->fd == id + 2 ){
 			r = c;
-		} else if( (r = find_canvas(c->c[0], id)) == NULL ) {
+		} else if( (r = find_canvas(c->c[0], id)) == NULL ){
 			r = find_canvas(c->c[1], id);
 		}
 	}
@@ -154,9 +154,9 @@ void
 prune(void)
 {
 	struct canvas *t = find_canvas(S.c, S.count);
-	if( S.count == 0 ) {
+	if( S.count == 0 ){
 		S.c = NULL;  /* Trigger an exit from main loop */
-	} else if( t && t->parent ) {
+	} else if( t && t->parent ){
 		struct canvas *p = t->parent;
 		int c = t == p->c[1];
 		*(c ? &p->split.x : &p->split.y) = 1.0;
@@ -171,10 +171,10 @@ static void grow_screens(struct pty *p, int siz);
 void
 reshape_root(void)
 {
-	if( LINES > S.history ) {
+	if( LINES > S.history ){
 		S.history = LINES;
 	}
-	for( struct pty *p = S.p; p; p = p->next ) {
+	for( struct pty *p = S.p; p; p = p->next ){
 		grow_screens(p, LINES);
 	}
 	resize_pad(&S.werr, 1, COLS);
@@ -196,7 +196,7 @@ void
 scrollh(const char *arg)
 {
 	struct canvas *n = S.f;
-	if( n && n->p && n->p->s && n->p->s->w ) {
+	if( n && n->p && n->p->s && n->p->s->w ){
 		int c = S.count;
 		int count = c < 0 ? n->extent.x : !c ? n->p->ws.ws_col : c;
 		int x = n->offset.x + (*arg == '<' ? -count : count);
@@ -209,7 +209,7 @@ void
 scrolln(const char *arg)
 {
 	struct canvas *n = S.f;
-	if( n && n->p && n->p->s && n->p->s->w ) {
+	if( n && n->p && n->p->s && n->p->s->w ){
 		int count = S.count == -1 ? n->extent.y - 1 : S.count;
 		int top = n->p->s->maxy - n->extent.y + 1;
 		n->offset.y += *arg == '-' ? -count : count;
@@ -235,9 +235,9 @@ static void
 grow_screens(struct pty *p, int siz)
 {
 	struct screen *s, *w[] = { &p->scr[0], &p->scr[1], NULL };
-	for( struct screen **sp = w; *sp && (s = *sp)->rows < siz; sp++ ) {
+	for( struct screen **sp = w; *sp && (s = *sp)->rows < siz; sp++ ){
 		WINDOW *new = NULL;
-		if( resize_pad(&new, siz, p->ws.ws_col) ) {
+		if( resize_pad(&new, siz, p->ws.ws_col) ){
 			copywin(s->w, new, 0, 0, siz - s->rows, 0,
 				siz - 1, p->ws.ws_col - 1, 1);
 			delwin(s->w);
@@ -280,7 +280,7 @@ set_layout(void)
 			"1:.33 1:.67 1:1",
 	};
 	size_t count = S.count < 0 ? 1 : S.count;
-	if( count < sizeof def / sizeof *def ) {
+	if( count < sizeof def / sizeof *def ){
 		build_layout(def[count]);
 	}
 }
@@ -291,14 +291,14 @@ set_width(const char *arg)
 	struct canvas *n = S.f;
 	struct pty *p = n->p;
 	int w = *arg ? strtol(arg, NULL, 10) : S.count;
-	if( w == -1 ) {
+	if( w == -1 ){
 		w = n->extent.x;
 	}
-	if( p->fd > 0 && (pty_size(p), w != p->ws.ws_col) ) {
+	if( p->fd > 0 && (pty_size(p), w != p->ws.ws_col) ){
 		p->ws.ws_col = w;
 		resize_pad(&p->scr[0].w, p->scr[0].rows, w);
 		resize_pad(&p->scr[1].w, p->scr[1].rows, w);
-		if( p->s->c.x > w - 1 ) {
+		if( p->s->c.x > w - 1 ){
 			wmove(p->s->w, p->s->c.y, p->s->c.x = w - 1);
 		}
 		set_tabs(p, p->tabstop);
@@ -311,14 +311,14 @@ swap(void)
 {
 	struct canvas *n = S.f;
 	struct canvas *t;
-	if( S.count == -1 ) {
+	if( S.count == -1 ){
 		t = n->c[n->typ];
 		t = t ? t : n->c[!n->typ];
 		t = t ? t : n->parent;
 	} else {
 		t = find_canvas(S.c, S.count);
 	}
-	if( t ) {
+	if( t ){
 		struct pty *tmp = n->p;
 		n->p = t->p;
 		t->p = tmp;
@@ -331,12 +331,12 @@ swap(void)
 void
 transition(const char *arg)
 {
-	switch( *arg++ ) {
+	switch( *arg++ ){
 	case '*': rewrite(S.f->p->fd, (char *)&S.ctlkey, 1);
 	Kase '\n': send_cr();
 	}
 	S.errmsg[0] = 0; /* Clear any existing error message */
-	switch( *arg ) {
+	switch( *arg ){
 	case 'e': S.binding = k1; /* enter */
 	Kase 'i': S.binding = k2;  /* insert */
 	Kase 'c': S.binding = ctl; /* control */
@@ -348,7 +348,7 @@ transition(const char *arg)
 static void
 transpose_r(struct canvas *c)
 {
-	if( c ) {
+	if( c ){
 		c->typ = !c->typ;
 		struct canvas *t = c->c[0];
 		double s = c->split.y;
@@ -362,7 +362,7 @@ transpose_r(struct canvas *c)
 void
 transpose(void)
 {
-	if( S.f && !S.f->c[0] && !S.f->c[1] ) {
+	if( S.f && !S.f->c[0] && !S.f->c[1] ){
 		transpose_r(S.f->parent);
 	} else {
 		transpose_r(S.f);
