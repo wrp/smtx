@@ -96,10 +96,9 @@ struct vtp {
 	struct {
 		int inter;
 		int argc;
-		union {
-			int args[MAXPARAM];
-			char oscbuf[MAXOSC + 1];
-		} argv;
+		void *argv;
+		int args[MAXPARAM];
+		char oscbuf[MAXOSC + 1];
 	} z;
 };
 extern int cons[0x80];

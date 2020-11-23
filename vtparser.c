@@ -42,8 +42,9 @@ collect(struct vtp *v, wchar_t w)
 static void
 collect_osc(struct vtp *v, wchar_t w)
 {
-	if( v->z.argc + 1 < (int)sizeof v->z.argv.oscbuf ){
-		v->z.argv.oscbuf[v->z.argc++] = wctob(w);
+	v->z.argv = &v->z.oscbuf;
+	if( v->z.argc + 1 < (int)sizeof v->z.oscbuf ){
+		v->z.oscbuf[v->z.argc++] = wctob(w);
 	}
 }
 
@@ -51,7 +52,7 @@ static void
 param(struct vtp *v, wchar_t w)
 {
 	v->z.argc = v->z.argc ? v->z.argc : 1;
-	int *a = v->z.argv.args + v->z.argc - 1;
+	int *a = v->z.args + v->z.argc - 1;
 	if( w == L';' ){
 		v->z.argc += 1;
 	} else if( v->z.argc < MAXPARAM && *a < 9999 ){
@@ -62,9 +63,7 @@ param(struct vtp *v, wchar_t w)
 static void
 send(struct vtp *v, wchar_t w)
 {
-	assert( &v->z.argv == (void *)&v->z.argv.args );
-	assert( &v->z.argv == (void *)&v->z.argv.oscbuf );
-	tput(v->p, w, v->z.inter, v->z.argc, &v->z.argv, v->s->lut[w]);
+	tput(v->p, w, v->z.inter, v->z.argc, v->z.argv, v->s->lut[w]);
 }
 
 /*
@@ -197,6 +196,7 @@ vtreset(struct vtp *v)
 {
 	memset(&v->z, 0, sizeof v->z);
 	v->s = &ground;
+	v->z.argv = &v->z.args;
 }
 
 void
