@@ -65,11 +65,11 @@ enum cmd {
 	vpa,          /* Cursor Vertical Absolute */
 	vpr,          /* Cursor Vertical Relative */
 #if 0
-unimplemented
 
-decid,        /* Send Terminal Identification */
-decreqtparm,  /* Request Device Parameters */
-dsr,          /* Device Status Report */
+The following are unimplemented:
+	decid,        /* Send Terminal Identification */
+	decreqtparm,  /* Request Device Parameters */
+	dsr,          /* Device Status Report */
 #endif
 };
 
@@ -104,7 +104,14 @@ extern int escs[0x80];
 extern int oscs[0x80];
 extern int gnds[0x80];
 
-void tput(struct pty *, wchar_t, wchar_t, int, int *, int, char *);
-void vtreset(struct vtp *v);
-void vtwrite(struct vtp *vp, const char *s, size_t n);
+extern void set_status(struct pty *p, const char *arg);
+extern void tput(struct pty *, wchar_t, wchar_t, int, int *, int, char *);
+extern void vtreset(struct vtp *v);
+extern void vtwrite(struct vtp *vp, const char *s, size_t n);
+extern int build_layout(const char *);
+
+/* Debugging/test harness */
+#ifndef NDEBUG
+extern void show_status(const char *);
+#endif
 #endif

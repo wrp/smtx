@@ -17,16 +17,10 @@
  */
 #include "smtx.h"
 
-static void
-handle_osc(struct pty *p, int cmd, const char *arg)
+void
+set_status(struct pty *p, const char *arg)
 {
-	switch( cmd ){
-	case  2: snprintf(p->status, sizeof p->status, "%s", arg);
-	Kase 60: build_layout(arg);
-#ifndef NDEBUG
-	Kase 62: show_status(arg);
-#endif
-	}
+	snprintf(p->status, sizeof p->status, "%s", arg);
 }
 
 static void
@@ -125,6 +119,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler,
 	char *osc_str)
 {
 	int i, t1;
+	(void) osc_str;
 
 	/* First arg, defaulting to 0 or 1 */
 	int p0[] = { argc ? *argv : 0, argc ? *argv : 1 };
@@ -230,13 +225,6 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler,
 		switch( p0[0] ){
 		case 0: p->tabs[s->c.x] = false;
 		Kase 3: memset(p->tabs, 0, p->ws.ws_col * sizeof *p->tabs);
-		}
-	Kase osc:
-		{
-		/* TODO: parse properly in the vt state machine */
-		const char *parm;
-		int cmd = strtol(osc_str, (char **)&parm, 10);
-		handle_osc(p, cmd, parm ? parm + 1 : "");
 		}
 	Kase vis: s->vis = iw != L'6';
 	Kase vpa: s->c.y = tos - 1; /* Fallthru */

@@ -16,9 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <assert.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 #include "vtparser.h"
+#define Kase break; case
 
 struct action {
 	void (*cb)(struct vtp *p, wchar_t w);
@@ -58,6 +60,25 @@ param(struct vtp *v, wchar_t w)
 		*a = *a * 10 + w - '0';
 	}
 }
+
+static void
+handle_osc(struct vtp *v, wchar_t unused)
+{
+	(void)unused;
+	/* TODO: parse properly in the vt state machine */
+	char *parm;
+	int cmd = strtol(v->oscbuf, &parm, 10);
+	const char *arg = *parm ? parm + 1 : "";
+
+	switch( cmd ){
+	case  2: set_status(v->p, arg);
+	Kase 60: build_layout(arg);
+#ifndef NDEBUG
+	Kase 62: show_status(arg);
+#endif
+	}
+}
+
 
 static void
 send(struct vtp *v, wchar_t w)
@@ -183,9 +204,9 @@ static struct state osc_string = {
 	.lut = oscs,
 	.act = {
 		LOWBITS,
-		[0x07]          = {send, &ground},
-		[0x0a]          = {send, &ground},  /* \n */
-		[0x0d]          = {send, &ground},  /* \r */
+		[0x07]          = {handle_osc, &ground},
+		[0x0a]          = {handle_osc, &ground},  /* \n */
+		[0x0d]          = {handle_osc, &ground},  /* \r */
 		[0x20 ... 0x7f] = {collect_osc, NULL},  /* sp!"#$%&'()*+,-./ */
 	}
 };
