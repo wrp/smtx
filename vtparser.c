@@ -19,7 +19,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "vtparser.h"
-#define Kase break; case
 
 struct action {
 	void (*cb)(struct vtp *p, wchar_t w);
@@ -66,14 +65,13 @@ handle_osc(struct vtp *v, wchar_t unused)
 {
 	(void)unused;
 	switch( v->args[0] ){
-	case  2: set_status(v->p, v->oscbuf);
-	Kase 60: build_layout(v->oscbuf);
+	case  2: set_status(v->p, v->oscbuf); break;
+	case 60: build_layout(v->oscbuf); break;
 #ifndef NDEBUG
-	Kase 62: show_status(v->oscbuf);
+	case 62: show_status(v->oscbuf); break;
 #endif
 	}
 }
-
 
 static void
 send(struct vtp *v, wchar_t w)
