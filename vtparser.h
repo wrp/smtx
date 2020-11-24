@@ -97,6 +97,7 @@ struct vtp {
 	int argc;
 	int args[MAXPARAM];
 	char oscbuf[MAXOSC + 1];
+	char *osc;
 };
 extern int cons[0x80];
 extern int csis[0x80];

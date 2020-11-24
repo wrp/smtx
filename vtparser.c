@@ -32,8 +32,9 @@ struct state {
 	struct action act[0x80];
 };
 
-static struct state ground, esc_entry, esc_collect, csi_entry,
-	csi_ignore, csi_param, csi_collect, osc_string;
+static struct state ground, esc_entry, esc_collect,
+	csi_entry, csi_ignore, csi_param, csi_collect,
+	osc_param, osc_string;
 
 static void
 collect(struct vtp *v, wchar_t w)
@@ -44,8 +45,8 @@ collect(struct vtp *v, wchar_t w)
 static void
 collect_osc(struct vtp *v, wchar_t w)
 {
-	if( v->argc + 1 < (int)sizeof v->oscbuf ){
-		v->oscbuf[v->argc++] = wctob(w);
+	if( v->osc < v->oscbuf + sizeof v->oscbuf - 1 ){
+		*v->osc++ = wctob(w);
 	}
 }
 
@@ -65,16 +66,11 @@ static void
 handle_osc(struct vtp *v, wchar_t unused)
 {
 	(void)unused;
-	/* TODO: parse properly in the vt state machine */
-	char *parm;
-	int cmd = strtol(v->oscbuf, &parm, 10);
-	const char *arg = *parm ? parm + 1 : "";
-
-	switch( cmd ){
-	case  2: set_status(v->p, arg);
-	Kase 60: build_layout(arg);
+	switch( v->args[0] ){
+	case  2: set_status(v->p, v->oscbuf);
+	Kase 60: build_layout(v->oscbuf);
 #ifndef NDEBUG
-	Kase 62: show_status(arg);
+	Kase 62: show_status(v->oscbuf);
 #endif
 	}
 }
@@ -124,7 +120,7 @@ static struct state esc_entry = {
 		[0x59 ... 0x5a] = {send, &ground},
 		[0x5b]          = {NULL, &csi_entry},   /* [ */
 		[0x5c]          = {send, &ground},      /* \ */
-		[0x5d]          = {NULL, &osc_string},  /* ] */
+		[0x5d]          = {NULL, &osc_param},  /* ] */
 		[0x5e]          = {NULL, &osc_string},  /* ^ */
 		[0x5f]          = {NULL, &osc_string},  /* _ */
 		[0x60 ... 0x6a] = {send, &ground},      /* `a-j */
@@ -199,15 +195,27 @@ static struct state csi_collect = {
 };
 
 #pragma GCC diagnostic ignored "-Woverride-init"
+static struct state osc_param = {
+	.reset = 0,
+	.lut = oscs,
+	.act = {
+		LOWBITS,
+		[0x07]          = {handle_osc, &ground},
+		[0x20 ... 0x7f] = {collect_osc, NULL},
+		[0x30 ... 0x39] = {param, NULL},        /* 0 - 9 */
+		[0x3b]          = {param, &osc_string}, /* ; */
+	}
+};
+
 static struct state osc_string = {
-	.reset = 1,
+	.reset = 0,
 	.lut = oscs,
 	.act = {
 		LOWBITS,
 		[0x07]          = {handle_osc, &ground},
 		[0x0a]          = {handle_osc, &ground},  /* \n */
 		[0x0d]          = {handle_osc, &ground},  /* \r */
-		[0x20 ... 0x7f] = {collect_osc, NULL},  /* sp!"#$%&'()*+,-./ */
+		[0x20 ... 0x7f] = {collect_osc, NULL},
 	}
 };
 
@@ -218,6 +226,7 @@ vtreset(struct vtp *v)
 	memset(v, 0, sizeof *v);
 	v->p = p;
 	v->s = &ground;
+	v->osc = v->oscbuf;
 }
 
 void

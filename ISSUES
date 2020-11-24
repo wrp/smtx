@@ -9,10 +9,7 @@ TODO:
 	Perhaps use (e) to edit the file (eg, spawn $EDITOR), then (p)
 	to paste it.
 
-	Dump select() and use libev or libevent, or at least kqueue/epoll
-
-	Cleanup the osc string handling.  We should parse the parameter in the
-	vt state machine rather than passing a string to tput.
+	Replace select() with kqueue()/epoll()
 
 BUGS:
 	Syntax highlighting doesn't work in vim.
