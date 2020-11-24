@@ -28,11 +28,9 @@ attach_pty(struct canvas *n, struct pty *p)
 void
 attach(void)
 {
-	struct canvas *n = S.f;
-	assert( n->p->count > 0 );
 	for( struct pty *t = S.p; t; t = t->next ){
 		if( t->fd - 2 == S.count ){
-			attach_pty(n, t);
+			attach_pty(S.f, t);
 			return;
 		}
 	}
