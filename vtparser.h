@@ -92,7 +92,7 @@ struct pty;
 struct vtp {
 	struct pty *p;
 	struct state *s;
-	int inter;
+	wchar_t inter;
 	int argc;
 	int args[MAXPARAM];
 	char oscbuf[MAXOSC + 1];

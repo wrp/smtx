@@ -39,7 +39,7 @@ static struct state ground, esc_entry, esc_collect,
 static void
 collect(struct vtp *v, wchar_t w)
 {
-	v->inter = (int)w;
+	v->inter = w;
 }
 
 static void
