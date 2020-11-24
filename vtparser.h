@@ -95,7 +95,6 @@ struct vtp {
 	mbstate_t ms;
 	int inter;
 	int argc;
-	void *argv;
 	int args[MAXPARAM];
 	char oscbuf[MAXOSC + 1];
 };
@@ -105,7 +104,7 @@ extern int escs[0x80];
 extern int oscs[0x80];
 extern int gnds[0x80];
 
-void tput(struct pty *, wchar_t, wchar_t, int, void *, int);
+void tput(struct pty *, wchar_t, wchar_t, int, int *, int, char *);
 void vtreset(struct vtp *v);
 void vtwrite(struct vtp *vp, const char *s, size_t n);
 #endif

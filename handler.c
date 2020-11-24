@@ -121,13 +121,13 @@ static int attrs[] = {
 };
 
 void
-tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
+tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler,
+	char *osc_str)
 {
 	int i, t1;
 
 	/* First arg, defaulting to 0 or 1 */
-	int p0[] = { argc ? *(int*)arg : 0, argc ? *(int*)arg : 1 };
-	int *argv = arg;
+	int p0[] = { argc ? *argv : 0, argc ? *argv : 1 };
 	struct screen *s = p->s; /* the current SCRN buffer */
 	WINDOW *win = s->w;      /* the current window */
 
@@ -235,7 +235,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, void *arg, int handler)
 		{
 		/* TODO: parse properly in the vt state machine */
 		const char *parm;
-		int cmd = strtol(arg, (char **)&parm, 10);
+		int cmd = strtol(osc_str, (char **)&parm, 10);
 		handle_osc(p, cmd, parm ? parm + 1 : "");
 		}
 	Kase vis: s->vis = iw != L'6';

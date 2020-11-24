@@ -42,7 +42,6 @@ collect(struct vtp *v, wchar_t w)
 static void
 collect_osc(struct vtp *v, wchar_t w)
 {
-	v->argv = &v->oscbuf;
 	if( v->argc + 1 < (int)sizeof v->oscbuf ){
 		v->oscbuf[v->argc++] = wctob(w);
 	}
@@ -63,7 +62,7 @@ param(struct vtp *v, wchar_t w)
 static void
 send(struct vtp *v, wchar_t w)
 {
-	tput(v->p, w, v->inter, v->argc, v->argv, v->s->lut[w]);
+	tput(v->p, w, v->inter, v->argc, v->args, v->s->lut[w], v->oscbuf);
 }
 
 /*
@@ -198,7 +197,6 @@ vtreset(struct vtp *v)
 	memset(v, 0, sizeof *v);
 	v->p = p;
 	v->s = &ground;
-	v->argv = &v->args;
 }
 
 void
@@ -227,7 +225,7 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 				vp->s = a->next;
 			}
 		} else {
-			tput(vp->p, w, 0, 0, NULL, print);
+			tput(vp->p, w, 0, 0, NULL, print, NULL);
 		}
 	}
 }
