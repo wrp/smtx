@@ -178,6 +178,8 @@ reshape_window(struct pty *p)
 {
 	check(ioctl(p->fd, TIOCSWINSZ, &p->ws) == 0, 0, "ioctl on %d", p->fd);
 	check(kill(p->pid, SIGWINCH) == 0, 0, "send WINCH to %d", (int)p->pid);
+	set_scroll(p->scr, 0, p->scr->rows - 1);
+	set_scroll(p->scr + 1, p->tos, p->scr->rows - 1);
 }
 
 void
