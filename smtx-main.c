@@ -289,7 +289,7 @@ draw_title(struct canvas *n, int r)
 static void
 draw_div(struct canvas *n, int rev)
 {
-	( rev ? &wattron : &wattroff )(n->wdiv, A_REVERSE);
+	wattrset(n->wdiv, rev ? A_REVERSE : A_NORMAL);
 	mvwvline(n->wdiv, 0, 0, ACS_VLINE, INT_MAX);
 	draw_pane(n->wdiv, n->origin.y, n->origin.x + n->extent.x);
 }
