@@ -142,7 +142,7 @@ static struct state esc_collect = {
 };
 
 static struct state csi_entry = {
-	.reset = 1,
+	.reset = 0,
 	.lut = csis,
 	.act = {
 		LOWBITS,
