@@ -105,7 +105,7 @@ extern int oscs[0x80];
 extern int gnds[0x80];
 
 extern void set_status(struct pty *p, const char *arg);
-extern void tput(struct pty *, wchar_t, wchar_t, int, int *, int, char *);
+extern void tput(struct pty *, wchar_t, wchar_t, int, int *, int);
 extern void vtreset(struct vtp *v);
 extern void vtwrite(struct vtp *vp, const char *s, size_t n);
 extern int build_layout(const char *);

@@ -115,11 +115,9 @@ static int attrs[] = {
 };
 
 void
-tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler,
-	char *osc_str)
+tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler)
 {
 	int i, t1;
-	(void) osc_str;
 
 	/* First arg, defaulting to 0 or 1 */
 	int p0[] = { argc ? *argv : 0, argc ? *argv : 1 };

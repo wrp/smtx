@@ -114,7 +114,7 @@ new_pty(int rows, int cols, bool new)
 		}
 		if( p->s == NULL ){
 			p->s = &p->scr[0];
-			tput(p, 0, 0, 0, NULL, ris, NULL);
+			tput(p, 0, 0, 0, NULL, ris);
 			p->vp.p = p;
 		}
 	}

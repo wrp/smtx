@@ -83,7 +83,7 @@ handle_osc(struct vtp *v, wchar_t unused)
 static void
 send(struct vtp *v, wchar_t w)
 {
-	tput(v->p, w, v->inter, v->argc, v->args, v->s->lut[w], v->oscbuf);
+	tput(v->p, w, v->inter, v->argc, v->args, v->s->lut[w]);
 }
 
 /*
@@ -246,7 +246,7 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 				vp->s = a->next;
 			}
 		} else {
-			tput(vp->p, w, 0, 0, NULL, print, NULL);
+			tput(vp->p, w, 0, 0, NULL, print);
 		}
 	}
 }
