@@ -194,8 +194,8 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler)
 		wscrl(win, w == L'L' ? -i : i);
 		wsetscrreg(win, s->scroll.top, s->scroll.bot);
 		s->c.x = 0;
-	Kase numkp:
-		p->pnm = (w == L'=');
+	Kase numkp: p->pnm = (w == L'=');
+	Kase osc: assert( 0 );
 	Kase rc:
 		if( iw == L'#' ) for( int r = 0; r < p->ws.ws_row; r++ ){
 			cchar_t e;
