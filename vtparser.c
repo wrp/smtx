@@ -222,9 +222,7 @@ static struct state osc_string = {
 void
 vtreset(struct vtp *v)
 {
-	struct pty *p = v->p;
-	memset(v, 0, sizeof *v);
-	v->p = p;
+	memset(&v->inter, 0, sizeof *v - offsetof(struct vtp, inter));
 	v->s = &ground;
 	v->osc = v->oscbuf;
 }

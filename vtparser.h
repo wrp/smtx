@@ -92,12 +92,12 @@ struct pty;
 struct vtp {
 	struct pty *p;
 	struct state *s;
-	mbstate_t ms;
 	int inter;
 	int argc;
 	int args[MAXPARAM];
 	char oscbuf[MAXOSC + 1];
 	char *osc;
+	mbstate_t ms;
 };
 extern int cons[0x80];
 extern int csis[0x80];
