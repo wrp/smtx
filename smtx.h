@@ -89,7 +89,7 @@ struct pty {
 	bool *tabs, pnm, decom, lnm;
 	/* DECOM: When set, cursor addressing is relative to the upper left
 	 * corner of the scrolling region instead of top of screen. */
-	struct screen scr[2], *s;
+	struct screen scr[2], *s;  /* Primary/alternate screen */
 	wchar_t *g[4];
 	char status[32];
 	struct vtp vp;

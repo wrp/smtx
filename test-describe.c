@@ -33,6 +33,7 @@ describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags,
 	int show_pos = flags & 0x10;
 	int show_2nd = flags & 0x40;
 	int human = flags & 0x80;
+	int show_pty = flags & 0x100;
 
 	char *isfocus = recurse && c == S.f ? "*" : "";
 	if( human ){
@@ -53,6 +54,14 @@ describe_layout(char *d, ptrdiff_t siz, const struct canvas *c, unsigned flags,
 	}
 	if( show_2nd && c->p && c->p->fd != -1 ){
 		d += snprintf(d, e - d, "(2nd=%s)", c->p->secondary );
+	}
+	if( show_pty ){
+		d += snprintf(d, e - d, "(pri %d,%d)(2nd %d,%d)",
+			c->p->scr[0].rows,
+			c->p->scr[0].maxy,
+			c->p->scr[1].rows,
+			c->p->scr[1].maxy
+		);
 	}
 	for( int i = 0; recurse && i < 2; i ++ ){
 		if( e - d > 3 + tab && c->c[i] ){
@@ -274,6 +283,6 @@ show_status(const char *arg)
 	} else {
 		show_procs();
 		show_state();
-		show_layout(*arg ? arg : "d5");
+		show_layout(*arg ? arg : "0x1d5");
 	}
 }
