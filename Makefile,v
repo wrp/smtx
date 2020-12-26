@@ -24,7 +24,7 @@ text
 @# A stub Makefile used to bootstrap.
 
 srcdir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-BUILDDIR := $(srcdir)/build/$(shell uname -s)/$(shell uname -m)
+BUILDDIR := $(srcdir)build/$(shell uname -s)/$(shell uname -m)
 
 .PHONY: all check clean dist distclean install loc release version
 all: $(BUILDDIR) $(BUILDDIR)/Makefile
@@ -39,7 +39,7 @@ configure:
 	autoreconf -ivf
 
 $(BUILDDIR)/Makefile: configure
-	cd $(BUILDDIR) && $(srcdir)/configure CFLAGS="$${CFLAGS---coverage -g -O0}"
+	cd $(BUILDDIR) && $(srcdir)configure CFLAGS="$${CFLAGS---coverage -g -O0}"
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
@@ -47,7 +47,7 @@ $(BUILDDIR):
 loc:
 	@@cd $(BUILDDIR) && \
 	for file in action handler smtx-main vtparser smtx; do \
-		printf assert:; grep 'assert(' $(srcdir)/$${file}.c | wc -l; \
+		printf assert:; grep 'assert(' $(srcdir)$${file}.c | wc -l; \
 		gcov $${file}.c $$(test -f .libs/$${file}.gcda \
 		&& printf -- '-o .libs'); \
 	done | tr "':" ' '| awk ' \
