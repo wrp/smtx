@@ -623,7 +623,7 @@ test_layout3(int fd)
 	send_txt(fd, "Invalid", "printf '\\033]60;bad layout\\007'");
 	rv |= check_layout(fd, 1, "*8x80; 9x80; 4x16; 4x15; 4x15; 4x15; 4x15");
 
-	send_txt(fd, NULL, "printf '\\033]60;%s\\007'", "1:.5 .2:1 .8:1 1:1");
+	send_txt(fd, NULL, "printf '\\033]60;%s\\007'", "1,.5 .2,1 .8:1 1:1");
 	send_txt(fd, "iy9", "PS1=iy'9>'");
 	rv |= check_layout(fd, 0x1, "*23x40; 3x39; 14x39; 4x39");
 	return rv;
