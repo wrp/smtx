@@ -591,7 +591,7 @@ char bigint[128];
 static struct st *
 initialize_tests(char const **argv0)
 {
-	struct st *tab;
+	struct st *tab = NULL;
 	char buf[PATH_MAX];
 	char *base;
 
