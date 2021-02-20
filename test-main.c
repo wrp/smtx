@@ -445,7 +445,7 @@ spawn_test(struct st *v, const char *argv0)
 			close(fd[0]);
 			close(fd[1]);
 			execv(argv0, args);
-			err(EXIT_FAILURE, "execv");
+			err(EXIT_FAILURE, "%s", argv0);
 		}
 		switch( pid[2] = fork() ){
 		case -1:
@@ -592,14 +592,11 @@ static struct st *
 initialize_tests(char const **argv0)
 {
 	struct st *tab = NULL;
-	char buf[PATH_MAX];
 	char *base;
 
-	strcpy(buf, *argv0);
-	if( (base = strrchr(buf, '/')) != NULL ){
-		*base = '\0';
-		chdir(buf);
+	if( (base = strrchr(*argv0, '/')) != NULL ){
 		*argv0 = base + 1;
+		chdir(*argv0);
 	}
 	snprintf(bigint, sizeof bigint, "%d", INT_MAX);
 
