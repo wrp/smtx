@@ -1,6 +1,6 @@
 /*
  * Copyright 2017 - 2019 Rob King <jking@deadpixi.com>
- * Copyright 2020 - William Pursell <william.r.pursell@gmail.com>
+ * Copyright 2020 - 2021 William Pursell <william.r.pursell@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
