@@ -12,10 +12,8 @@ TODO:
 	Replace select() with kqueue()/epoll()
 
 BUGS:
-	Test suite is broken.  Tests currently pass for me on macos and termux,
-	but I get consistent failures in Linux.  I believe this is due to terminfo
-	settings (the failures are color/attribute related, with the colors not
-        showing up in the received output.)
+	Test suite is broken.  Tests sporadically pass in a debian docker image
+	on macos, but I get consistent failures in other platforms.
 
 	Syntax highlighting doesn't work in vim.
 
