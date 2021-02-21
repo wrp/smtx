@@ -1,0 +1,27 @@
+
+To build from the git repo, you will need to install the autotools (autoconf,
+libtool, and automake), asciidoctor, rcs, and probably other packages that I am
+forgetting about at the moment.  It will be simpler to download a source
+tarball and build from that.  As I write this document there are no
+official source tarballs since no official release has yet been made, so
+acaqiring a source tarball will be problematic.  Perhaps a release will be
+made in the near future.
+
+This package is intended to be usable in the standard way.  If you have
+met all the dependencies, just cd into the top level directory and run 'make'.
+This is a slight divergence from the usual autoconfiscated package, but should
+work.  The git repo includes a Makefile,v which 'make' should recognize.  The
+initial invocation of make will checkout a Makefile (using rcs) from the
+Makefile,v which will be used to generate a build directory and run the typical
+command chain.  If you don't want to abuse the autotools this way, just ignore
+the Makefile,v and run:
+
+autoreconf -ivf
+./configure --prefix=/p/a/t/h
+make
+
+
+The test suite is currently fragile.  At the moment, it mostly works in
+a debian docker image on macos, but breaks completely elsewhere.  In the
+debian docker image, typically 1 or 2 of the 51 tests will fail.  IOW,
+don't expect 'make check' to be reliable.
