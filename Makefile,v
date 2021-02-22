@@ -33,7 +33,7 @@ all: $(BUILDDIR) $(BUILDDIR)/Makefile
 release: $(BUILDDIR)
 	-cd $(BUILDDIR) && make distclean
 	CFLAGS='-O2 -DNDEBUG' make all
-	cd $(BUILDDIR) && make version && make distcheck
+	cd $(BUILDDIR) && make version && make dist
 
 configure:
 	autoreconf -ivf
