@@ -28,12 +28,12 @@ BUILDDIR := $(srcdir)build/$(shell uname -s)/$(shell uname -m)
 
 .PHONY: all check clean dist distclean install loc release version
 all: $(BUILDDIR) $(BUILDDIR)/Makefile
-	cd $(BUILDDIR) && make all
+	cd $(BUILDDIR) && make $(MAKEFLAGS) all
 
 release: $(BUILDDIR)
-	-cd $(BUILDDIR) && make distclean
-	CFLAGS='-O2 -DNDEBUG' make all
-	cd $(BUILDDIR) && make version && make dist
+	-cd $(BUILDDIR) && make $(MAKEFLAGS) distclean
+	CFLAGS='-O2 -DNDEBUG' make $(MAKEFLAGS) all
+	cd $(BUILDDIR) && make $(MAKEFLAGS) version && make $(MAKEFLAGS) dist
 
 configure:
 	autoreconf -ivf
@@ -58,5 +58,5 @@ loc:
 		END{printf "%32s:\t%s\n", "Total", t}'
 
 install check clean dist distclean version: $(BUILDDIR) $(BUILDDIR)/Makefile
-	cd $(BUILDDIR) && make $@@
+	cd $(BUILDDIR) && make $(MAKEFLAGS) $@@
 @
