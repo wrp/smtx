@@ -32,4 +32,4 @@ uninstall-hook:
 	rm -rf $(DESTDIR)$(sysconfdir)/terminfo/s/smtx-256color
 
 smtx.1: smtx.txt
-	asciidoctor -a ver=${PACKAGE_VERSION} -b manpage $<
+	asciidoctor -a ver=${PACKAGE_VERSION} -b manpage $< || cp $< $@
