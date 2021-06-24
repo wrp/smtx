@@ -19,6 +19,7 @@ struct handler ctl[128] = {
 	[L'<' ] = { { .a = scrollh}, "<" },
 	[L'=' ] = { { .a = balance}, "=" },
 	[L'>' ] = { { .a = scrollh}, ">" },
+	[L'?' ] = { { .v = help}, NULL },
 	[L'|' ] = { { .a = resize}, "|" },
 	[L'C' ] = { { .a = create}, "|" },
 	[L'N' ] = { { .v = new_shell}, NULL },

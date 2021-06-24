@@ -19,6 +19,7 @@
 
 struct state S = {
 	.ctlkey = CTRL('g'),
+	.rawkey = 'g',
 	.term = "smtx",
 	.width = 80,
 	.binding = k1,

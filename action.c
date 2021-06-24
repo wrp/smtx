@@ -252,6 +252,22 @@ grow_screens(struct pty *p, int siz)
 }
 
 void
+help(void)
+{
+	for( int i = 0; i < LINES * COLS; i++ ){
+		putchar(' ');
+	}
+	putchar('\r');
+	putchar('\n');
+	printf("Command key is: '%c'\r\n", S.rawkey);
+	puts("<cmd>0x exit\r");
+	puts("<cmd>[count]| set width of current window\r");
+	puts("<cmd>[count]- set height of current window\r");
+	puts("<cmd>[count]> set height of current window\r");
+	fflush(stdout);
+}
+
+void
 set_history(void)
 {
 	struct canvas *n = S.f;

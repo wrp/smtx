@@ -119,6 +119,7 @@ extern struct handler code_keys[KEY_MAX - KEY_MIN + 1];
 
 struct state {
 	unsigned char ctlkey;
+	unsigned char rawkey;
 	int width;   /* Columns in newly created ptys */
 	int history; /* Rows in newly created windows */
 	int count;   /* User entered count in command mode */
@@ -196,6 +197,7 @@ extern action balance;
 extern action create;
 extern action digit;
 extern action0 focus;
+extern action0 help;
 extern action mov;
 extern action0 new_tabstop;
 extern action0 new_shell;
