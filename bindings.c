@@ -5,7 +5,6 @@
 struct handler ctl[128] = {
 	[0x00 ... 0x7f] = { .act = { .v = vbeep }, NULL },
 
-	[L'-' ] = { { .a = resize}, "-" },
 	[L'0' ] = { { .a = digit}, "0" },
 	[L'1' ] = { { .a = digit}, "1" },
 	[L'2' ] = { { .a = digit}, "2" },
@@ -16,9 +15,11 @@ struct handler ctl[128] = {
 	[L'7' ] = { { .a = digit}, "7" },
 	[L'8' ] = { { .a = digit}, "8" },
 	[L'9' ] = { { .a = digit}, "9" },
+	[L'-' ] = { { .a = resize}, "-" },
 	[L'<' ] = { { .a = scrollh}, "<" },
 	[L'=' ] = { { .a = balance}, "=" },
 	[L'>' ] = { { .a = scrollh}, ">" },
+	[L'|' ] = { { .a = resize}, "|" },
 	[L'C' ] = { { .a = create}, "|" },
 	[L'N' ] = { { .v = new_shell}, NULL },
 #ifndef NDEBUG
@@ -44,7 +45,6 @@ struct handler ctl[128] = {
 	[L't' ] = { { .v = new_tabstop}, NULL },
 	[L'v' ] = { { .v = set_layout}, NULL },
 	[L'x' ] = { { .v = prune}, NULL },
-	[L'|' ] = { { .a = resize}, "|" },
 };
 
 struct handler code_keys[KEY_MAX - KEY_MIN + 1] = {
