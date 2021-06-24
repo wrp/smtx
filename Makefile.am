@@ -17,7 +17,7 @@ test_main_DEPENDENCIES = smtx
 
 CLEANFILES = *.gcda *.gcno *.gcov version *.1
 EXTRA_DIST = build-aux/package-version version test-shell test-coverage smtx.ti \
-	smtx.1
+	smtx.1 smtx.txt
 noinst_HEADERS = vtparser.h smtx.h test-unit.h
 
 version: $(DIST_SOURCES) $(DIST_COMMON)
