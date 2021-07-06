@@ -8,6 +8,8 @@ on a small physical device), smtx provides provides ptys that are wider
 than the physical device and the ability to have multiple views in
 different locations of the pty.
 
+https://terminalizer.com/view/28083a105080
+
 Quickstart
 ==========
 
