@@ -264,6 +264,7 @@ help(void)
 	puts("<cmd>[count]| set width of current window\r");
 	puts("<cmd>[count]- set height of current window\r");
 	puts("<cmd>[count]> set height of current window\r");
+	puts("<cmd>[count]W set width of underlying tty\r");
 	fflush(stdout);
 }
 
@@ -299,6 +300,7 @@ set_layout(void)
 	}
 }
 
+/* Set width of the underlying tty */
 void
 set_width(const char *arg)
 {
