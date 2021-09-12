@@ -259,11 +259,15 @@ help(void)
 	}
 	putchar('\r');
 	putchar('\n');
-	printf("Command key is: '%c'\r\n", S.rawkey);
+	printf("Command key is ^%c\r\n", S.rawkey);
 	puts("<cmd>0x exit\r");
 	puts("<cmd>[count]| set width of current window\r");
 	puts("<cmd>[count]- set height of current window\r");
-	puts("<cmd>[count]> set height of current window\r");
+	puts("<cmd>[count]> scroll right\r");
+	puts("<cmd>[count]< scroll left\r");
+	puts("<cmd>[count]c create new windows (up/down)\r");
+	puts("<cmd>[count]C create new windows (left/right)\r");
+	puts("<cmd>[count]v use preset window layout\r");
 	puts("<cmd>[count]W set width of underlying tty\r");
 	fflush(stdout);
 }
