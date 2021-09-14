@@ -260,15 +260,16 @@ help(void)
 	putchar('\r');
 	putchar('\n');
 	printf("Command key is ^%c\r\n", S.rawkey);
-	puts("<cmd>0x exit\r");
-	puts("<cmd>[count]| set width of current window\r");
-	puts("<cmd>[count]- set height of current window\r");
-	puts("<cmd>[count]> scroll right\r");
-	puts("<cmd>[count]< scroll left\r");
-	puts("<cmd>[count]c create new windows (up/down)\r");
-	puts("<cmd>[count]C create new windows (left/right)\r");
-	puts("<cmd>[count]v use preset window layout\r");
-	puts("<cmd>[count]W set width of underlying tty\r");
+	puts("Valid command from command mode:\r");
+	puts("[N]x Close window N.  If N == 0, exit smtx\r");
+	puts("[N]| set width of current window to N% of canvas\r");
+	puts("[N]- set height of current window to N% of canvas\r");
+	puts("[N]> scroll right N characters\r");
+	puts("[N]< scroll left N characters\r");
+	puts("[N]c create N new windows (up/down)\r");
+	puts("[N]C create N new windows (left/right)\r");
+	puts("[N]v use preset window layout N\r");
+	puts("[N]W set width of underlying tty to N\r");
 	fflush(stdout);
 }
 
