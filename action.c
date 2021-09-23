@@ -287,7 +287,7 @@ set_history(void)
 void
 set_layout(void)
 {
-	const char *def[] = {
+	const char *defaults[] = {
 		[0] = "1,1",
 		[1] = "1,1",
 		[2] = ".5,1 1,1",
@@ -297,12 +297,16 @@ set_layout(void)
 		[6] = ".5,1 .75,.5 .75,1 1,.33 1,.66 1,1",
 		[7] = ".4,1 .8,1 1,.2 1,.4 1,.6 1,.8 1,1",
 		[8] = ".5,.25 .5,.5 .5,.75 .5,1 1,.25 1,.5 1,.75 1,1",
-		[9] = ".34,.33 .34,.67 .34,1 .68,.33 .68,.67 .68,1 "
-			"1,.33 1,.67 1,1",
+		[9] = (
+			".34,.33 .34,.67 .34,1 .68,.33 .68,.67 .68,1 "
+			"1,.33 1,.67 1,1"
+		),
 	};
 	size_t count = S.count < 0 ? 1 : S.count;
-	if( count < sizeof def / sizeof *def ){
-		build_layout(def[count]);
+	if( count < sizeof defaults / sizeof *defaults ){
+		build_layout(defaults[count]);
+	} else {
+		check(0, errno = 0, "Invalid layout: %d", count);
 	}
 }
 
