@@ -114,6 +114,15 @@ b/f
     Scroll the screen back/forward half a screenful, or recenter the
     screen on the actual terminal.
 
+-/|
+    Change the size of the current window to be the specifiec percentage
+    of the enclosing canvas. eg, '25|' will make the current window use
+    25% of the horizontal space of the canvas.
+
+=   Recursively rebalance windows.  By itself, rebalance in both
+    directions.  1= and 2= will rebalance only horizontally or
+    vertically, respectively.
+
 W
     Set the width of the focused pty.  eg, to set the width of the currently
     focused pty to 120, enter command mode and type `120W`

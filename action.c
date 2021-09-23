@@ -263,6 +263,7 @@ help(void)
 	puts("Valid command from command mode:\r");
 	puts("[N]x Close window N.  If N == 0, exit smtx\r");
 	puts("[N]| set width of current window to N% of canvas\r");
+	puts("[N]= rebalance all windows below current\r");
 	puts("[N]- set height of current window to N% of canvas\r");
 	puts("[N]> scroll right N characters\r");
 	puts("[N]< scroll left N characters\r");
