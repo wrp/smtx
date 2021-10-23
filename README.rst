@@ -110,7 +110,8 @@ indicated by the location of the cursor.
 The following commands are recognized in smtx when in command mode:
 
 h/j/k/l/Up/Down/Left/Right Arrow
-    Focus the virtual terminal above/below/to the left of/to the right of
+    Move the focus to the virtual terminal in the window of the canvas
+    that is the child/parent of
     the currently focused terminal.
 
 c / C
