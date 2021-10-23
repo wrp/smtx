@@ -36,22 +36,24 @@ affected), use `x`.  To destroy all of the ptys and exit, use `0x`.
 Features
 ========
 
-smtx is modal; you can create 5 new windows with `CMD`-ccccc, or `CMD`-5c
+smtx is modal, so you can enter multiple commands from command mode without
+typing the `CMD` keysequence multiple times.  From command mode, you can create 5 new windows with `ccccc`, or `5c`
 There are several preset layouts, so you can get a layout of 5 windows
-with `CMD`-5v.  You can also generate a layout with an osc sequence.
-That is, to generate a layout with seven windows, you could do::
+with `5v`.
+You can recursively convert an axial split to a sagittal split with `T` (transpose),
+and you can discard the currently focused window and all its children
+with `x`.  To attach the current window to a different pty, use `a`.
+To swap the pty of the current window with a pty in a different window,
+use `s`.  Change the width of the pty in the currectly focused window
+with `W`.
+
+You can also generate a window layout with an osc sequence.
+To generate a layout with seven windows, you could do::
 
     printf '\033]60;.5:.5 .25:.66 .5:.66 .5:.83 .5:1 1:.25 1:1\007'
 
 where each coordinate pair represents the lower right hand corner of the window
-as a fraction of the full screen (note that order matters).  You can
-recursively convert an axial split to a sagittal split with `T` (transpose),
-and you can discard the currently focused window and all its children
-with `x`.  To attach the current window to a different pty, use `a`
-To swap the pty of the current window with a pty in a different window,
-us `s`.  Change the width of the pty in the currectly focused window
-with `W`.
-
+as a fraction of the full screen (note that order matters).
 
 Windows
 =======
