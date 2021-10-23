@@ -60,7 +60,9 @@ Windows
 
 New windows are created in `command` mode with `create`, which is by
 default bound to the keystrokes `c` and `C`.  To navigate  among the
-windows use `j`, `k`, `l`, and `h`.  Each window belongs to one "canvas",
+windows use `j`, `k`, `l`, and `h`.  The navigation is not directly related to
+the physical layout on the screen, but navigates the tree structure of the
+extant windows.  Each window belongs to one "canvas",
 which is simply a node in the tree used to keep track of windows.
 The root canvas fills the entire physical screen and contains the window
 in the upper left.  Each canvas can have 0, 1, or 2 children.  If the root
@@ -71,7 +73,11 @@ canvas is of "type 1".  That is, a layout with 3 windows in which the
 left half of the screen is full height and the right half of the screen
 is split into 2 half-height windows indicates a root canvas of type 1.
 In that layout, the root canvas has one child (the right half of the screen),
-and that child (which is a type 0 canvas) has one child.
+and that child (which is a type 0 canvas) has one child.  The window navigation
+follows this tree structure naturally.
+`h` and `l` move the cursor to the left and right child of the
+currently focused canvas.  `k` moves to the parent canvas, and `j` moves to the
+primary child; left for type 0, and right for type 1.
 
 
 Usage
