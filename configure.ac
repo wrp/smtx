@@ -20,8 +20,8 @@ AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
 
 AC_FUNC_REALLOC
-AC_SEARCH_LIBS([endwin],[ncursesw])
-AC_SEARCH_LIBS([forkpty],[util])
+AC_SEARCH_LIBS([endwin],[ncursesw],[],AC_MSG_ERROR([unable to find ncurses library]))
+AC_SEARCH_LIBS([forkpty],[util],[],AC_MSG_ERROR([unable to find util library]))
 AC_CHECK_FUNC([alloc_pair],AC_DEFINE([HAVE_ALLOC_PAIR],[1],[ ]))
 
 
