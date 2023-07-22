@@ -17,6 +17,10 @@
  */
 #include "smtx.h"
 
+/* Index of a pty is based on its fd */
+#define IDX(t) ((t)->fd - 2)
+
+/* Attach pty p to the canvas n. */
 static void
 attach_pty(struct canvas *n, struct pty *p)
 {
@@ -29,7 +33,7 @@ void
 attach(void)
 {
 	for( struct pty *t = S.p; t; t = t->next ){
-		if( t->fd - 2 == S.count ){
+		if( IDX(t) == S.count ){
 			attach_pty(S.f, t);
 			return;
 		}
@@ -113,7 +117,7 @@ find_canvas(struct canvas *c, int id)
 {
 	struct canvas *r = NULL;
 	if( c && id > 0 ){
-		if( c->p->fd == id + 2 ){
+		if( IDX(c->p) == id ){
 			r = c;
 		} else if( (r = find_canvas(c->c[0], id)) == NULL ){
 			r = find_canvas(c->c[1], id);
@@ -126,7 +130,7 @@ static void
 pty_size(struct pty *p)
 {
 	check(p->fd == -1 || ! ioctl(p->fd, TIOCGWINSZ, &p->ws), errno = 0,
-		"ioctr error getting size of pty %d", p->fd - 2);
+		"ioctr error getting size of pty %d", IDX(p));
 }
 
 void
