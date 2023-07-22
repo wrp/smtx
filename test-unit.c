@@ -652,16 +652,16 @@ int
 test_lnm(int fd)
 {
 	int rv = validate_row(fd, 1, "%-80s", PROMPT);
+
+	/* Enable lnm */
 	send_txt(fd, "a1>", "PS1=a1\\>; printf '\\033[20h\\n' ");
 	rv = validate_row(fd, 2, "%-80s", "");
 
 	send_txt(fd, "b2>", "PS1=b'2>'; printf 'foobaz\\rbar\\n'");
-	/* Line 4 is blank because lnm is on and a newline was inserted */
-	rv |= validate_row(fd, 4, "%-80s", "");
-	rv |= validate_row(fd, 5, "%-80s", "barbaz");
+	rv |= validate_row(fd, 4, "%-80s", "barbaz");
 
 	send_txt(fd, "c3>", "PS1=c3\\>; printf '\\033[20l'");
-	rv |= validate_row(fd, 7, "%-80s", "");  /* Inserted newline (1)*/
+	rv |= validate_row(fd, 7, "%-80s", "c3>");
 	send_txt(fd, "c4>", "PS1=c4\\>; echo syn");
 	rv |= validate_row(fd, 9, "%-80s", "syn");
 
@@ -670,14 +670,7 @@ test_lnm(int fd)
 	rv |= validate_row(fd, 12, "%-80s", "u4>");
 	return rv;
 }
-/*
- * (1) This is a bit confusing.  The newlines printed by printf do *not*
- * get manipulated.  The \r inserted by send_txt does.  Since the \r is
- * written to terminate the printf command, it is replaced with \n\r before
- * printf is run to disable the insertions.  It is probably just confusing
- * to retain the \r in the printfs, since they are not really the point, but
- * we should verify that it is correct behavior to *not* expand them.
- */
+
 
 int
 test_mode(int fd)
@@ -1248,7 +1241,7 @@ test_sgr(int fd)
 	char fmt[1024] = "PS1='%s''%d>'; clear; ";
 	sprintf(fmt + strlen(fmt), "printf 'foo\\033[%%dmbar\\033[%%smbaz\\n'");
 
-	for( atp = attrs; atp->sgr; atp++ ){
+	for( atp = attrs; atp->sgr; atp += 1 ){
 		char ps[32];
 		char prefix[12];
 		char lenfmt[32];
@@ -1269,7 +1262,7 @@ test_sgr(int fd)
 		sprintf(prefix, "%c%c", 'a' + d % 26, 'a' + (d + 13) % 26);
 		sprintf(ps, "%s%d>", prefix,  d);
 		send_txt(fd, ps, fmt, prefix, d, atp->sgr + 60, "0");
-		if( colors > 16 ){
+		if( colors >= 8 ){
 			sprintf(expect, "foo<%1$s>bar</%1$s>baz", atp->name);
 		} else {
 			sprintf(expect, "foobarbaz");

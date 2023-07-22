@@ -71,6 +71,7 @@ send_cmd(int fd, const char *wait, const char *fmt, ...)
 	va_end(ap);
 }
 
+/* Write text to the pty and wait until the string wait is seen */
 void __attribute__((format(printf,3,4)))
 send_txt(int fd, const char *wait, const char *fmt, ...)
 {
