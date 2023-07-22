@@ -37,14 +37,14 @@ Features
 ========
 
 smtx is modal, so you can enter multiple commands from command mode without
-typing the `CMD` keysequence multiple times.  From command mode, you can create 5 new windows with `ccccc`, or `5c`
-There are several preset layouts, so you can get a layout of 5 windows
-with `5v`.
-You can recursively convert an axial split to a sagittal split with `T` (transpose),
-and you can discard the currently focused window and all its children
-with `x`.  To attach the current window to a different pty, use `a`.
-To swap the pty of the current window with a pty in a different window,
-use `s`.  Change the width of the pty in the currectly focused window
+typing the `CMD` keysequence multiple times.  From command mode, you can
+create 5 new windows with `ccccc`, or `5c`.  There are several preset layouts,
+so you can get a layout of 5 windows with `5v`.
+You can recursively convert an axial split to a sagittal split with `T`
+(transpose), and you can discard the currently focused window and all
+its children with `x`.  To attach the current window to a different pty,
+use `a`.  To swap the pty of the current window with a pty in a different
+window, use `s`.  Change the width of the pty in the currectly focused window
 with `W`.
 
 You can also generate a window layout with an osc sequence.
