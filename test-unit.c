@@ -1283,7 +1283,7 @@ test_sgr(int fd)
 		sprintf(prefix, "%c%c", 'a' + d % 26, 'a' + (d + 13) % 26);
 		sprintf(ps, "%s%d>", prefix,  d);
 		send_txt(fd, ps, fmt, prefix, d, atp->sgr + 70, "0");
-		if( colors > 16 ){
+		if( colors >= 8 ){
 			sprintf(expect, "foo<%1$s*>bar</%1$s*>baz", atp->name);
 		} else {
 			sprintf(expect, "foobarbaz");
