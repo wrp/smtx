@@ -950,7 +950,7 @@ test_ri(int fd)
 	const char *a = "012345678\\n"; /* Print a string */
 	const char *b = "\\033M";       /* ri to move up one line */
 	const char *c = "abc\\n";       /* overwrite */
-	send_txt(fd, "sync", "printf '%s%s%ss'y'nc'", a, b, c);
+	send_txt(fd, "sync" PROMPT, "printf '%s%s%ss'y'nc'", a, b, c);
 	rv |= validate_row(fd, 2, "%-80s", "abc345678");
 	rv |= validate_row(fd, 3, "%-80s", "sync" PROMPT);
 	send_txt(fd, "ab>", "PS1=ab'>'; yes | nl | sed 25q");
