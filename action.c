@@ -263,6 +263,7 @@ help(void)
 	puts("Avaliable commands (in command mode):\r");
 	puts("[N]C create N new windows (left/right)\r");
 	puts("[N]c create N new windows (up/down)\r");
+	puts("[N]g move focus to window N\r");
 	puts("[N]v use preset window layout N\r");
 	puts("[N]W set width of underlying tty to N\r");
 	puts("[N]x Close window N.  If N == 0, exit smtx\r");
