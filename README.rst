@@ -26,7 +26,7 @@ navigate between windows.  Use `<` and `>` to horizontally scroll the
 underlying pty.  Most commands accept a count, so you could create 5 new
 windows with `5c` and move down N times with `Nj`. (In the follwoing, `N`
 will represent an arbitrary integer).  Choose one of the preset layouts
-with `Nv`.  To attach the current window to a different pty, use `Na`.
+with `Nv`.  To attach a different pty to the current window, use `Na`.
 To swap the pty in the current window with the pty in a different
 window, use `NS`.  To move the focus to the window with pty N, use `Ng`.
 To transpose the orientation of the current window, use `T`.  To
