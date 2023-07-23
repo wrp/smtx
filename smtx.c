@@ -55,6 +55,7 @@ parse_args(int argc, char *const*argv)
 	}
 }
 
+/* If rv is non-zero, emit the error message */
 int
 check(int rv, int err, const char *fmt, ...)
 {
