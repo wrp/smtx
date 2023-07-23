@@ -297,7 +297,6 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler)
 		break;
 	case mode:
 		for( i = 0; i < argc; i++ ){
-			struct screen *sc;
 			bool set = (w == L'h');
 			switch( argv[i] ){
 			case  1:
@@ -334,13 +333,14 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler)
 				/* fall thru */
 			case 47:
 			case 1047:
-				sc = p->scr + !!set;
+				/* Switch to alternate screen */
 				if( set && p->s == p->scr ){
-					sc->c.x = sc->c.xenl = 0;
-					sc->c.y = dtop;
-					wclear(sc->w);
+					struct screen *alt = p->scr + 1;
+					alt->c.x = alt->c.xenl = 0;
+					alt->c.y = dtop;
+					wclear(alt->w);
 				}
-				p->s = sc;
+				p->s = p->scr + !!set;
 			}
 		}
 		break;
