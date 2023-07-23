@@ -326,13 +326,15 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler)
 				s->vis = set ? 1 : 2;
 				break;
 			case 1048:
+				(set ? save_cursor : restore_cursor)(s);
+				break;
 			case 1049:
 				(set ? save_cursor : restore_cursor)(s);
-				if( argv[i] == 1049 ){
-					struct screen *sc;
+				/* fall thru */
 			case 47:
 			case 1047:
-					sc = p->scr + !!set;
+				{
+					struct screen *sc = p->scr + !!set;
 					if( set && p->s == p->scr ){
 						sc->c.x = sc->c.xenl = 0;
 						sc->c.y = dtop;
