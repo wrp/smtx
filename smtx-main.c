@@ -528,10 +528,10 @@ add_canvas(const char **lp, double oy, double ox, double ey, double ex,
 {
 	double y, x;
 	int e;
-	struct pty *p;
 	struct canvas *n;
+	struct pty *p = *pp;
 	if(
-		(n = newcanvas(p = *pp, parent)) == NULL
+		(n = newcanvas(p, parent)) == NULL
 		|| n->p == NULL
 		|| ! check(2 == sscanf(*lp, "%lf%*1[,:]%lf%n", &y, &x, &e),
 			errno = 0, "Invalid format at %s", **lp ? *lp : "end")
