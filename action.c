@@ -103,10 +103,18 @@ mov(const char *arg)
 	struct canvas *n = S.f;
 	for( struct canvas *t = S.f; t && count--; n = t ? t : n ){
 		switch( *arg ){
-		case 'k': t = t->parent;
-		Kase 'j': t = t->c[t->typ];
-		Kase 'h': t = t->c[0];
-		Kase 'l': t = t->c[1];
+		case 'k':
+			t = t->parent;
+			break;
+		case 'j':
+			t = t->c[t->typ];
+			break;
+		case 'h':
+			t = t->c[0];
+			break;
+		case 'l':
+			t = t->c[1];
+			break;
 		}
 	}
 	S.f = n ? n : S.c;
@@ -363,14 +371,23 @@ void
 transition(const char *arg)
 {
 	switch( *arg++ ){
-	case '*': rewrite(S.f->p->fd, (char *)&S.ctlkey, 1);
-	Kase '\n': send_cr();
+	case '*':
+		rewrite(S.f->p->fd, (char *)&S.ctlkey, 1);
+		break;
+	case '\n':
+		send_cr();
 	}
 	S.errmsg[0] = 0; /* Clear any existing error message */
 	switch( *arg ){
-	case 'e': S.binding = k1; /* enter */
-	Kase 'i': S.binding = k2;  /* insert */
-	Kase 'c': S.binding = ctl; /* control */
+	case 'e':
+		S.binding = k1; /* enter */
+		break;
+	case 'i':
+		S.binding = k2;  /* insert */
+		break;
+	case 'c':
+		S.binding = ctl; /* control */
+		break;
 	}
 	scrollbottom(S.f);
 	wrefresh(curscr);

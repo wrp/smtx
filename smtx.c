@@ -26,8 +26,10 @@ parse_args(int argc, char *const*argv)
 		default:
 			fprintf(stderr, "Unknown option: %c", optopt);
 			exit(EXIT_FAILURE);
-		Kase 'c': S.ctlkey = CTRL(S.rawkey = optarg[0]);
-		Kase 'h':
+		case 'c':
+			S.ctlkey = CTRL(S.rawkey = optarg[0]);
+			break;
+		case 'h':
 			printf("usage: %s", name ? name + 1 : argv[0]);
 			puts(
 				" [-c ctrl-key]"
@@ -38,12 +40,17 @@ parse_args(int argc, char *const*argv)
 				" [-w width]"
 			);
 			exit(EXIT_SUCCESS);
-		Kase 's': S.history = strtol(optarg, NULL, 10);
-		Kase 't': S.term = optarg;
-		Kase 'v':
+		case 's':
+			S.history = strtol(optarg, NULL, 10);
+			break;
+		case 't':
+			S.term = optarg;
+			break;
+		case 'v':
 			printf("%s-%s\n", PACKAGE_NAME, PACKAGE_VERSION);
 			exit(EXIT_SUCCESS);
-		Kase 'w': S.width = strtol(optarg, NULL, 10);
+		case 'w':
+			S.width = strtol(optarg, NULL, 10);
 		}
 	}
 }

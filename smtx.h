@@ -57,7 +57,6 @@ extern int smtx_main(void);
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
-#define Kase break; case
 #ifndef CTRL
 #define CTRL(x) ((x) & 0x1f)
 #endif
