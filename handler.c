@@ -26,7 +26,7 @@ set_status(struct pty *p, const char *arg)
 static void
 restore_cursor(struct screen *s)
 {
-	if( s->sc.gc ){
+	if (s->sc.gc) {
 		s->c = s->sc;
 		#if HAVE_ALLOC_PAIR
 		s->c.p = alloc_pair(s->c.color[0], s->c.color[1]);
@@ -56,10 +56,10 @@ reset_sgr(struct screen *s)
 static void
 newline(struct screen *s, int cr)
 {
-	if( cr ){
+	if (cr) {
 		s->c.xenl = s->c.x = 0;
 	}
-	if( s->c.y == s->scroll.bot ){
+	if (s->c.y == s->scroll.bot) {
 		scroll(s->w);
 	} else {
 		wmove(s->w, ++s->c.y, s->c.x);
@@ -69,16 +69,16 @@ newline(struct screen *s, int cr)
 static void
 print_char(wchar_t w, struct pty *p)
 {
-	if( p->s->insert ){
+	if (p->s->insert) {
 		wins_wch(p->s->w, &p->s->c.bkg);
 	}
-	if( p->s->c.xenl && p->s->decawm ){
+	if (p->s->c.xenl && p->s->decawm) {
 		newline(p->s, 1);
 	}
-	if( w < 0x7f && p->s->c.gc[w] ){
+	if (w < 0x7f && p->s->c.gc[w]) {
 		w = p->s->c.gc[w];
 	}
-	if( p->s->c.x >= p->ws.ws_col - wcwidth(w) ){
+	if (p->s->c.x >= p->ws.ws_col - wcwidth(w)) {
 		p->s->c.xenl = 1;
 		wins_nwstr(p->s->w, &w, 1);
 	} else {
@@ -130,7 +130,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler)
 	const int top = MAX(0, s->scroll.top - tos);
 	const int dtop = tos + (p->decom ? top : 0);
 
-	switch( (enum cmd)handler ){
+	switch ((enum cmd)handler) {
 	case ack:
 		rewrite(p->fd, "\006", 1);
 		break;
@@ -163,18 +163,18 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler)
 		s->c.y -= p0[1];
 		break;
 	case dch:
-		for( i = 0; i < p0[1]; i++ ){
+		for (i = 0; i < p0[1]; i++) {
 			wdelch(win);
 		}
 		break;
 	case ech:
-		for( i = 0; i < p0[1]; i++ ){
+		for (i = 0; i < p0[1]; i++) {
 			mvwadd_wch(win, s->c.y, s->c.x + i, &s->c.bkg);
 		}
 		break;
 	case ed: /* Fallthru */
 	case el:
-		switch( p0[0] ){
+		switch (p0[0]) {
 		case 2:
 			wmove(win, handler == el ? s->c.y : tos, 0);
 			/* Fall Thru */
@@ -182,19 +182,19 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler)
 			(handler == el ? wclrtoeol : wclrtobot)(win);
 			break;
 		case 3:
-			if( handler == ed ){
+			if (handler == ed) {
 				werase(win);
 			}
 			break;
 		case 1:
-			if( handler == ed ){
-				for( i = tos; i < s->c.y; i++ ){
+			if (handler == ed) {
+				for (i = tos; i < s->c.y; i++) {
 					wmove(win, i, 0);
 					wclrtoeol(win);
 				}
 				wmove(win, s->c.y, s->c.x);
 			}
-			for( i = 0; i <= s->c.x; i++ ){
+			for (i = 0; i <= s->c.x; i++) {
 				mvwadd_wch(win, s->c.y, i, &s->c.bkg);
 			}
 		}
@@ -209,7 +209,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler)
 		p->tabs[s->c.x] = true;
 		break;
 	case ich:
-		for( i = 0; i < p0[1]; i++ ){
+		for (i = 0; i < p0[1]; i++) {
 			wins_wch(win, &p->s->c.bkg);
 		}
 		break;
@@ -233,17 +233,17 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler)
 		assert( 0 );
 		break;
 	case rc:
-		if( iw == L'#' ) for( int r = 0; r < p->ws.ws_row; r++ ){
+		if (iw == L'#' ) for (int r = 0; r < p->ws.ws_row; r++) {
 			cchar_t e;
 			setcchar(&e, L"E", A_NORMAL, COLOR_PAIR(0), NULL);
-			for( int c = 0; c < p->ws.ws_col; c++ ){
+			for (int c = 0; c < p->ws.ws_col; c++) {
 				mvwadd_wch(p->s->w, tos + r, c, &e);
 			}
 		}
 		restore_cursor(s);
 		break;
 	case ri:
-		if( y == top ){
+		if (y == top) {
 			wsetscrreg(win, MAX(s->scroll.top, tos), s->scroll.bot);
 			wscrl(win, -1);
 			wsetscrreg(win, s->scroll.top, s->scroll.bot);
@@ -258,12 +258,12 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler)
 		wscrl(win, (w == L'T' || w == L'^') ? -p0[1] : p0[1]);
 		break;
 	case tab:
-		for( i = 0; i < p0[1]; i += p->tabs[s->c.x] ? 1 : 0 ){
+		for (i = 0; i < p0[1]; i += p->tabs[s->c.x] ? 1 : 0) {
 			s->c.x += (w == L'Z' ? -1 : +1);
 		}
 		break;
 	case tbc:
-		switch( p0[0] ){
+		switch (p0[0]) {
 		case 0:
 			p->tabs[s->c.x] = false;
 			break;
@@ -287,7 +287,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler)
 		p->decom = s->insert = p->lnm = false;
 		reset_sgr(s);
 		s->decawm = p->pnm = true;
-		for( i = 0, s = p->s = p->scr; i < 2; i++, s++ ){
+		for (i = 0, s = p->s = p->scr; i < 2; i++, s++) {
 			s->c.gs = s->c.gc = CSET_US;
 			s->vis = 1;
 			set_scroll(s, 0, s->rows - 1);
@@ -296,9 +296,9 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler)
 		vtreset(&p->vp);
 		break;
 	case mode:
-		for( i = 0; i < argc; i++ ){
+		for (i = 0; i < argc; i++) {
 			bool set = (w == L'h');
-			switch( argv[i] ){
+			switch (argv[i]) {
 			case  1:
 				p->pnm = set;
 				break;
@@ -334,7 +334,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler)
 			case 47:
 			case 1047:
 				/* Switch to alternate screen */
-				if( set && p->s == p->scr ){
+				if (set && p->s == p->scr) {
 					struct screen *alt = p->scr + 1;
 					alt->c.x = alt->c.xenl = 0;
 					alt->c.y = dtop;
@@ -347,11 +347,11 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler)
 	case sgr:
 	{
 		bool doc = false;
-		if( !argc ){
+		if (!argc) {
 			reset_sgr(s);
-		} else for( i = 0; i < argc; i++ ){
+		} else for (i = 0; i < argc; i++) {
 			int k = 1, a;
-			switch( a = argv[i] ){
+			switch (a = argv[i]) {
 			case  0:
 				reset_sgr(s);
 				break;
@@ -394,7 +394,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler)
 				break;
 			case 38:
 			case 48:
-				if( argc > i + 2 && argv[i + 1] == 5){
+				if (argc > i + 2 && argv[i + 1] == 5){
 					s->c.color[a == 48] = argv[i + 2];
 				}
 				i += 2;
@@ -426,7 +426,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler)
 				doc = COLORS >= 16;
 			}
 		}
-		if( doc ){
+		if (doc) {
 			#if HAVE_ALLOC_PAIR
 			s->c.p = alloc_pair(s->c.color[0], s->c.color[1]);
 			#endif
@@ -453,15 +453,15 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler)
 		s->repc = w;
 		/* Fallthru */
 	case rep:
-		if( wcwidth(w = s->repc) > 0 ){
-			for( i = 0; i < p0[1]; i++ ){
+		if (wcwidth(w = s->repc) > 0) {
+			for (i = 0; i < p0[1]; i++) {
 				print_char(w, p);
 			}
 		}
 		break;
 	case scs:
-		for( const char *s = "()*+", *c = strchr(s, iw); c; c = NULL )
-		switch( w ){
+		for (const char *s = "()*+", *c = strchr(s, iw); c; c = NULL )
+		switch (w) {
 		case L'A':
 			p->g[c-s] = CSET_UK;
 			break;
@@ -479,8 +479,8 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler)
 		}
 		break;
 	case so:
-		for( char *s = "\x0f\x0e}|NO", *c = strchr(s, w); c; c = NULL ){
-			switch( c - s ){
+		for (char *s = "\x0f\x0e}|NO", *c = strchr(s, w); c; c = NULL) {
+			switch (c - s) {
 			case 0: /* locking shift */
 			case 1:
 			case 2:
@@ -494,7 +494,7 @@ tput(struct pty *p, wchar_t w, wchar_t iw, int argc, int *argv, int handler)
 			}
 		}
 	}
-	switch( handler ){
+	switch (handler) {
 	case cr:
 	case csr:
 	case cub:

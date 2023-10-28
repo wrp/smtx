@@ -21,8 +21,8 @@ parse_args(int argc, char *const*argv)
 {
 	int c;
 	char *name = strrchr(argv[0], '/');
-	while( (c = getopt(argc, argv, ":c:hs:t:vw:")) != -1 ){
-		switch( c ){
+	while ((c = getopt(argc, argv, ":c:hs:t:vw:")) != -1) {
+		switch (c) {
 		default:
 			fprintf(stderr, "Unknown option: %c", optopt);
 			exit(EXIT_FAILURE);
@@ -59,13 +59,13 @@ parse_args(int argc, char *const*argv)
 int
 check(int rv, int err, const char *fmt, ...)
 {
-	if( !rv ){
+	if (!rv) {
 		int e = err ? err : errno;
 		va_list ap;
 		va_start(ap, fmt);
 		size_t len = sizeof S.errmsg;
 		int n = vsnprintf(S.errmsg, len, fmt, ap);
-		if( e && n + 3 < (int)len ){
+		if (e && n + 3 < (int)len) {
 			strncat(S.errmsg, ": ", len - n);
 			strncat(S.errmsg, strerror(e), len - n - 2);
 		}
@@ -79,10 +79,10 @@ rewrite(int fd, const char *b, size_t n)
 {
 	const char *e = b + n;
 	ssize_t s;
-	if( n > 0 ) do {
+	if (n > 0 ) do {
 		s = write(fd, b, e - b);
 		b += s < 0 ? 0 : s;
-	} while( b < e && check(s >= 0 || errno == EINTR, 0, "write %d", fd) );
+	} while (b < e && check(s >= 0 || errno == EINTR, 0, "write %d", fd) );
 }
 
 int

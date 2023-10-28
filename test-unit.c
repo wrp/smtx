@@ -45,7 +45,7 @@ test_alt(int fd)
 	send_txt(fd, "lj4", "PS1=lj'4> '; printf '\\033[1047h'; echo alt 2");
 	rv |= validate_row(fd, 1, "%-80s", "alt 2");
 	rv |= validate_row(fd, 2, "%-80s", "lj4>");
-	for( int i = 3; i < 24; i++ ){
+	for (int i = 3; i < 24; i++) {
 		rv |= validate_row(fd, i, "%-80s", "");
 	}
 	return rv;
@@ -76,7 +76,7 @@ test_attach(int fd)
 	send_cmd(fd, "other", "j\rprintf '\\no't'h'er'\\n'");
 
 	get_layout(fd, 5, desc, sizeof desc);
-	if( sscanf(desc, "7x80(id=%*d); *7x80(id=%d);", &id) != 1 ){
+	if (sscanf(desc, "7x80(id=%*d); *7x80(id=%d);", &id) != 1) {
 		fprintf(stderr, "received unexpected: '%s'\n", desc);
 		rv = 1;
 	}
@@ -132,7 +132,7 @@ test_changehist(int fd)
 	/* Test begins with -s 128 */
 	send_cmd(fd, NULL, "120Z"); /* Invalid (too small) */
 	send_txt(fd, "un1", "PS1=un'1>'; yes | nl -s '' | sed 127q");
-	for( int i = -104; i < 23; i+=10 ){
+	for (int i = -104; i < 23; i+=10) {
 		rv |= validate_row(fd, i, "%6dy%73s", i + 105, "");
 	}
 	rv |= validate_row(fd, 23, "%-80s", "un1>");
@@ -165,11 +165,11 @@ test_changehist(int fd)
 
 	/* Validate history is as expected */
 	get_state(fd, buf, sizeof buf);
-	if( sscanf(buf, "history=%128[^,], y=24, x=80, w=80", buf2) != 1 ){
+	if (sscanf(buf, "history=%128[^,], y=24, x=80, w=80", buf2) != 1) {
 		fprintf(stderr, "Unexpected state: %s", buf);
 		rv = 1;
 	}
-	if( strcmp(bigint, buf2) ){
+	if (strcmp(bigint, buf2)) {
 		fprintf(stderr, "Unexpected history: %s", buf2);
 		rv = 1;
 	}
@@ -184,11 +184,11 @@ test_changehist(int fd)
 	get_state(fd, buf, sizeof buf);
 
 	/* Validate that the history did not get smaller than LINES */
-	if( sscanf(buf, "history=%128[^,], y=24, x=80, w=80", buf2) != 1 ){
+	if (sscanf(buf, "history=%128[^,], y=24, x=80, w=80", buf2) != 1) {
 		fprintf(stderr, "Unexpected state: %s", buf);
 		rv = 1;
 	}
-	if( strcmp("24", buf2) ){
+	if (strcmp("24", buf2)) {
 		fprintf(stderr, "Unexpected reduced history: %s", buf2);
 		rv = 1;
 	}
@@ -217,10 +217,10 @@ test_csr(int fd)
 	/* Change scroll region */
 	send_txt(fd, PROMPT, "%s;%s", "tput csr 6 12; yes | nl -s: | sed 25q",
 		"printf 'uni%s\\n' q1");
-	for(int i = 2; i <= 6; i++ ){
+	for(int i = 2; i <= 6; i++) {
 		rv |= validate_row(fd, i, "     %d:%-73s", i, "y");
 	}
-	for(int i = 7; i <= 11; i++ ){
+	for(int i = 7; i <= 11; i++) {
 		rv |= validate_row(fd, i, "    %2d:%-73s", i + 14, "y");
 	}
 
@@ -390,7 +390,7 @@ test_decaln(int fd)
 	memset(e, 'E', 80);
 	send_txt(fd, "uniq", "printf '\\033[1048#u'; echo 'u'n'i'q;");
 	rv |= validate_row(fd, 1, "%s", e);
-	for( int i = 4; i < 24; i += 3 ){
+	for (int i = 4; i < 24; i += 3) {
 		rv |= validate_row(fd, i, "%s", e);
 	}
 	rv |= validate_row(fd, 23, "%s", e);
@@ -437,19 +437,19 @@ test_ed(int fd)
 	rv |= validate_row(fd, 1, "%-80s", "un4>");
 	rv |= validate_row(fd, 12, "%-80s", "");
 	send_txt(fd, "un5>", "PS1='u'n'5>'; yes | sed 15q; tput cuu 8");
-	for(int i = 2; i < 9; i++ ){
+	for(int i = 2; i < 9; i++) {
 		rv |= validate_row(fd, i, "%-80s", "y");
 	}
 	/* \\03[1J : Clear to top of screen */
 	send_txt(fd, "un6>", "PS1='u'n'6>'; printf '\\033[1J'");
-	for(int i = 2; i < 9; i++ ){
+	for(int i = 2; i < 9; i++) {
 		rv |= validate_row(fd, i, "%-80s", "");
 	}
-	for(int i = 12; i < 15; i++ ){
+	for(int i = 12; i < 15; i++) {
 		rv |= validate_row(fd, i, "%-80s", "y");
 	}
 	send_txt(fd, "un7>", "PS1='u'n'7>'; printf '\\033[3J\\033[1;1H'");
-	for(int i = 2; i < 15; i++ ){
+	for(int i = 2; i < 15; i++) {
 		rv |= validate_row(fd, i, "%-80s", "");
 	}
 	return rv;
@@ -504,13 +504,13 @@ test_ich(int fd)
 
 	cmd = "yes | nl | sed 6q; tput cuu 3; tput il 3; tput cud 6";
 	send_txt(fd, "un1>", "PS1=u'n'1'> '; %s", cmd);
-	for( int i=1; i < 4; i++ ){
+	for (int i=1; i < 4; i++) {
 		rv |= validate_row(fd, 3 + i, "%6d  y%71s", i, "");
 	}
-	for( int i=4; i < 7; i++ ){
+	for (int i=4; i < 7; i++) {
 		rv |= validate_row(fd, 3 + i, "%80s", "");
 	}
-	for( int i=7; i < 10; i++ ){
+	for (int i=7; i < 10; i++) {
 		rv |= validate_row(fd, 3 + i, "%6d  y%71s", i - 3, "");
 	}
 	/* dl: delete n lines */
@@ -818,14 +818,14 @@ test_pager(int fd)
 		"-e '44y/abcd/klmn/' -e 500q | more",
 		"PS1=u'ni'q\\>"
 	);
-	for( int i = 1; i < 23; i++ ){
+	for (int i = 1; i < 23; i++) {
 		rv |= validate_row(fd, i, "    %2d:%-73s", i, "abcd");
 	}
 	rv |= validate_row(fd, 23, "%-91s", "<rev>--More--</rev>");
 	rv |= check_layout(fd, 0x1, "*23x80");
 	send_raw(fd, "44:klmn", " ");
 	send_raw(fd, "uniq>", "q");
-	for( int i = 1; i < 22; i++ ){
+	for (int i = 1; i < 22; i++) {
 		rv |= validate_row(fd, i, "    %2d:%-73s", i + 22, "wxyz");
 	}
 	rv |= validate_row(fd, 22, "%-80s", "    44:klmn");
@@ -925,12 +925,12 @@ test_resizepty(int fd)
 	send_cmd(fd, "fv6>", "6v\rPS1=fv6'> '");
 	rv |= check_layout(fd, 1, "*11x80; 5x40; 5x26; 5x26; 5x26; 5x39");
 
-	while( history != 67 ){
-		if( ioctl(fd, TIOCSWINSZ, &ws) ){
+	while (history != 67) {
+		if (ioctl(fd, TIOCSWINSZ, &ws)) {
 			err(EXIT_FAILURE, "ioctl");
 		}
 		get_state(fd, buf, sizeof buf);
-		if( sscanf(buf, "history=%d", &history) != 1
+		if (sscanf(buf, "history=%d", &history) != 1
 			|| ( history != 24 && history != 67 )
 		){
 			rv = 1;
@@ -1026,10 +1026,10 @@ test_scrollh(int fd)
 	int id[2];
 	char desc[1024];
 
-	if( rv ){
+	if (rv) {
 		fprintf(stderr, "ioctl error getting size of pty\n");
 	}
-	if( ws.ws_col != 26 ){
+	if (ws.ws_col != 26) {
 		fprintf(stderr, "Unexpected width: %d\n", ws.ws_col);
 		rv = 1;
 	}
@@ -1072,8 +1072,8 @@ test_scrollh(int fd)
 	/* Create two new windows and scroll left */
 	send_cmd(fd, "zw2>", "cC200<\r\rPS1=zw2'> '");
 	get_layout(fd, 5, desc, sizeof desc);
-	if( sscanf(desc, "*11x13(id=%*d); 11x26(id=%d); "
-			"11x12(id=%d)", id, id + 1) != 2 ){
+	if (sscanf(desc, "*11x13(id=%*d); 11x26(id=%d); "
+			"11x12(id=%d)", id, id + 1) != 2) {
 		fprintf(stderr, "received layout: '%s'\n", desc);
 		rv = 1;
 	}
@@ -1090,7 +1090,7 @@ test_scrollh(int fd)
 	rv |= check_layout(fd, 1, "*11x13; 11x26; 11x12");
 	rv |= validate_row(fd, 2, "%-13s", "0123456789012");
 	/* TODO: really need to be able to validate rows in non root canvas */
-	for(int i=3; i < 12; i++ ){
+	for(int i=3; i < 12; i++) {
 		rv |= validate_row(fd, i, "%-13s", "");
 	}
 	return rv;
@@ -1234,14 +1234,14 @@ test_sgr(int fd)
 	char row[256];
 	int colors = 0;
 	get_row(fd, 2, row, sizeof row);
-	if( sscanf(row, "%d", &colors) != 1 ){
+	if (sscanf(row, "%d", &colors) != 1) {
 		rv = 1;
 		fprintf(stderr, "unable to get color count.\n");
 	}
 	char fmt[1024] = "PS1='%s''%d>'; clear; ";
 	sprintf(fmt + strlen(fmt), "printf 'foo\\033[%%dmbar\\033[%%smbaz\\n'");
 
-	for( atp = attrs; atp->sgr; atp += 1 ){
+	for (atp = attrs; atp->sgr; atp += 1) {
 		char ps[32];
 		char prefix[12];
 		char lenfmt[32];
@@ -1254,7 +1254,7 @@ test_sgr(int fd)
 		sprintf(expect, "foo<%1$s>bar</%1$s>baz", atp->name);
 		send_txt(fd, ps, fmt, prefix, d, atp->sgr, "0");
 		rv |= validate_row(fd, 1, lenfmt, expect);
-		if( atp->sgr < 30 ){
+		if (atp->sgr < 30) {
 			continue;
 		}
 		/* Check 16-color foreground  */
@@ -1262,7 +1262,7 @@ test_sgr(int fd)
 		sprintf(prefix, "%c%c", 'a' + d % 26, 'a' + (d + 13) % 26);
 		sprintf(ps, "%s%d>", prefix,  d);
 		send_txt(fd, ps, fmt, prefix, d, atp->sgr + 60, "0");
-		if( colors >= 8 ){
+		if (colors >= 8) {
 			sprintf(expect, "foo<%1$s>bar</%1$s>baz", atp->name);
 		} else {
 			sprintf(expect, "foobarbaz");
@@ -1283,7 +1283,7 @@ test_sgr(int fd)
 		sprintf(prefix, "%c%c", 'a' + d % 26, 'a' + (d + 13) % 26);
 		sprintf(ps, "%s%d>", prefix,  d);
 		send_txt(fd, ps, fmt, prefix, d, atp->sgr + 70, "0");
-		if( colors >= 8 ){
+		if (colors >= 8) {
 			sprintf(expect, "foo<%1$s*>bar</%1$s*>baz", atp->name);
 		} else {
 			sprintf(expect, "foobarbaz");
@@ -1344,7 +1344,7 @@ test_su(int fd)
 	send_txt(fd, "ab2>", "%s", cmd);
 	rv |= validate_row(fd, 11, "    50y%73s", "");
 	rv |= validate_row(fd, 12, "un1>%-76s", cmd);
-	for( int i = 13; i < 23; i++ ){
+	for (int i = 13; i < 23; i++) {
 		rv |= validate_row(fd, i, "%-80s", "");
 	}
 	rv |= validate_row(fd, 23, "%-80s", "ab2>");
@@ -1375,8 +1375,8 @@ test_swap(int fd)
 	send_txt(fd, "ll0>", "PS1='l'l'0>'; echo; echo lowerleft");
 
 	get_layout(fd, 5, desc, sizeof desc);
-	if( sscanf(desc, "11x40(id=%*d); *11x40(id=%d); "
-			"11x39(id=%d); 11x39(id=%*d)", id, id + 1) != 2 ){
+	if (sscanf(desc, "11x40(id=%*d); *11x40(id=%d); "
+			"11x39(id=%d); 11x39(id=%*d)", id, id + 1) != 2) {
 		fprintf(stderr, "received unexpected: '%s'\n", desc);
 		rv = 1;
 	}
@@ -1408,12 +1408,12 @@ test_swap(int fd)
 	rv |= validate_row(fd, 3, "%-40s", "lowerright");
 
 	get_layout(fd, 5, desc, sizeof desc);
-	if( sscanf(desc, "*11x40(id=%d); 11x40(id=%*d); "
-			"11x39(id=%*d); 11x39(id=%*d)", id + 2) != 1 ){
+	if (sscanf(desc, "*11x40(id=%d); 11x40(id=%*d); "
+			"11x39(id=%*d); 11x39(id=%*d)", id + 2) != 1) {
 		fprintf(stderr, "received unexpected: '%s'\n", desc);
 		rv = 1;
 	}
-	if( id[2] != id[1] ){
+	if (id[2] != id[1]) {
 		fprintf(stderr, "unexpected id in first window: %s\n", desc);
 		rv = 1;
 	}
@@ -1496,7 +1496,7 @@ test_tput(int fd)
 		"printf 'uniq\\n'"
 	);
 	rv |= validate_row(fd, 6, "%-80s", "abcdefghijuniq");
-	for( int i = 8; i < 23; i++ ){
+	for (int i = 8; i < 23; i++) {
 		rv |= validate_row(fd, i, "%80s", "");
 	}
 	send_txt(fd, "un1>", "PS1=un'1> '; tput bel");
@@ -1507,7 +1507,7 @@ test_tput(int fd)
 	send_txt(fd, "un2>", "%s", cmd);
 	rv |= validate_row(fd, 8, "un1> %-75s", cmd);
 
-	for( int i = 10; i < 14; i++ ){
+	for (int i = 10; i < 14; i++) {
 		rv |= validate_row(fd, i, "%80s", "");
 	}
 	rv |= validate_row(fd, 14, "%-80s", "foo");
@@ -1624,7 +1624,7 @@ test_width(int fd)
 	send_cmd(fd, "un2>", "15>\rPS1='%15su'n'2>'", "");
 	rv |= validate_row(fd, 2, "%-20s", "56789312345678941234");
 
-	for( unsigned i = 0; i < sizeof buf - 1; i++ ){
+	for (unsigned i = 0; i < sizeof buf - 1; i++) {
 		buf[i] = 'a' + i % 26;
 	}
 	buf[sizeof buf - 1] = '\0';

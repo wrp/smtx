@@ -43,7 +43,7 @@ collect(struct vtp *v, wchar_t w)
 static void
 collect_osc(struct vtp *v, wchar_t w)
 {
-	if( v->osc < v->oscbuf + sizeof v->oscbuf - 1 ){
+	if (v->osc < v->oscbuf + sizeof v->oscbuf - 1) {
 		*v->osc++ = wctob(w);
 	}
 }
@@ -53,9 +53,9 @@ param(struct vtp *v, wchar_t w)
 {
 	v->argc = v->argc ? v->argc : 1;
 	int *a = v->args + v->argc - 1;
-	if( w == L';' ){
+	if (w == L';') {
 		v->argc += 1;
-	} else if( v->argc < MAXPARAM && *a < 9999 ){
+	} else if (v->argc < MAXPARAM && *a < 9999) {
 		*a = *a * 10 + w - '0';
 	}
 }
@@ -64,7 +64,7 @@ static void
 handle_osc(struct vtp *v, wchar_t unused)
 {
 	(void)unused;
-	switch( v->args[0] ){
+	switch (v->args[0]) {
 	case  2: set_status(v->p, v->oscbuf); break;
 	case 60: build_layout(v->oscbuf); break;
 #ifndef NDEBUG
@@ -228,9 +228,9 @@ void
 vtwrite(struct vtp *vp, const char *s, size_t n)
 {
 	size_t r;
-	for( const char *e = s + n; s < e; s += r ){
+	for (const char *e = s + n; s < e; s += r) {
 		wchar_t w;
-		switch( r = mbrtowc(&w, s, e - s, &vp->ms) ){
+		switch (r = mbrtowc(&w, s, e - s, &vp->ms)) {
 		case -1: /* invalid character, skip it */
 		case -2: /* incomplete character, skip it */
 			w = VTPARSER_BAD_CHAR;
@@ -238,13 +238,13 @@ vtwrite(struct vtp *vp, const char *s, size_t n)
 		case 0: /* literal zero, write it and advance */
 			r = 1;
 		}
-		if( w >= 0 && w < 0x80 ){
+		if (w >= 0 && w < 0x80) {
 			struct action *a = vp->s->act + w;
-			if( a->cb ){
+			if (a->cb) {
 				a->cb(vp, w);
 			}
-			if( a->next ){
-				if( a->next->reset ){
+			if (a->next) {
+				if (a->next->reset) {
 					vtreset(vp);
 				}
 				vp->s = a->next;

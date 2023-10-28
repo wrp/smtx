@@ -36,28 +36,28 @@ write_pty(int fd, unsigned flags, const char *wait, const char *fmt, va_list ap)
 	char cmd[1024];
 	size_t n;
 	char *b = cmd;
-	if( flags & 0x1 ){
+	if (flags & 0x1) {
 		*b++ = ctlkey;
 	}
 	n = vsnprintf(b, sizeof cmd - (b - cmd), fmt, ap);
-	if( n > sizeof cmd - 4 ){
+	if (n > sizeof cmd - 4) {
 			err(EXIT_FAILURE, "Invalid string in write_pty");
 	}
 	assert( b[n] == '\0' );
-	if( flags & 0x2 ){
+	if (flags & 0x2) {
 		b[n++] = '\r';
 		b[n] = '\0';
 	}
 	const char *e = b + n;
 	b = cmd;
-	while( b < e ){
+	while (b < e) {
 		ssize_t s = write(fd, b, e - b);
-		if( s < 0 && errno != EINTR ){
+		if (s < 0 && errno != EINTR) {
 			err(EXIT_FAILURE, "write to pty");
 		}
 		b += s < 0 ? 0 : s;
 	}
-	if( wait != NULL ){
+	if (wait != NULL) {
 		grep(fd, wait);
 	}
 }
@@ -102,15 +102,15 @@ get_layout(int fd, int flag, char *buf, size_t siz)
 	close(fd2);
 
 	grep(fd, "layout: ");
-	while( buf < end && s != -1 ){
+	while (buf < end && s != -1) {
 		s = timed_read(fd, buf, 1, "layout");
-		if( buf[0] == ':' ){
+		if (buf[0] == ':') {
 			buf[0] = '\0';
 			break;
 		}
 		buf += s;
 	}
-	if( s == -1 ){
+	if (s == -1) {
 		fprintf(stderr, "reading from child: %s\n", strerror(errno));
 		return -1;
 	}
@@ -127,8 +127,8 @@ get_state(int fd, char *state, size_t siz)
 	write(fd2, buf, len);
 	close(fd2);
 	grep(fd, "state: ");
-	do s = timed_read(fd, state, siz, "state"); while( s == 0 );
-	if( s == -1 ){
+	do s = timed_read(fd, state, siz, "state"); while (s == 0 );
+	if (s == -1) {
 		fprintf(stderr, "reading from child: %s\n", strerror(errno));
 		return -1;
 	}
@@ -147,10 +147,10 @@ check_layout(int fd, int flag, const char *fmt, ...)
 	(void)vsnprintf(expect, sizeof expect, fmt, ap);
 	va_end(ap);
 
-	if( get_layout(fd, flag, buf, sizeof buf) == 0 ){
-		if( strcmp( buf, expect ) ){
+	if (get_layout(fd, flag, buf, sizeof buf) == 0) {
+		if (strcmp( buf, expect )) {
 			fputs("unexpected layout:\nreceived: ", stderr);
-			for( const char *b = buf; *b; b++ ){
+			for (const char *b = buf; *b; b++) {
 				fputc(isprint(*b) ? *b : '?', stderr);
 			}
 			fprintf(stderr, "\nexpected: %s\n", expect);
@@ -178,7 +178,7 @@ timed_read(int fd, void *buf, size_t count, const char *n)
 	FD_ZERO(&set);
 	FD_SET(fd, &set);
 
-	switch( select(fd + 1, &set, NULL, NULL, timeout) ){
+	switch (select(fd + 1, &set, NULL, NULL, timeout)) {
 	case -1:
 		err(EXIT_FAILURE, "select %d waiting for %s", fd, n);
 	case 0:
@@ -203,12 +203,12 @@ grep(int fd, const char *needle)
 	ssize_t rc;
 	char c;
 	const char *n = needle;
-	while( *n != '\0' ){
-		do rc = timed_read(fd, &c, 1, needle); while( rc == 0 );
-		if( rc == -1 ){
+	while (*n != '\0') {
+		do rc = timed_read(fd, &c, 1, needle); while (rc == 0 );
+		if (rc == -1) {
 			err(EXIT_FAILURE, "read from pty");
 		}
-		if( c != *n++ ){
+		if (c != *n++) {
 			n = c == *needle ? needle + 1 : needle;
 		}
 	}
@@ -225,12 +225,12 @@ get_secondary_fd(int fd)
 	grep(fd, "layout:");
 	grep(fd, "2nd=");
 	do {
-		if( timed_read(fd, p, 1, "2nd path") != 1 ){
+		if (timed_read(fd, p, 1, "2nd path") != 1) {
 			err(1, "Invalid read getting 2ndary");
 		}
-	} while( *p != ')' && ++p < end -1 );
+	} while (*p != ')' && ++p < end -1 );
 	*p = '\0';
-	if( (fd2 = open(path, O_WRONLY)) == -1 ){
+	if ((fd2 = open(path, O_WRONLY)) == -1) {
 		err(1, "%s", path);
 	}
 	return fd2;
@@ -253,22 +253,22 @@ get_row(int fd, int row, char *buf, size_t siz)
 	/* We expect to see "row N:(len)" on the fd, where len is the width of
 	 * the row.  The above grep discards "row N:(".  Now read the length. */
 
-	while( *r != ')' ){
-		if( timed_read(fd, r, 1, "count in row validation") != 1 ){
+	while (*r != ')') {
+		if (timed_read(fd, r, 1, "count in row validation") != 1) {
 			err(1, "Invalid read in row validation");
-		} else if( *r == ')' ){
+		} else if (*r == ')') {
 			;
-		} else if( ! isdigit(*r) ){
+		} else if (! isdigit(*r)) {
 			err(1, "Expected count, got '%c'\n", *r);
 		} else {
 			count = 10 * count + *r - '0';
 		}
 	}
-	if( count > siz - 1 ){
+	if (count > siz - 1) {
 		err(1, "Row is too long");
 	}
 	ssize_t s = timed_read(fd, buf, count, "Reading row");
-	if( s == -1 ){
+	if (s == -1) {
 		fprintf(stderr, "reading from child: %s\n", strerror(errno));
 		return -1;
 	}
@@ -284,7 +284,7 @@ int
 validate_row(int fd, int row, const char *fmt, ... )
 {
 	char buf[1024];
-	if( get_row(fd, row, buf, sizeof buf) == -1 ){
+	if (get_row(fd, row, buf, sizeof buf) == -1) {
 		return -1;
 	}
 	char expect[1024];
@@ -294,10 +294,10 @@ validate_row(int fd, int row, const char *fmt, ... )
 	va_end(ap);
 
 	int status = 0;
-	if( strcmp( buf, expect ) ){
+	if (strcmp( buf, expect )) {
 		fprintf(stderr, "unexpected content in row %d\n", row);
 		fputs("received: '", stderr);
-		for( const char *b = buf; *b; b++ ){
+		for (const char *b = buf; *b; b++) {
 			fputc(isprint(*b) ? *b : '?', stderr);
 		}
 		fprintf(stderr, "'\nexpected: '%s'\n", expect);
@@ -311,7 +311,7 @@ static void *
 xrealloc(void *buf, size_t num, size_t siz)
 {
 	buf = realloc(buf, num * siz);
-	if( buf == NULL ){
+	if (buf == NULL) {
 		perror("realloc");
 		exit(EXIT_FAILURE);
 	}
@@ -351,8 +351,8 @@ new_test(char *name, test *f, struct st **h, ...)
 	cv.v = &a->env;
 	va_list ap;
 	va_start(ap, h);
-	while( (arg = va_arg(ap, char *)) != NULL ){
-		if( strcmp(arg, "args") == 0 ){
+	while ((arg = va_arg(ap, char *)) != NULL) {
+		if (strcmp(arg, "args") == 0) {
 			cv.c = &a->argc;
 			cv.v = &a->argv;
 			continue;
@@ -390,15 +390,15 @@ main(int argc, char *const argv[])
 
 	tab = initialize_tests(&argv0);
 
-	for( v = tab; v && ( argc < 2 || *++argv ); v = v ? v->next : NULL ){
+	for (v = tab; v && ( argc < 2 || *++argv ); v = v ? v->next : NULL) {
 		const char *name = *argv;
-		if( argc > 1 ){
-			for( v = tab; v && match_name(v->name, name); )
+		if (argc > 1) {
+			for (v = tab; v && match_name(v->name, name); )
 				v = v->next;
 		}
-		if( v && v->f ){
+		if (v && v->f) {
 			total_count += 1;
-			if( strcmp(v->name, argv0) ){
+			if (strcmp(v->name, argv0)) {
 				spawn_test(v, argv0);
 			} else {
 				return execute_test(v, argv0);
@@ -408,11 +408,11 @@ main(int argc, char *const argv[])
 			fail_count += 1;
 		}
 	}
-	for( int status = 0, i = 0; i < total_count; i++ ){
+	for (int status = 0, i = 0; i < total_count; i++) {
 		waitpid(-1, &status, 0);
 		fail_count += exit_status(status);
 	}
-	if( fail_count ){
+	if (fail_count) {
 		fprintf(stderr, "%d test%s (of %d) failed\n", fail_count,
 			fail_count > 1 ? "s" : "", total_count);
 	}
@@ -431,14 +431,14 @@ spawn_test(struct st *v, const char *argv0)
 	int status;
 	int fd[2];
 	char *const args[] = { v->name, v->name, NULL };
-	switch( pid[0] = fork() ){
+	switch (pid[0] = fork()) {
 	case -1:
 		err(EXIT_FAILURE, "fork");
 	case 0:
-		if( pipe(fd)){
+		if (pipe(fd)){
 			err(EXIT_FAILURE, "pipe");
 		}
-		switch( pid[1] = fork() ){
+		switch (pid[1] = fork()) {
 		case -1:
 			err(EXIT_FAILURE, "fork");
 		case 0:
@@ -448,7 +448,7 @@ spawn_test(struct st *v, const char *argv0)
 			execv(argv0, args);
 			err(EXIT_FAILURE, "%s", argv0);
 		}
-		switch( pid[2] = fork() ){
+		switch (pid[2] = fork()) {
 		case -1:
 			err(EXIT_FAILURE, "fork");
 		case 0:
@@ -457,8 +457,8 @@ spawn_test(struct st *v, const char *argv0)
 			FILE *fp = fdopen(fd[0], "r");
 			close(fd[1]);
 			alarm(main_timeout);
-			while( ( c = fgetc(fp)) != EOF ){
-				if( nl ){
+			while (( c = fgetc(fp)) != EOF) {
+				if (nl) {
 					fputs(v->name, stderr);
 					fputs(": ", stderr);
 					nl = 0;
@@ -474,17 +474,17 @@ spawn_test(struct st *v, const char *argv0)
 		close(fd[1]);
 
 		pid_t died = wait(&status);
-		if( died == pid[1] ){
-			if( kill(pid[2], SIGKILL) )  {
+		if (died == pid[1]) {
+			if (kill(pid[2], SIGKILL) )  {
 				perror("kill");
 			}
 			wait(NULL);
 		} else {
-			if( kill(pid[1], SIGKILL) )  {
+			if (kill(pid[1], SIGKILL) )  {
 				perror("kill");
 			}
 			wait(&status);
-			if( exit_status(status) ){
+			if (exit_status(status)) {
 				fprintf(stderr, "FAIL(timeout): %s\n", v->name);
 			}
 		}
@@ -518,32 +518,32 @@ execute_test(struct st *v, const char *name)
 	setenv("PS1", PROMPT, 1);
 	unsetenv("LINES");
 	unsetenv("COLUMNS");
-	for( char **a = v->env; a && *a; a += 2 ){
+	for (char **a = v->env; a && *a; a += 2) {
 		setenv(a[0], a[1], 1);
 	}
 	set_window_size(&ws);
-	if( openpty(fd, fd + 1, NULL, NULL, &ws) ){
+	if (openpty(fd, fd + 1, NULL, NULL, &ws)) {
 		err(EXIT_FAILURE, "openpty");
 	}
-	switch( fork() ){
+	switch (fork()) {
 	case -1:
 		err(1, "fork");
 		break;
 	case 0:
-		if( close(fd[0]) ){
+		if (close(fd[0])) {
 			err(EXIT_FAILURE, "close");
 		}
-		if( login_tty(fd[1]) ){
+		if (login_tty(fd[1])) {
 			err(EXIT_FAILURE, "login_tty");
 		}
 		rv = 0;
 		execv("./smtx", v->argv);
 		err(EXIT_FAILURE, "execv");
 	default:
-		if( close(fd[1]) ){
+		if (close(fd[1])) {
 			err(EXIT_FAILURE, "close secondary");
 		}
-		if( getenv("XFAIL") == NULL ){
+		if (getenv("XFAIL") == NULL) {
 			grep(fd[0], PROMPT); /* Wait for shell to initialize */
 		}
 		rv = v->f(fd[0]);
@@ -553,7 +553,7 @@ execute_test(struct st *v, const char *name)
 	status = check_test_status(rv, status, fd[0], v->name);
 
 	char *verbosity = getenv("V");
-	if( verbosity && strtol(verbosity, NULL, 10) > 0 ){
+	if (verbosity && strtol(verbosity, NULL, 10) > 0) {
 		printf("%20s: %s\n", v->name, status ? "FAIL" : "pass" );
 	}
 	return status;
@@ -566,22 +566,22 @@ check_test_status(int rv, int status, int pty, const char *name)
 	int expect_stat = expect ? strtol(expect, NULL, 10) : 0;
 	int expected = WIFEXITED(status) && WEXITSTATUS(status) == expect_stat;
 
-	if( ! expected ){
+	if (! expected) {
 		char iobuf[BUFSIZ];
 		ssize_t r = read(pty, iobuf, sizeof iobuf - 1);
-		if( r > 0 ){
+		if (r > 0) {
 			iobuf[r] = '\0';
-			for( char *s = iobuf; *s; s++ ){
-				if( isprint(*s) || *s == '\n' ){
+			for (char *s = iobuf; *s; s++) {
+				if (isprint(*s) || *s == '\n') {
 					fputc(*s, stderr);
 				}
 			}
 		}
-	} else if( WIFSIGNALED(status) ){
+	} else if (WIFSIGNALED(status)) {
 		fprintf(stderr, "test %s caught signal %d\n",
 			name, WTERMSIG(status));
 	}
-	if( rv ){
+	if (rv) {
 		fputs("FAILED\n", stderr);
 	}
 	return (!rv && expected) ? EXIT_SUCCESS : EXIT_FAILURE;
@@ -595,7 +595,7 @@ initialize_tests(char const **argv0)
 	struct st *tab = NULL;
 	char *base;
 
-	if( (base = strrchr(*argv0, '/')) != NULL ){
+	if ((base = strrchr(*argv0, '/')) != NULL) {
 		*argv0 = base + 1;
 		chdir(*argv0);
 	}
