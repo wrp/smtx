@@ -172,9 +172,9 @@ prune(void)
 		S.c = NULL;  /* Trigger an exit from main loop */
 	} else if (t && t->parent) {
 		struct canvas *p = t->parent;
-		int c = t == p->c[1];
-		*(c ? &p->split.x : &p->split.y) = 1.0;
-		p->c[c] = NULL;
+		int child_index = t == p->c[1];
+		*(child_index ? &p->split.x : &p->split.y) = 1.0;
+		p->c[child_index] = NULL;
 		change_count(t, -1, 1);
 	}
 	S.reshape = 1;
