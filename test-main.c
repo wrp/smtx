@@ -569,7 +569,8 @@ execute_test(struct st *v, const char *name)
 
 	char *verbosity = getenv("V");
 	if (verbosity && strtol(verbosity, NULL, 10) > 0) {
-		printf("%20s: %s\n", v->name, status ? "FAIL" : "pass" );
+		printf("%20s: %s\n", v->name, status == 77 ? "SKIP" :
+			status != 0 ? "FAIL" : "pass" );
 	}
 	return status;
 }
@@ -596,10 +597,15 @@ check_test_status(int rv, int status, int pty, const char *name)
 		fprintf(stderr, "test %s caught signal %d\n",
 			name, WTERMSIG(status));
 	}
-	if (rv) {
-		fputs("FAILED\n", stderr);
+	switch (rv) {
+	case SKIP_TEST:
+		fputs("SKIPPED\n", stderr);
+		return SKIP_TEST;
+	case 0:
+		return expected ? EXIT_SUCCESS : EXIT_FAILURE;
+	default:
+		return EXIT_FAILURE;
 	}
-	return (!rv && expected) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 char bigint[128];
