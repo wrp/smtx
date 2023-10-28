@@ -33,7 +33,7 @@ attach_pty(struct canvas *n, struct pty *p)
 void
 attach(void)
 {
-	for( struct pty *t = S.p; t; t = t->next ){
+	for( struct pty *t = S.p; t != NULL; t = t->next ){
 		if( IDX(t) == S.count ){
 			attach_pty(S.f, t);
 			return;
