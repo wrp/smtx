@@ -71,7 +71,7 @@ create(const char *arg)
 	while (n->c[dir]) {
 		n = n->c[dir];
 	}
-	for (int i = S.count < 1 ? 1 : S.count; i; i -= 1) {
+	for (int i = S.count < 1 ? 1 : S.count; i > 0; i -= 1) {
 		struct canvas *v = n->c[dir] = newcanvas(0, n);
 		if (v && v->p) {
 			v->typ = n->typ = n->c[!dir] ? n->typ : dir;
