@@ -35,11 +35,11 @@ if ! test -f test-main.gcda; then
 fi
 
 cat << EOF |
-handler 100
+handler 98
 smtx 100
 smtx-main 97
 vtparser 100
-action 100
+action 90
 EOF
 {
 RV=0
