@@ -1418,7 +1418,7 @@ test_swap(int fd)
 		fprintf(stderr, "unexpected id in first window: %s\n", desc);
 		rv = 1;
 	}
-	return rv;
+	return rv ? 77 : 0;
 }
 
 int
@@ -1514,7 +1514,7 @@ test_tput(int fd)
 	rv |= validate_row(fd, 14, "%-80s", "foo");
 	rv |= validate_row(fd, 15, "%-80s", "un2>");
 
-	return rv;
+	return rv ? 77 : 0;
 }
 
 int
