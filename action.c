@@ -42,17 +42,20 @@ attach(void)
 	check(0, errno = 0, "No pty exists with id %d", S.count);
 }
 
+/* Count the canvassas below the focus point and reset split points */
 static const char *default_balance_arg[] = { "-|", "-", "|", "-|" };
 void
 balance(const char *arg)
 {
 	int c = MIN(S.count + 1, 3);
-	for (arg = (*arg == '=') ? default_balance_arg[c]: arg; *arg; arg++) {
-		int d = *arg == '|', count = 0;
-		for (struct canvas *n = S.f; n; n = n->c[d]) {
+	const char *a = (*arg == '=') ? default_balance_arg[c] : arg;
+	for ( ; *a != '\0'; a += 1) {
+		int d = *a == '|';
+		int count = 0;
+		for (struct canvas *n = S.f; n != NULL; n = n->c[d]) {
 			count += 1;
 		}
-		for (struct canvas *n = S.f; n; n = n->c[d]) {
+		for (struct canvas *n = S.f; n != NULL; n = n->c[d]) {
 			*(d ? &n->split.x : &n->split.y) = 1.0 / count--;
 			n->p->ws.ws_row = 0; /* rows is set during resize */
 		}
