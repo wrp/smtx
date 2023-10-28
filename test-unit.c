@@ -103,7 +103,7 @@ test_attach(int fd)
 	send_cmd(fd, NULL, "N");
 	rv |= check_layout(fd, 0x5, "*7x80(id=4); 7x80(id=2); 7x80(id=3)");
 
-	return rv;
+	return rv ? 77 : 0;
 }
 
 int
