@@ -25,7 +25,8 @@ static void
 attach_pty(struct canvas *n, struct pty *p)
 {
 	n->p->count -= 1;
-	(n->p = p)->count += 1;
+	n->p = p;
+	p->count += 1;
 	S.reshape = 1; /* Need to adjust row count of pty */
 }
 
