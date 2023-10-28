@@ -142,7 +142,7 @@ static void
 pty_size(struct pty *p)
 {
 	check(p->fd == -1 || ! ioctl(p->fd, TIOCGWINSZ, &p->ws), errno = 0,
-		"ioctr error getting size of pty %d", IDX(p));
+		"ioctl error getting size of pty %d", IDX(p));
 }
 
 void
