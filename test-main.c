@@ -19,6 +19,8 @@
 #include <limits.h>
 #include <fcntl.h>
 
+#define SKIP_TEST 77
+
 static int read_timeout = 1;  /* Set to 0 when interactively debugging */
 static int main_timeout = 10;
 static int check_test_status(int rv, int status, int pty, const char *name);
@@ -384,6 +386,7 @@ int
 main(int argc, char *const argv[])
 {
 	int fail_count = 0;
+	int skip_count = 0;
 	int total_count = 0;
 	char const *argv0 = argv[0];
 	struct st *tab, *v;
@@ -410,11 +413,23 @@ main(int argc, char *const argv[])
 	}
 	for (int status = 0, i = 0; i < total_count; i++) {
 		waitpid(-1, &status, 0);
-		fail_count += exit_status(status);
+		switch (exit_status(status)) {
+		case EXIT_FAILURE:
+			fail_count += 1;
+			break;
+		case SKIP_TEST:
+			skip_count += 1;
+		}
 	}
-	if (fail_count) {
-		fprintf(stderr, "%d test%s (of %d) failed\n", fail_count,
-			fail_count > 1 ? "s" : "", total_count);
+	if (fail_count > 0 || skip_count > 0) {
+		fprintf(
+			stderr,
+			"%d test%s total: %d skipped, %d failed\n",
+			total_count,
+			total_count > 1 ? "s" : "",
+			skip_count,
+			fail_count
+		);
 	}
 	return fail_count ? EXIT_FAILURE : EXIT_SUCCESS;
 }
