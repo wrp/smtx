@@ -96,6 +96,9 @@ create(const char *arg)
 	reshape(S.c, 0, 0, LINES, COLS);
 }
 
+/*
+ * Increment S.count when the user enters a digit
+ */
 void
 digit(const char *arg)
 {
