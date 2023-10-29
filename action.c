@@ -117,6 +117,9 @@ focus(void)
 	S.f = t ? t : S.f;
 }
 
+/*
+ * Navigate the canvas tree
+ */
 void
 mov(const char *arg)
 {
