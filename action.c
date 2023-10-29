@@ -67,6 +67,13 @@ balance(const char *arg)
 	S.reshape = 1;
 }
 
+/*
+ * Create S.count new canvasses in the currently focused canvas.
+ * If the argument is '|', add new canvasses in the right side
+ * of the current canvas.  Otherwise, create new canvasses in
+ * the bottom.  Rebalance so all new canvasses have equal portion
+ * of the current canvas.
+ */
 void
 create(const char *arg)
 {
