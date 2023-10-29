@@ -2,7 +2,6 @@
 bin_PROGRAMS = smtx
 man1_MANS = smtx.1
 ACLOCAL_AMFLAGS = -I m4
-LIBS = -lncursesw -lutil
 
 LDADD = libsmtx.la
 noinst_LTLIBRARIES = libsmtx.la
