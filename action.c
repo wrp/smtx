@@ -30,6 +30,10 @@ attach_pty(struct canvas *n, struct pty *p)
 	S.reshape = 1; /* Need to adjust row count of pty */
 }
 
+/*
+ * Attach the pty with id matching the user selected index
+ * to the currently focused canvas.
+ */
 void
 attach(void)
 {
