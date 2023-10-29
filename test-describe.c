@@ -131,7 +131,7 @@ describe_row(char *desc, size_t siz, int row)
 	unsigned bgflag = 0;
 	int last_color_pair = 0;
 	int offset = 0;
-	const struct canvas *c = S.c;
+	const struct canvas *c = S.root;
 	unsigned width = c->p->ws.ws_col;
 	char *end = desc + siz;
 	WINDOW *w = c->p->s->w;
@@ -217,7 +217,7 @@ show_layout(const char *arg)
 {
 	char buf[1024] = "layout: ";
 	int flag = strtol(*arg == ';' ? arg + 1 : arg, NULL, 16);
-	struct canvas *c = flag & 0x20 ? S.f : S.c;
+	struct canvas *c = flag & 0x20 ? S.f : S.root;
 	if (flag & 0x80) {
 		strcat(buf, "\r\n");
 	}

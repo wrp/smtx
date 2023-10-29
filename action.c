@@ -93,7 +93,7 @@ create(const char *arg)
 		}
 	}
 	balance(arg);
-	reshape(S.c, 0, 0, LINES, COLS);
+	reshape(S.root, 0, 0, LINES, COLS);
 }
 
 /*
@@ -113,7 +113,7 @@ static struct canvas * find_canvas(struct canvas *c, int id);
 void
 focus(void)
 {
-	struct canvas *t = find_canvas(S.c, S.count);
+	struct canvas *t = find_canvas(S.root, S.count);
 	S.f = t ? t : S.f;
 }
 
@@ -141,7 +141,7 @@ mov(const char *arg)
 			break;
 		}
 	}
-	S.f = n ? n : S.c;
+	S.f = n ? n : S.root;
 }
 
 static struct canvas *
@@ -187,9 +187,9 @@ next(void)
 void
 prune(void)
 {
-	struct canvas *t = find_canvas(S.c, S.count);
+	struct canvas *t = find_canvas(S.root, S.count);
 	if (S.count == 0) {
-		S.c = NULL;  /* Trigger an exit from main loop */
+		S.root = NULL;  /* Trigger an exit from main loop */
 	} else if (t && t->parent) {
 		struct canvas *p = t->parent;
 		int child_index = t == p->c[1];
@@ -213,7 +213,7 @@ reshape_root(void)
 	}
 	resize_pad(&S.werr, 1, COLS);
 	resize_pad(&S.wbkg, LINES, COLS);
-	reshape(S.c, 0, 0, LINES, COLS);
+	reshape(S.root, 0, 0, LINES, COLS);
 }
 
 void
@@ -379,7 +379,7 @@ swap(void)
 		t = t ? t : n->c[!n->typ];
 		t = t ? t : n->parent;
 	} else {
-		t = find_canvas(S.c, S.count);
+		t = find_canvas(S.root, S.count);
 	}
 	if (t) {
 		struct pty *tmp = n->p;

@@ -124,7 +124,7 @@ struct state {
 	int count;   /* User entered count in command mode */
 	const char *term; /* Name of the terminal type */
 	struct handler *binding; /* Current key binding */
-	struct canvas *c;  /* Root of all canvasses in use */
+	struct canvas *root; /* Root of all canvasses in use */
 	struct canvas *f;  /* Currently focused canvas */;
 	struct pty *p;     /* List of all pty in use */
 	struct pty *tail;  /* Last in the list of p */

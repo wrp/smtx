@@ -434,12 +434,12 @@ update_offset_r(struct canvas *n)
 static void
 main_loop(void)
 {
-	while (S.c != NULL) {
+	while (S.root != NULL) {
 		if (S.reshape) {
-			reshape(S.c, 0, 0, LINES, COLS);
+			reshape(S.root, 0, 0, LINES, COLS);
 			wrefresh(curscr);
 		}
-		draw(S.c);
+		draw(S.root);
 		if (*S.errmsg) {
 			mvwprintw(S.werr, 0, 0, "%s", S.errmsg);
 			wclrtoeol(S.werr);
@@ -448,7 +448,7 @@ main_loop(void)
 		fixcursor();
 		doupdate();
 		getinput();
-		update_offset_r(S.c);
+		update_offset_r(S.root);
 		for (struct pty *p = S.p; p; p = p->next) {
 			p->s->delta = 0;
 		}
@@ -484,8 +484,8 @@ init(void)
 	wborder(S.wbkg, ACS_VLINE, ACS_BULLET, ACS_BULLET, ACS_BULLET,
 		ACS_VLINE, ACS_BULLET, ACS_BULLET, ACS_BULLET);
 	wattron(S.werr, A_REVERSE);
-	S.f = S.c = newcanvas(NULL, NULL);
-	if (S.c == NULL || S.werr == NULL || S.wbkg == NULL || !S.c->p) {
+	S.f = S.root = newcanvas(NULL, NULL);
+	if (S.root == NULL || S.werr == NULL || S.wbkg == NULL || !S.root->p) {
 		endwin();
 		errx(EXIT_FAILURE, "Unable to create root window");
 	}
@@ -580,12 +580,12 @@ int
 build_layout(const char *layout)
 {
 	struct pty *p = S.f->p;
-	change_count(S.c, -1, 0); /* (1) */
+	change_count(S.root, -1, 0); /* (1) */
 	struct canvas *n = add_canvas(&layout, 0.0, 0.0, 1.0, 1.0, &p, NULL);
-	change_count(S.c, +1, 0);
+	change_count(S.root, +1, 0);
 	if (n) {
-		change_count(S.c, -1, 1);
-		S.f = S.c = n;
+		change_count(S.root, -1, 1);
+		S.f = S.root = n;
 		S.reshape = 1;
 	}
 	return S.reshape;
