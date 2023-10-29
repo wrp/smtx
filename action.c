@@ -107,6 +107,9 @@ digit(const char *arg)
 
 static struct canvas * find_canvas(struct canvas *c, int id);
 
+/*
+ * Move the focus to the canvas with id matching S.count
+ */
 void
 focus(void)
 {
