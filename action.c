@@ -144,6 +144,9 @@ mov(const char *arg)
 	S.f = n ? n : S.root;
 }
 
+/*
+ * Recursive function used to find a canvas with id in the tree.
+ */
 static struct canvas *
 find_canvas(struct canvas *c, int id)
 {
